@@ -1,13 +1,10 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.syfo"
 version = "1.0.0"
 
 object Versions {
-    const val coroutinesVersion = "1.4.2"
-    const val jacksonVersion = "2.11.3"
     const val ktorVersion = "1.5.0"
     const val logbackVersion = "1.2.3"
     const val prometheusVersion = "0.9.0"
@@ -29,10 +26,11 @@ dependencies {
 
     implementation("io.ktor:ktor-server-netty:${Versions.ktorVersion}")
 
+    implementation("ch.qos.logback:logback-classic:${Versions.logbackVersion}")
+
     implementation("io.prometheus:simpleclient_hotspot:${Versions.prometheusVersion}")
     implementation("io.prometheus:simpleclient_common:${Versions.prometheusVersion}")
 
-    implementation("ch.qos.logback:logback-classic:${Versions.logbackVersion}")
 }
 
 tasks {
