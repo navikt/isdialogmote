@@ -34,7 +34,7 @@ dependencies {
 
 tasks {
     withType<Jar> {
-        manifest.attributes["Main-Class"] = "isdialogmote.AppKt"
+        manifest.attributes["Main-Class"] = "no.nav.syfo.AppKt"
     }
 
     create("printVersion") {
