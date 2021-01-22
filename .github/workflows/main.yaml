@@ -3,7 +3,6 @@ name: main
 on: push
 
 env:
-  APP_NAME: isdialogmote
   IMAGE: docker.pkg.github.com/${{ github.repository }}/isdialogmote:${{ github.sha }}
 
 jobs:
