@@ -55,3 +55,16 @@ jobs:
           docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
           docker push ${IMAGE}
           echo ${IMAGE}
+
+  deploy-dev-gcp:
+    if: github.ref == 'refs/heads/master'
+    name: Deploy to NAIS Dev-gcp
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: dev-gcp
+          RESOURCE: nais/naiserator-dev-gcp.yaml
