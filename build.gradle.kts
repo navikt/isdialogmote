@@ -30,7 +30,6 @@ dependencies {
 
     implementation("io.prometheus:simpleclient_hotspot:${Versions.prometheusVersion}")
     implementation("io.prometheus:simpleclient_common:${Versions.prometheusVersion}")
-
 }
 
 tasks {
