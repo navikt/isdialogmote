@@ -30,6 +30,8 @@ fun main() {
             module {
                 apiModule(applicationState)
             }
+
+            applicationState.ready = true
         }
     )
     Runtime.getRuntime().addShutdownHook(
