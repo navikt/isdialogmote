@@ -16,8 +16,11 @@ import io.ktor.routing.*
 import io.ktor.server.testing.*
 import no.nav.syfo.application.api.authentication.WellKnown
 import no.nav.syfo.application.api.authentication.installJwtAuthentication
+import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_2_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.generateJWT
+import no.nav.syfo.testhelper.mock.VeilederTilgangskontrollMock
 import no.nav.syfo.testhelper.testEnvironment
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -51,6 +54,11 @@ object DialogmoteApiSpek : Spek({
                 issuer = "https://sts.issuer.net/myid"
             )
 
+            val tilgangskontrollMock = VeilederTilgangskontrollMock()
+            val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
+                tilgangskontrollMock.url
+            )
+
             application.install(ContentNegotiation) {
                 jackson {
                     registerKotlinModule()
@@ -63,8 +71,16 @@ object DialogmoteApiSpek : Spek({
 
             application.routing {
                 authenticate {
-                    registerDialogmoteApi()
+                    registerDialogmoteApi(veilederTilgangskontrollClient)
                 }
+            }
+
+            beforeGroup {
+                tilgangskontrollMock.server.start()
+            }
+
+            afterGroup {
+                tilgangskontrollMock.server.stop(1L, 10L)
             }
 
             describe("Get Dialogmoter for PersonIdent") {
@@ -100,6 +116,17 @@ object DialogmoteApiSpek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                    }
+                }
+
+                it("should return status Forbidden if denied access to person") {
+                    with(
+                        handleRequest(HttpMethod.Get, url) {
+                            addHeader(Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_2_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.Forbidden
                     }
                 }
 

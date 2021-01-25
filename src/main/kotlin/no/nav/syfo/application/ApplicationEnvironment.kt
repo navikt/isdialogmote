@@ -2,7 +2,8 @@ package no.nav.syfo.application
 
 data class Environment(
     val aadDiscoveryUrl: String = getEnvVar("AADDISCOVERY_URL"),
-    val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENT_ID")
+    val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENT_ID"),
+    val syfotilgangskontrollUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL")
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

@@ -32,6 +32,7 @@ dependencies {
 
     implementation("io.ktor:ktor-auth-jwt:${Versions.ktorVersion}")
     implementation("io.ktor:ktor-client-apache:${Versions.ktorVersion}")
+    implementation("io.ktor:ktor-client-cio:${Versions.ktorVersion}")
     implementation("io.ktor:ktor-client-jackson:${Versions.ktorVersion}")
     implementation("io.ktor:ktor-jackson:${Versions.ktorVersion}")
     implementation("io.ktor:ktor-server-netty:${Versions.ktorVersion}")

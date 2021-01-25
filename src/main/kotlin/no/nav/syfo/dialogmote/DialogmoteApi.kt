@@ -4,6 +4,7 @@ import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.callIdArgument
 import no.nav.syfo.util.getBearerHeader
@@ -17,7 +18,9 @@ private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 const val dialogmoteApiBasepath = "/api/v1/dialogmote"
 const val dialogmoteApiPersonIdentUrlPath = "/personident"
 
-fun Route.registerDialogmoteApi() {
+fun Route.registerDialogmoteApi(
+    veilederTilgangskontrollClient: VeilederTilgangskontrollClient
+) {
     route(dialogmoteApiBasepath) {
         get(dialogmoteApiPersonIdentUrlPath) {
             try {
@@ -30,8 +33,17 @@ fun Route.registerDialogmoteApi() {
                 val token = getBearerHeader()
                     ?: throw IllegalArgumentException("No Authorization header supplied")
 
-                val dialogmoteList = emptyList<Any>()
-                call.respond(dialogmoteList)
+                when (veilederTilgangskontrollClient.hasAccess(personIdentNumber, token, callId)) {
+                    true -> {
+                        val dialogmoteList = emptyList<Any>()
+                        call.respond(dialogmoteList)
+                    }
+                    else -> {
+                        val accessDeniedMessage = "Denied Veileder access to Dialogmoter for Person with PersonIdent"
+                        log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
+                        call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
+                    }
+                }
             } catch (e: IllegalArgumentException) {
                 val illegalArgumentMessage = "Could not retrieve PersonOppgaveList for PersonIdent"
                 log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(getCallId()))
