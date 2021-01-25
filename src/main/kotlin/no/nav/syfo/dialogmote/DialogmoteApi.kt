@@ -4,23 +4,39 @@ import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.util.callIdArgument
 import no.nav.syfo.util.getBearerHeader
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getPersonIdentHeader
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
+
+const val dialogmoteApiBasepath = "/api/v1/dialogmote"
+const val dialogmoteApiPersonIdentUrlPath = "/personident"
 
 fun Route.registerDialogmoteApi() {
-    route("/api/v1/dialogmote") {
-        get("/personident") {
-            val callId = getCallId()
+    route(dialogmoteApiBasepath) {
+        get(dialogmoteApiPersonIdentUrlPath) {
+            try {
+                val callId = getCallId()
 
-            val personIdent = getPersonIdentHeader()
-                ?: call.respond(HttpStatusCode.BadRequest, "No PersonIdent supplied")
+                val personIdentNumber = getPersonIdentHeader()?.let { personIdent ->
+                    PersonIdentNumber(personIdent)
+                } ?: throw IllegalArgumentException("No PersonIdent supplied")
 
-            val token = getBearerHeader()
-                ?: call.respond(HttpStatusCode.BadRequest, "No Authorization header supplied")
+                val token = getBearerHeader()
+                    ?: throw IllegalArgumentException("No Authorization header supplied")
 
-            val dialogmoteList = emptyList<Any>()
-            call.respond(dialogmoteList)
+                val dialogmoteList = emptyList<Any>()
+                call.respond(dialogmoteList)
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Could not retrieve PersonOppgaveList for PersonIdent"
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(getCallId()))
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
         }
     }
 }

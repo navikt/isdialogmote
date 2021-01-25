@@ -9,10 +9,9 @@ import java.net.URL
 import java.util.concurrent.TimeUnit
 
 fun Application.installJwtAuthentication(
-    aadDiscoveryUrl: String,
+    wellKnown: WellKnown,
     accectedAudienceList: List<String>
 ) {
-    val wellKnown = getWellKnown(aadDiscoveryUrl)
     val jwkProvider = JwkProviderBuilder(URL(wellKnown.jwks_uri))
         .cached(10, 24, TimeUnit.HOURS)
         .rateLimited(10, 1, TimeUnit.MINUTES)
