@@ -5,6 +5,7 @@ import io.ktor.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.apiModule
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
@@ -18,6 +19,8 @@ fun main() {
             log = LoggerFactory.getLogger("ktor.application")
             config = HoconApplicationConfig(ConfigFactory.load())
 
+            val environment = Environment()
+
             connector {
                 port = applicationPort
             }
@@ -28,7 +31,7 @@ fun main() {
             )
 
             module {
-                apiModule(applicationState)
+                apiModule(applicationState, environment)
             }
 
             applicationState.ready = true

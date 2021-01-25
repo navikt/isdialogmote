@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.*
+import io.ktor.auth.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.jackson.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.application.Environment
+import no.nav.syfo.application.api.authentication.installJwtAuthentication
 import no.nav.syfo.application.dialogmote.registerDialogmoteApi
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.getCallId
@@ -18,8 +21,14 @@ import no.nav.syfo.util.getConsumerId
 import java.util.*
 
 fun Application.apiModule(
-    applicationState: ApplicationState
+    applicationState: ApplicationState,
+    environment: Environment
 ) {
+    installJwtAuthentication(
+        environment.aadDiscoveryUrl,
+        listOf(environment.loginserviceClientId)
+    )
+
     install(CallId) {
         retrieve { it.request.headers[NAV_CALL_ID_HEADER] }
         generate { UUID.randomUUID().toString() }
@@ -46,6 +55,8 @@ fun Application.apiModule(
 
     routing {
         registerPodApi(applicationState)
-        registerDialogmoteApi()
+        authenticate {
+            registerDialogmoteApi()
+        }
     }
 }

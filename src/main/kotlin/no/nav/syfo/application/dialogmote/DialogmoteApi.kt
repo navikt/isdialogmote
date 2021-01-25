@@ -8,7 +8,7 @@ import no.nav.syfo.util.getBearerHeader
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getPersonIdentHeader
 
-fun Routing.registerDialogmoteApi() {
+fun Route.registerDialogmoteApi() {
     route("/api/v1/dialogmote") {
         get("/personident") {
             val callId = getCallId()

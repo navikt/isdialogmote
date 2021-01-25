@@ -8,6 +8,7 @@ object Versions {
     const val jacksonVersion = "2.11.3"
     const val ktorVersion = "1.5.0"
     const val logbackVersion = "1.2.3"
+    const val logstashEncoderVersion = "6.3"
     const val prometheusVersion = "0.9.0"
 }
 
@@ -25,10 +26,14 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 
+    implementation("io.ktor:ktor-auth-jwt:${Versions.ktorVersion}")
+    implementation("io.ktor:ktor-client-apache:${Versions.ktorVersion}")
+    implementation("io.ktor:ktor-client-jackson:${Versions.ktorVersion}")
     implementation("io.ktor:ktor-jackson:${Versions.ktorVersion}")
     implementation("io.ktor:ktor-server-netty:${Versions.ktorVersion}")
 
     implementation("ch.qos.logback:logback-classic:${Versions.logbackVersion}")
+    implementation("net.logstash.logback:logstash-logback-encoder:${Versions.logstashEncoderVersion}")
 
     implementation("io.prometheus:simpleclient_hotspot:${Versions.prometheusVersion}")
     implementation("io.prometheus:simpleclient_common:${Versions.prometheusVersion}")
