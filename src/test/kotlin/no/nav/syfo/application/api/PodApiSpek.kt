@@ -17,20 +17,21 @@ object PodApiSpek : Spek({
         with(TestApplicationEngine()) {
             start()
             application.routing {
-                registerPodApi(applicationState)
+                registerPodApi(
+                    ApplicationState(
+                        alive = true,
+                        ready = true
+                    )
+                )
             }
 
             it("Returns ok on is_alive") {
-                applicationState.alive = true
-
                 with(handleRequest(HttpMethod.Get, "/is_alive")) {
                     response.status()?.isSuccess() shouldBeEqualTo true
                     response.content shouldNotBeEqualTo null
                 }
             }
             it("Returns ok on is_alive") {
-                applicationState.ready = true
-
                 with(handleRequest(HttpMethod.Get, "/is_ready")) {
                     println(response.status())
                     response.status()?.isSuccess() shouldBeEqualTo true
