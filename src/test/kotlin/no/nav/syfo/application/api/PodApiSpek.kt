@@ -11,8 +11,6 @@ import org.spekframework.spek2.style.specification.describe
 
 object PodApiSpek : Spek({
 
-    val applicationState = ApplicationState()
-
     describe("Successful liveness and readiness checks") {
         with(TestApplicationEngine()) {
             start()
