@@ -55,6 +55,7 @@ fun Application.apiModule(
 
     routing {
         registerPodApi(applicationState)
+        registerPrometheusApi()
         authenticate {
             registerDialogmoteApi()
         }

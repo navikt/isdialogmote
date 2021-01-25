@@ -7,9 +7,12 @@ version = "1.0.0"
 object Versions {
     const val jacksonVersion = "2.11.3"
     const val ktorVersion = "1.5.0"
+    const val kluentVersion = "1.61"
     const val logbackVersion = "1.2.3"
     const val logstashEncoderVersion = "6.3"
+    const val mockkVersion = "1.10.5"
     const val prometheusVersion = "0.9.0"
+    const val spekVersion = "2.0.15"
 }
 
 plugins {
@@ -39,6 +42,17 @@ dependencies {
     implementation("io.prometheus:simpleclient_common:${Versions.prometheusVersion}")
 
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jacksonVersion}")
+
+    testImplementation("io.ktor:ktor-server-test-host:${Versions.ktorVersion}")
+    testImplementation("io.mockk:mockk:${Versions.mockkVersion}")
+    testImplementation("org.amshove.kluent:kluent:${Versions.kluentVersion}")
+    testImplementation("org.spekframework.spek2:spek-dsl-jvm:${Versions.ktorVersion}")
+    testImplementation("org.spekframework.spek2:spek-dsl-jvm:${Versions.spekVersion}") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:${Versions.spekVersion}") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
 }
 
 tasks {
