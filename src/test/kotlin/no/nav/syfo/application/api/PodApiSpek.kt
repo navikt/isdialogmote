@@ -13,7 +13,7 @@ object PodApiSpek : Spek({
 
     val applicationState = ApplicationState()
 
-    describe("Successful liveness and readyness checks") {
+    describe("Successful liveness and readiness checks") {
         with(TestApplicationEngine()) {
             start()
             application.routing {
@@ -40,7 +40,7 @@ object PodApiSpek : Spek({
         }
     }
 
-    describe("Unsucessful liveness and readyness checks") {
+    describe("Unsuccessful liveness and readiness checks") {
         with(TestApplicationEngine()) {
             start()
             application.routing {
@@ -59,7 +59,7 @@ object PodApiSpek : Spek({
                 }
             }
 
-            it("Returns internal server error when readyness check fails") {
+            it("Returns internal server error when readiness check fails") {
                 with(handleRequest(HttpMethod.Get, "/is_ready")) {
                     response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
                     response.content shouldNotBeEqualTo null
