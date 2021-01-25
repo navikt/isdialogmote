@@ -1,4 +1,4 @@
-package no.nav.syfo.application.dialogmote
+package no.nav.syfo.dialogmote
 
 import io.ktor.application.*
 import io.ktor.http.*

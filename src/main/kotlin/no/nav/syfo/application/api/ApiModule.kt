@@ -14,7 +14,7 @@ import io.ktor.routing.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.installJwtAuthentication
-import no.nav.syfo.application.dialogmote.registerDialogmoteApi
+import no.nav.syfo.dialogmote.registerDialogmoteApi
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getConsumerId
