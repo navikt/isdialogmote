@@ -1,6 +1,7 @@
 package no.nav.syfo.util
 
 import io.ktor.application.*
+import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.util.pipeline.*
 
 const val NAV_PERSONIDENT_HEADER = "nav-personident"
@@ -16,7 +17,7 @@ fun PipelineContext<out Unit, ApplicationCall>.getConsumerId(): String {
 }
 
 fun PipelineContext<out Unit, ApplicationCall>.getBearerHeader(): String? {
-    return this.call.request.headers["Authorization"]?.removePrefix("Bearer ")
+    return this.call.request.headers[Authorization]?.removePrefix("Bearer ")
 }
 
 fun PipelineContext<out Unit, ApplicationCall>.getPersonIdentHeader(): String? {
