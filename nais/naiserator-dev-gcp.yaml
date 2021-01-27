@@ -39,6 +39,12 @@ spec:
       memory: 384Mi
   ingresses:
     - "https://isdialogmote.dev.intern.nav.no"
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_12
+        databases:
+          - name: isdialogmote-db
+            diskAutoresize: true
   accessPolicy:
     outbound:
       external:
