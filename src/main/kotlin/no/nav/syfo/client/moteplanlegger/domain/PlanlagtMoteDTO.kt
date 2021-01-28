@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 data class PlanlagtMoteDTO(
     val id: Long = 0,
     val moteUuid: String,
-    val opprettetAv: String? = null,
+    val opprettetAv: String,
     val aktorId: String,
     val status: String,
     val fnr: String,

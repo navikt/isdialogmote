@@ -6,10 +6,15 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import no.nav.syfo.application.api.apiModule
+import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
+import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.dialogmote.database.createDialogmote
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
+import no.nav.syfo.testhelper.generator.generateDialogmote
 import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -32,6 +37,8 @@ class GetDialogmoteApiSpek : Spek({
 
             val applicationState = testAppState()
 
+            val database = TestDatabase()
+
             val environment = testEnvironment(
                 modiasyforestUrl = modiasyforestMock.url,
                 syfomoteadminUrl = syfomoteadminMock.url,
@@ -43,9 +50,14 @@ class GetDialogmoteApiSpek : Spek({
 
             application.apiModule(
                 applicationState = applicationState,
+                database = database,
                 environment = environment,
                 wellKnown = wellKnown
             )
+
+            afterEachTest {
+                database.dropData()
+            }
 
             beforeGroup {
                 syfopersonMock.server.start()
@@ -55,6 +67,8 @@ class GetDialogmoteApiSpek : Spek({
             afterGroup {
                 syfopersonMock.server.stop(1L, 10L)
                 tilgangskontrollMock.server.stop(1L, 10L)
+
+                database.stop()
             }
 
             describe("Get Dialogmoter for PersonIdent") {
@@ -64,6 +78,12 @@ class GetDialogmoteApiSpek : Spek({
                     wellKnown.issuer
                 )
                 describe("Happy path") {
+
+                    val dialogmote = generateDialogmote(ARBEIDSTAKER_FNR)
+                    database.createDialogmote(
+                        dialogmote = dialogmote
+                    )
+
                     it("should return DialogmoteList if request is successful") {
                         with(
                             handleRequest(HttpMethod.Get, url) {
@@ -73,9 +93,13 @@ class GetDialogmoteApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val dialogmoteList = objectMapper.readValue<List<Any>>(response.content!!)
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
-                            dialogmoteList.size shouldBeEqualTo 0
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo dialogmote.arbeidstaker.personIdent.value
+                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo dialogmote.arbeidsgiver.virksomhetsnummer.value
                         }
                     }
                 }

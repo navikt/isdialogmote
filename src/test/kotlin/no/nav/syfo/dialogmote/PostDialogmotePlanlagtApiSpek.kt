@@ -4,6 +4,7 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import no.nav.syfo.application.api.apiModule
+import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -32,6 +33,8 @@ class PostDialogmotePlanlagtApiSpek : Spek({
 
             val applicationState = testAppState()
 
+            val database = TestDatabase()
+
             val environment = testEnvironment(
                 modiasyforestUrl = modiasyforestMock.url,
                 syfomoteadminUrl = syfomoteadminMock.url,
@@ -43,6 +46,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
 
             application.apiModule(
                 applicationState = applicationState,
+                database = database,
                 environment = environment,
                 wellKnown = wellKnown
             )
@@ -59,6 +63,8 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                 syfomoteadminMock.server.stop(1L, 10L)
                 syfopersonMock.server.stop(1L, 10L)
                 tilgangskontrollMock.server.stop(1L, 10L)
+
+                database.stop()
             }
 
             describe("Create Dialogmote for PersonIdent from PlanlagtMoteUUID") {

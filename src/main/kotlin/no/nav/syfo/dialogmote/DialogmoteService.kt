@@ -1,17 +1,50 @@
 package no.nav.syfo.dialogmote
 
+import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
 import no.nav.syfo.client.moteplanlegger.domain.PlanlagtMoteDTO
 import no.nav.syfo.client.moteplanlegger.domain.virksomhetsnummer
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.dialogmote.database.*
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import org.slf4j.LoggerFactory
 import java.util.*
 
 class DialogmoteService(
+    private val database: DatabaseInterface,
     private val moteplanleggerClient: MoteplanleggerClient,
     private val narmesteLederClient: NarmesteLederClient,
 ) {
+    fun getDialogmoteList(
+        personIdentNumber: PersonIdentNumber,
+    ): List<Dialogmote> {
+        return database.getDialogmoteList(personIdentNumber).map { pDialogmote ->
+            val motedeltakerArbeidstaker = getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
+            val motedeltakerArbeidsgiver = getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
+            pDialogmote.toDialogmote(
+                dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
+                dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver
+            )
+        }
+    }
+
+    fun getDialogmoteDeltakerArbeidstaker(
+        moteId: Int,
+    ): DialogmotedeltakerArbeidstaker {
+        return database.getMoteDeltakerArbeidstaker(moteId)
+            .first()
+            .toDialogmotedeltakerArbeidstaker()
+    }
+
+    fun getDialogmoteDeltakerArbeidsgiver(
+        moteId: Int,
+    ): DialogmotedeltakerArbeidsgiver {
+        return database.getMoteDeltakerArbeidsgiver(moteId)
+            .first()
+            .toDialogmotedeltakerArbeidsgiver()
+    }
+
     suspend fun planlagtMote(
         planlagtMoteUUID: UUID,
         token: String,
