@@ -1,9 +1,15 @@
 package no.nav.syfo.dialogmote
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import no.nav.syfo.application.api.apiModule
+import no.nav.syfo.client.moteplanlegger.domain.*
+import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
+import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -19,6 +25,7 @@ import org.spekframework.spek2.style.specification.describe
 import java.util.*
 
 class PostDialogmotePlanlagtApiSpek : Spek({
+    val objectMapper: ObjectMapper = apiConsumerObjectMapper()
 
     describe(PostDialogmotePlanlagtApiSpek::class.java.simpleName) {
 
@@ -32,6 +39,8 @@ class PostDialogmotePlanlagtApiSpek : Spek({
 
             val applicationState = testAppState()
 
+            val database = TestDatabase()
+
             val environment = testEnvironment(
                 modiasyforestUrl = modiasyforestMock.url,
                 syfomoteadminUrl = syfomoteadminMock.url,
@@ -43,6 +52,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
 
             application.apiModule(
                 applicationState = applicationState,
+                database = database,
                 environment = environment,
                 wellKnown = wellKnown
             )
@@ -59,6 +69,8 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                 syfomoteadminMock.server.stop(1L, 10L)
                 syfopersonMock.server.stop(1L, 10L)
                 tilgangskontrollMock.server.stop(1L, 10L)
+
+                database.stop()
             }
 
             describe("Create Dialogmote for PersonIdent from PlanlagtMoteUUID") {
@@ -67,8 +79,10 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                     wellKnown.issuer
                 )
                 describe("Happy path") {
-                    val moteUUID: String? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_FNR.value]?.moteUuid
+                    val planlagtMoteDTO: PlanlagtMoteDTO? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_FNR.value]
+                    val moteUUID: String? = planlagtMoteDTO?.moteUuid
                     val urlMoteUUID = "$dialogmoteApiBasepath/$moteUUID"
+                    val urlMoter = "$dialogmoteApiBasepath$dialogmoteApiPersonIdentUrlPath"
                     it("should return OK if request is successful") {
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUID) {
@@ -77,6 +91,28 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.planlagtMoteUuid shouldBeEqualTo moteUUID
+                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo planlagtMoteDTO?.fnr
+                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo planlagtMoteDTO?.arbeidsgiver()?.orgnummer
+
+                            dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
+                            val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
+                            dialogmoteTidStedDTO.sted shouldBeEqualTo planlagtMoteDTO?.tidStedValgt()?.sted
                         }
                     }
                 }

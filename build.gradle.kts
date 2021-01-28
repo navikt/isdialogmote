@@ -14,8 +14,8 @@ object Versions {
     const val logstashEncoderVersion = "6.3"
     const val mockkVersion = "1.10.5"
     const val nimbusjosejwtVersion = "7.5.1"
+    const val postgresEmbeddedVersion = "0.13.3"
     const val postgresVersion = "42.2.18"
-    const val postgresTestContainersVersion = "1.15.1"
     const val prometheusVersion = "0.9.0"
     const val spekVersion = "2.0.15"
 }
@@ -53,7 +53,7 @@ dependencies {
     implementation("org.postgresql:postgresql:${Versions.postgresVersion}")
     implementation("com.zaxxer:HikariCP:${Versions.hikariVersion}")
     implementation("org.flywaydb:flyway-core:${Versions.flywayVersion}")
-    testImplementation("org.testcontainers:postgresql:${Versions.postgresTestContainersVersion}")
+    testImplementation("com.opentable.components:otj-pg-embedded:${Versions.postgresEmbeddedVersion}")
 
     testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusjosejwtVersion}")
     testImplementation("io.ktor:ktor-server-test-host:${Versions.ktorVersion}")
