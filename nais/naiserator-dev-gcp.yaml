@@ -50,6 +50,7 @@ spec:
       external:
         - host: "login.microsoftonline.com"
         - host: "syfomoteadmin.dev-fss-pub.nais.io"
+        - host: "syfoperson.dev-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
   env:
     - name: AADDISCOVERY_URL
