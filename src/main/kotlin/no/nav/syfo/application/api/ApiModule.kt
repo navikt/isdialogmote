@@ -53,7 +53,7 @@ fun Application.apiModule(
     install(StatusPages) {
         exception<Throwable> { cause ->
             call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-            log.error("Caught exception", cause, getCallId(), getConsumerId())
+            log.error("Caught exception {} {} {}", cause, getCallId(), getConsumerId())
             throw cause
         }
     }
