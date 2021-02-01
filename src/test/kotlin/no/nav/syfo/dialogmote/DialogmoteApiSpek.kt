@@ -1,8 +1,6 @@
 package no.nav.syfo.dialogmote
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -16,10 +14,14 @@ import io.ktor.routing.*
 import io.ktor.server.testing.*
 import no.nav.syfo.application.api.authentication.WellKnown
 import no.nav.syfo.application.api.authentication.installJwtAuthentication
+import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_2_FNR
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.generateJWT
+import no.nav.syfo.testhelper.mock.SyfopersonMock
 import no.nav.syfo.testhelper.mock.VeilederTilgangskontrollMock
 import no.nav.syfo.testhelper.testEnvironment
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
@@ -54,9 +56,17 @@ object DialogmoteApiSpek : Spek({
                 issuer = "https://sts.issuer.net/myid"
             )
 
+            val syfopersonMock = SyfopersonMock()
+            val adressebeskyttelseClient = AdressebeskyttelseClient(
+                syfopersonBaseUrl = syfopersonMock.url
+            )
             val tilgangskontrollMock = VeilederTilgangskontrollMock()
             val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
-                tilgangskontrollMock.url
+                tilgangskontrollBaseUrl = tilgangskontrollMock.url
+            )
+            val dialogmoteTilgangService = DialogmoteTilgangService(
+                adressebeskyttelseClient = adressebeskyttelseClient,
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient
             )
 
             application.install(ContentNegotiation) {
@@ -71,15 +81,19 @@ object DialogmoteApiSpek : Spek({
 
             application.routing {
                 authenticate {
-                    registerDialogmoteApi(veilederTilgangskontrollClient)
+                    registerDialogmoteApi(
+                        dialogmoteTilgangService = dialogmoteTilgangService
+                    )
                 }
             }
 
             beforeGroup {
+                syfopersonMock.server.start()
                 tilgangskontrollMock.server.start()
             }
 
             afterGroup {
+                syfopersonMock.server.stop(1L, 10L)
                 tilgangskontrollMock.server.stop(1L, 10L)
             }
 
@@ -124,6 +138,17 @@ object DialogmoteApiSpek : Spek({
                         handleRequest(HttpMethod.Get, url) {
                             addHeader(Authorization, bearerHeader(validToken))
                             addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_2_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                    }
+                }
+
+                it("should return status Forbidden if denied person has Adressbeskyttese") {
+                    with(
+                        handleRequest(HttpMethod.Get, url) {
+                            addHeader(Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_ADRESSEBESKYTTET.value)
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.Forbidden

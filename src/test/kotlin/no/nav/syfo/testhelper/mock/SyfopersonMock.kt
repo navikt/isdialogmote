@@ -5,39 +5,37 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.*
 import io.ktor.features.*
-import io.ktor.http.*
 import io.ktor.jackson.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import no.nav.syfo.client.veiledertilgang.Tilgang
+import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
+import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseResponse
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.getRandomPort
+import no.nav.syfo.util.getPersonIdentHeader
 
-class VeilederTilgangskontrollMock {
+class SyfopersonMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
-    val tilgangFalse = Tilgang(
-        false,
-        ""
+    val beskyttetFalse = AdressebeskyttelseResponse(
+        beskyttet = false,
     )
-    val tilgangTrue = Tilgang(
-        true,
-        ""
+    val beskyttetTrue = AdressebeskyttelseResponse(
+        beskyttet = true,
     )
 
-    val server = mockTilgangServer(
+    val server = mockPersonServer(
         port,
-        tilgangFalse,
-        tilgangTrue
+        beskyttetFalse,
+        beskyttetTrue
     )
 
-    private fun mockTilgangServer(
+    private fun mockPersonServer(
         port: Int,
-        tilgangFalse: Tilgang,
-        tilgangTrue: Tilgang,
+        beskyttetFalse: AdressebeskyttelseResponse,
+        beskyttetTrue: AdressebeskyttelseResponse,
     ): NettyApplicationEngine {
         return embeddedServer(
             factory = Netty,
@@ -51,17 +49,11 @@ class VeilederTilgangskontrollMock {
                 }
             }
             routing {
-                get("/syfo-tilgangskontroll/api/tilgang/bruker") {
-                    when {
-                        call.parameters["fnr"] == ARBEIDSTAKER_FNR.value -> {
-                            call.respond(tilgangTrue)
-                        }
-                        call.parameters["fnr"] == ARBEIDSTAKER_ADRESSEBESKYTTET.value -> {
-                            call.respond(tilgangTrue)
-                        }
-                        else -> {
-                            call.respond(HttpStatusCode.Forbidden, tilgangFalse)
-                        }
+                get(AdressebeskyttelseClient.PERSON_ADRESSEBESKYTTELSE_PATH) {
+                    if (getPersonIdentHeader() == ARBEIDSTAKER_ADRESSEBESKYTTET.value) {
+                        call.respond(beskyttetTrue)
+                    } else {
+                        call.respond(beskyttetFalse)
                     }
                 }
             }
