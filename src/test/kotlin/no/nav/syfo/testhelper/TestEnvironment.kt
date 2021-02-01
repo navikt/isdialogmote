@@ -6,6 +6,7 @@ import java.net.ServerSocket
 fun testEnvironment() = Environment(
     aadDiscoveryUrl = "",
     loginserviceClientId = "123456789",
+    syfopersonUrl = "syfoperson",
     syfotilgangskontrollUrl = "tilgangskontroll"
 )
 

@@ -15,8 +15,10 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.getWellKnown
 import no.nav.syfo.application.api.authentication.installJwtAuthentication
+import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.registerDialogmoteApi
+import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getConsumerId
@@ -56,14 +58,24 @@ fun Application.apiModule(
         }
     }
 
-    val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(environment.syfotilgangskontrollUrl)
+    val adressebeskyttelseClient = AdressebeskyttelseClient(
+        syfopersonBaseUrl = environment.syfopersonUrl
+    )
+    val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
+        tilgangskontrollBaseUrl = environment.syfotilgangskontrollUrl
+    )
+
+    val dialogmoteTilgangService = DialogmoteTilgangService(
+        adressebeskyttelseClient = adressebeskyttelseClient,
+        veilederTilgangskontrollClient = veilederTilgangskontrollClient
+    )
 
     routing {
         registerPodApi(applicationState)
         registerPrometheusApi()
         authenticate {
             registerDialogmoteApi(
-                veilederTilgangskontrollClient
+                dialogmoteTilgangService
             )
         }
     }

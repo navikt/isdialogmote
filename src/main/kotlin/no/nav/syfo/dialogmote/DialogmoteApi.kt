@@ -4,12 +4,9 @@ import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.util.callIdArgument
-import no.nav.syfo.util.getBearerHeader
-import no.nav.syfo.util.getCallId
-import no.nav.syfo.util.getPersonIdentHeader
+import no.nav.syfo.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -19,7 +16,7 @@ const val dialogmoteApiBasepath = "/api/v1/dialogmote"
 const val dialogmoteApiPersonIdentUrlPath = "/personident"
 
 fun Route.registerDialogmoteApi(
-    veilederTilgangskontrollClient: VeilederTilgangskontrollClient
+    dialogmoteTilgangService: DialogmoteTilgangService,
 ) {
     route(dialogmoteApiBasepath) {
         get(dialogmoteApiPersonIdentUrlPath) {
@@ -33,7 +30,7 @@ fun Route.registerDialogmoteApi(
                 val token = getBearerHeader()
                     ?: throw IllegalArgumentException("No Authorization header supplied")
 
-                when (veilederTilgangskontrollClient.hasAccess(personIdentNumber, token, callId)) {
+                when (dialogmoteTilgangService.hasAccessToDialogmote(personIdentNumber, token, callId)) {
                     true -> {
                         val dialogmoteList = emptyList<Any>()
                         call.respond(dialogmoteList)
