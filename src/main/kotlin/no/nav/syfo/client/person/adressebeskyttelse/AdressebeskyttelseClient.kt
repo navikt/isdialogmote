@@ -58,7 +58,7 @@ class AdressebeskyttelseClient(
 
     private fun handleUnexpectedReponseException(response: HttpResponse): Boolean {
         log.error(
-            "Error while requesting Adressebeskyttlese of person from Syfoperson with {}",
+            "Error while requesting Adressebeskyttelse of person from Syfoperson with {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString())
         )
         COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL.inc()
