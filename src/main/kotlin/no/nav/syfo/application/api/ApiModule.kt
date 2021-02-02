@@ -16,6 +16,7 @@ import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.getWellKnown
 import no.nav.syfo.application.api.authentication.installJwtAuthentication
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
+import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.registerDialogmoteApi
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
@@ -61,12 +62,16 @@ fun Application.apiModule(
     val adressebeskyttelseClient = AdressebeskyttelseClient(
         syfopersonBaseUrl = environment.syfopersonUrl
     )
+    val kontaktinformasjonClient = KontaktinformasjonClient(
+        syfopersonBaseUrl = environment.syfopersonUrl
+    )
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
         tilgangskontrollBaseUrl = environment.syfotilgangskontrollUrl
     )
 
     val dialogmoteTilgangService = DialogmoteTilgangService(
         adressebeskyttelseClient = adressebeskyttelseClient,
+        kontaktinformasjonClient = kontaktinformasjonClient,
         veilederTilgangskontrollClient = veilederTilgangskontrollClient
     )
 

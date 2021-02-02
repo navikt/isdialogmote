@@ -18,3 +18,18 @@ val COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL: Counter = Counter.build()
     .name(CALL_PERSON_ADRESSEBESKYTTELSE_FAIL)
     .help("Counts the number of failed calls to Syfoperson - Adressebeksyttelse")
     .register()
+
+const val CALL_PERSON_KONTAKTINFORMASJON_BASE = "${CALL_PERSON_BASE}_kontaktinformasjon"
+
+const val CALL_PERSON_KONTAKTINFORMASJON_SUCCESS = "${CALL_PERSON_KONTAKTINFORMASJON_BASE}_success_count"
+const val CALL_PERSON_KONTAKTINFORMASJON_FAIL = "${CALL_PERSON_KONTAKTINFORMASJON_BASE}_fail_count"
+val COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS: Counter = Counter.build()
+    .namespace(METRICS_NS)
+    .name(CALL_PERSON_KONTAKTINFORMASJON_SUCCESS)
+    .help("Counts the number of successful calls to Syfoperson - Adressebeskyyttelse")
+    .register()
+val COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL: Counter = Counter.build()
+    .namespace(METRICS_NS)
+    .name(CALL_PERSON_KONTAKTINFORMASJON_FAIL)
+    .help("Counts the number of failed calls to Syfoperson - Adressebeksyttelse")
+    .register()

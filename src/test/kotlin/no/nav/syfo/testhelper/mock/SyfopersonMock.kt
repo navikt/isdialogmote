@@ -12,19 +12,48 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseResponse
+import no.nav.syfo.client.person.kontaktinfo.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
+import no.nav.syfo.testhelper.UserConstants.PERSON_EMAIL
+import no.nav.syfo.testhelper.UserConstants.PERSON_TLF
 import no.nav.syfo.testhelper.getRandomPort
 import no.nav.syfo.util.getPersonIdentHeader
+
+val beskyttetFalse = AdressebeskyttelseResponse(
+    beskyttet = false,
+)
+val beskyttetTrue = AdressebeskyttelseResponse(
+    beskyttet = true,
+)
+
+val digitalKontaktinfoBolkKanVarslesTrue = DigitalKontaktinfoBolk(
+    kontaktinfo = mapOf(
+        ARBEIDSTAKER_FNR.value to DigitalKontaktinfo(
+            epostadresse = PERSON_EMAIL,
+            kanVarsles = true,
+            reservert = false,
+            mobiltelefonnummer = PERSON_TLF,
+            personident = ARBEIDSTAKER_FNR.value
+        )
+    )
+)
+val digitalKontaktinfoBolkKanVarslesFalse = DigitalKontaktinfoBolk(
+    kontaktinfo = mapOf(
+        ARBEIDSTAKER_IKKE_VARSEL.value to DigitalKontaktinfo(
+            epostadresse = PERSON_EMAIL,
+            kanVarsles = false,
+            reservert = true,
+            mobiltelefonnummer = PERSON_TLF,
+            personident = ARBEIDSTAKER_IKKE_VARSEL.value
+        )
+    )
+)
 
 class SyfopersonMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
-    val beskyttetFalse = AdressebeskyttelseResponse(
-        beskyttet = false,
-    )
-    val beskyttetTrue = AdressebeskyttelseResponse(
-        beskyttet = true,
-    )
 
     val server = mockPersonServer(
         port,
@@ -54,6 +83,13 @@ class SyfopersonMock {
                         call.respond(beskyttetTrue)
                     } else {
                         call.respond(beskyttetFalse)
+                    }
+                }
+                get(KontaktinformasjonClient.PERSON_KONTAKTINFORMASJON_PATH) {
+                    if (getPersonIdentHeader() == ARBEIDSTAKER_IKKE_VARSEL.value) {
+                        call.respond(digitalKontaktinfoBolkKanVarslesFalse)
+                    } else {
+                        call.respond(digitalKontaktinfoBolkKanVarslesTrue)
                     }
                 }
             }

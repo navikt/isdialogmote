@@ -15,11 +15,13 @@ import io.ktor.server.testing.*
 import no.nav.syfo.application.api.authentication.WellKnown
 import no.nav.syfo.application.api.authentication.installJwtAuthentication
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
+import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_2_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.generateJWT
 import no.nav.syfo.testhelper.mock.SyfopersonMock
 import no.nav.syfo.testhelper.mock.VeilederTilgangskontrollMock
@@ -60,12 +62,16 @@ object DialogmoteApiSpek : Spek({
             val adressebeskyttelseClient = AdressebeskyttelseClient(
                 syfopersonBaseUrl = syfopersonMock.url
             )
+            val kontaktinformasjonClient = KontaktinformasjonClient(
+                syfopersonBaseUrl = syfopersonMock.url
+            )
             val tilgangskontrollMock = VeilederTilgangskontrollMock()
             val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
                 tilgangskontrollBaseUrl = tilgangskontrollMock.url
             )
             val dialogmoteTilgangService = DialogmoteTilgangService(
                 adressebeskyttelseClient = adressebeskyttelseClient,
+                kontaktinformasjonClient = kontaktinformasjonClient,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient
             )
 
@@ -149,6 +155,17 @@ object DialogmoteApiSpek : Spek({
                         handleRequest(HttpMethod.Get, url) {
                             addHeader(Authorization, bearerHeader(validToken))
                             addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_ADRESSEBESKYTTET.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                    }
+                }
+
+                it("should return status Forbidden if denied person has cannot receive digital documents") {
+                    with(
+                        handleRequest(HttpMethod.Get, url) {
+                            addHeader(Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_IKKE_VARSEL.value)
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.Forbidden
