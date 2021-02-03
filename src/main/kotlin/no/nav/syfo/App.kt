@@ -7,6 +7,7 @@ import io.ktor.server.netty.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.apiModule
+import no.nav.syfo.application.api.authentication.getWellKnown
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -30,8 +31,13 @@ fun main() {
                 ready = false
             )
 
+            val wellKnown = getWellKnown(environment.aadDiscoveryUrl)
             module {
-                apiModule(applicationState, environment)
+                apiModule(
+                    applicationState = applicationState,
+                    environment = environment,
+                    wellKnown = wellKnown
+                )
             }
 
             applicationState.ready = true
