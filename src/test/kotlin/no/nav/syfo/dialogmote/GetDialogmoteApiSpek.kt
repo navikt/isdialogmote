@@ -1,36 +1,25 @@
 package no.nav.syfo.dialogmote
 
-import com.fasterxml.jackson.databind.*
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import no.nav.syfo.application.api.apiModule
-import no.nav.syfo.application.api.authentication.WellKnown
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_2_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
-import no.nav.syfo.testhelper.mock.SyfopersonMock
-import no.nav.syfo.testhelper.mock.VeilederTilgangskontrollMock
+import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.nio.file.Paths
 
-private val objectMapper: ObjectMapper = ObjectMapper().apply {
-    registerKotlinModule()
-    registerModule(JavaTimeModule())
-    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-}
-
-object DialogmoteApiSpek : Spek({
+class GetDialogmoteApiSpek : Spek({
+    val objectMapper: ObjectMapper = apiConsumerObjectMapper()
 
     describe("DialogmoteApiSpek") {
 
@@ -47,14 +36,7 @@ object DialogmoteApiSpek : Spek({
                 tilgangskontrollMock.url
             )
 
-            val path = "src/test/resources/jwkset.json"
-            val uri = Paths.get(path).toUri().toURL()
-            val wellKnown = WellKnown(
-                authorization_endpoint = "authorizationendpoint",
-                token_endpoint = "tokenendpoint",
-                jwks_uri = uri.toString(),
-                issuer = "https://sts.issuer.net/myid"
-            )
+            val wellKnown = wellKnownMock()
 
             application.apiModule(
                 applicationState = applicationState,
@@ -104,7 +86,7 @@ object DialogmoteApiSpek : Spek({
                         }
                     }
 
-                    it("should return status BadRequest if no NAV_PERSONIDENT_HEADER is supplied") {
+                    it("should return status BadRequest if no $NAV_PERSONIDENT_HEADER is supplied") {
                         with(
                             handleRequest(HttpMethod.Get, url) {
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -114,7 +96,7 @@ object DialogmoteApiSpek : Spek({
                         }
                     }
 
-                    it("should return status BadRequest if NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
+                    it("should return status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
                         with(
                             handleRequest(HttpMethod.Get, url) {
                                 addHeader(Authorization, bearerHeader(validToken))

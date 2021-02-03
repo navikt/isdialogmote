@@ -42,7 +42,7 @@ fun Route.registerDialogmoteApi(
                     }
                 }
             } catch (e: IllegalArgumentException) {
-                val illegalArgumentMessage = "Could not retrieve PersonOppgaveList for PersonIdent"
+                val illegalArgumentMessage = "Could not retrieve DialogmoteList for PersonIdent"
                 log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(getCallId()))
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }
