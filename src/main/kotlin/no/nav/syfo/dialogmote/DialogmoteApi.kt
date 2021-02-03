@@ -47,5 +47,33 @@ fun Route.registerDialogmoteApi(
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }
         }
+        post("/{planlagtmoteuuid}") {
+            try {
+                val callId = getCallId()
+
+                val personIdentNumber = getPersonIdentHeader()?.let { personIdent ->
+                    PersonIdentNumber(personIdent)
+                } ?: throw IllegalArgumentException("No PersonIdent supplied")
+
+                val token = getBearerHeader()
+                    ?: throw IllegalArgumentException("No Authorization header supplied")
+
+                when (dialogmoteTilgangService.hasAccessToDialogmote(personIdentNumber, token, callId)) {
+                    true -> {
+                        // TODO: Implement DialogmoteInnkalling from MoteplanleggerUuid
+                        call.respond(HttpStatusCode.OK)
+                    }
+                    else -> {
+                        val accessDeniedMessage = "Denied Veileder access to creating Dialogmote for Person with PersonIdent"
+                        log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
+                        call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
+                    }
+                }
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Could not create Dialogmote for PersonIdent"
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(getCallId()))
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
+        }
     }
 }
