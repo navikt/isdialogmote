@@ -1,11 +1,15 @@
 package no.nav.syfo.dialogmote
 
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
+import no.nav.syfo.client.moteplanlegger.domain.virksomhetsnummer
+import no.nav.syfo.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.domain.PersonIdentNumber
 import org.slf4j.LoggerFactory
 import java.util.*
 
 class DialogmoteService(
     private val moteplanleggerClient: MoteplanleggerClient,
+    private val narmesteLederClient: NarmesteLederClient,
 ) {
     suspend fun createMoteinnkalling(
         planlagtMoteUUID: UUID,
@@ -17,12 +21,27 @@ class DialogmoteService(
             planlagtMoteUUID = planlagtMoteUUID,
             token = token,
         )
-        planlagtMote?.let {
+        if (planlagtMote == null) {
+            log.info("Denied access to Dialogmoter: No PlanlagtMote was found for person")
+            return false
+        } else {
             log.info("Received PlanlagtMote with uuid=${planlagtMote.moteUuid}")
-            // TODO: Implement DialogmoteInnkalling from MoteplanleggerUuid
-            return true
+            val virksomhetsnummer = planlagtMote.virksomhetsnummer()
+                ?: throw IllegalArgumentException("No Virksomhetsnummer was found for PlanlagtMote")
+            val narmesteLeder = narmesteLederClient.activeLeader(
+                personIdentNumber = PersonIdentNumber(planlagtMote.fnr),
+                virksomhetsnummer = virksomhetsnummer,
+                token = token,
+                callId = callId
+            )
+            return if (narmesteLeder == null) {
+                log.info("Denied access to Dialogmoter: No NarmesteLeder was found for person")
+                false
+            } else {
+                // TODO: Implement DialogmoteInnkalling from MoteplanleggerUuid
+                true
+            }
         }
-        return false
     }
 
     companion object {

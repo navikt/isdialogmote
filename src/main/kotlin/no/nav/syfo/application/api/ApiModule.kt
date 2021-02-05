@@ -7,6 +7,7 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.*
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
+import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
@@ -30,9 +31,13 @@ fun Application.apiModule(
     val moteplanleggerClient = MoteplanleggerClient(
         syfomoteadminBaseUrl = environment.syfomoteadminUrl
     )
+    val narmesteLederClient = NarmesteLederClient(
+        modiasyforestBaseUrl = environment.modiasyforestUrl
+    )
 
     val dialogmoteService = DialogmoteService(
-        moteplanleggerClient = moteplanleggerClient
+        moteplanleggerClient = moteplanleggerClient,
+        narmesteLederClient = narmesteLederClient
     )
 
     val adressebeskyttelseClient = AdressebeskyttelseClient(

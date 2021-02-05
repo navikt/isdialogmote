@@ -7,7 +7,7 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.testhelper.*
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_2_FNR
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
@@ -26,6 +26,7 @@ class GetDialogmoteApiSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
+            val modiasyforestMock = ModiasyforestMock()
             val syfomoteadminMock = SyfomoteadminMock()
             val syfopersonMock = SyfopersonMock()
             val tilgangskontrollMock = VeilederTilgangskontrollMock()
@@ -33,6 +34,7 @@ class GetDialogmoteApiSpek : Spek({
             val applicationState = testAppState()
 
             val environment = testEnvironment(
+                modiasyforestUrl = modiasyforestMock.url,
                 syfomoteadminUrl = syfomoteadminMock.url,
                 syfopersonUrl = syfopersonMock.url,
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
@@ -113,7 +115,7 @@ class GetDialogmoteApiSpek : Spek({
                         with(
                             handleRequest(HttpMethod.Get, url) {
                                 addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_2_FNR.value)
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_VEILEDER_NO_ACCESS.value)
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden

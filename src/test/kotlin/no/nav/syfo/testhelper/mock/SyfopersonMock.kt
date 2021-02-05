@@ -14,7 +14,6 @@ import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseResponse
 import no.nav.syfo.client.person.kontaktinfo.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.PERSON_EMAIL
 import no.nav.syfo.testhelper.UserConstants.PERSON_TLF
@@ -28,17 +27,18 @@ val beskyttetTrue = AdressebeskyttelseResponse(
     beskyttet = true,
 )
 
-val digitalKontaktinfoBolkKanVarslesTrue = DigitalKontaktinfoBolk(
+fun digitalKontaktinfoBolkKanVarslesTrue(personIdentNumber: String) = DigitalKontaktinfoBolk(
     kontaktinfo = mapOf(
-        ARBEIDSTAKER_FNR.value to DigitalKontaktinfo(
+        personIdentNumber to DigitalKontaktinfo(
             epostadresse = PERSON_EMAIL,
             kanVarsles = true,
             reservert = false,
             mobiltelefonnummer = PERSON_TLF,
-            personident = ARBEIDSTAKER_FNR.value
+            personident = personIdentNumber
         )
     )
 )
+
 val digitalKontaktinfoBolkKanVarslesFalse = DigitalKontaktinfoBolk(
     kontaktinfo = mapOf(
         ARBEIDSTAKER_IKKE_VARSEL.value to DigitalKontaktinfo(
@@ -89,7 +89,7 @@ class SyfopersonMock {
                     if (getPersonIdentHeader() == ARBEIDSTAKER_IKKE_VARSEL.value) {
                         call.respond(digitalKontaktinfoBolkKanVarslesFalse)
                     } else {
-                        call.respond(digitalKontaktinfoBolkKanVarslesTrue)
+                        call.respond(digitalKontaktinfoBolkKanVarslesTrue(getPersonIdentHeader()!!))
                     }
                 }
             }

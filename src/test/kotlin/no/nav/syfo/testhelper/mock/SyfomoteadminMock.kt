@@ -14,8 +14,10 @@ import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient.Companion.PLANLAGT
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_AKTORID
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.getRandomPort
 import java.time.LocalDateTime
 import java.util.*
@@ -32,6 +34,7 @@ val planlagtMoteDeltakerDTOArbeidsgiver = PlanlagtMoteDeltakerDTO(
     deltakerUuid = UUID.randomUUID().toString(),
     type = PlanlagtMoteDeltakerType.ARBEIDSGIVER.value,
     svar = emptyList(),
+    orgnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value
 )
 
 val planlagtMoteDeltakerDTOArbeidstaker = PlanlagtMoteDeltakerDTO(
@@ -58,6 +61,11 @@ val planlagtMoteDTO = PlanlagtMoteDTO(
     ),
 )
 
+val planlagtMoteDTONoNarmesteLeder = planlagtMoteDTO.copy(
+    moteUuid = UUID.randomUUID().toString(),
+    fnr = ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value
+)
+
 class SyfomoteadminMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
@@ -65,11 +73,13 @@ class SyfomoteadminMock {
     val server = mockPersonServer(
         port,
         planlagtMoteDTO,
+        planlagtMoteDTONoNarmesteLeder,
     )
 
     private fun mockPersonServer(
         port: Int,
         planlagtMoteDTO: PlanlagtMoteDTO,
+        planlagtMoteDTONoNarmesteLeder: PlanlagtMoteDTO,
     ): NettyApplicationEngine {
         return embeddedServer(
             factory = Netty,
@@ -85,6 +95,9 @@ class SyfomoteadminMock {
             routing {
                 get("$PLANLAGTMOTE_PATH/${planlagtMoteDTO.moteUuid}") {
                     call.respond(planlagtMoteDTO)
+                }
+                get("$PLANLAGTMOTE_PATH/${planlagtMoteDTONoNarmesteLeder.moteUuid}") {
+                    call.respond(planlagtMoteDTONoNarmesteLeder)
                 }
             }
         }

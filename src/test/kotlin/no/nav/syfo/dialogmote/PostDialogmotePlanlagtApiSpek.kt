@@ -5,17 +5,17 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.testhelper.*
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_2_FNR
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.util.*
 
 class PostDialogmotePlanlagtApiSpek : Spek({
 
@@ -24,6 +24,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
+            val modiasyforestMock = ModiasyforestMock()
             val syfomoteadminMock = SyfomoteadminMock()
             val syfopersonMock = SyfopersonMock()
             val tilgangskontrollMock = VeilederTilgangskontrollMock()
@@ -31,6 +32,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
             val applicationState = testAppState()
 
             val environment = testEnvironment(
+                modiasyforestUrl = modiasyforestMock.url,
                 syfomoteadminUrl = syfomoteadminMock.url,
                 syfopersonUrl = syfopersonMock.url,
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
@@ -45,12 +47,14 @@ class PostDialogmotePlanlagtApiSpek : Spek({
             )
 
             beforeGroup {
+                modiasyforestMock.server.start()
                 syfomoteadminMock.server.start()
                 syfopersonMock.server.start()
                 tilgangskontrollMock.server.start()
             }
 
             afterGroup {
+                modiasyforestMock.server.stop(1L, 10L)
                 syfomoteadminMock.server.stop(1L, 10L)
                 syfopersonMock.server.stop(1L, 10L)
                 tilgangskontrollMock.server.stop(1L, 10L)
@@ -59,6 +63,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
             describe("Create Dialogmote for PersonIdent from PlanlagtMoteUUID") {
                 val planlagtmoteuuid = planlagtMoteDTO.moteUuid
                 val url = "$dialogmoteApiBasepath/$planlagtmoteuuid"
+
                 val validToken = generateJWT(
                     environment.loginserviceClientId,
                     wellKnown.issuer
@@ -110,7 +115,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                         with(
                             handleRequest(HttpMethod.Post, url) {
                                 addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_2_FNR.value)
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_VEILEDER_NO_ACCESS.value)
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
@@ -136,6 +141,20 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                        }
+                    }
+
+                    it("should return status InternalServerError if denied person with PlanlagtMote with Virksomhet does not have a leader for that Virksomhet") {
+                        val planlagtMoteDTONoNarmesteLederUUID = planlagtMoteDTONoNarmesteLeder.moteUuid
+                        val urlPlanlagtMoteNoNarmesteLeder = "$dialogmoteApiBasepath/$planlagtMoteDTONoNarmesteLederUUID"
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlPlanlagtMoteNoNarmesteLeder) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
                         }
                     }
                 }

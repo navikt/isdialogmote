@@ -49,6 +49,7 @@ spec:
     outbound:
       external:
         - host: "login.microsoftonline.com"
+        - host: "modiasyforest.dev-fss-pub.nais.io"
         - host: "syfomoteadmin.dev-fss-pub.nais.io"
         - host: "syfoperson.dev-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
@@ -57,6 +58,8 @@ spec:
       value: "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/.well-known/openid-configuration"
     - name: LOGINSERVICE_CLIENT_ID
       value: "38e07d31-659d-4595-939a-f18dce3446c5"
+    - name: MODIASYFOREST_URL
+      value: "https://modiasyforest.dev-fss-pub.nais.io"
     - name: SYFOMOTEADMIN_URL
       value: "https://syfomoteadmin.dev-fss-pub.nais.io"
     - name: SYFOPERSON_URL

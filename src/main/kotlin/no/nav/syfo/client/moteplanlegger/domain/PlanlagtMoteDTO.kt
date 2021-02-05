@@ -1,5 +1,6 @@
 package no.nav.syfo.client.moteplanlegger.domain
 
+import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 
 data class PlanlagtMoteDTO(
@@ -19,3 +20,11 @@ data class PlanlagtMoteDTO(
     val sistEndret: LocalDateTime? = null,
     val trengerBehandling: Boolean = false,
 )
+
+fun PlanlagtMoteDTO.virksomhetsnummer(): Virksomhetsnummer? {
+    return this.deltakere.first {
+        it.type == PlanlagtMoteDeltakerType.ARBEIDSGIVER.value
+    }.orgnummer?.let {
+        Virksomhetsnummer(it)
+    }
+}

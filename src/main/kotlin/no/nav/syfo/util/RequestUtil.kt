@@ -23,5 +23,5 @@ fun PipelineContext<out Unit, ApplicationCall>.getBearerHeader(): String? {
 }
 
 fun PipelineContext<out Unit, ApplicationCall>.getPersonIdentHeader(): String? {
-    return this.call.request.headers[NAV_PERSONIDENT_HEADER.toLowerCase()]
+    return this.call.request.headers[NAV_PERSONIDENT_HEADER]
 }
