@@ -26,14 +26,16 @@ class GetDialogmoteApiSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
+            val syfomoteadminMock = SyfomoteadminMock()
             val syfopersonMock = SyfopersonMock()
             val tilgangskontrollMock = VeilederTilgangskontrollMock()
 
             val applicationState = testAppState()
 
             val environment = testEnvironment(
-                syfopersonMock.url,
-                tilgangskontrollMock.url
+                syfomoteadminUrl = syfomoteadminMock.url,
+                syfopersonUrl = syfopersonMock.url,
+                syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
 
             val wellKnown = wellKnownMock()

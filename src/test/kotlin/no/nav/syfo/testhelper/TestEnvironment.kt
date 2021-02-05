@@ -5,11 +5,13 @@ import no.nav.syfo.application.Environment
 import java.net.ServerSocket
 
 fun testEnvironment(
+    syfomoteadminUrl: String? = null,
     syfopersonUrl: String? = null,
     syfotilgangskontrollUrl: String? = null
 ) = Environment(
     aadDiscoveryUrl = "",
     loginserviceClientId = "123456789",
+    syfomoteadminUrl = syfomoteadminUrl ?: "syfomoteadmin",
     syfopersonUrl = syfopersonUrl ?: "syfoperson",
     syfotilgangskontrollUrl = syfotilgangskontrollUrl ?: "tilgangskontroll"
 )

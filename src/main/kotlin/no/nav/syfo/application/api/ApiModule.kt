@@ -6,9 +6,11 @@ import io.ktor.routing.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.*
+import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.registerDialogmoteApi
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 
@@ -25,6 +27,14 @@ fun Application.apiModule(
     )
     installStatusPages()
 
+    val moteplanleggerClient = MoteplanleggerClient(
+        syfomoteadminBaseUrl = environment.syfomoteadminUrl
+    )
+
+    val dialogmoteService = DialogmoteService(
+        moteplanleggerClient = moteplanleggerClient
+    )
+
     val adressebeskyttelseClient = AdressebeskyttelseClient(
         syfopersonBaseUrl = environment.syfopersonUrl
     )
@@ -34,7 +44,6 @@ fun Application.apiModule(
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
         tilgangskontrollBaseUrl = environment.syfotilgangskontrollUrl
     )
-
     val dialogmoteTilgangService = DialogmoteTilgangService(
         adressebeskyttelseClient = adressebeskyttelseClient,
         kontaktinformasjonClient = kontaktinformasjonClient,
@@ -46,7 +55,8 @@ fun Application.apiModule(
         registerPrometheusApi()
         authenticate {
             registerDialogmoteApi(
-                dialogmoteTilgangService = dialogmoteTilgangService
+                dialogmoteService = dialogmoteService,
+                dialogmoteTilgangService = dialogmoteTilgangService,
             )
         }
     }

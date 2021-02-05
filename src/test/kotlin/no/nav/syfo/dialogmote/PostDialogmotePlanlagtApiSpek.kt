@@ -24,14 +24,16 @@ class PostDialogmotePlanlagtApiSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
+            val syfomoteadminMock = SyfomoteadminMock()
             val syfopersonMock = SyfopersonMock()
             val tilgangskontrollMock = VeilederTilgangskontrollMock()
 
             val applicationState = testAppState()
 
             val environment = testEnvironment(
-                syfopersonMock.url,
-                tilgangskontrollMock.url
+                syfomoteadminUrl = syfomoteadminMock.url,
+                syfopersonUrl = syfopersonMock.url,
+                syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
 
             val wellKnown = wellKnownMock()
@@ -43,17 +45,19 @@ class PostDialogmotePlanlagtApiSpek : Spek({
             )
 
             beforeGroup {
+                syfomoteadminMock.server.start()
                 syfopersonMock.server.start()
                 tilgangskontrollMock.server.start()
             }
 
             afterGroup {
+                syfomoteadminMock.server.stop(1L, 10L)
                 syfopersonMock.server.stop(1L, 10L)
                 tilgangskontrollMock.server.stop(1L, 10L)
             }
 
             describe("Create Dialogmote for PersonIdent from PlanlagtMoteUUID") {
-                val planlagtmoteuuid = UUID.randomUUID()
+                val planlagtmoteuuid = planlagtMoteDTO.moteUuid
                 val url = "$dialogmoteApiBasepath/$planlagtmoteuuid"
                 val validToken = generateJWT(
                     environment.loginserviceClientId,

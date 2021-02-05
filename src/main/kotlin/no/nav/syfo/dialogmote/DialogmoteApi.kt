@@ -9,13 +9,16 @@ import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.*
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 
 const val dialogmoteApiBasepath = "/api/v1/dialogmote"
 const val dialogmoteApiPersonIdentUrlPath = "/personident"
+const val dialogmoteApiPlanlagtMoteParam = "planlagtmoteuuid"
 
 fun Route.registerDialogmoteApi(
+    dialogmoteService: DialogmoteService,
     dialogmoteTilgangService: DialogmoteTilgangService,
 ) {
     route(dialogmoteApiBasepath) {
@@ -47,7 +50,7 @@ fun Route.registerDialogmoteApi(
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }
         }
-        post("/{planlagtmoteuuid}") {
+        post("/{$dialogmoteApiPlanlagtMoteParam}") {
             try {
                 val callId = getCallId()
 
@@ -60,8 +63,17 @@ fun Route.registerDialogmoteApi(
 
                 when (dialogmoteTilgangService.hasAccessToDialogmote(personIdentNumber, token, callId)) {
                     true -> {
-                        // TODO: Implement DialogmoteInnkalling from MoteplanleggerUuid
-                        call.respond(HttpStatusCode.OK)
+                        val planlagtMoteUUID = UUID.fromString(call.parameters[dialogmoteApiPlanlagtMoteParam])
+                        val created = dialogmoteService.createMoteinnkalling(
+                            planlagtMoteUUID = planlagtMoteUUID,
+                            token = token,
+                            callId = callId,
+                        )
+                        if (created) {
+                            call.respond(HttpStatusCode.OK)
+                        } else {
+                            call.respond(HttpStatusCode.InternalServerError, "Failed to create Dialogmoteinnkalling")
+                        }
                     }
                     else -> {
                         val accessDeniedMessage = "Denied Veileder access to creating Dialogmote for Person with PersonIdent"
