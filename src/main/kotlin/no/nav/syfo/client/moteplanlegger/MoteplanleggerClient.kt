@@ -61,7 +61,7 @@ class MoteplanleggerClient(
 
     private fun handleUnexpectedReponseException(response: HttpResponse) {
         log.error(
-            "Error while requesting Kontaktinformasjon of person from Syfoperson with {}",
+            "Error while requesting PlanlagtMote from Syfomoteadmin with {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString())
         )
         COUNT_CALL_MOTEADMIN_BASE_FAIL.inc()
