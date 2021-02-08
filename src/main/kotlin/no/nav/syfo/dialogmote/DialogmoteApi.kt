@@ -58,7 +58,11 @@ fun Route.registerDialogmoteApi(
                     ?: throw IllegalArgumentException("No Authorization header supplied")
 
                 val planlagtMoteUUID = UUID.fromString(call.parameters[dialogmoteApiPlanlagtMoteParam])
-                val planlagtMote = dialogmoteService.planlagtMote(planlagtMoteUUID, token, callId)
+                val planlagtMote = dialogmoteService.planlagtMote(
+                    planlagtMoteUUID = planlagtMoteUUID,
+                    token = token,
+                    callId = callId
+                )
 
                 if (planlagtMote != null && dialogmoteTilgangService.hasAccessToPlanlagtDialogmoteInnkalling(PersonIdentNumber(planlagtMote.fnr), token, callId)) {
                     val created = dialogmoteService.createMoteinnkalling(

@@ -14,13 +14,13 @@ class DialogmoteService(
 ) {
     suspend fun planlagtMote(
         planlagtMoteUUID: UUID,
-        callId: String,
         token: String,
+        callId: String,
     ): PlanlagtMoteDTO? {
         return moteplanleggerClient.planlagtMote(
             callId = callId,
-            planlagtMoteUUID = planlagtMoteUUID,
             token = token,
+            planlagtMoteUUID = planlagtMoteUUID,
         )
     }
 
