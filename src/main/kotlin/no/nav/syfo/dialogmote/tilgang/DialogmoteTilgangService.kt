@@ -10,7 +10,7 @@ class DialogmoteTilgangService(
     private val kontaktinformasjonClient: KontaktinformasjonClient,
     private val veilederTilgangskontrollClient: VeilederTilgangskontrollClient
 ) {
-    suspend fun hasAccessToDialogmote(
+    suspend fun hasAccessToDialogmotePerson(
         personIdentNumber: PersonIdentNumber,
         token: String,
         callId: String,
@@ -18,9 +18,17 @@ class DialogmoteTilgangService(
         val veilederHasAccessToPerson = veilederTilgangskontrollClient.hasAccess(personIdentNumber, token, callId)
         val personHasAdressebeskyttelse = adressebeskyttelseClient.hasAdressebeskyttelse(personIdentNumber, token, callId)
 
+        return veilederHasAccessToPerson && !personHasAdressebeskyttelse
+    }
+
+    suspend fun hasAccessToPlanlagtDialogmoteInnkalling(
+        personIdentNumber: PersonIdentNumber,
+        token: String,
+        callId: String,
+    ): Boolean {
         val kontaktinfo = kontaktinformasjonClient.kontaktinformasjon(personIdentNumber, token, callId)
         val isDigitalVarselAllowed = kontaktinfo?.kontaktinfo?.get(personIdentNumber.value)?.kanVarsles ?: false
 
-        return veilederHasAccessToPerson && isDigitalVarselAllowed && !personHasAdressebeskyttelse
+        return hasAccessToDialogmotePerson(personIdentNumber, token, callId) && isDigitalVarselAllowed
     }
 }

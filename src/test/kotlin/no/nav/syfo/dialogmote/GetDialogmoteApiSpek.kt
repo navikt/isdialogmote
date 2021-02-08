@@ -7,10 +7,9 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.testhelper.*
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -127,17 +126,6 @@ class GetDialogmoteApiSpek : Spek({
                             handleRequest(HttpMethod.Get, url) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_ADRESSEBESKYTTET.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                        }
-                    }
-
-                    it("should return status Forbidden if denied person has cannot receive digital documents") {
-                        with(
-                            handleRequest(HttpMethod.Get, url) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_IKKE_VARSEL.value)
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden

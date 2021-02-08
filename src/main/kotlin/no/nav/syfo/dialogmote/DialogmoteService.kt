@@ -1,6 +1,7 @@
 package no.nav.syfo.dialogmote
 
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
+import no.nav.syfo.client.moteplanlegger.domain.PlanlagtMoteDTO
 import no.nav.syfo.client.moteplanlegger.domain.virksomhetsnummer
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.domain.PersonIdentNumber
@@ -11,36 +12,38 @@ class DialogmoteService(
     private val moteplanleggerClient: MoteplanleggerClient,
     private val narmesteLederClient: NarmesteLederClient,
 ) {
-    suspend fun createMoteinnkalling(
+    suspend fun planlagtMote(
         planlagtMoteUUID: UUID,
         callId: String,
         token: String,
-    ): Boolean {
-        val planlagtMote = moteplanleggerClient.planlagtMote(
+    ): PlanlagtMoteDTO? {
+        return moteplanleggerClient.planlagtMote(
             callId = callId,
             planlagtMoteUUID = planlagtMoteUUID,
             token = token,
         )
-        if (planlagtMote == null) {
-            log.info("Denied access to Dialogmoter: No PlanlagtMote was found for person")
-            return false
+    }
+
+    suspend fun createMoteinnkalling(
+        planlagtMote: PlanlagtMoteDTO,
+        callId: String,
+        token: String,
+    ): Boolean {
+        log.info("Received PlanlagtMote with uuid=${planlagtMote.moteUuid}")
+        val virksomhetsnummer = planlagtMote.virksomhetsnummer()
+            ?: throw IllegalArgumentException("No Virksomhetsnummer was found for PlanlagtMote")
+        val narmesteLeder = narmesteLederClient.activeLeader(
+            personIdentNumber = PersonIdentNumber(planlagtMote.fnr),
+            virksomhetsnummer = virksomhetsnummer,
+            token = token,
+            callId = callId
+        )
+        return if (narmesteLeder == null) {
+            log.info("Denied access to Dialogmoter: No NarmesteLeder was found for person")
+            false
         } else {
-            log.info("Received PlanlagtMote with uuid=${planlagtMote.moteUuid}")
-            val virksomhetsnummer = planlagtMote.virksomhetsnummer()
-                ?: throw IllegalArgumentException("No Virksomhetsnummer was found for PlanlagtMote")
-            val narmesteLeder = narmesteLederClient.activeLeader(
-                personIdentNumber = PersonIdentNumber(planlagtMote.fnr),
-                virksomhetsnummer = virksomhetsnummer,
-                token = token,
-                callId = callId
-            )
-            return if (narmesteLeder == null) {
-                log.info("Denied access to Dialogmoter: No NarmesteLeder was found for person")
-                false
-            } else {
-                // TODO: Implement DialogmoteInnkalling from MoteplanleggerUuid
-                true
-            }
+            // TODO: Implement DialogmoteInnkalling from MoteplanleggerUuid
+            true
         }
     }
 

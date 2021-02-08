@@ -33,7 +33,7 @@ fun Route.registerDialogmoteApi(
                 val token = getBearerHeader()
                     ?: throw IllegalArgumentException("No Authorization header supplied")
 
-                when (dialogmoteTilgangService.hasAccessToDialogmote(personIdentNumber, token, callId)) {
+                when (dialogmoteTilgangService.hasAccessToDialogmotePerson(personIdentNumber, token, callId)) {
                     true -> {
                         val dialogmoteList = emptyList<Any>()
                         call.respond(dialogmoteList)
@@ -54,32 +54,27 @@ fun Route.registerDialogmoteApi(
             try {
                 val callId = getCallId()
 
-                val personIdentNumber = getPersonIdentHeader()?.let { personIdent ->
-                    PersonIdentNumber(personIdent)
-                } ?: throw IllegalArgumentException("No PersonIdent supplied")
-
                 val token = getBearerHeader()
                     ?: throw IllegalArgumentException("No Authorization header supplied")
 
-                when (dialogmoteTilgangService.hasAccessToDialogmote(personIdentNumber, token, callId)) {
-                    true -> {
-                        val planlagtMoteUUID = UUID.fromString(call.parameters[dialogmoteApiPlanlagtMoteParam])
-                        val created = dialogmoteService.createMoteinnkalling(
-                            planlagtMoteUUID = planlagtMoteUUID,
-                            token = token,
-                            callId = callId,
-                        )
-                        if (created) {
-                            call.respond(HttpStatusCode.OK)
-                        } else {
-                            call.respond(HttpStatusCode.InternalServerError, "Failed to create Dialogmoteinnkalling")
-                        }
+                val planlagtMoteUUID = UUID.fromString(call.parameters[dialogmoteApiPlanlagtMoteParam])
+                val planlagtMote = dialogmoteService.planlagtMote(planlagtMoteUUID, token, callId)
+
+                if (planlagtMote != null && dialogmoteTilgangService.hasAccessToPlanlagtDialogmoteInnkalling(PersonIdentNumber(planlagtMote.fnr), token, callId)) {
+                    val created = dialogmoteService.createMoteinnkalling(
+                        planlagtMote = planlagtMote,
+                        token = token,
+                        callId = callId,
+                    )
+                    if (created) {
+                        call.respond(HttpStatusCode.OK)
+                    } else {
+                        call.respond(HttpStatusCode.InternalServerError, "Failed to create Dialogmoteinnkalling")
                     }
-                    else -> {
-                        val accessDeniedMessage = "Denied Veileder access to creating Dialogmote for Person with PersonIdent"
-                        log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
-                        call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
-                    }
+                } else {
+                    val accessDeniedMessage = "Denied Veileder access to creating Dialogmote for Person with PersonIdent"
+                    log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
+                    call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
                 }
             } catch (e: IllegalArgumentException) {
                 val illegalArgumentMessage = "Could not create Dialogmote for PersonIdent"

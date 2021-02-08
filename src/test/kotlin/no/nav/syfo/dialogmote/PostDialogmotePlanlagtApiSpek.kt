@@ -5,10 +5,10 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.testhelper.*
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
@@ -16,6 +16,7 @@ import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.*
 
 class PostDialogmotePlanlagtApiSpek : Spek({
 
@@ -61,17 +62,16 @@ class PostDialogmotePlanlagtApiSpek : Spek({
             }
 
             describe("Create Dialogmote for PersonIdent from PlanlagtMoteUUID") {
-                val planlagtmoteuuid = planlagtMoteDTO.moteUuid
-                val url = "$dialogmoteApiBasepath/$planlagtmoteuuid"
-
                 val validToken = generateJWT(
                     environment.loginserviceClientId,
                     wellKnown.issuer
                 )
                 describe("Happy path") {
+                    val moteUUID: String? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_FNR.value]?.moteUuid
+                    val urlMoteUUID = "$dialogmoteApiBasepath/$moteUUID"
                     it("should return OK if request is successful") {
                         with(
-                            handleRequest(HttpMethod.Post, url) {
+                            handleRequest(HttpMethod.Post, urlMoteUUID) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
                             }
@@ -82,6 +82,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                 }
 
                 describe("Unhappy paths") {
+                    val url = "$dialogmoteApiBasepath/${UUID.randomUUID()}"
                     it("should return status Unauthorized if no token is supplied") {
                         with(
                             handleRequest(HttpMethod.Post, url) {}
@@ -90,32 +91,12 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                         }
                     }
 
-                    it("should return status BadRequest if no $NAV_PERSONIDENT_HEADER is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Post, url) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                        }
-                    }
-
-                    it("should return status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Post, url) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value.drop(1))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                        }
-                    }
-
                     it("should return status Forbidden if denied access to person") {
+                        val moteUUID: String? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_VEILEDER_NO_ACCESS.value]?.moteUuid
+                        val urlMoteUUID = "$dialogmoteApiBasepath/$moteUUID"
                         with(
-                            handleRequest(HttpMethod.Post, url) {
+                            handleRequest(HttpMethod.Post, urlMoteUUID) {
                                 addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_VEILEDER_NO_ACCESS.value)
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
@@ -123,10 +104,11 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                     }
 
                     it("should return status Forbidden if denied person has Adressbeskyttese") {
+                        val moteUUID: String? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_ADRESSEBESKYTTET.value]?.moteUuid
+                        val urlMoteUUID = "$dialogmoteApiBasepath/$moteUUID"
                         with(
-                            handleRequest(HttpMethod.Post, url) {
+                            handleRequest(HttpMethod.Post, urlMoteUUID) {
                                 addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_ADRESSEBESKYTTET.value)
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
@@ -134,10 +116,11 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                     }
 
                     it("should return status Forbidden if denied person has cannot receive digital documents") {
+                        val moteUUID: String? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_IKKE_VARSEL.value]?.moteUuid
+                        val urlMoteUUID = "$dialogmoteApiBasepath/$moteUUID"
                         with(
-                            handleRequest(HttpMethod.Post, url) {
+                            handleRequest(HttpMethod.Post, urlMoteUUID) {
                                 addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_IKKE_VARSEL.value)
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
@@ -145,13 +128,11 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                     }
 
                     it("should return status InternalServerError if denied person with PlanlagtMote with Virksomhet does not have a leader for that Virksomhet") {
-                        val planlagtMoteDTONoNarmesteLederUUID = planlagtMoteDTONoNarmesteLeder.moteUuid
-                        val urlPlanlagtMoteNoNarmesteLeder = "$dialogmoteApiBasepath/$planlagtMoteDTONoNarmesteLederUUID"
-
+                        val moteUUID: String? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value]?.moteUuid
+                        val urlMoteUUID = "$dialogmoteApiBasepath/$moteUUID"
                         with(
-                            handleRequest(HttpMethod.Post, urlPlanlagtMoteNoNarmesteLeder) {
+                            handleRequest(HttpMethod.Post, urlMoteUUID) {
                                 addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value)
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.InternalServerError

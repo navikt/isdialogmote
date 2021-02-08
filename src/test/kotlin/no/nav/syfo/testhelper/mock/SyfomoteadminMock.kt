@@ -12,8 +12,12 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient.Companion.PLANLAGTMOTE_PATH
 import no.nav.syfo.client.moteplanlegger.domain.*
+import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_AKTORID
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
@@ -43,12 +47,12 @@ val planlagtMoteDeltakerDTOArbeidstaker = PlanlagtMoteDeltakerDTO(
     svar = emptyList(),
 )
 
-val planlagtMoteDTO = PlanlagtMoteDTO(
+fun planlagtMoteDTO(personIdentNumber: PersonIdentNumber) = PlanlagtMoteDTO(
     moteUuid = UUID.randomUUID().toString(),
     opprettetAv = VEILEDER_IDENT,
     aktorId = ARBEIDSTAKER_AKTORID,
     status = PlanlagtMoteStatus.OPPRETTET.name,
-    fnr = ARBEIDSTAKER_FNR.value,
+    fnr = personIdentNumber.value,
     opprettetTidspunkt = LocalDateTime.now().minusDays(1),
     navEnhet = ENHET_NR,
     eier = VEILEDER_IDENT,
@@ -61,25 +65,26 @@ val planlagtMoteDTO = PlanlagtMoteDTO(
     ),
 )
 
-val planlagtMoteDTONoNarmesteLeder = planlagtMoteDTO.copy(
-    moteUuid = UUID.randomUUID().toString(),
-    fnr = ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value
-)
-
 class SyfomoteadminMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
 
+    val personIdentMoteMap = mapOf(
+        ARBEIDSTAKER_FNR.value to planlagtMoteDTO(ARBEIDSTAKER_FNR),
+        ARBEIDSTAKER_VEILEDER_NO_ACCESS.value to planlagtMoteDTO(ARBEIDSTAKER_VEILEDER_NO_ACCESS),
+        ARBEIDSTAKER_ADRESSEBESKYTTET.value to planlagtMoteDTO(ARBEIDSTAKER_ADRESSEBESKYTTET),
+        ARBEIDSTAKER_IKKE_VARSEL.value to planlagtMoteDTO(ARBEIDSTAKER_IKKE_VARSEL),
+        ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value to planlagtMoteDTO(ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
+    )
+
     val server = mockPersonServer(
         port,
-        planlagtMoteDTO,
-        planlagtMoteDTONoNarmesteLeder,
+        personIdentMoteMap
     )
 
     private fun mockPersonServer(
         port: Int,
-        planlagtMoteDTO: PlanlagtMoteDTO,
-        planlagtMoteDTONoNarmesteLeder: PlanlagtMoteDTO,
+        personIdentMoteMap: Map<String, PlanlagtMoteDTO>,
     ): NettyApplicationEngine {
         return embeddedServer(
             factory = Netty,
@@ -92,12 +97,11 @@ class SyfomoteadminMock {
                     configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
                 }
             }
-            routing {
-                get("$PLANLAGTMOTE_PATH/${planlagtMoteDTO.moteUuid}") {
-                    call.respond(planlagtMoteDTO)
-                }
-                get("$PLANLAGTMOTE_PATH/${planlagtMoteDTONoNarmesteLeder.moteUuid}") {
-                    call.respond(planlagtMoteDTONoNarmesteLeder)
+            personIdentMoteMap.forEach { personIdentMote ->
+                routing {
+                    get("$PLANLAGTMOTE_PATH/${personIdentMote.value.moteUuid}") {
+                        call.respond(personIdentMote.value)
+                    }
                 }
             }
         }
