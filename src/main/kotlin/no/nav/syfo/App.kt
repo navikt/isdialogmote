@@ -8,6 +8,7 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.api.authentication.getWellKnown
+import no.nav.syfo.application.database.databaseModule
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -33,6 +34,9 @@ fun main() {
 
             val wellKnown = getWellKnown(environment.aadDiscoveryUrl)
             module {
+                databaseModule(
+                    environment = environment
+                )
                 apiModule(
                     applicationState = applicationState,
                     environment = environment,
