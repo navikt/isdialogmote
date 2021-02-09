@@ -54,6 +54,8 @@ spec:
         - host: "syfoperson.dev-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
   env:
+    - name: KTOR_ENV
+      value: production
     - name: AADDISCOVERY_URL
       value: "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/.well-known/openid-configuration"
     - name: LOGINSERVICE_CLIENT_ID

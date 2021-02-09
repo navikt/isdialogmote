@@ -5,6 +5,8 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 object Versions {
+    const val flywayVersion = "7.5.2"
+    const val hikariVersion = "4.0.1"
     const val jacksonVersion = "2.11.3"
     const val ktorVersion = "1.5.0"
     const val kluentVersion = "1.61"
@@ -12,6 +14,8 @@ object Versions {
     const val logstashEncoderVersion = "6.3"
     const val mockkVersion = "1.10.5"
     const val nimbusjosejwtVersion = "7.5.1"
+    const val postgresVersion = "42.2.18"
+    const val postgresTestContainersVersion = "1.15.1"
     const val prometheusVersion = "0.9.0"
     const val spekVersion = "2.0.15"
 }
@@ -44,6 +48,12 @@ dependencies {
     implementation("io.prometheus:simpleclient_common:${Versions.prometheusVersion}")
 
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jacksonVersion}")
+
+    // Database
+    implementation("org.postgresql:postgresql:${Versions.postgresVersion}")
+    implementation("com.zaxxer:HikariCP:${Versions.hikariVersion}")
+    implementation("org.flywaydb:flyway-core:${Versions.flywayVersion}")
+    testImplementation("org.testcontainers:postgresql:${Versions.postgresTestContainersVersion}")
 
     testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusjosejwtVersion}")
     testImplementation("io.ktor:ktor-server-test-host:${Versions.ktorVersion}")

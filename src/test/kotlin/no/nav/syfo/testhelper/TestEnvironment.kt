@@ -11,6 +11,11 @@ fun testEnvironment(
     syfotilgangskontrollUrl: String? = null
 ) = Environment(
     aadDiscoveryUrl = "",
+    isdialogmoteDbHost = "localhost",
+    isdialogmoteDbPort = "5432",
+    isdialogmoteDbName = "isdialogmote_dev",
+    isdialogmoteDbUsername = "username",
+    isdialogmoteDbPassword = "password",
     loginserviceClientId = "123456789",
     modiasyforestUrl = modiasyforestUrl ?: "modiasyforest",
     syfomoteadminUrl = syfomoteadminUrl ?: "syfomoteadmin",
