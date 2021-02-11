@@ -20,3 +20,8 @@ fun DialogmoteTidSted.toDialogmoteTidStedDTO() =
         sted = this.sted,
         tid = this.tid,
     )
+
+fun DialogmoteTidSted.passed(): Boolean = this.tid.isAfter(LocalDateTime.now())
+
+fun List<DialogmoteTidSted>.latest() =
+    this.maxByOrNull { it.tid }

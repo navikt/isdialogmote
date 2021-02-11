@@ -13,6 +13,7 @@ import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.DialogmoteService
+import no.nav.syfo.dialogmote.api.registerDialogmoteActionsApi
 import no.nav.syfo.dialogmote.api.registerDialogmoteApi
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 
@@ -63,6 +64,10 @@ fun Application.apiModule(
         registerPrometheusApi()
         authenticate {
             registerDialogmoteApi(
+                dialogmoteService = dialogmoteService,
+                dialogmoteTilgangService = dialogmoteTilgangService,
+            )
+            registerDialogmoteActionsApi(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService,
             )

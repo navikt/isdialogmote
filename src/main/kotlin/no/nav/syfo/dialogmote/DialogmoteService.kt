@@ -17,6 +17,21 @@ class DialogmoteService(
     private val moteplanleggerClient: MoteplanleggerClient,
     private val narmesteLederClient: NarmesteLederClient,
 ) {
+    fun getDialogmote(
+        moteUUID: UUID
+    ): Dialogmote {
+        return database.getDialogmote(moteUUID).first().let { pDialogmote ->
+            val motedeltakerArbeidstaker = getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
+            val motedeltakerArbeidsgiver = getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
+            val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
+            pDialogmote.toDialogmote(
+                dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
+                dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
+                dialogmoteTidStedList = dialogmoteTidStedList,
+            )
+        }
+    }
+
     fun getDialogmoteList(
         personIdentNumber: PersonIdentNumber,
     ): List<Dialogmote> {
@@ -101,6 +116,23 @@ class DialogmoteService(
             // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver/Arbeidstaker
             true
         }
+    }
+
+    fun avlysMoteinnkalling(
+        dialogmote: Dialogmote,
+        opprettetAv: String,
+    ): Boolean {
+        val isDialogmoteTidPassed = dialogmote.tidStedList.latest()?.passed()
+            ?: throw RuntimeException("Failed to Avlys Dialogmote: No TidSted found")
+        database.updateMoteStatus(
+            moteId = dialogmote.id,
+            moteStatus = DialogmoteStatus.AVLYST,
+            opprettetAv = opprettetAv,
+        )
+        if (isDialogmoteTidPassed) {
+            // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver/Arbeidstaker
+        }
+        return true
     }
 
     companion object {

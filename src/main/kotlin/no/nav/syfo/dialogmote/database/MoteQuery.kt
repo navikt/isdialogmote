@@ -3,11 +3,28 @@ package no.nav.syfo.dialogmote.database
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PDialogmote
+import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.dialogmote.domain.NewDialogmote
 import no.nav.syfo.domain.PersonIdentNumber
 import java.sql.*
 import java.time.Instant
 import java.util.*
+
+const val queryGetDialogmoteForUUID =
+    """
+        SELECT *
+        FROM MOTE
+        WHERE uuid = ?
+    """
+
+fun DatabaseInterface.getDialogmote(moteUUID: UUID): List<PDialogmote> {
+    return connection.use { connection ->
+        connection.prepareStatement(queryGetDialogmoteForUUID).use {
+            it.setString(1, moteUUID.toString())
+            it.executeQuery().toList { toPDialogmote() }
+        }
+    }
+}
 
 const val queryGetDialogmoteListForPersonIdent =
     """
@@ -116,6 +133,36 @@ fun DatabaseInterface.updateMotePlanlagtMoteBekreftet(
             it.setInt(3, moteId)
             it.execute()
         }
+        connection.commit()
+    }
+}
+
+const val queryUpdateMoteStatus =
+    """
+    UPDATE MOTE
+    SET status = ?, updated_at = ?
+    WHERE id = ?
+    """
+
+fun DatabaseInterface.updateMoteStatus(
+    moteId: Int,
+    moteStatus: DialogmoteStatus,
+    opprettetAv: String,
+) {
+    val now = Timestamp.from(Instant.now())
+    this.connection.use { connection ->
+        connection.prepareStatement(queryUpdateMoteStatus).use {
+            it.setString(1, moteStatus.name)
+            it.setTimestamp(2, now)
+            it.setInt(3, moteId)
+            it.execute()
+        }
+        connection.createMoteStatusEndring(
+            commit = false,
+            moteId = moteId,
+            opprettetAv = opprettetAv,
+            status = moteStatus,
+        )
         connection.commit()
     }
 }
