@@ -1,9 +1,11 @@
-package no.nav.syfo.dialogmote
+package no.nav.syfo.dialogmote.api
 
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import no.nav.syfo.dialogmote.DialogmoteService
+import no.nav.syfo.dialogmote.domain.toDialogmoteDTO
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
@@ -35,8 +37,12 @@ fun Route.registerDialogmoteApi(
 
                 when (dialogmoteTilgangService.hasAccessToDialogmotePerson(personIdentNumber, token, callId)) {
                     true -> {
-                        val dialogmoteList = emptyList<Any>()
-                        call.respond(dialogmoteList)
+                        val dialogmoteDTOList = dialogmoteService.getDialogmoteList(
+                            personIdentNumber = personIdentNumber
+                        ).map { dialogmote ->
+                            dialogmote.toDialogmoteDTO()
+                        }
+                        call.respond(dialogmoteDTOList)
                     }
                     else -> {
                         val accessDeniedMessage = "Denied Veileder access to Dialogmoter for Person with PersonIdent"

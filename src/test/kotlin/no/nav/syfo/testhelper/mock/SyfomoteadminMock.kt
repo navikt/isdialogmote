@@ -31,7 +31,7 @@ val planlagtTidOgStedDTO = PlanlagtTidOgStedDTO(
     tid = LocalDateTime.now().plusDays(1),
     created = LocalDateTime.now().minusDays(1),
     sted = "Hos NAV-Kontor",
-    valgt = false,
+    valgt = true,
 )
 
 val planlagtMoteDeltakerDTOArbeidsgiver = PlanlagtMoteDeltakerDTO(

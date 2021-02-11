@@ -6,17 +6,19 @@ import io.ktor.routing.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.*
+import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.DialogmoteService
-import no.nav.syfo.dialogmote.registerDialogmoteApi
+import no.nav.syfo.dialogmote.api.registerDialogmoteApi
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 
 fun Application.apiModule(
     applicationState: ApplicationState,
+    database: DatabaseInterface,
     environment: Environment,
     wellKnown: WellKnown
 ) {
@@ -36,6 +38,7 @@ fun Application.apiModule(
     )
 
     val dialogmoteService = DialogmoteService(
+        database = database,
         moteplanleggerClient = moteplanleggerClient,
         narmesteLederClient = narmesteLederClient
     )
