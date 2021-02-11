@@ -85,9 +85,17 @@ class DialogmoteService(
             log.info("Denied access to Dialogmoter: No NarmesteLeder was found for person")
             false
         } else {
-            // TODO: Implement DialogmoteInnkalling from MoteplanleggerUuid
             val newDialogmote = planlagtMote.toNewDialogmote()
-            database.createDialogmote(newDialogmote)
+            val createdDialogmoteIdPair = database.createDialogmote(newDialogmote)
+            val planlagtMoteBekreftet = moteplanleggerClient.bekreftPlanlagtMote(
+                planlagtMoteUUID = newDialogmote.planlagtMoteUuid,
+                token = token,
+                callId = callId,
+            )
+            if (planlagtMoteBekreftet) {
+                database.updateMotePlanlagtMoteBekreftet(moteId = createdDialogmoteIdPair.first)
+            }
+            // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver/Arbeidstaker
             true
         }
     }

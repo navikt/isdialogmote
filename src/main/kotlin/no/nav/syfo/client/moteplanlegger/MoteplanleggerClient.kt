@@ -67,8 +67,44 @@ class MoteplanleggerClient(
         COUNT_CALL_MOTEADMIN_BASE_FAIL.inc()
     }
 
+    suspend fun bekreftPlanlagtMote(
+        planlagtMoteUUID: UUID,
+        token: String,
+        callId: String
+    ): Boolean {
+        return try {
+            val response: HttpResponse = httpClient.post("$planlagtMoteUrl/$planlagtMoteUUID$PLANLAGTMOTE_BEKREFT_PATH?varsle=false") {
+                header(HttpHeaders.Authorization, bearerHeader(token))
+                header(NAV_CALL_ID_HEADER, callId)
+                accept(ContentType.Application.Json)
+            }
+            if (response.status == HttpStatusCode.OK) {
+                COUNT_CALL_MOTEADMIN_BEKREFT_SUCCESS.inc()
+                true
+            } else {
+                handleUnexpectedReponseExceptionBekreft(response)
+                false
+            }
+        } catch (e: ClientRequestException) {
+            handleUnexpectedReponseExceptionBekreft(e.response)
+            false
+        } catch (e: ServerResponseException) {
+            handleUnexpectedReponseExceptionBekreft(e.response)
+            false
+        }
+    }
+
+    private fun handleUnexpectedReponseExceptionBekreft(response: HttpResponse) {
+        log.error(
+            "Error while requesting to Bekreft PlanlagtMote in Syfomoteadmin with {}",
+            StructuredArguments.keyValue("statusCode", response.status.value.toString())
+        )
+        COUNT_CALL_MOTEADMIN_BEKREFT_FAIL.inc()
+    }
+
     companion object {
         const val PLANLAGTMOTE_PATH = "/syfomoteadmin/api/internad/moter"
+        const val PLANLAGTMOTE_BEKREFT_PATH = "/bekreft"
         private val log = LoggerFactory.getLogger(MoteplanleggerClient::class.java)
     }
 }

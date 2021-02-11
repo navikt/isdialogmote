@@ -18,3 +18,17 @@ val COUNT_CALL_MOTEADMIN_BASE_FAIL: Counter = Counter.build()
     .name(CALL_MOTEADMIN_BASE_FAIL)
     .help("Counts the number of failed calls to Syfomoteadmin - PlanlagtMote")
     .register()
+
+const val CALL_MOTEADMIN_BEKREFT_BASE = "${CALL_MOTEADMIN_BASE}_bekreft"
+const val CALL_MOTEADMIN_BEKREFT_SUCCESS = "${CALL_MOTEADMIN_BEKREFT_BASE}_success_count"
+const val CALL_MOTEADMIN_BEKREFT_FAIL = "${CALL_MOTEADMIN_BEKREFT_BASE}_fail_count"
+val COUNT_CALL_MOTEADMIN_BEKREFT_SUCCESS: Counter = Counter.build()
+    .namespace(METRICS_NS)
+    .name(CALL_MOTEADMIN_BEKREFT_SUCCESS)
+    .help("Counts the number of successful calls to Syfomoteadmin - Bekreft PlanlagtMote")
+    .register()
+val COUNT_CALL_MOTEADMIN_BEKREFT_FAIL: Counter = Counter.build()
+    .namespace(METRICS_NS)
+    .name(CALL_MOTEADMIN_BEKREFT_FAIL)
+    .help("Counts the number of failed calls to Syfomoteadmin - Bekreft PlanlagtMote")
+    .register()

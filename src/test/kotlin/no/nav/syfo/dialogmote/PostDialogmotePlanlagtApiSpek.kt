@@ -20,6 +20,7 @@ import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.util.*
@@ -107,6 +108,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
 
                             val dialogmoteDTO = dialogmoteList.first()
                             dialogmoteDTO.planlagtMoteUuid shouldBeEqualTo moteUUID
+                            dialogmoteDTO.planlagtMoteBekreftetTidspunkt.shouldNotBeNull()
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo planlagtMoteDTO?.fnr
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo planlagtMoteDTO?.arbeidsgiver()?.orgnummer
 

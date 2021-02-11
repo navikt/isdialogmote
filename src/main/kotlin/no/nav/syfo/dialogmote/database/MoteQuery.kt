@@ -94,6 +94,27 @@ fun DatabaseInterface.createDialogmote(
     }
 }
 
+const val queryUpdateMotePlanlagtMoteBekreftet =
+    """
+    UPDATE MOTE
+    SET planlagtmote_bekreftet_tidspunkt = ?
+    WHERE id = ?
+    """
+
+fun DatabaseInterface.updateMotePlanlagtMoteBekreftet(
+    moteId: Int,
+) {
+    val now = Timestamp.from(Instant.now())
+    this.connection.use { connection ->
+        connection.prepareStatement(queryUpdateMotePlanlagtMoteBekreftet).use {
+            it.setTimestamp(1, now)
+            it.setInt(2, moteId)
+            it.execute()
+        }
+        connection.commit()
+    }
+}
+
 fun ResultSet.toPDialogmote(): PDialogmote =
     PDialogmote(
         id = getInt("id"),
@@ -101,6 +122,7 @@ fun ResultSet.toPDialogmote(): PDialogmote =
         createdAt = getTimestamp("created_at").toLocalDateTime(),
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         planlagtMoteUuid = UUID.fromString(getString("planlagtmote_uuid")),
+        planlagtMoteBekreftetTidspunkt = getTimestamp("planlagtmote_bekreftet_tidspunkt")?.toLocalDateTime(),
         status = getString("status"),
         opprettetAv = getString("opprettet_av"),
         tildeltVeilederIdent = getString("tildelt_veileder_ident"),

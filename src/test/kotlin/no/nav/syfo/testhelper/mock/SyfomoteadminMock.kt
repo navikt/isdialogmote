@@ -5,11 +5,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.*
 import io.ktor.features.*
+import io.ktor.http.*
 import io.ktor.jackson.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient.Companion.PLANLAGTMOTE_BEKREFT_PATH
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient.Companion.PLANLAGTMOTE_PATH
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
@@ -101,6 +103,13 @@ class SyfomoteadminMock {
                 routing {
                     get("$PLANLAGTMOTE_PATH/${personIdentMote.value.moteUuid}") {
                         call.respond(personIdentMote.value)
+                    }
+                    post("$PLANLAGTMOTE_PATH/${personIdentMote.value.moteUuid}/$PLANLAGTMOTE_BEKREFT_PATH") {
+                        if (call.parameters["varsle"] == "false") {
+                            call.respond(HttpStatusCode.OK, "")
+                        } else {
+                            call.respond(HttpStatusCode.InternalServerError, "")
+                        }
                     }
                 }
             }
