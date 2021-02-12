@@ -101,7 +101,7 @@ fun DatabaseInterface.createDialogmote(
 const val queryUpdateMotePlanlagtMoteBekreftet =
     """
     UPDATE MOTE
-    SET planlagtmote_bekreftet_tidspunkt = ?
+    SET planlagtmote_bekreftet_tidspunkt = ?, updated_at = ?
     WHERE id = ?
     """
 
@@ -112,7 +112,8 @@ fun DatabaseInterface.updateMotePlanlagtMoteBekreftet(
     this.connection.use { connection ->
         connection.prepareStatement(queryUpdateMotePlanlagtMoteBekreftet).use {
             it.setTimestamp(1, now)
-            it.setInt(2, moteId)
+            it.setTimestamp(2, now)
+            it.setInt(3, moteId)
             it.execute()
         }
         connection.commit()
