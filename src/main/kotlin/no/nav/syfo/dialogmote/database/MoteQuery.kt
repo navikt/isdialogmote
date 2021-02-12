@@ -5,7 +5,6 @@ import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PDialogmote
 import no.nav.syfo.dialogmote.domain.NewDialogmote
 import no.nav.syfo.domain.PersonIdentNumber
-import org.postgresql.util.PSQLException
 import java.sql.*
 import java.time.Instant
 import java.util.*
@@ -44,12 +43,14 @@ const val queryCreateDialogmote =
 fun DatabaseInterface.createDialogmote(
     newDialogmote: NewDialogmote
 ): Pair<Int, UUID> {
-    val uuid = UUID.randomUUID().toString()
+    val uuid = UUID.randomUUID()
     val now = Timestamp.from(Instant.now())
 
     this.connection.use { connection ->
+        connection.autoCommit = false
+
         val moteIdList = connection.prepareStatement(queryCreateDialogmote).use {
-            it.setString(1, uuid)
+            it.setString(1, uuid.toString())
             it.setTimestamp(2, now)
             it.setTimestamp(3, now)
             it.setString(4, newDialogmote.planlagtMoteUuid.toString())
@@ -64,33 +65,36 @@ fun DatabaseInterface.createDialogmote(
         }
         connection.commit()
 
-        val moteId = moteIdList.first()
         try {
-            this.createMotedeltakerArbeidstaker(
-                moteId,
-                newDialogmote.arbeidstaker.personIdent,
+            val moteId = moteIdList.first()
+
+            connection.createMotedeltakerArbeidstaker(
+                commit = false,
+                moteId = moteId,
+                personIdentNumber = newDialogmote.arbeidstaker.personIdent,
             )
-            this.createMotedeltakerArbeidsgiver(
-                moteId,
-                newDialogmote.arbeidsgiver,
+            connection.createMotedeltakerArbeidsgiver(
+                commit = false,
+                moteId = moteId,
+                newDialogmotedeltakerArbeidsgiver = newDialogmote.arbeidsgiver,
             )
-            this.createTidSted(
+            connection.createTidSted(
+                commit = false,
                 moteId = moteId,
                 newDialogmoteTidSted = newDialogmote.tidSted
             )
-            this.createMoteStatusEndring(
+            connection.createMoteStatusEndring(
+                commit = false,
                 moteId = moteId,
                 opprettetAv = newDialogmote.opprettetAv,
                 status = newDialogmote.status,
             )
+            connection.commit()
+            return Pair(moteId, uuid)
         } catch (e: Exception) {
-            when (e) {
-                is SQLException, is PSQLException, is TidStedMissingException -> connection.rollback()
-                else -> throw e
-            }
+            connection.rollback()
+            throw e
         }
-
-        return Pair(moteId, UUID.fromString(uuid))
     }
 }
 

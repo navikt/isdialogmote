@@ -22,31 +22,32 @@ const val queryCreateMotedeltakerArbeidstaker =
         personident) VALUES (DEFAULT, ?, ?, ?, ?, ?) RETURNING id
     """
 
-fun DatabaseInterface.createMotedeltakerArbeidstaker(
+fun Connection.createMotedeltakerArbeidstaker(
+    commit: Boolean = true,
     moteId: Int,
     personIdentNumber: PersonIdentNumber
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 
-    this.connection.use { connection ->
-        val motedeltakerUuid = UUID.randomUUID()
-        val motedeltakerArbeidstakerIdList = connection.prepareStatement(queryCreateMotedeltakerArbeidstaker).use {
-            it.setString(1, motedeltakerUuid.toString())
-            it.setTimestamp(2, now)
-            it.setTimestamp(3, now)
-            it.setInt(4, moteId)
-            it.setString(5, personIdentNumber.value)
-            it.executeQuery().toList { getInt("id") }
-        }
-
-        if (motedeltakerArbeidstakerIdList.size != 1) {
-            throw SQLException("Creating MotedeltakerArbeidstaker failed, no rows affected.")
-        }
-
-        connection.commit()
-
-        return Pair(motedeltakerArbeidstakerIdList.first(), motedeltakerUuid)
+    val motedeltakerUuid = UUID.randomUUID()
+    val motedeltakerArbeidstakerIdList = this.prepareStatement(queryCreateMotedeltakerArbeidstaker).use {
+        it.setString(1, motedeltakerUuid.toString())
+        it.setTimestamp(2, now)
+        it.setTimestamp(3, now)
+        it.setInt(4, moteId)
+        it.setString(5, personIdentNumber.value)
+        it.executeQuery().toList { getInt("id") }
     }
+
+    if (motedeltakerArbeidstakerIdList.size != 1) {
+        throw SQLException("Creating MotedeltakerArbeidstaker failed, no rows affected.")
+    }
+
+    if (commit) {
+        this.commit()
+    }
+
+    return Pair(motedeltakerArbeidstakerIdList.first(), motedeltakerUuid)
 }
 
 const val queryGetMotedeltakerArbeidstakerForMote =
@@ -88,33 +89,34 @@ const val queryCreateMotedeltakerArbeidsgiver =
         leder_epost) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
-fun DatabaseInterface.createMotedeltakerArbeidsgiver(
+fun Connection.createMotedeltakerArbeidsgiver(
+    commit: Boolean = true,
     moteId: Int,
     newDialogmotedeltakerArbeidsgiver: NewDialogmotedeltakerArbeidsgiver
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 
-    this.connection.use { connection ->
-        val motedeltakerUuid = UUID.randomUUID()
-        val motedeltakerArbeidsgiverIdList = connection.prepareStatement(queryCreateMotedeltakerArbeidsgiver).use {
-            it.setString(1, motedeltakerUuid.toString())
-            it.setTimestamp(2, now)
-            it.setTimestamp(3, now)
-            it.setInt(4, moteId)
-            it.setString(5, newDialogmotedeltakerArbeidsgiver.virksomhetsnummer.value)
-            it.setString(6, newDialogmotedeltakerArbeidsgiver.lederNavn)
-            it.setString(7, newDialogmotedeltakerArbeidsgiver.lederEpost)
-            it.executeQuery().toList { getInt("id") }
-        }
-
-        if (motedeltakerArbeidsgiverIdList.size != 1) {
-            throw SQLException("Creating MotedeltakerArbeidsgiver failed, no rows affected.")
-        }
-
-        connection.commit()
-
-        return Pair(motedeltakerArbeidsgiverIdList.first(), motedeltakerUuid)
+    val motedeltakerUuid = UUID.randomUUID()
+    val motedeltakerArbeidsgiverIdList = this.prepareStatement(queryCreateMotedeltakerArbeidsgiver).use {
+        it.setString(1, motedeltakerUuid.toString())
+        it.setTimestamp(2, now)
+        it.setTimestamp(3, now)
+        it.setInt(4, moteId)
+        it.setString(5, newDialogmotedeltakerArbeidsgiver.virksomhetsnummer.value)
+        it.setString(6, newDialogmotedeltakerArbeidsgiver.lederNavn)
+        it.setString(7, newDialogmotedeltakerArbeidsgiver.lederEpost)
+        it.executeQuery().toList { getInt("id") }
     }
+
+    if (motedeltakerArbeidsgiverIdList.size != 1) {
+        throw SQLException("Creating MotedeltakerArbeidsgiver failed, no rows affected.")
+    }
+
+    if (commit) {
+        this.commit()
+    }
+
+    return Pair(motedeltakerArbeidsgiverIdList.first(), motedeltakerUuid)
 }
 
 const val queryGetMotedeltakerArbeidsgiverForMote =

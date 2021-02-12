@@ -20,32 +20,33 @@ const val queryCreateTidSted =
         tid) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
-fun DatabaseInterface.createTidSted(
+fun Connection.createTidSted(
+    commit: Boolean = true,
     moteId: Int,
     newDialogmoteTidSted: NewDialogmoteTidSted,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 
-    this.connection.use { connection ->
-        val moteTidStedUuid = UUID.randomUUID()
-        val moteTidStedIdList = connection.prepareStatement(queryCreateTidSted).use {
-            it.setString(1, moteTidStedUuid.toString())
-            it.setTimestamp(2, now)
-            it.setTimestamp(3, now)
-            it.setInt(4, moteId)
-            it.setString(5, newDialogmoteTidSted.sted)
-            it.setTimestamp(6, Timestamp.valueOf(newDialogmoteTidSted.tid))
-            it.executeQuery().toList { getInt("id") }
-        }
-
-        if (moteTidStedIdList.size != 1) {
-            throw SQLException("Creating MoteStatusEndring failed, no rows affected.")
-        }
-
-        connection.commit()
-
-        return Pair(moteTidStedIdList.first(), moteTidStedUuid)
+    val moteTidStedUuid = UUID.randomUUID()
+    val moteTidStedIdList = this.prepareStatement(queryCreateTidSted).use {
+        it.setString(1, moteTidStedUuid.toString())
+        it.setTimestamp(2, now)
+        it.setTimestamp(3, now)
+        it.setInt(4, moteId)
+        it.setString(5, newDialogmoteTidSted.sted)
+        it.setTimestamp(6, Timestamp.valueOf(newDialogmoteTidSted.tid))
+        it.executeQuery().toList { getInt("id") }
     }
+
+    if (moteTidStedIdList.size != 1) {
+        throw SQLException("Creating MoteStatusEndring failed, no rows affected.")
+    }
+
+    if (commit) {
+        this.commit()
+    }
+
+    return Pair(moteTidStedIdList.first(), moteTidStedUuid)
 }
 
 const val queryGetTidStedForMote =
