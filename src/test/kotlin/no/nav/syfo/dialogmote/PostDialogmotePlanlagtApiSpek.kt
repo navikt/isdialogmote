@@ -59,6 +59,10 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                 wellKnown = wellKnown
             )
 
+            afterEachTest {
+                database.dropData()
+            }
+
             beforeGroup {
                 modiasyforestMock.server.start()
                 syfomoteadminMock.server.start()
