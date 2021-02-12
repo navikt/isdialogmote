@@ -139,7 +139,7 @@ class DialogmoteService(
         private val log = LoggerFactory.getLogger(DialogmoteService::class.java)
     }
 
-    fun endreMoteinnkalling(
+    fun nyttMoteinnkallingTidSted(
         dialogmote: Dialogmote,
         newDialogmoteTidSted: NewDialogmoteTidSted,
         opprettetAv: String,
