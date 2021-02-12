@@ -3,8 +3,7 @@ package no.nav.syfo.dialogmote.database
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PDialogmote
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.dialogmote.domain.NewDialogmote
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import java.sql.*
 import java.time.Instant
@@ -164,6 +163,31 @@ fun DatabaseInterface.updateMoteStatus(
             status = moteStatus,
         )
         connection.commit()
+    }
+}
+
+fun DatabaseInterface.updateMoteTidSted(
+    moteId: Int,
+    newDialogmoteTidSted: NewDialogmoteTidSted,
+    opprettetAv: String,
+) {
+    this.connection.use { connection ->
+        connection.createTidSted(
+            commit = false,
+            moteId = moteId,
+            newDialogmoteTidSted = newDialogmoteTidSted,
+        )
+        connection.commit()
+        try {
+            this.updateMoteStatus(
+                moteId = moteId,
+                moteStatus = DialogmoteStatus.NYTT_TID_STED,
+                opprettetAv = opprettetAv,
+            )
+        } catch (e: Exception) {
+            connection.rollback()
+            throw e
+        }
     }
 }
 

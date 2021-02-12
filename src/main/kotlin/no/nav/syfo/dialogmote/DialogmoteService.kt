@@ -138,4 +138,18 @@ class DialogmoteService(
     companion object {
         private val log = LoggerFactory.getLogger(DialogmoteService::class.java)
     }
+
+    fun endreMoteinnkalling(
+        dialogmote: Dialogmote,
+        newDialogmoteTidSted: NewDialogmoteTidSted,
+        opprettetAv: String,
+    ): Boolean {
+        database.updateMoteTidSted(
+            moteId = dialogmote.id,
+            newDialogmoteTidSted = newDialogmoteTidSted,
+            opprettetAv = opprettetAv,
+        )
+        // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver/Arbeidstaker
+        return true
+    }
 }
