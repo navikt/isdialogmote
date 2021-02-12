@@ -35,15 +35,17 @@ fun PlanlagtMoteDTO.virksomhetsnummer(): Virksomhetsnummer? {
 fun PlanlagtMoteDTO.arbeidsgiver() = this.deltakere.first { it.type == PlanlagtMoteDeltakerType.ARBEIDSGIVER.value }
 fun PlanlagtMoteDTO.tidStedValgt() = this.alternativer.first { it.valgt }
 
-fun PlanlagtMoteDTO.toNewDialogmote(): NewDialogmote {
+fun PlanlagtMoteDTO.toNewDialogmote(
+    requestByNAVIdent: String,
+): NewDialogmote {
     val arbeidsgiver = this.arbeidsgiver()
     val tidSted = this.tidStedValgt()
     return NewDialogmote(
         planlagtMoteUuid = UUID.fromString(this.moteUuid),
         status = DialogmoteStatus.INNKALT,
-        tildeltVeilederIdent = this.eier,
+        tildeltVeilederIdent = requestByNAVIdent,
         tildeltEnhet = this.navEnhet,
-        opprettetAv = this.opprettetAv,
+        opprettetAv = requestByNAVIdent,
         arbeidstaker = NewDialogmotedeltakerArbeidstaker(
             personIdent = PersonIdentNumber(this.fnr),
         ),

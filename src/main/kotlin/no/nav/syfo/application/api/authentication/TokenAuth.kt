@@ -2,7 +2,7 @@ package no.nav.syfo.application.api.authentication
 
 import com.auth0.jwt.JWT
 
-const val JWT_CLAIM_NAVIDENT = "NAVident";
+const val JWT_CLAIM_NAVIDENT = "NAVident"
 
 fun getNAVIdentFromToken(token: String): String {
     val decodedJWT = JWT.decode(token)

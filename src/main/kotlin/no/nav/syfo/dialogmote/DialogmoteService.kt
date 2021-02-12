@@ -1,5 +1,6 @@
 package no.nav.syfo.dialogmote
 
+import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
 import no.nav.syfo.client.moteplanlegger.domain.*
@@ -85,7 +86,9 @@ class DialogmoteService(
             log.info("Denied access to Dialogmoter: No NarmesteLeder was found for person")
             false
         } else {
-            val newDialogmote = planlagtMote.toNewDialogmote()
+            val newDialogmote = planlagtMote.toNewDialogmote(
+                requestByNAVIdent = getNAVIdentFromToken(token)
+            )
             val createdDialogmoteIdPair = database.createDialogmote(newDialogmote)
             val planlagtMoteBekreftet = moteplanleggerClient.bekreftPlanlagtMote(
                 planlagtMoteUUID = newDialogmote.planlagtMoteUuid,
