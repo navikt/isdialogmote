@@ -75,7 +75,8 @@ class GetDialogmoteApiSpek : Spek({
                 val url = "$dialogmoteApiBasepath$dialogmoteApiPersonIdentUrlPath"
                 val validToken = generateJWT(
                     environment.loginserviceClientId,
-                    wellKnown.issuer
+                    wellKnown.issuer,
+                    VEILEDER_IDENT,
                 )
                 describe("Happy path") {
 

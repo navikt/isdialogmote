@@ -77,7 +77,8 @@ class PostDialogmotePlanlagtApiSpek : Spek({
             describe("Create Dialogmote for PersonIdent from PlanlagtMoteUUID") {
                 val validToken = generateJWT(
                     environment.loginserviceClientId,
-                    wellKnown.issuer
+                    wellKnown.issuer,
+                    VEILEDER_IDENT,
                 )
                 describe("Happy path") {
                     val planlagtMoteDTO: PlanlagtMoteDTO? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_FNR.value]
