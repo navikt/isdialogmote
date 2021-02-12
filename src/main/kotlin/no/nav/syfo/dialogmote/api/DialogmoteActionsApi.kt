@@ -48,12 +48,12 @@ fun Route.registerDialogmoteActionsApi(
                         call.respond(HttpStatusCode.InternalServerError, "Failed to Avlys Dialogmoteinnkalling")
                     }
                 } else {
-                    val accessDeniedMessage = "Denied Veileder access to Avlys Dialogmote for Person with PersonIdent"
+                    val accessDeniedMessage = "Denied Veileder access to Avlys Dialogmote for moteUUID"
                     log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
                     call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
                 }
             } catch (e: IllegalArgumentException) {
-                val illegalArgumentMessage = "Could not Avlys Dialogmote for PersonIdent"
+                val illegalArgumentMessage = "Could not Avlys Dialogmote for moteUUID"
                 log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(getCallId()))
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }

@@ -79,15 +79,15 @@ fun Route.registerDialogmoteApi(
                     if (created) {
                         call.respond(HttpStatusCode.OK)
                     } else {
-                        call.respond(HttpStatusCode.InternalServerError, "Failed to create Dialogmoteinnkalling")
+                        call.respond(HttpStatusCode.InternalServerError, "Failed to create Dialogmoteinnkalling for PlanlagtMoteUuid")
                     }
                 } else {
-                    val accessDeniedMessage = "Denied Veileder access to creating Dialogmote for Person with PersonIdent"
+                    val accessDeniedMessage = "Denied Veileder access to creating Dialogmote for PlanlagtMoteUuidt"
                     log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
                     call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
                 }
             } catch (e: IllegalArgumentException) {
-                val illegalArgumentMessage = "Could not create Dialogmote for PersonIdent"
+                val illegalArgumentMessage = "Could not create Dialogmote for PlanlagtMoteUuid"
                 log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(getCallId()))
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }
