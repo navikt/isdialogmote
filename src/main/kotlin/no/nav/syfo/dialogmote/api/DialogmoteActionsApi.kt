@@ -19,6 +19,7 @@ private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 const val dialogmoteApiMoteParam = "moteuuid"
 const val dialogmoteApiMoteAvlysPath = "/avlys"
 const val dialogmoteApiMoteTidStedPath = "/tidsted"
+const val dialogmoteApiMoteFerdigstillPath = "/ferdigstill"
 
 fun Route.registerDialogmoteActionsApi(
     dialogmoteService: DialogmoteService,
@@ -89,6 +90,39 @@ fun Route.registerDialogmoteActionsApi(
                 }
             } catch (e: IllegalArgumentException) {
                 val illegalArgumentMessage = "Could not create NewDialogmoteTidSted for moteUUID"
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(getCallId()))
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
+        }
+
+        post("/{$dialogmoteApiMoteParam}$dialogmoteApiMoteFerdigstillPath") {
+            try {
+                val callId = getCallId()
+
+                val token = getBearerHeader()
+                    ?: throw IllegalArgumentException("No Authorization header supplied")
+
+                val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
+
+                val dialogmote = dialogmoteService.getDialogmote(moteUUID)
+
+                if (dialogmoteTilgangService.hasAccessToPlanlagtDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
+                    val success = dialogmoteService.ferdigstillMoteinnkalling(
+                        dialogmote = dialogmote,
+                        opprettetAv = getNAVIdentFromToken(token)
+                    )
+                    if (success) {
+                        call.respond(HttpStatusCode.OK)
+                    } else {
+                        call.respond(HttpStatusCode.InternalServerError, "Failed to Ferdigstill Dialogmote")
+                    }
+                } else {
+                    val accessDeniedMessage = "Denied Veileder access to Ferdigstill Dialogmotefor moteUUID"
+                    log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
+                    call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
+                }
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Could not Ferdigstill Dialogmote for moteUUID"
                 log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(getCallId()))
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }

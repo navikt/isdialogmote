@@ -152,4 +152,17 @@ class DialogmoteService(
         // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver/Arbeidstaker
         return true
     }
+
+    fun ferdigstillMoteinnkalling(
+        dialogmote: Dialogmote,
+        opprettetAv: String,
+    ): Boolean {
+        database.updateMoteStatus(
+            moteId = dialogmote.id,
+            moteStatus = DialogmoteStatus.FERDIGSTILT,
+            opprettetAv = opprettetAv,
+        )
+        // TODO: Implement DialogmoteInnkalling-Referart
+        return true
+    }
 }
