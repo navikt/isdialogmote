@@ -21,10 +21,10 @@ import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
-class DialogmoteActionsApiSpek : Spek({
+class AvlysDialogmoteApiSpek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
 
-    describe(DialogmoteActionsApiSpek::class.java.simpleName) {
+    describe(AvlysDialogmoteApiSpek::class.java.simpleName) {
 
         with(TestApplicationEngine()) {
             start()
