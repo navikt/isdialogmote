@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
+import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
@@ -20,6 +21,8 @@ import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BRUKERNOTIFIKASJON_DONE_TOPIC
+import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BRUKERNOTIFIKASJON_OPPGAVE_TOPIC
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
@@ -43,7 +46,17 @@ class PostDialogmotePlanlagtApiSpek : Spek({
 
             val database = TestDatabase()
 
+            val embeddedEnvironment = KafkaEnvironment(
+                autoStart = false,
+                withSchemaRegistry = false,
+                topicNames = listOf(
+                    BRUKERNOTIFIKASJON_OPPGAVE_TOPIC,
+                    BRUKERNOTIFIKASJON_DONE_TOPIC,
+                )
+            )
+
             val environment = testEnvironment(
+                kafkaBootstrapServers = embeddedEnvironment.brokersURL,
                 modiasyforestUrl = modiasyforestMock.url,
                 syfomoteadminUrl = syfomoteadminMock.url,
                 syfopersonUrl = syfopersonMock.url,
@@ -68,6 +81,8 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                 syfomoteadminMock.server.start()
                 syfopersonMock.server.start()
                 tilgangskontrollMock.server.start()
+
+                embeddedEnvironment.start()
             }
 
             afterGroup {
@@ -77,6 +92,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                 tilgangskontrollMock.server.stop(1L, 10L)
 
                 database.stop()
+                embeddedEnvironment.tearDown()
             }
 
             describe("Create Dialogmote for PersonIdent from PlanlagtMoteUUID") {

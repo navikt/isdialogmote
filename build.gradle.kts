@@ -5,9 +5,14 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 object Versions {
+    const val avroVersion = "1.10.0"
+    const val brukernotifikasjonAvroVersion = "1.2021.01.18-11.12-b9c8c40b98d1"
+    const val confluentVersion = "5.5.0"
     const val flywayVersion = "7.5.2"
     const val hikariVersion = "4.0.1"
     const val jacksonVersion = "2.11.3"
+    const val kafkaVersion = "2.7.0"
+    const val kafkaEmbeddedVersion = "2.5.0"
     const val ktorVersion = "1.5.0"
     const val kluentVersion = "1.61"
     const val logbackVersion = "1.2.3"
@@ -28,6 +33,8 @@ plugins {
 
 repositories {
     jcenter()
+    maven(url = "https://packages.confluent.io/maven/")
+    maven(url = "https://jitpack.io")
 }
 
 dependencies {
@@ -54,6 +61,13 @@ dependencies {
     implementation("com.zaxxer:HikariCP:${Versions.hikariVersion}")
     implementation("org.flywaydb:flyway-core:${Versions.flywayVersion}")
     testImplementation("com.opentable.components:otj-pg-embedded:${Versions.postgresEmbeddedVersion}")
+
+    // Kafka
+    implementation("org.apache.kafka:kafka_2.12:${Versions.kafkaVersion}")
+    implementation("io.confluent:kafka-avro-serializer:${Versions.confluentVersion}")
+    implementation("io.confluent:kafka-schema-registry:${Versions.confluentVersion}")
+    implementation("com.github.navikt:brukernotifikasjon-schemas:${Versions.brukernotifikasjonAvroVersion}")
+    testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedVersion}")
 
     testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusjosejwtVersion}")
     testImplementation("io.ktor:ktor-server-test-host:${Versions.ktorVersion}")
