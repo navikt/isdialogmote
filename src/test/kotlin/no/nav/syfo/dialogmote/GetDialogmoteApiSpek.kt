@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
+import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
 import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
@@ -19,6 +20,8 @@ import no.nav.syfo.testhelper.generator.generateNewDialogmote
 import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BRUKERNOTIFIKASJON_DONE_TOPIC
+import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BRUKERNOTIFIKASJON_OPPGAVE_TOPIC
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -40,13 +43,22 @@ class GetDialogmoteApiSpek : Spek({
 
             val database = TestDatabase()
 
+            val embeddedEnvironment = KafkaEnvironment(
+                autoStart = false,
+                withSchemaRegistry = false,
+                topicNames = listOf(
+                    BRUKERNOTIFIKASJON_OPPGAVE_TOPIC,
+                    BRUKERNOTIFIKASJON_DONE_TOPIC,
+                )
+            )
+
             val environment = testEnvironment(
+                kafkaBootstrapServers = embeddedEnvironment.brokersURL,
                 modiasyforestUrl = modiasyforestMock.url,
                 syfomoteadminUrl = syfomoteadminMock.url,
                 syfopersonUrl = syfopersonMock.url,
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
-
             val wellKnown = wellKnownMock()
 
             application.apiModule(
@@ -63,6 +75,7 @@ class GetDialogmoteApiSpek : Spek({
             beforeGroup {
                 syfopersonMock.server.start()
                 tilgangskontrollMock.server.start()
+                embeddedEnvironment.start()
             }
 
             afterGroup {
@@ -70,6 +83,7 @@ class GetDialogmoteApiSpek : Spek({
                 tilgangskontrollMock.server.stop(1L, 10L)
 
                 database.stop()
+                embeddedEnvironment.tearDown()
             }
 
             describe("Get Dialogmoter for PersonIdent") {

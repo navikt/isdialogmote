@@ -20,7 +20,7 @@ spec:
     failureThreshold: 30
   readiness:
     path: /is_alive
-    initialDelay: 10
+    initialDelay: 30
     periodSeconds: 5
     timeout: 5
     failureThreshold: 30
@@ -28,8 +28,6 @@ spec:
   prometheus:
     enabled: true
     path: /prometheus
-  istio:
-    enabled: false
   resources:
     limits:
       cpu: 200m
@@ -48,18 +46,27 @@ spec:
   accessPolicy:
     outbound:
       external:
+        - host: kafka-schema-registry.nais-q.adeo.no
         - host: "login.microsoftonline.com"
         - host: "modiasyforest.dev-fss-pub.nais.io"
         - host: "syfomoteadmin.dev-fss-pub.nais.io"
         - host: "syfoperson.dev-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
+  envFrom:
+    - secret: isdialogmote-serviceuser
   env:
     - name: KTOR_ENV
       value: production
     - name: AADDISCOVERY_URL
       value: "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/.well-known/openid-configuration"
+    - name: KAFKA_BOOTSTRAP_SERVERS_URL
+      value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
+    - name: KAFKA_SCHEMA_REGISTRY_URL
+      value: https://kafka-schema-registry.nais-q.adeo.no
     - name: LOGINSERVICE_CLIENT_ID
       value: "38e07d31-659d-4595-939a-f18dce3446c5"
+    - name: DIALOGMOTE_ARBEIDSTAKER_URL
+      value: "https://tjenester-q1.nav.no/dialogmote"
     - name: MODIASYFOREST_URL
       value: "https://modiasyforest.dev-fss-pub.nais.io"
     - name: SYFOMOTEADMIN_URL
