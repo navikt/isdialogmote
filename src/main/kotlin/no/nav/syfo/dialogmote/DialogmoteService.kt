@@ -9,11 +9,15 @@ import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.varsel.MotedeltakerVarselType
+import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 import java.util.*
 
 class DialogmoteService(
     private val database: DatabaseInterface,
+    private val arbeidstakerVarselService: ArbeidstakerVarselService,
     private val moteplanleggerClient: MoteplanleggerClient,
     private val narmesteLederClient: NarmesteLederClient,
 ) {
@@ -50,9 +54,20 @@ class DialogmoteService(
     fun getDialogmoteDeltakerArbeidstaker(
         moteId: Int,
     ): DialogmotedeltakerArbeidstaker {
-        return database.getMoteDeltakerArbeidstaker(moteId)
+        val pMotedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(moteId)
             .first()
-            .toDialogmotedeltakerArbeidstaker()
+        val motedeltakerArbeidstakerVarselList = getDialogmoteDeltakerArbeidstakerVarselList(
+            pMotedeltakerArbeidstaker.id
+        )
+        return pMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(motedeltakerArbeidstakerVarselList)
+    }
+
+    fun getDialogmoteDeltakerArbeidstakerVarselList(
+        motedeltakerArbeidstakerId: Int,
+    ): List<DialogmotedeltakerArbeidstakerVarsel> {
+        return database.getMotedeltakerArbeidstakerVarsel(motedeltakerArbeidstakerId).map {
+            it.toDialogmotedeltakerArbeidstaker()
+        }
     }
 
     fun getDialogmoteDeltakerArbeidsgiver(
@@ -104,16 +119,27 @@ class DialogmoteService(
             val newDialogmote = planlagtMote.toNewDialogmote(
                 requestByNAVIdent = getNAVIdentFromToken(token)
             )
-            val createdDialogmoteIdPair = database.createDialogmote(newDialogmote)
+            val createdDialogmoteIdentifiers = database.createDialogmote(newDialogmote)
+
+            arbeidstakerVarselService.sendVarsel(
+                createdAt = LocalDateTime.now(),
+                personIdent = newDialogmote.arbeidstaker.personIdent,
+                type = MotedeltakerVarselType.INNKALT,
+                varselUuid = createdDialogmoteIdentifiers.motedeltakerArbeidstakerVarselIdPair.second,
+            )
+
+            // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver
+
             val planlagtMoteBekreftet = moteplanleggerClient.bekreftPlanlagtMote(
                 planlagtMoteUUID = newDialogmote.planlagtMoteUuid,
                 token = token,
                 callId = callId,
             )
             if (planlagtMoteBekreftet) {
-                database.updateMotePlanlagtMoteBekreftet(moteId = createdDialogmoteIdPair.first)
+                database.updateMotePlanlagtMoteBekreftet(
+                    moteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first
+                )
             }
-            // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver/Arbeidstaker
             true
         }
     }

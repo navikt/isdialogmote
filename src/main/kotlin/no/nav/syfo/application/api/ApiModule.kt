@@ -3,7 +3,6 @@ package no.nav.syfo.application.api
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.routing.*
-import no.nav.brukernotifikasjon.schemas.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.*
@@ -19,11 +18,10 @@ import no.nav.syfo.dialogmote.api.registerDialogmoteApi
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.kafkaBrukernotifikasjonProducerConfig
-import org.apache.kafka.clients.producer.KafkaProducer
 
 fun Application.apiModule(
     applicationState: ApplicationState,
+    brukernotifikasjonProducer: BrukernotifikasjonProducer,
     database: DatabaseInterface,
     environment: Environment,
     wellKnown: WellKnown
@@ -43,12 +41,6 @@ fun Application.apiModule(
         modiasyforestBaseUrl = environment.modiasyforestUrl
     )
 
-    val dialogmoteService = DialogmoteService(
-        database = database,
-        moteplanleggerClient = moteplanleggerClient,
-        narmesteLederClient = narmesteLederClient
-    )
-
     val adressebeskyttelseClient = AdressebeskyttelseClient(
         syfopersonBaseUrl = environment.syfopersonUrl
     )
@@ -64,17 +56,17 @@ fun Application.apiModule(
         veilederTilgangskontrollClient = veilederTilgangskontrollClient
     )
 
-    val kafkaBrukernotifikasjonProducerProperties = kafkaBrukernotifikasjonProducerConfig(environment)
-    val kafkaProducerOppgave = KafkaProducer<Nokkel, Oppgave>(kafkaBrukernotifikasjonProducerProperties)
-    val kafkaProducerDone = KafkaProducer<Nokkel, Done>(kafkaBrukernotifikasjonProducerProperties)
-    val brukernotifikasjonProducer = BrukernotifikasjonProducer(
-        kafkaProducerOppgave = kafkaProducerOppgave,
-        kafkaProducerDone = kafkaProducerDone,
-    )
     val arbeidstakerVarselService = ArbeidstakerVarselService(
         brukernotifikasjonProducer = brukernotifikasjonProducer,
         dialogmoteArbeidstakerUrl = environment.dialogmoteArbeidstakerUrl,
         serviceuserUsername = environment.serviceuserUsername,
+    )
+
+    val dialogmoteService = DialogmoteService(
+        database = database,
+        arbeidstakerVarselService = arbeidstakerVarselService,
+        moteplanleggerClient = moteplanleggerClient,
+        narmesteLederClient = narmesteLederClient
     )
 
     routing {

@@ -1,7 +1,6 @@
 package no.nav.syfo.dialogmote.database.domain
 
-import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidstaker
-import no.nav.syfo.dialogmote.domain.DialogmotedeltakerType
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import java.time.LocalDateTime
 import java.util.*
@@ -15,13 +14,15 @@ data class PMotedeltakerArbeidstaker(
     val personIdent: PersonIdentNumber,
 )
 
-fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker() =
-    DialogmotedeltakerArbeidstaker(
-        id = this.id,
-        uuid = this.uuid,
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt,
-        moteId = this.moteId,
-        personIdent = this.personIdent,
-        type = DialogmotedeltakerType.ARBEIDSTAKER,
-    )
+fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(
+    dialogmotedeltakerArbeidstakerVarsel: List<DialogmotedeltakerArbeidstakerVarsel>
+) = DialogmotedeltakerArbeidstaker(
+    id = this.id,
+    uuid = this.uuid,
+    createdAt = this.createdAt,
+    updatedAt = this.updatedAt,
+    moteId = this.moteId,
+    personIdent = this.personIdent,
+    type = DialogmotedeltakerType.ARBEIDSTAKER,
+    varselList = dialogmotedeltakerArbeidstakerVarsel,
+)

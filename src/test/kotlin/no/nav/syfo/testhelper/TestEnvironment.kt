@@ -3,6 +3,7 @@ package no.nav.syfo.testhelper
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import java.net.ServerSocket
+import java.util.*
 
 fun testEnvironment(
     kafkaBootstrapServers: String,
@@ -36,4 +37,9 @@ fun testAppState() = ApplicationState(
 
 fun getRandomPort() = ServerSocket(0).use {
     it.localPort
+}
+
+fun Properties.overrideForTest(): Properties = apply {
+    remove("security.protocol")
+    remove("sasl.mechanism")
 }

@@ -1,9 +1,14 @@
 package no.nav.syfo.varsel.arbeidstaker
 
-import no.nav.brukernotifikasjon.schemas.Nokkel
-import no.nav.syfo.varsel.VarselType
+import no.nav.brukernotifikasjon.schemas.*
+import no.nav.brukernotifikasjon.schemas.builders.OppgaveBuilder
+import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.varsel.MotedeltakerVarselType
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import java.net.URL
+import java.time.Instant
+import java.time.LocalDateTime
+import java.util.*
 
 class ArbeidstakerVarselService(
     private val brukernotifikasjonProducer: BrukernotifikasjonProducer,
@@ -11,16 +16,22 @@ class ArbeidstakerVarselService(
     private val serviceuserUsername: String,
 ) {
     fun sendVarsel(
-        arbeidstakerVarsel: ArbeidstakerVarsel,
+        createdAt: LocalDateTime,
+        personIdent: PersonIdentNumber,
+        type: MotedeltakerVarselType,
+        varselUuid: UUID,
     ) {
-        if (arbeidstakerVarsel.type == VarselType.INNKALT) {
+        if (type == MotedeltakerVarselType.INNKALT) {
             val nokkel = Nokkel(
                 serviceuserUsername,
-                arbeidstakerVarsel.uuid.toString()
+                varselUuid.toString()
             )
-            val oppgave = arbeidstakerVarsel.toBrukernotifikasjonOppgave(
+            val oppgave = createBrukernotifikasjonOppgave(
+                createdAt = createdAt,
+                personIdent = personIdent,
                 tekst = "Du har mottatt en innkalling til Dialogmøte",
                 link = URL(dialogmoteArbeidstakerUrl),
+                uuid = varselUuid,
             )
             brukernotifikasjonProducer.sendOppgave(
                 nokkel,
@@ -30,18 +41,44 @@ class ArbeidstakerVarselService(
     }
 
     fun lesVarsel(
-        arbeidstakerVarsel: ArbeidstakerVarsel,
+        personIdent: PersonIdentNumber,
+        varselUuid: UUID,
     ) {
-        if (arbeidstakerVarsel.type == VarselType.INNKALT) {
-            val nokkel = Nokkel(
-                serviceuserUsername,
-                arbeidstakerVarsel.uuid.toString()
-            )
-            val done = arbeidstakerVarsel.toBrukernotifikasjonDone()
-            brukernotifikasjonProducer.sendDone(
-                nokkel,
-                done,
-            )
-        }
+        val nokkel = Nokkel(
+            serviceuserUsername,
+            varselUuid.toString()
+        )
+        val done = createBrukernotifikasjonDone(
+            personIdent = personIdent,
+            uuid = varselUuid,
+        )
+        brukernotifikasjonProducer.sendDone(
+            nokkel,
+            done,
+        )
     }
 }
+
+fun createBrukernotifikasjonOppgave(
+    createdAt: LocalDateTime,
+    tekst: String,
+    link: URL,
+    personIdent: PersonIdentNumber,
+    uuid: UUID,
+): Oppgave = OppgaveBuilder()
+    .withTidspunkt(createdAt)
+    .withGrupperingsId(uuid.toString())
+    .withFodselsnummer(personIdent.value)
+    .withTekst(tekst)
+    .withLink(link)
+    .withSikkerhetsnivaa(4)
+    .build()
+
+fun createBrukernotifikasjonDone(
+    personIdent: PersonIdentNumber,
+    uuid: UUID,
+) = Done(
+    Instant.now().toEpochMilli(),
+    personIdent.value,
+    uuid.toString(),
+)

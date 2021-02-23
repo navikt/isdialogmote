@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
+import io.mockk.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.client.moteplanlegger.domain.*
@@ -21,10 +22,9 @@ import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
-import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BRUKERNOTIFIKASJON_DONE_TOPIC
-import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BRUKERNOTIFIKASJON_OPPGAVE_TOPIC
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldNotBeNull
+import no.nav.syfo.varsel.MotedeltakerVarselType
+import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.*
+import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.util.*
@@ -65,12 +65,17 @@ class PostDialogmotePlanlagtApiSpek : Spek({
 
             val wellKnown = wellKnownMock()
 
+            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+
             application.apiModule(
                 applicationState = applicationState,
+                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 database = database,
                 environment = environment,
                 wellKnown = wellKnown
             )
+
+            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
             afterEachTest {
                 database.dropData()
@@ -131,12 +136,22 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                             val dialogmoteDTO = dialogmoteList.first()
                             dialogmoteDTO.planlagtMoteUuid shouldBeEqualTo moteUUID
                             dialogmoteDTO.planlagtMoteBekreftetTidspunkt.shouldNotBeNull()
+
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo planlagtMoteDTO?.fnr
+                            dialogmoteDTO.arbeidstaker.varselList.size shouldBeEqualTo 1
+                            val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
+                            arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
+                            arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
+                            arbeidstakerVarselDTO.pdf.shouldNotBeNull()
+                            arbeidstakerVarselDTO.lestDato.shouldBeNull()
+
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo planlagtMoteDTO?.arbeidsgiver()?.orgnummer
 
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
                             dialogmoteTidStedDTO.sted shouldBeEqualTo planlagtMoteDTO?.tidStedValgt()?.sted
+
+                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }
                     }
                 }

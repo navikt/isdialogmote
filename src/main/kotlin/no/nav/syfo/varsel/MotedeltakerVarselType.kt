@@ -1,5 +1,5 @@
 package no.nav.syfo.varsel
 
-enum class VarselType {
+enum class MotedeltakerVarselType {
     INNKALT,
 }
