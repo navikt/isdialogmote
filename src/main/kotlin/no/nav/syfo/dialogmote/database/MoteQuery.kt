@@ -5,6 +5,7 @@ import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PDialogmote
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.varsel.MotedeltakerVarselType
 import java.sql.*
 import java.time.Instant
 import java.util.*
@@ -56,44 +57,24 @@ const val queryCreateDialogmote =
         tildelt_enhet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
-fun DatabaseInterface.createDialogmote(
-    newDialogmote: NewDialogmote
-): Pair<Int, UUID> {
-    val uuid = UUID.randomUUID()
-    val now = Timestamp.from(Instant.now())
+data class CreatedDialogmoteIdentifiers(
+    val dialogmoteIdPair: Pair<Int, UUID>,
+    val motedeltakerArbeidstakerVarselIdPair: Pair<Int, UUID>,
+)
 
+fun DatabaseInterface.createDialogmote(
+    newDialogmote: NewDialogmote,
+): CreatedDialogmoteIdentifiers {
     this.connection.use { connection ->
         connection.autoCommit = false
-
-        val moteIdList = connection.prepareStatement(queryCreateDialogmote).use {
-            it.setString(1, uuid.toString())
-            it.setTimestamp(2, now)
-            it.setTimestamp(3, now)
-            it.setString(4, newDialogmote.planlagtMoteUuid.toString())
-            it.setString(5, newDialogmote.status.name)
-            it.setString(6, newDialogmote.opprettetAv)
-            it.setString(7, newDialogmote.tildeltVeilederIdent)
-            it.setString(8, newDialogmote.tildeltEnhet)
-            it.executeQuery().toList { getInt("id") }
-        }
-        if (moteIdList.size != 1) {
-            throw SQLException("Creating Dialogmote failed, no rows affected.")
-        }
-        connection.commit()
-
         try {
-            val moteId = moteIdList.first()
+            val moteIdList = connection.createDialogmote(
+                commit = true,
+                newDialogmote = newDialogmote
+            )
 
-            connection.createMotedeltakerArbeidstaker(
-                commit = false,
-                moteId = moteId,
-                personIdentNumber = newDialogmote.arbeidstaker.personIdent,
-            )
-            connection.createMotedeltakerArbeidsgiver(
-                commit = false,
-                moteId = moteId,
-                newDialogmotedeltakerArbeidsgiver = newDialogmote.arbeidsgiver,
-            )
+            val moteId = moteIdList.first
+
             connection.createTidSted(
                 commit = false,
                 moteId = moteId,
@@ -105,13 +86,65 @@ fun DatabaseInterface.createDialogmote(
                 opprettetAv = newDialogmote.opprettetAv,
                 status = newDialogmote.status,
             )
+            val motedeltakerArbeidstakerIdList = connection.createMotedeltakerArbeidstaker(
+                commit = false,
+                moteId = moteId,
+                personIdentNumber = newDialogmote.arbeidstaker.personIdent,
+            )
+            connection.createMotedeltakerArbeidsgiver(
+                commit = true,
+                moteId = moteId,
+                newDialogmotedeltakerArbeidsgiver = newDialogmote.arbeidsgiver,
+            )
+            val motedeltakerArbeidstakerVarselIdPair = connection.createMotedeltakerVarselArbeidstaker(
+                commit = false,
+                motedeltakerArbeidstakerId = motedeltakerArbeidstakerIdList.first,
+                status = "OK",
+                varselType = MotedeltakerVarselType.INNKALT,
+                digitalt = true,
+                pdf = byteArrayOf(0x2E, 0x38)
+            )
+
             connection.commit()
-            return Pair(moteId, uuid)
+
+            return CreatedDialogmoteIdentifiers(
+                dialogmoteIdPair = moteIdList,
+                motedeltakerArbeidstakerVarselIdPair = motedeltakerArbeidstakerVarselIdPair
+            )
         } catch (e: Exception) {
             connection.rollback()
             throw e
         }
     }
+}
+
+fun Connection.createDialogmote(
+    commit: Boolean = true,
+    newDialogmote: NewDialogmote
+): Pair<Int, UUID> {
+    val moteUuid = UUID.randomUUID()
+    val now = Timestamp.from(Instant.now())
+
+    val moteIdList = this.prepareStatement(queryCreateDialogmote).use {
+        it.setString(1, moteUuid.toString())
+        it.setTimestamp(2, now)
+        it.setTimestamp(3, now)
+        it.setString(4, newDialogmote.planlagtMoteUuid.toString())
+        it.setString(5, newDialogmote.status.name)
+        it.setString(6, newDialogmote.opprettetAv)
+        it.setString(7, newDialogmote.tildeltVeilederIdent)
+        it.setString(8, newDialogmote.tildeltEnhet)
+        it.executeQuery().toList { getInt("id") }
+    }
+    if (moteIdList.size != 1) {
+        throw SQLException("Creating Dialogmote failed, no rows affected.")
+    }
+
+    if (commit) {
+        this.commit()
+    }
+
+    return Pair(moteIdList.first(), moteUuid)
 }
 
 const val queryUpdateMotePlanlagtMoteBekreftet =

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
+import io.mockk.justRun
+import io.mockk.mockk
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
@@ -20,8 +22,7 @@ import no.nav.syfo.testhelper.generator.generateNewDialogmote
 import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
-import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BRUKERNOTIFIKASJON_DONE_TOPIC
-import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BRUKERNOTIFIKASJON_OPPGAVE_TOPIC
+import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -61,12 +62,17 @@ class GetDialogmoteApiSpek : Spek({
             )
             val wellKnown = wellKnownMock()
 
+            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+
             application.apiModule(
                 applicationState = applicationState,
+                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 database = database,
                 environment = environment,
                 wellKnown = wellKnown
             )
+
+            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
             afterEachTest {
                 database.dropData()
