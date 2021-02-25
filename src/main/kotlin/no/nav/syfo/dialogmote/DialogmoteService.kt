@@ -189,7 +189,24 @@ class DialogmoteService(
             newDialogmoteTidSted = newDialogmoteTidSted,
             opprettetAv = opprettetAv,
         )
-        // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver/Arbeidstaker
+        database.connection.use { connection ->
+            val motedeltakerArbeidstakerVarselIdPair = connection.createMotedeltakerVarselArbeidstaker(
+                commit = false,
+                motedeltakerArbeidstakerId = dialogmote.arbeidstaker.id,
+                status = "OK",
+                varselType = MotedeltakerVarselType.NYTT_TID_STED,
+                digitalt = true,
+                pdf = byteArrayOf(0x2E, 0x38)
+            )
+            arbeidstakerVarselService.sendVarsel(
+                createdAt = LocalDateTime.now(),
+                personIdent = dialogmote.arbeidstaker.personIdent,
+                type = MotedeltakerVarselType.NYTT_TID_STED,
+                varselUuid = motedeltakerArbeidstakerVarselIdPair.second,
+            )
+            connection.commit()
+        }
+        // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver
         return true
     }
 

@@ -52,6 +52,19 @@ class ArbeidstakerVarselService(
                     oppgave,
                 )
             }
+            MotedeltakerVarselType.NYTT_TID_STED -> {
+                val oppgave = createBrukernotifikasjonOppgave(
+                    createdAt = createdAt,
+                    personIdent = personIdent,
+                    tekst = "Du har mottatt et brev om endret dialogmøte",
+                    link = URL(dialogmoteArbeidstakerUrl),
+                    uuid = varselUuid,
+                )
+                brukernotifikasjonProducer.sendOppgave(
+                    nokkel,
+                    oppgave,
+                )
+            }
         }
     }
 

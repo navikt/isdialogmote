@@ -5,8 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
-import io.mockk.justRun
-import io.mockk.mockk
+import io.mockk.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.client.moteplanlegger.domain.*
@@ -20,9 +19,9 @@ import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.varsel.MotedeltakerVarselType
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.*
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDateTime
@@ -172,7 +171,16 @@ class PostDialogmoteTidStedApiSpek : Spek({
                             dialogmoteDTO.planlagtMoteUuid shouldBeEqualTo planlagtmoteUUID
                             dialogmoteDTO.planlagtMoteBekreftetTidspunkt.shouldNotBeNull()
                             dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.NYTT_TID_STED.name
+
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo planlagtMoteDTO?.fnr
+                            val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
+                                it.varselType == MotedeltakerVarselType.NYTT_TID_STED.name
+                            }
+                            arbeidstakerVarselDTO.shouldNotBeNull()
+                            arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
+                            arbeidstakerVarselDTO.pdf.shouldNotBeNull()
+                            arbeidstakerVarselDTO.lestDato.shouldBeNull()
+
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo planlagtMoteDTO?.arbeidsgiver()?.orgnummer
 
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 2
@@ -181,6 +189,8 @@ class PostDialogmoteTidStedApiSpek : Spek({
 
                             val dialogmoteTidStedDTOLast = dialogmoteDTO.tidStedList.last()
                             dialogmoteTidStedDTOLast.sted shouldBeEqualTo newDialogmoteTidSted.sted
+
+                            verify(exactly = 2) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }
                     }
                 }
