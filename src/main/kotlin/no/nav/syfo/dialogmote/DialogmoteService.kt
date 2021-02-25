@@ -18,6 +18,7 @@ import java.util.*
 class DialogmoteService(
     private val database: DatabaseInterface,
     private val arbeidstakerVarselService: ArbeidstakerVarselService,
+    private val dialogmotedeltakerService: DialogmotedeltakerService,
     private val moteplanleggerClient: MoteplanleggerClient,
     private val narmesteLederClient: NarmesteLederClient,
 ) {
@@ -25,8 +26,8 @@ class DialogmoteService(
         moteUUID: UUID
     ): Dialogmote {
         return database.getDialogmote(moteUUID).first().let { pDialogmote ->
-            val motedeltakerArbeidstaker = getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
-            val motedeltakerArbeidsgiver = getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
+            val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
+            val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
             val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
             pDialogmote.toDialogmote(
                 dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
@@ -40,8 +41,8 @@ class DialogmoteService(
         personIdentNumber: PersonIdentNumber,
     ): List<Dialogmote> {
         return database.getDialogmoteList(personIdentNumber).map { pDialogmote ->
-            val motedeltakerArbeidstaker = getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
-            val motedeltakerArbeidsgiver = getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
+            val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
+            val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
             val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
             pDialogmote.toDialogmote(
                 dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
@@ -49,33 +50,6 @@ class DialogmoteService(
                 dialogmoteTidStedList = dialogmoteTidStedList,
             )
         }
-    }
-
-    fun getDialogmoteDeltakerArbeidstaker(
-        moteId: Int,
-    ): DialogmotedeltakerArbeidstaker {
-        val pMotedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(moteId)
-            .first()
-        val motedeltakerArbeidstakerVarselList = getDialogmoteDeltakerArbeidstakerVarselList(
-            pMotedeltakerArbeidstaker.id
-        )
-        return pMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(motedeltakerArbeidstakerVarselList)
-    }
-
-    fun getDialogmoteDeltakerArbeidstakerVarselList(
-        motedeltakerArbeidstakerId: Int,
-    ): List<DialogmotedeltakerArbeidstakerVarsel> {
-        return database.getMotedeltakerArbeidstakerVarsel(motedeltakerArbeidstakerId).map {
-            it.toDialogmotedeltakerArbeidstaker()
-        }
-    }
-
-    fun getDialogmoteDeltakerArbeidsgiver(
-        moteId: Int,
-    ): DialogmotedeltakerArbeidsgiver {
-        return database.getMoteDeltakerArbeidsgiver(moteId)
-            .first()
-            .toDialogmotedeltakerArbeidsgiver()
     }
 
     fun getDialogmoteTidStedList(
