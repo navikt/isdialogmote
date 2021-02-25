@@ -21,22 +21,37 @@ class ArbeidstakerVarselService(
         type: MotedeltakerVarselType,
         varselUuid: UUID,
     ) {
-        if (type == MotedeltakerVarselType.INNKALT) {
-            val nokkel = Nokkel(
-                serviceuserUsername,
-                varselUuid.toString()
-            )
-            val oppgave = createBrukernotifikasjonOppgave(
-                createdAt = createdAt,
-                personIdent = personIdent,
-                tekst = "Du har mottatt en innkalling til Dialogmøte",
-                link = URL(dialogmoteArbeidstakerUrl),
-                uuid = varselUuid,
-            )
-            brukernotifikasjonProducer.sendOppgave(
-                nokkel,
-                oppgave,
-            )
+        val nokkel = Nokkel(
+            serviceuserUsername,
+            varselUuid.toString()
+        )
+        when(type) {
+            MotedeltakerVarselType.INNKALT -> {
+                val oppgave = createBrukernotifikasjonOppgave(
+                    createdAt = createdAt,
+                    personIdent = personIdent,
+                    tekst = "Du har mottatt et brev om innkalling til dialogmøte",
+                    link = URL(dialogmoteArbeidstakerUrl),
+                    uuid = varselUuid,
+                )
+                brukernotifikasjonProducer.sendOppgave(
+                    nokkel,
+                    oppgave,
+                )
+            }
+            MotedeltakerVarselType.AVLYST -> {
+                val oppgave = createBrukernotifikasjonOppgave(
+                    createdAt = createdAt,
+                    personIdent = personIdent,
+                    tekst = "Du har mottatt et brev om avlyst dialogmøte",
+                    link = URL(dialogmoteArbeidstakerUrl),
+                    uuid = varselUuid,
+                )
+                brukernotifikasjonProducer.sendOppgave(
+                    nokkel,
+                    oppgave,
+                )
+            }
         }
     }
 

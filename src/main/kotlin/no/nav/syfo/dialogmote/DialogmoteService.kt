@@ -155,8 +155,26 @@ class DialogmoteService(
             moteStatus = DialogmoteStatus.AVLYST,
             opprettetAv = opprettetAv,
         )
-        if (isDialogmoteTidPassed) {
-            // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver/Arbeidstaker
+        if (!isDialogmoteTidPassed) {
+            database.connection.use { connection ->
+                val motedeltakerArbeidstakerVarselIdPair = connection.createMotedeltakerVarselArbeidstaker(
+                    commit = false,
+                    motedeltakerArbeidstakerId = dialogmote.arbeidstaker.id,
+                    status = "OK",
+                    varselType = MotedeltakerVarselType.AVLYST,
+                    digitalt = true,
+                    pdf = byteArrayOf(0x2E, 0x38)
+                )
+                arbeidstakerVarselService.sendVarsel(
+                    createdAt = LocalDateTime.now(),
+                    personIdent = dialogmote.arbeidstaker.personIdent,
+                    type = MotedeltakerVarselType.AVLYST,
+                    varselUuid = motedeltakerArbeidstakerVarselIdPair.second,
+                )
+                connection.commit()
+            }
+
+            // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver
         }
         return true
     }
@@ -165,7 +183,7 @@ class DialogmoteService(
         private val log = LoggerFactory.getLogger(DialogmoteService::class.java)
     }
 
-    fun nyttMoteinnkallingTidSted(
+    fun     nyttMoteinnkallingTidSted(
         dialogmote: Dialogmote,
         newDialogmoteTidSted: NewDialogmoteTidSted,
         opprettetAv: String,
