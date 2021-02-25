@@ -25,7 +25,7 @@ class ArbeidstakerVarselService(
             serviceuserUsername,
             varselUuid.toString()
         )
-        when(type) {
+        when (type) {
             MotedeltakerVarselType.INNKALT -> {
                 val oppgave = createBrukernotifikasjonOppgave(
                     createdAt = createdAt,

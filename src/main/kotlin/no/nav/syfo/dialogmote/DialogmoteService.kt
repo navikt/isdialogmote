@@ -179,11 +179,7 @@ class DialogmoteService(
         return true
     }
 
-    companion object {
-        private val log = LoggerFactory.getLogger(DialogmoteService::class.java)
-    }
-
-    fun     nyttMoteinnkallingTidSted(
+    fun nyttMoteinnkallingTidSted(
         dialogmote: Dialogmote,
         newDialogmoteTidSted: NewDialogmoteTidSted,
         opprettetAv: String,
@@ -208,5 +204,9 @@ class DialogmoteService(
         )
         // TODO: Implement DialogmoteInnkalling-Referart
         return true
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(DialogmoteService::class.java)
     }
 }
