@@ -193,7 +193,7 @@ class DialogmoteService(
             moteStatus = DialogmoteStatus.FERDIGSTILT,
             opprettetAv = opprettetAv,
         )
-        // TODO: Implement DialogmoteInnkalling-Referart
+        // TODO: Implement DialogmoteInnkalling-Referat
         return true
     }
 
