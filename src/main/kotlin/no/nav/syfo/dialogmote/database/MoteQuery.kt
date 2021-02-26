@@ -5,7 +5,6 @@ import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PDialogmote
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.varsel.MotedeltakerVarselType
 import java.sql.*
 import java.time.Instant
 import java.util.*
@@ -59,63 +58,50 @@ const val queryCreateDialogmote =
 
 data class CreatedDialogmoteIdentifiers(
     val dialogmoteIdPair: Pair<Int, UUID>,
-    val motedeltakerArbeidstakerVarselIdPair: Pair<Int, UUID>,
+    val motedeltakerArbeidstakerIdList: Pair<Int, UUID>,
 )
 
-fun DatabaseInterface.createDialogmote(
+fun Connection.createDialogmoteWithReferences(
+    commit: Boolean = true,
     newDialogmote: NewDialogmote,
 ): CreatedDialogmoteIdentifiers {
-    this.connection.use { connection ->
-        connection.autoCommit = false
-        try {
-            val moteIdList = connection.createDialogmote(
-                commit = true,
-                newDialogmote = newDialogmote
-            )
+    val moteIdList = this.createDialogmote(
+        commit = true,
+        newDialogmote = newDialogmote
+    )
 
-            val moteId = moteIdList.first
+    val moteId = moteIdList.first
 
-            connection.createTidSted(
-                commit = false,
-                moteId = moteId,
-                newDialogmoteTidSted = newDialogmote.tidSted
-            )
-            connection.createMoteStatusEndring(
-                commit = false,
-                moteId = moteId,
-                opprettetAv = newDialogmote.opprettetAv,
-                status = newDialogmote.status,
-            )
-            val motedeltakerArbeidstakerIdList = connection.createMotedeltakerArbeidstaker(
-                commit = false,
-                moteId = moteId,
-                personIdentNumber = newDialogmote.arbeidstaker.personIdent,
-            )
-            connection.createMotedeltakerArbeidsgiver(
-                commit = true,
-                moteId = moteId,
-                newDialogmotedeltakerArbeidsgiver = newDialogmote.arbeidsgiver,
-            )
-            val motedeltakerArbeidstakerVarselIdPair = connection.createMotedeltakerVarselArbeidstaker(
-                commit = false,
-                motedeltakerArbeidstakerId = motedeltakerArbeidstakerIdList.first,
-                status = "OK",
-                varselType = MotedeltakerVarselType.INNKALT,
-                digitalt = true,
-                pdf = byteArrayOf(0x2E, 0x38)
-            )
+    this.createTidSted(
+        commit = false,
+        moteId = moteId,
+        newDialogmoteTidSted = newDialogmote.tidSted
+    )
+    this.createMoteStatusEndring(
+        commit = false,
+        moteId = moteId,
+        opprettetAv = newDialogmote.opprettetAv,
+        status = newDialogmote.status,
+    )
+    val motedeltakerArbeidstakerIdList = this.createMotedeltakerArbeidstaker(
+        commit = false,
+        moteId = moteId,
+        personIdentNumber = newDialogmote.arbeidstaker.personIdent,
+    )
+    this.createMotedeltakerArbeidsgiver(
+        commit = true,
+        moteId = moteId,
+        newDialogmotedeltakerArbeidsgiver = newDialogmote.arbeidsgiver,
+    )
 
-            connection.commit()
-
-            return CreatedDialogmoteIdentifiers(
-                dialogmoteIdPair = moteIdList,
-                motedeltakerArbeidstakerVarselIdPair = motedeltakerArbeidstakerVarselIdPair
-            )
-        } catch (e: Exception) {
-            connection.rollback()
-            throw e
-        }
+    if (commit) {
+        this.commit()
     }
+
+    return CreatedDialogmoteIdentifiers(
+        dialogmoteIdPair = moteIdList,
+        motedeltakerArbeidstakerIdList = motedeltakerArbeidstakerIdList,
+    )
 }
 
 fun Connection.createDialogmote(
@@ -176,51 +162,49 @@ const val queryUpdateMoteStatus =
     WHERE id = ?
     """
 
-fun DatabaseInterface.updateMoteStatus(
+fun Connection.updateMoteStatus(
+    commit: Boolean = true,
     moteId: Int,
     moteStatus: DialogmoteStatus,
     opprettetAv: String,
 ) {
     val now = Timestamp.from(Instant.now())
-    this.connection.use { connection ->
-        connection.prepareStatement(queryUpdateMoteStatus).use {
-            it.setString(1, moteStatus.name)
-            it.setTimestamp(2, now)
-            it.setInt(3, moteId)
-            it.execute()
-        }
-        connection.createMoteStatusEndring(
-            commit = false,
-            moteId = moteId,
-            opprettetAv = opprettetAv,
-            status = moteStatus,
-        )
-        connection.commit()
+    this.prepareStatement(queryUpdateMoteStatus).use {
+        it.setString(1, moteStatus.name)
+        it.setTimestamp(2, now)
+        it.setInt(3, moteId)
+        it.execute()
+    }
+    this.createMoteStatusEndring(
+        commit = false,
+        moteId = moteId,
+        opprettetAv = opprettetAv,
+        status = moteStatus,
+    )
+    if (commit) {
+        this.commit()
     }
 }
 
-fun DatabaseInterface.updateMoteTidSted(
+fun Connection.updateMoteTidSted(
+    commit: Boolean = true,
     moteId: Int,
     newDialogmoteTidSted: NewDialogmoteTidSted,
     opprettetAv: String,
 ) {
-    this.connection.use { connection ->
-        connection.createTidSted(
-            commit = false,
-            moteId = moteId,
-            newDialogmoteTidSted = newDialogmoteTidSted,
-        )
-        connection.commit()
-        try {
-            this.updateMoteStatus(
-                moteId = moteId,
-                moteStatus = DialogmoteStatus.NYTT_TID_STED,
-                opprettetAv = opprettetAv,
-            )
-        } catch (e: Exception) {
-            connection.rollback()
-            throw e
-        }
+    this.createTidSted(
+        commit = false,
+        moteId = moteId,
+        newDialogmoteTidSted = newDialogmoteTidSted,
+    )
+    this.updateMoteStatus(
+        commit = false,
+        moteId = moteId,
+        moteStatus = DialogmoteStatus.NYTT_TID_STED,
+        opprettetAv = opprettetAv,
+    )
+    if (commit) {
+        this.commit()
     }
 }
 

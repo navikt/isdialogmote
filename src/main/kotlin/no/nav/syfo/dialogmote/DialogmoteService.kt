@@ -6,7 +6,8 @@ import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.database.domain.*
+import no.nav.syfo.dialogmote.database.domain.toDialogmote
+import no.nav.syfo.dialogmote.database.domain.toDialogmoteTidSted
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.varsel.MotedeltakerVarselType
@@ -93,16 +94,35 @@ class DialogmoteService(
             val newDialogmote = planlagtMote.toNewDialogmote(
                 requestByNAVIdent = getNAVIdentFromToken(token)
             )
-            val createdDialogmoteIdentifiers = database.createDialogmote(newDialogmote)
 
-            arbeidstakerVarselService.sendVarsel(
-                createdAt = LocalDateTime.now(),
-                personIdent = newDialogmote.arbeidstaker.personIdent,
-                type = MotedeltakerVarselType.INNKALT,
-                varselUuid = createdDialogmoteIdentifiers.motedeltakerArbeidstakerVarselIdPair.second,
-            )
+            val createdDialogmoteIdentifiers: CreatedDialogmoteIdentifiers
 
-            // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver
+            database.connection.use { connection ->
+                createdDialogmoteIdentifiers = connection.createDialogmoteWithReferences(
+                    commit = false,
+                    newDialogmote = newDialogmote,
+                )
+
+                val motedeltakerArbeidstakerVarselIdPair = connection.createMotedeltakerVarselArbeidstaker(
+                    commit = false,
+                    motedeltakerArbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdList.first,
+                    status = "OK",
+                    varselType = MotedeltakerVarselType.INNKALT,
+                    digitalt = true,
+                    pdf = byteArrayOf(0x2E, 0x38)
+                )
+
+                arbeidstakerVarselService.sendVarsel(
+                    createdAt = LocalDateTime.now(),
+                    personIdent = newDialogmote.arbeidstaker.personIdent,
+                    type = MotedeltakerVarselType.INNKALT,
+                    varselUuid = motedeltakerArbeidstakerVarselIdPair.second,
+                )
+
+                // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver
+
+                connection.commit()
+            }
 
             val planlagtMoteBekreftet = moteplanleggerClient.bekreftPlanlagtMote(
                 planlagtMoteUUID = newDialogmote.planlagtMoteUuid,
@@ -124,13 +144,14 @@ class DialogmoteService(
     ): Boolean {
         val isDialogmoteTidPassed = dialogmote.tidStedList.latest()?.passed()
             ?: throw RuntimeException("Failed to Avlys Dialogmote: No TidSted found")
-        database.updateMoteStatus(
-            moteId = dialogmote.id,
-            moteStatus = DialogmoteStatus.AVLYST,
-            opprettetAv = opprettetAv,
-        )
-        if (!isDialogmoteTidPassed) {
-            database.connection.use { connection ->
+        database.connection.use { connection ->
+            connection.updateMoteStatus(
+                commit = false,
+                moteId = dialogmote.id,
+                moteStatus = DialogmoteStatus.AVLYST,
+                opprettetAv = opprettetAv,
+            )
+            if (!isDialogmoteTidPassed) {
                 val motedeltakerArbeidstakerVarselIdPair = connection.createMotedeltakerVarselArbeidstaker(
                     commit = false,
                     motedeltakerArbeidstakerId = dialogmote.arbeidstaker.id,
@@ -145,12 +166,11 @@ class DialogmoteService(
                     type = MotedeltakerVarselType.AVLYST,
                     varselUuid = motedeltakerArbeidstakerVarselIdPair.second,
                 )
-                connection.commit()
+                // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver
             }
-
-            // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver
+            connection.commit()
+            return true
         }
-        return true
     }
 
     fun nyttMoteinnkallingTidSted(
@@ -158,12 +178,14 @@ class DialogmoteService(
         newDialogmoteTidSted: NewDialogmoteTidSted,
         opprettetAv: String,
     ): Boolean {
-        database.updateMoteTidSted(
-            moteId = dialogmote.id,
-            newDialogmoteTidSted = newDialogmoteTidSted,
-            opprettetAv = opprettetAv,
-        )
         database.connection.use { connection ->
+            connection.updateMoteTidSted(
+                commit = false,
+                moteId = dialogmote.id,
+                newDialogmoteTidSted = newDialogmoteTidSted,
+                opprettetAv = opprettetAv,
+            )
+
             val motedeltakerArbeidstakerVarselIdPair = connection.createMotedeltakerVarselArbeidstaker(
                 commit = false,
                 motedeltakerArbeidstakerId = dialogmote.arbeidstaker.id,
@@ -179,20 +201,24 @@ class DialogmoteService(
                 varselUuid = motedeltakerArbeidstakerVarselIdPair.second,
             )
             connection.commit()
+
+            // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver
+            return true
         }
-        // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver
-        return true
     }
 
     fun ferdigstillMoteinnkalling(
         dialogmote: Dialogmote,
         opprettetAv: String,
     ): Boolean {
-        database.updateMoteStatus(
-            moteId = dialogmote.id,
-            moteStatus = DialogmoteStatus.FERDIGSTILT,
-            opprettetAv = opprettetAv,
-        )
+        database.connection.use { connection ->
+            connection.updateMoteStatus(
+                commit = true,
+                moteId = dialogmote.id,
+                moteStatus = DialogmoteStatus.FERDIGSTILT,
+                opprettetAv = opprettetAv,
+            )
+        }
         // TODO: Implement DialogmoteInnkalling-Referat
         return true
     }
