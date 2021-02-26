@@ -12,35 +12,43 @@ import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.jackson.*
 import io.ktor.response.*
-import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
 import java.net.URL
 import java.util.*
 import java.util.concurrent.TimeUnit
 
 fun Application.installJwtAuthentication(
-    wellKnown: WellKnown,
-    accectedAudienceList: List<String>
+    jwtIssuerList: List<JwtIssuer>,
 ) {
-    val jwkProvider = JwkProviderBuilder(URL(wellKnown.jwks_uri))
+    install(Authentication) {
+        jwtIssuerList.forEach { jwtIssuer ->
+            configureJwt(
+                jwtIssuer = jwtIssuer,
+            )
+        }
+    }
+}
+
+fun Authentication.Configuration.configureJwt(
+    jwtIssuer: JwtIssuer,
+) {
+    val jwkProviderSelvbetjening = JwkProviderBuilder(URL(jwtIssuer.wellKnown.jwks_uri))
         .cached(10, 24, TimeUnit.HOURS)
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
-
-    install(Authentication) {
-        jwt {
-            verifier(jwkProvider, wellKnown.issuer)
-            validate { credential ->
-                if (hasExpectedAudience(credential, accectedAudienceList)) {
-                    JWTPrincipal(credential.payload)
-                } else {
-                    log.warn(
-                        "Auth: Unexpected audience for jwt {}, {}",
-                        StructuredArguments.keyValue("issuer", credential.payload.issuer),
-                        StructuredArguments.keyValue("audience", credential.payload.audience)
-                    )
-                    null
-                }
+    jwt(name = jwtIssuer.jwtIssuerType.name) {
+        verifier(jwkProviderSelvbetjening, jwtIssuer.wellKnown.issuer)
+        validate { credential ->
+            if (hasExpectedAudience(credential, jwtIssuer.accectedAudienceList)) {
+                JWTPrincipal(credential.payload)
+            } else {
+//                log.warn(
+//                    "Auth: Unexpected audience for jwt {}, {}",
+//                    StructuredArguments.keyValue("issuer", credential.payload.issuer),
+//                    StructuredArguments.keyValue("audience", credential.payload.audience)
+//                )
+                null
             }
         }
     }
@@ -48,6 +56,11 @@ fun Application.installJwtAuthentication(
 
 fun hasExpectedAudience(credentials: JWTCredential, expectedAudience: List<String>): Boolean {
     return expectedAudience.any { credentials.payload.audience.contains(it) }
+}
+
+fun ApplicationCall.personIdent(): PersonIdentNumber? {
+    val principal: JWTPrincipal? = this.authentication.principal()
+    return principal?.payload?.subject?.let { PersonIdentNumber(it) }
 }
 
 fun Application.installCallId() {

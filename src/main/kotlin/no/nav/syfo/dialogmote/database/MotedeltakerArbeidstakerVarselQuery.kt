@@ -6,6 +6,7 @@ import no.nav.syfo.dialogmote.database.domain.PMotedeltakerArbeidstakerVarsel
 import no.nav.syfo.varsel.MotedeltakerVarselType
 import java.sql.*
 import java.time.Instant
+import java.time.LocalDateTime
 import java.util.*
 
 const val queryCreateMotedeltakerVarselArbeidstaker =
@@ -71,6 +72,24 @@ fun DatabaseInterface.getMotedeltakerArbeidstakerVarsel(
             it.setInt(1, motedeltakerArbeidstakerId)
             it.executeQuery().toList { toPMotedeltakerArbeidstakerVarsel() }
         }
+    }
+}
+
+const val queryUpdateMotedeltakerArbeidstakerVarselLestDato =
+    """
+        UPDATE MOTEDELTAKER_ARBEIDSTAKER_VARSEL
+        SET lest_dato = ?
+        WHERE uuid = ?
+    """
+
+fun Connection.updateMotedeltakerArbeidstakerVarselLestDato(
+    motedeltakerArbeidstakerVarselUuid: UUID
+) {
+    val now = LocalDateTime.now()
+    this.prepareStatement(queryUpdateMotedeltakerArbeidstakerVarselLestDato).use {
+        it.setTimestamp(1, Timestamp.valueOf(now))
+        it.setString(2, motedeltakerArbeidstakerVarselUuid.toString())
+        it.execute()
     }
 }
 

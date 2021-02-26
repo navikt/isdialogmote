@@ -59,16 +59,19 @@ class PostDialogmoteTidStedApiSpek : Spek({
                 syfopersonUrl = syfopersonMock.url,
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
-            val wellKnown = wellKnownMock()
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+
+            val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
+            val wellKnownVeileder = wellKnownSelvbetjeningMock()
 
             application.apiModule(
                 applicationState = applicationState,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 database = database,
                 environment = environment,
-                wellKnown = wellKnown
+                wellKnownSelvbetjening = wellKnownSelvbetjening,
+                wellKnownVeileder = wellKnownVeileder,
             )
 
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
@@ -99,7 +102,7 @@ class PostDialogmoteTidStedApiSpek : Spek({
             describe("Post DialogmoteTidSted") {
                 val validToken = generateJWT(
                     environment.loginserviceClientId,
-                    wellKnown.issuer,
+                    wellKnownVeileder.issuer,
                     VEILEDER_IDENT,
                 )
                 describe("Happy path") {

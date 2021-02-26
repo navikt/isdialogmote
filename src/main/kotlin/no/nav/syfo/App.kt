@@ -45,7 +45,6 @@ fun main() {
                 kafkaProducerDone = kafkaProducerDone,
             )
 
-            val wellKnown = getWellKnown(environment.aadDiscoveryUrl)
             module {
                 databaseModule(
                     environment = environment
@@ -55,7 +54,8 @@ fun main() {
                     brukernotifikasjonProducer = brukernotifikasjonProducer,
                     database = applicationDatabase,
                     environment = environment,
-                    wellKnown = wellKnown
+                    wellKnownSelvbetjening = getWellKnown(environment.loginserviceIdportenDiscoveryUrl),
+                    wellKnownVeileder = getWellKnown(environment.aadDiscoveryUrl),
                 )
             }
 

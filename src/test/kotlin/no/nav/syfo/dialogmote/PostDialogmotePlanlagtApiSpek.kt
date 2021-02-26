@@ -63,16 +63,18 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
 
-            val wellKnown = wellKnownMock()
-
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+
+            val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
+            val wellKnownVeileder = wellKnownSelvbetjeningMock()
 
             application.apiModule(
                 applicationState = applicationState,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 database = database,
                 environment = environment,
-                wellKnown = wellKnown
+                wellKnownSelvbetjening = wellKnownSelvbetjening,
+                wellKnownVeileder = wellKnownVeileder,
             )
 
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
@@ -103,7 +105,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
             describe("Create Dialogmote for PersonIdent from PlanlagtMoteUUID") {
                 val validToken = generateJWT(
                     environment.loginserviceClientId,
-                    wellKnown.issuer,
+                    wellKnownVeileder.issuer,
                     VEILEDER_IDENT,
                 )
                 describe("Happy path") {

@@ -19,19 +19,31 @@ import no.nav.syfo.dialogmote.api.registerDialogmoteApi
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.varsel.arbeidstaker.registerArbeidstakerVarselApi
 
 fun Application.apiModule(
     applicationState: ApplicationState,
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
     database: DatabaseInterface,
     environment: Environment,
-    wellKnown: WellKnown
+    wellKnownSelvbetjening: WellKnown,
+    wellKnownVeileder: WellKnown,
 ) {
     installCallId()
     installContentNegotiation()
     installJwtAuthentication(
-        wellKnown,
-        listOf(environment.loginserviceClientId)
+        jwtIssuerList = listOf(
+            JwtIssuer(
+                accectedAudienceList = environment.loginserviceIdportenAudience,
+                jwtIssuerType = JwtIssuerType.selvbetjening,
+                wellKnown = wellKnownSelvbetjening,
+            ),
+            JwtIssuer(
+                accectedAudienceList = listOf(environment.loginserviceClientId),
+                jwtIssuerType = JwtIssuerType.veileder,
+                wellKnown = wellKnownVeileder,
+            )
+        ),
     )
     installStatusPages()
 
@@ -64,6 +76,7 @@ fun Application.apiModule(
     )
 
     val dialogmotedeltakerService = DialogmotedeltakerService(
+        arbeidstakerVarselService = arbeidstakerVarselService,
         database = database,
     )
 
@@ -78,7 +91,7 @@ fun Application.apiModule(
     routing {
         registerPodApi(applicationState)
         registerPrometheusApi()
-        authenticate {
+        authenticate(JwtIssuerType.veileder.name) {
             registerDialogmoteApi(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService,
@@ -86,6 +99,12 @@ fun Application.apiModule(
             registerDialogmoteActionsApi(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService,
+            )
+        }
+        authenticate(JwtIssuerType.selvbetjening.name) {
+            registerArbeidstakerVarselApi(
+                dialogmoteService = dialogmoteService,
+                dialogmotedeltakerService = dialogmotedeltakerService,
             )
         }
     }

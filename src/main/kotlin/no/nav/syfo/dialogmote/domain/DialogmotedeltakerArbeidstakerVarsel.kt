@@ -20,7 +20,7 @@ data class DialogmotedeltakerArbeidstakerVarsel(
 
 fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselDTO() =
     DialogmotedeltakerArbeidstakerVarselDTO(
-        uuid = this.uuid,
+        uuid = this.uuid.toString(),
         createdAt = this.createdAt,
         varselType = this.varselType.name,
         digitalt = this.digitalt,

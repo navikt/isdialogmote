@@ -21,7 +21,8 @@ const val keyId = "localhost-signer"
 fun generateJWT(
     audience: String,
     issuer: String,
-    navIdent: String,
+    navIdent: String? = null,
+    subject: String? = null,
     expiry: LocalDateTime? = LocalDateTime.now().plusHours(1)
 ): String {
     val now = Date()
@@ -30,7 +31,7 @@ fun generateJWT(
 
     return JWT.create()
         .withKeyId(keyId)
-        .withSubject("subject")
+        .withSubject(subject ?: "subject")
         .withIssuer(issuer)
         .withAudience(audience)
         .withJWTId(UUID.randomUUID().toString())

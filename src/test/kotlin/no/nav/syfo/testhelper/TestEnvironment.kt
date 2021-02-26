@@ -13,6 +13,8 @@ fun testEnvironment(
     syfotilgangskontrollUrl: String? = null
 ) = Environment(
     aadDiscoveryUrl = "",
+    loginserviceIdportenDiscoveryUrl = "",
+    loginserviceIdportenAudience = listOf("idporten"),
     kafkaBootstrapServers = kafkaBootstrapServers,
     kafkaSchemaRegistryUrl = "http://kafka-schema-registry.tpa.svc.nais.local:8081",
     serviceuserUsername = "user",

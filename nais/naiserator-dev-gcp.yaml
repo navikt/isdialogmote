@@ -53,6 +53,7 @@ spec:
         - host: "syfoperson.dev-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
   envFrom:
+    - configmap: loginservice-idporten
     - secret: isdialogmote-serviceuser
   env:
     - name: KTOR_ENV

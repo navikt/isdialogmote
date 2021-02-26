@@ -66,6 +66,22 @@ fun DatabaseInterface.getMoteDeltakerArbeidstaker(moteId: Int): List<PMotedeltak
     }
 }
 
+const val queryGetMotedeltakerArbeidstakerForPerson =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_ARBEIDSTAKER
+        WHERE personident = ?
+    """
+
+fun DatabaseInterface.getMoteDeltakerArbeidstaker(personIdentNumber: PersonIdentNumber): List<PMotedeltakerArbeidstaker> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerArbeidstakerForPerson).use {
+            it.setString(1, personIdentNumber.value)
+            it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
+        }
+    }
+}
+
 fun ResultSet.toPMotedeltakerArbeidstaker(): PMotedeltakerArbeidstaker =
     PMotedeltakerArbeidstaker(
         id = getInt("id"),

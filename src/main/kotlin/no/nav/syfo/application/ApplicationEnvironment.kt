@@ -4,6 +4,8 @@ import io.ktor.application.*
 
 data class Environment(
     val aadDiscoveryUrl: String = getEnvVar("AADDISCOVERY_URL"),
+    val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
+    val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
     val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     val kafkaSchemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_URL"),
     val serviceuserUsername: String = getEnvVar("SERVICEUSER_USERNAME"),

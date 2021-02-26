@@ -5,8 +5,12 @@ import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidsgiver
 import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidstaker
 import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
+import java.util.*
 
 class DialogmotedeltakerService(
+    private val arbeidstakerVarselService: ArbeidstakerVarselService,
     private val database: DatabaseInterface,
 ) {
     fun getDialogmoteDeltakerArbeidstaker(
@@ -28,11 +32,39 @@ class DialogmotedeltakerService(
         }
     }
 
+    fun getDialogmoteDeltakerArbeidstaker(
+        personIdentNumber: PersonIdentNumber,
+    ): DialogmotedeltakerArbeidstaker {
+        val pMotedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(personIdentNumber)
+            .first()
+        val motedeltakerArbeidstakerVarselList = getDialogmoteDeltakerArbeidstakerVarselList(
+            pMotedeltakerArbeidstaker.id
+        )
+        return pMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(motedeltakerArbeidstakerVarselList)
+    }
+
     fun getDialogmoteDeltakerArbeidsgiver(
         moteId: Int,
     ): DialogmotedeltakerArbeidsgiver {
         return database.getMoteDeltakerArbeidsgiver(moteId)
             .first()
             .toDialogmotedeltakerArbeidsgiver()
+    }
+
+    fun lesDialogmotedeltakerArbeidstakerVarsel(
+        personIdentNumber: PersonIdentNumber,
+        dialogmotedeltakerArbeidstakerVarselUuid: UUID,
+    ) {
+        database.connection.use { connection ->
+            connection.updateMotedeltakerArbeidstakerVarselLestDato(
+                motedeltakerArbeidstakerVarselUuid = dialogmotedeltakerArbeidstakerVarselUuid
+            )
+
+            arbeidstakerVarselService.lesVarsel(
+                personIdent = personIdentNumber,
+                varselUuid = dialogmotedeltakerArbeidstakerVarselUuid,
+            )
+            connection.commit()
+        }
     }
 }
