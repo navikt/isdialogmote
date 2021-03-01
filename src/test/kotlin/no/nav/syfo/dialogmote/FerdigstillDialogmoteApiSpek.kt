@@ -25,6 +25,7 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import redis.embedded.RedisServer
 import java.time.LocalDateTime
 
 class FerdigstillDialogmoteApiSpek : Spek({
@@ -61,6 +62,8 @@ class FerdigstillDialogmoteApiSpek : Spek({
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
 
+            val redisServer = RedisServer(environment.redisPort)
+
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
 
             val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
@@ -88,6 +91,7 @@ class FerdigstillDialogmoteApiSpek : Spek({
                 tilgangskontrollMock.server.start()
 
                 embeddedEnvironment.start()
+                redisServer.start()
             }
 
             afterGroup {
@@ -98,6 +102,7 @@ class FerdigstillDialogmoteApiSpek : Spek({
 
                 database.stop()
                 embeddedEnvironment.tearDown()
+                redisServer.stop()
             }
 
             describe("Ferdigstill Dialogmote") {

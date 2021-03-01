@@ -20,6 +20,7 @@ import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.varsel.arbeidstaker.registerArbeidstakerVarselApi
+import redis.clients.jedis.Jedis
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -47,6 +48,11 @@ fun Application.apiModule(
     )
     installStatusPages()
 
+    val jedis = Jedis(
+        environment.redisHost,
+        environment.redisPort
+    )
+
     val moteplanleggerClient = MoteplanleggerClient(
         syfomoteadminBaseUrl = environment.syfomoteadminUrl
     )
@@ -55,6 +61,7 @@ fun Application.apiModule(
     )
 
     val adressebeskyttelseClient = AdressebeskyttelseClient(
+        jedis = jedis,
         syfopersonBaseUrl = environment.syfopersonUrl
     )
     val kontaktinformasjonClient = KontaktinformasjonClient(

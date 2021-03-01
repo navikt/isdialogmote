@@ -16,8 +16,11 @@ import no.nav.syfo.client.person.COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_SUCCESS
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
+import redis.clients.jedis.Jedis
+import redis.clients.jedis.params.SetParams
 
 class AdressebeskyttelseClient(
+    private val jedis: Jedis,
     syfopersonBaseUrl: String
 ) {
     private val personAdressebeskyttelseUrl: String
@@ -40,6 +43,13 @@ class AdressebeskyttelseClient(
         token: String,
         callId: String
     ): Boolean {
+        val cacheKey = cacheKey(personIdentNumber)
+        jedis.use { jedisClient ->
+            jedisClient.get(cacheKey)?.let { value ->
+                log.info("JTRACE: return cached value $value")
+                return value.toBoolean()
+            }
+        }
         return try {
             val response: HttpResponse = httpClient.get(personAdressebeskyttelseUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(token))
@@ -47,8 +57,17 @@ class AdressebeskyttelseClient(
                 header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
                 accept(ContentType.Application.Json)
             }
+            val adressebeskyttelseResponse = response.receive<AdressebeskyttelseResponse>()
             COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_SUCCESS.inc()
-            response.receive<AdressebeskyttelseResponse>().beskyttet
+            jedis.use { jedisClient ->
+                jedisClient.set(
+                    cacheKey,
+                    adressebeskyttelseResponse.beskyttet.toString(),
+                    SetParams().ex(CACHE_ADRESSEBESKYTTELSE_EXPIRE_SECONDS)
+                )
+            }
+            log.info("JTRACE: set cached value ${adressebeskyttelseResponse.beskyttet}")
+            adressebeskyttelseResponse.beskyttet
         } catch (e: ClientRequestException) {
             handleUnexpectedReponseException(e.response)
         } catch (e: ServerResponseException) {
@@ -65,9 +84,17 @@ class AdressebeskyttelseClient(
         return true
     }
 
+    private fun cacheKey(personIdentNumber: PersonIdentNumber): String {
+        return "$CACHE_ADRESSEBESKYTTELSE_KEY_PREFIX${personIdentNumber.value}"
+    }
+
     companion object {
         const val PERSON_PATH = "/syfoperson/api/person"
         const val PERSON_ADRESSEBESKYTTELSE_PATH = "$PERSON_PATH/adressebeskyttelse"
+
+        const val CACHE_ADRESSEBESKYTTELSE_KEY_PREFIX = "person-adressebeskyttelse-"
+        const val CACHE_ADRESSEBESKYTTELSE_EXPIRE_SECONDS = 3600
+
         private val log = LoggerFactory.getLogger(AdressebeskyttelseClient::class.java)
     }
 }
