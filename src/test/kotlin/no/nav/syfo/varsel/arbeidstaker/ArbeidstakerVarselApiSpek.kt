@@ -23,6 +23,7 @@ import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.*
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import redis.embedded.RedisServer
 import java.time.LocalDateTime
 
 class ArbeidstakerVarselApiSpek : Spek({
@@ -61,6 +62,8 @@ class ArbeidstakerVarselApiSpek : Spek({
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
 
+            val redisServer = RedisServer(environment.redisPort)
+
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
 
             val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
@@ -90,6 +93,7 @@ class ArbeidstakerVarselApiSpek : Spek({
                 tilgangskontrollMock.server.start()
 
                 embeddedEnvironment.start()
+                redisServer.start()
             }
 
             afterGroup {
@@ -101,6 +105,7 @@ class ArbeidstakerVarselApiSpek : Spek({
 
                 database.stop()
                 embeddedEnvironment.tearDown()
+                redisServer.stop()
             }
 
             describe("Les ArbeidstakerVarsel") {

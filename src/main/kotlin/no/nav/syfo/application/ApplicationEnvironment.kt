@@ -8,6 +8,8 @@ data class Environment(
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
     val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     val kafkaSchemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_URL"),
+    val redisHost: String = getEnvVar("REDIS_HOST"),
+    val redisPort: Int = getEnvVar("REDIS_PORT", "6379").toInt(),
     val serviceuserUsername: String = getEnvVar("SERVICEUSER_USERNAME"),
     val serviceuserPassword: String = getEnvVar("SERVICEUSER_PASSWORD"),
     val isdialogmoteDbHost: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTE_ISDIALOGMOTE_DB_HOST"),

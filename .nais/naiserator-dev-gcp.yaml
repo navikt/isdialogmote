@@ -45,6 +45,8 @@ spec:
             diskAutoresize: true
   accessPolicy:
     outbound:
+      rules:
+        - application: isdialogmote-redis
       external:
         - host: kafka-schema-registry.nais-q.adeo.no
         - host: "login.microsoftonline.com"
@@ -66,6 +68,8 @@ spec:
       value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
     - name: KAFKA_SCHEMA_REGISTRY_URL
       value: https://kafka-schema-registry.nais-q.adeo.no
+    - name: REDIS_HOST
+      value: "isdialogmote.teamsykefravr.svc.cluster.local"
     - name: LOGINSERVICE_CLIENT_ID
       value: "38e07d31-659d-4595-939a-f18dce3446c5"
     - name: DIALOGMOTE_ARBEIDSTAKER_URL

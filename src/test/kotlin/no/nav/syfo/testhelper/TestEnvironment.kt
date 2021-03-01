@@ -18,6 +18,8 @@ fun testEnvironment(
     loginserviceIdportenAudience = listOf("idporten"),
     kafkaBootstrapServers = kafkaBootstrapServers,
     kafkaSchemaRegistryUrl = "http://kafka-schema-registry.tpa.svc.nais.local:8081",
+    redisHost = "localhost",
+    redisPort = 6379,
     serviceuserUsername = "user",
     serviceuserPassword = "password",
     isdialogmoteDbHost = "localhost",
