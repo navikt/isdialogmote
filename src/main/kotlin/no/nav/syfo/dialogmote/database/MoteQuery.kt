@@ -4,6 +4,7 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PDialogmote
 import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdentNumber
 import java.sql.*
 import java.time.Instant
@@ -37,6 +38,23 @@ fun DatabaseInterface.getDialogmoteList(personIdentNumber: PersonIdentNumber): L
     return connection.use { connection ->
         connection.prepareStatement(queryGetDialogmoteListForPersonIdent).use {
             it.setString(1, personIdentNumber.value)
+            it.executeQuery().toList { toPDialogmote() }
+        }
+    }
+}
+
+const val queryGetDialogmoteListForEnhetNr =
+    """
+        SELECT *
+        FROM MOTE
+        left join MOTEDELTAKER_ARBEIDSTAKER on MOTEDELTAKER_ARBEIDSTAKER.mote_id = MOTE.id
+        WHERE tildelt_enhet = ?
+    """
+
+fun DatabaseInterface.getDialogmoteList(enhetNr: EnhetNr): List<PDialogmote> {
+    return connection.use { connection ->
+        connection.prepareStatement(queryGetDialogmoteListForEnhetNr).use {
+            it.setString(1, enhetNr.value)
             it.executeQuery().toList { toPDialogmote() }
         }
     }

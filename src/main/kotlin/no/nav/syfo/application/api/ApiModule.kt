@@ -14,8 +14,7 @@ import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.dialogmote.api.registerDialogmoteActionsApi
-import no.nav.syfo.dialogmote.api.registerDialogmoteApi
+import no.nav.syfo.dialogmote.api.*
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
@@ -99,6 +98,11 @@ fun Application.apiModule(
             registerDialogmoteActionsApi(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService,
+            )
+            registerDialogmoteEnhetApi(
+                dialogmoteService = dialogmoteService,
+                dialogmoteTilgangService = dialogmoteTilgangService,
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             )
         }
         authenticate(JwtIssuerType.selvbetjening.name) {
