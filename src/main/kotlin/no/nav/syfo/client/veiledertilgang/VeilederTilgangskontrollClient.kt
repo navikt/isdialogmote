@@ -131,7 +131,7 @@ class VeilederTilgangskontrollClient(
         callId: String,
     ): Boolean? {
         log.error(
-            "Error while requesting access to $resource from syfo-tilgangskontroll with {} {}",
+            "Error while requesting access to $resource from syfo-tilgangskontroll with {}, {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             callIdArgument(callId)
         )

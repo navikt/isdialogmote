@@ -13,8 +13,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.moteplanlegger.domain.PlanlagtMoteDTO
-import no.nav.syfo.util.NAV_CALL_ID_HEADER
-import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -51,18 +50,22 @@ class MoteplanleggerClient(
             COUNT_CALL_MOTEADMIN_BASE_SUCCESS.inc()
             response.receive<PlanlagtMoteDTO>()
         } catch (e: ClientRequestException) {
-            handleUnexpectedReponseException(e.response)
+            handleUnexpectedResponseException(e.response, callId)
             null
         } catch (e: ServerResponseException) {
-            handleUnexpectedReponseException(e.response)
+            handleUnexpectedResponseException(e.response, callId)
             null
         }
     }
 
-    private fun handleUnexpectedReponseException(response: HttpResponse) {
+    private fun handleUnexpectedResponseException(
+        response: HttpResponse,
+        callId: String,
+    ) {
         log.error(
-            "Error while requesting PlanlagtMote from Syfomoteadmin with {}",
-            StructuredArguments.keyValue("statusCode", response.status.value.toString())
+            "Error while requesting PlanlagtMote from Syfomoteadmin with {}, {}",
+            StructuredArguments.keyValue("statusCode", response.status.value.toString()),
+            callIdArgument(callId)
         )
         COUNT_CALL_MOTEADMIN_BASE_FAIL.inc()
     }
@@ -82,22 +85,26 @@ class MoteplanleggerClient(
                 COUNT_CALL_MOTEADMIN_BEKREFT_SUCCESS.inc()
                 true
             } else {
-                handleUnexpectedReponseExceptionBekreft(response)
+                handleUnexpectedResponseExceptionBekreft(response, callId)
                 false
             }
         } catch (e: ClientRequestException) {
-            handleUnexpectedReponseExceptionBekreft(e.response)
+            handleUnexpectedResponseExceptionBekreft(e.response, callId)
             false
         } catch (e: ServerResponseException) {
-            handleUnexpectedReponseExceptionBekreft(e.response)
+            handleUnexpectedResponseExceptionBekreft(e.response, callId)
             false
         }
     }
 
-    private fun handleUnexpectedReponseExceptionBekreft(response: HttpResponse) {
+    private fun handleUnexpectedResponseExceptionBekreft(
+        response: HttpResponse,
+        callId: String,
+    ) {
         log.error(
-            "Error while requesting to Bekreft PlanlagtMote in Syfomoteadmin with {}",
-            StructuredArguments.keyValue("statusCode", response.status.value.toString())
+            "Error while requesting to Bekreft PlanlagtMote in Syfomoteadmin with {}, {}",
+            StructuredArguments.keyValue("statusCode", response.status.value.toString()),
+            callIdArgument(callId)
         )
         COUNT_CALL_MOTEADMIN_BEKREFT_FAIL.inc()
     }
