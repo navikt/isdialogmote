@@ -21,6 +21,20 @@ class DialogmoteTilgangService(
         return veilederHasAccessToPerson && !personHasAdressebeskyttelse
     }
 
+    suspend fun hasAccessToDialogmotePersonList(
+        personIdentNumberList: List<PersonIdentNumber>,
+        token: String,
+        callId: String,
+    ): List<PersonIdentNumber> {
+        return veilederTilgangskontrollClient.hasAccessToPersonList(
+            personIdentNumberList = personIdentNumberList,
+            token = token,
+            callId = callId,
+        ).filter { personIdentNumber ->
+            !adressebeskyttelseClient.hasAdressebeskyttelse(personIdentNumber, token, callId)
+        }
+    }
+
     suspend fun hasAccessToPlanlagtDialogmoteInnkalling(
         personIdentNumber: PersonIdentNumber,
         token: String,
