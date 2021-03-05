@@ -1,3 +1,5 @@
+![Build status](https://github.com/navikt/isdialogmote/workflows/main/badge.svg?branch=master)
+
 # isdialogmote
 Application written in Kotlin used to handle SYFO-dialogmøter
 
