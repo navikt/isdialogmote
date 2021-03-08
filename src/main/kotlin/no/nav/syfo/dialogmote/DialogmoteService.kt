@@ -5,6 +5,7 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
@@ -22,6 +23,7 @@ class DialogmoteService(
     private val dialogmotedeltakerService: DialogmotedeltakerService,
     private val moteplanleggerClient: MoteplanleggerClient,
     private val narmesteLederClient: NarmesteLederClient,
+    private val pdfGenClient: PdfGenClient,
 ) {
     fun getDialogmote(
         moteUUID: UUID
@@ -109,6 +111,11 @@ class DialogmoteService(
                 requestByNAVIdent = getNAVIdentFromToken(token)
             )
 
+            val pdfInnkallingArbeidstaker = pdfGenClient.pdfInnkallingArbeidstaker(
+                callId = callId,
+                pdfBody = newDialogmote.toPdfModelInnkallingArbeidstaker()
+            ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidstaker")
+
             val createdDialogmoteIdentifiers: CreatedDialogmoteIdentifiers
 
             database.connection.use { connection ->
@@ -123,7 +130,7 @@ class DialogmoteService(
                     status = "OK",
                     varselType = MotedeltakerVarselType.INNKALT,
                     digitalt = true,
-                    pdf = byteArrayOf(0x2E, 0x38)
+                    pdf = pdfInnkallingArbeidstaker
                 )
 
                 arbeidstakerVarselService.sendVarsel(

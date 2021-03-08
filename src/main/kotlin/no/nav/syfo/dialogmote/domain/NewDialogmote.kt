@@ -1,5 +1,6 @@
 package no.nav.syfo.dialogmote.domain
 
+import no.nav.syfo.client.pdfgen.model.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
@@ -30,3 +31,12 @@ data class NewDialogmoteTidSted(
     val sted: String,
     val tid: LocalDateTime,
 )
+
+fun NewDialogmote.toPdfModelInnkallingArbeidstaker() =
+    PdfModelInnkallingArbeidstaker(
+        innkalling = InnkallingArbeidstaker(
+            tidOgSted = InnkallingArbeidstakerTidOgSted(
+                sted = this.tidSted.sted,
+            ),
+        ),
+    )

@@ -7,6 +7,7 @@ import java.util.*
 
 fun testEnvironment(
     kafkaBootstrapServers: String,
+    isdialogmotepdfgenUrl: String? = null,
     modiasyforestUrl: String? = null,
     syfomoteadminUrl: String? = null,
     syfopersonUrl: String? = null,
@@ -26,6 +27,7 @@ fun testEnvironment(
     isdialogmoteDbPassword = "password",
     loginserviceClientId = "123456789",
     dialogmoteArbeidstakerUrl = "https://www.nav.no/dialogmote",
+    isdialogmotepdfgenUrl = isdialogmotepdfgenUrl ?: "http://isdialogmotepdfgen",
     modiasyforestUrl = modiasyforestUrl ?: "modiasyforest",
     syfomoteadminUrl = syfomoteadminUrl ?: "syfomoteadmin",
     syfopersonUrl = syfopersonUrl ?: "syfoperson",
