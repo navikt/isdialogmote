@@ -81,7 +81,7 @@ class NarmesteLederClient(
         callId: String,
     ): List<NarmesteLederDTO> {
         log.error(
-            "Error while requesting NarmesteLedere of person from Modiasyforest with {}",
+            "Error while requesting NarmesteLedere of person from Modiasyforest with {}, {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             callIdArgument(callId)
         )
