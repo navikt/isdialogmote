@@ -52,6 +52,8 @@ spec:
         - host: "syfomoteadmin.dev-fss-pub.nais.io"
         - host: "syfoperson.dev-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
+      rules:
+        - application: isdialogmotepdfgen
   envFrom:
     - configmap: loginservice-idporten
     - secret: isdialogmote-serviceuser
