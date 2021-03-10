@@ -39,6 +39,7 @@ fun Route.registerDialogmoteActionsApi(
 
                 if (dialogmoteTilgangService.hasAccessToPlanlagtDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.avlysMoteinnkalling(
+                        callId = callId,
                         dialogmote = dialogmote,
                         opprettetAv = getNAVIdentFromToken(token)
                     )
@@ -74,6 +75,7 @@ fun Route.registerDialogmoteActionsApi(
 
                 if (dialogmoteTilgangService.hasAccessToPlanlagtDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.nyttMoteinnkallingTidSted(
+                        callId = callId,
                         dialogmote = dialogmote,
                         newDialogmoteTidSted = newDialogmoteTidSted,
                         opprettetAv = getNAVIdentFromToken(token)

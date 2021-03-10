@@ -40,3 +40,12 @@ fun NewDialogmote.toPdfModelInnkallingArbeidstaker() =
             ),
         ),
     )
+
+fun NewDialogmoteTidSted.toPdfModelEndringTidStedArbeidstaker() =
+    PdfModelEndringTidStedArbeidstaker(
+        endring = EndringTidStedArbeidstaker(
+            tidOgSted = EndringTidStedArbeidstakerTidOgSted(
+                sted = this.sted,
+            ),
+        ),
+    )

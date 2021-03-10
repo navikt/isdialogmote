@@ -13,7 +13,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.client.pdfgen.model.PdfModelInnkallingArbeidstaker
+import no.nav.syfo.client.pdfgen.model.*
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.callIdArgument
 import org.slf4j.LoggerFactory
@@ -21,9 +21,13 @@ import org.slf4j.LoggerFactory
 class PdfGenClient(
     pdfGenBaseUrl: String
 ) {
+    private val avlysningArbeidstakerUrl: String
+    private val endringTidStedArbeidstakerUrl: String
     private val inkallingArbeidstakerUrl: String
 
     init {
+        this.avlysningArbeidstakerUrl = "$pdfGenBaseUrl$AVLYSNING_ARBEIDSTAKER_PATH"
+        this.endringTidStedArbeidstakerUrl = "$pdfGenBaseUrl$ENDRING_TIDSTED_ARBEIDSTAKER_PATH"
         this.inkallingArbeidstakerUrl = "$pdfGenBaseUrl$INNKALLING_ARBEIDSTAKER_PATH"
     }
 
@@ -36,6 +40,28 @@ class PdfGenClient(
                 configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             }
         }
+    }
+
+    suspend fun pdfAvlysningArbeidstaker(
+        callId: String,
+        pdfBody: PdfModelAvlysningArbeidstaker,
+    ): ByteArray? {
+        return getPdf(
+            callId = callId,
+            pdfBody = pdfBody,
+            pdfUrl = avlysningArbeidstakerUrl,
+        )
+    }
+
+    suspend fun pdfEndringTidStedArbeidstaker(
+        callId: String,
+        pdfBody: PdfModelEndringTidStedArbeidstaker,
+    ): ByteArray? {
+        return getPdf(
+            callId = callId,
+            pdfBody = pdfBody,
+            pdfUrl = endringTidStedArbeidstakerUrl,
+        )
     }
 
     suspend fun pdfInnkallingArbeidstaker(
@@ -87,6 +113,8 @@ class PdfGenClient(
 
     companion object {
         private const val API_BASE_PATH = "/api/v1/genpdf/isdialogmote"
+        const val AVLYSNING_ARBEIDSTAKER_PATH = "$API_BASE_PATH/avlysning-arbeidstaker"
+        const val ENDRING_TIDSTED_ARBEIDSTAKER_PATH = "$API_BASE_PATH/endring-tidsted-arbeidstaker"
         const val INNKALLING_ARBEIDSTAKER_PATH = "$API_BASE_PATH/innkalling-arbeidstaker"
 
         private val log = LoggerFactory.getLogger(PdfGenClient::class.java)
