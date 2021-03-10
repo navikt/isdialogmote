@@ -178,7 +178,7 @@ class AvlysDialogmoteApiSpek : Spek({
                             }
                             arbeidstakerVarselDTO.shouldNotBeNull()
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
-                            arbeidstakerVarselDTO.pdf.shouldNotBeNull()
+                            arbeidstakerVarselDTO.pdf shouldBeEqualTo isdialogmotepdfgenMock.pdfAvlysningArbeidstaker
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo planlagtMoteDTO?.arbeidsgiver()?.orgnummer

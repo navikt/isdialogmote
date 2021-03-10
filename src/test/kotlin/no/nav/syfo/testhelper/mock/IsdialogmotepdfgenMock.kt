@@ -11,6 +11,8 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.AVLYSNING_ARBEIDSTAKER_PATH
+import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.ENDRING_TIDSTED_ARBEIDSTAKER_PATH
 import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.INNKALLING_ARBEIDSTAKER_PATH
 import no.nav.syfo.testhelper.getRandomPort
 
@@ -18,6 +20,8 @@ class IsdialogmotepdfgenMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
 
+    val pdfAvlysningArbeidstaker = byteArrayOf(0x2E, 0x33)
+    val pdfEndringTidStedArbeidstaker = byteArrayOf(0x2E, 0x32)
     val pdfInnkallingArbeidstaker = byteArrayOf(0x2E, 0x31)
 
     val server = mockIsdialogmotepdfgenServer(
@@ -40,6 +44,12 @@ class IsdialogmotepdfgenMock {
                 }
             }
             routing {
+                post(AVLYSNING_ARBEIDSTAKER_PATH) {
+                    call.respond(pdfAvlysningArbeidstaker)
+                }
+                post(ENDRING_TIDSTED_ARBEIDSTAKER_PATH) {
+                    call.respond(pdfEndringTidStedArbeidstaker)
+                }
                 post(INNKALLING_ARBEIDSTAKER_PATH) {
                     call.respond(pdfInnkallingArbeidstaker)
                 }

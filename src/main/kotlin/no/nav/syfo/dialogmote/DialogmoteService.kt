@@ -159,12 +159,19 @@ class DialogmoteService(
         }
     }
 
-    fun avlysMoteinnkalling(
+    suspend fun avlysMoteinnkalling(
+        callId: String,
         dialogmote: Dialogmote,
         opprettetAv: String,
     ): Boolean {
         val isDialogmoteTidPassed = dialogmote.tidStedList.latest()?.passed()
             ?: throw RuntimeException("Failed to Avlys Dialogmote: No TidSted found")
+
+        val pdfAvlysningArbeidstaker = pdfGenClient.pdfAvlysningArbeidstaker(
+            callId = callId,
+            pdfBody = dialogmote.toPdfModelAvlysningArbeidstaker()
+        ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidstaker")
+
         database.connection.use { connection ->
             connection.updateMoteStatus(
                 commit = false,
@@ -179,7 +186,7 @@ class DialogmoteService(
                     status = "OK",
                     varselType = MotedeltakerVarselType.AVLYST,
                     digitalt = true,
-                    pdf = byteArrayOf(0x2E, 0x38)
+                    pdf = pdfAvlysningArbeidstaker,
                 )
                 arbeidstakerVarselService.sendVarsel(
                     createdAt = LocalDateTime.now(),
@@ -194,11 +201,17 @@ class DialogmoteService(
         }
     }
 
-    fun nyttMoteinnkallingTidSted(
+    suspend fun nyttMoteinnkallingTidSted(
+        callId: String,
         dialogmote: Dialogmote,
         newDialogmoteTidSted: NewDialogmoteTidSted,
         opprettetAv: String,
     ): Boolean {
+        val pdfEndringArbeidstaker = pdfGenClient.pdfEndringTidStedArbeidstaker(
+            callId = callId,
+            pdfBody = newDialogmoteTidSted.toPdfModelEndringTidStedArbeidstaker()
+        ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidstaker")
+
         database.connection.use { connection ->
             connection.updateMoteTidSted(
                 commit = false,
@@ -213,7 +226,7 @@ class DialogmoteService(
                 status = "OK",
                 varselType = MotedeltakerVarselType.NYTT_TID_STED,
                 digitalt = true,
-                pdf = byteArrayOf(0x2E, 0x38)
+                pdf = pdfEndringArbeidstaker
             )
             arbeidstakerVarselService.sendVarsel(
                 createdAt = LocalDateTime.now(),
