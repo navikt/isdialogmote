@@ -23,7 +23,7 @@ class AdressebeskyttelseClient(
     syfopersonBaseUrl: String
 ) {
     private val personAdressebeskyttelseUrl: String = "$syfopersonBaseUrl$PERSON_ADRESSEBESKYTTELSE_PATH"
-    private val cache = AdressebeskyttelseCache(jedis = jedis);
+    private val cache = AdressebeskyttelseCache(jedis = jedis)
 
     private val httpClient = HttpClient(CIO) {
         install(JsonFeature) {
