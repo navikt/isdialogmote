@@ -26,6 +26,7 @@ import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import redis.embedded.RedisServer
 
 class GetDialogmoteEnhetApiSpek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -61,6 +62,8 @@ class GetDialogmoteEnhetApiSpek : Spek({
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
 
+            val redisServer = RedisServer(environment.redisPort)
+
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
 
             val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
@@ -85,6 +88,7 @@ class GetDialogmoteEnhetApiSpek : Spek({
                 syfopersonMock.server.start()
                 tilgangskontrollMock.server.start()
                 embeddedEnvironment.start()
+                redisServer.start()
             }
 
             afterGroup {
@@ -93,6 +97,7 @@ class GetDialogmoteEnhetApiSpek : Spek({
 
                 database.stop()
                 embeddedEnvironment.tearDown()
+                redisServer.stop()
             }
 
             describe("Get Dialogmoter for EnhetNr") {
