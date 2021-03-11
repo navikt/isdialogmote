@@ -67,11 +67,10 @@ const val queryCreateDialogmote =
         uuid,
         created_at,
         updated_at,
-        planlagtmote_uuid,
         status,
         opprettet_av,
         tildelt_veileder_ident,
-        tildelt_enhet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+        tildelt_enhet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
 data class CreatedDialogmoteIdentifiers(
@@ -79,7 +78,7 @@ data class CreatedDialogmoteIdentifiers(
     val motedeltakerArbeidstakerIdList: Pair<Int, UUID>,
 )
 
-fun Connection.createDialogmoteWithReferences(
+fun Connection.createNewDialogmoteWithReferences(
     commit: Boolean = true,
     newDialogmote: NewDialogmote,
 ): CreatedDialogmoteIdentifiers {
@@ -133,11 +132,96 @@ fun Connection.createDialogmote(
         it.setString(1, moteUuid.toString())
         it.setTimestamp(2, now)
         it.setTimestamp(3, now)
-        it.setString(4, newDialogmote.planlagtMoteUuid.toString())
-        it.setString(5, newDialogmote.status.name)
-        it.setString(6, newDialogmote.opprettetAv)
-        it.setString(7, newDialogmote.tildeltVeilederIdent)
-        it.setString(8, newDialogmote.tildeltEnhet)
+        it.setString(4, newDialogmote.status.name)
+        it.setString(5, newDialogmote.opprettetAv)
+        it.setString(6, newDialogmote.tildeltVeilederIdent)
+        it.setString(7, newDialogmote.tildeltEnhet)
+        it.executeQuery().toList { getInt("id") }
+    }
+    if (moteIdList.size != 1) {
+        throw SQLException("Creating Dialogmote failed, no rows affected.")
+    }
+
+    if (commit) {
+        this.commit()
+    }
+
+    return Pair(moteIdList.first(), moteUuid)
+}
+
+const val queryCreateDialogmotePlanlagt =
+    """
+    INSERT INTO MOTE (
+        id,
+        uuid,
+        created_at,
+        updated_at,
+        planlagtmote_uuid,
+        status,
+        opprettet_av,
+        tildelt_veileder_ident,
+        tildelt_enhet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+    """
+
+fun Connection.createNewDialogmotePlanlagtWithReferences(
+    commit: Boolean = true,
+    newDialogmotePlanlagt: NewDialogmotePlanlagt,
+): CreatedDialogmoteIdentifiers {
+    val moteIdList = this.createDialogmotePlanlagt(
+        commit = true,
+        newDialogmotePlanlagt = newDialogmotePlanlagt
+    )
+
+    val moteId = moteIdList.first
+
+    this.createTidSted(
+        commit = false,
+        moteId = moteId,
+        newDialogmoteTidSted = newDialogmotePlanlagt.tidSted
+    )
+    this.createMoteStatusEndring(
+        commit = false,
+        moteId = moteId,
+        opprettetAv = newDialogmotePlanlagt.opprettetAv,
+        status = newDialogmotePlanlagt.status,
+    )
+    val motedeltakerArbeidstakerIdList = this.createMotedeltakerArbeidstaker(
+        commit = false,
+        moteId = moteId,
+        personIdentNumber = newDialogmotePlanlagt.arbeidstaker.personIdent,
+    )
+    this.createMotedeltakerArbeidsgiver(
+        commit = true,
+        moteId = moteId,
+        newDialogmotedeltakerArbeidsgiver = newDialogmotePlanlagt.arbeidsgiver,
+    )
+
+    if (commit) {
+        this.commit()
+    }
+
+    return CreatedDialogmoteIdentifiers(
+        dialogmoteIdPair = moteIdList,
+        motedeltakerArbeidstakerIdList = motedeltakerArbeidstakerIdList,
+    )
+}
+
+fun Connection.createDialogmotePlanlagt(
+    commit: Boolean = true,
+    newDialogmotePlanlagt: NewDialogmotePlanlagt
+): Pair<Int, UUID> {
+    val moteUuid = UUID.randomUUID()
+    val now = Timestamp.from(Instant.now())
+
+    val moteIdList = this.prepareStatement(queryCreateDialogmotePlanlagt).use {
+        it.setString(1, moteUuid.toString())
+        it.setTimestamp(2, now)
+        it.setTimestamp(3, now)
+        it.setString(4, newDialogmotePlanlagt.planlagtMoteUuid.toString())
+        it.setString(5, newDialogmotePlanlagt.status.name)
+        it.setString(6, newDialogmotePlanlagt.opprettetAv)
+        it.setString(7, newDialogmotePlanlagt.tildeltVeilederIdent)
+        it.setString(8, newDialogmotePlanlagt.tildeltEnhet)
         it.executeQuery().toList { getInt("id") }
     }
     if (moteIdList.size != 1) {
@@ -232,7 +316,7 @@ fun ResultSet.toPDialogmote(): PDialogmote =
         uuid = UUID.fromString(getString("uuid")),
         createdAt = getTimestamp("created_at").toLocalDateTime(),
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
-        planlagtMoteUuid = UUID.fromString(getString("planlagtmote_uuid")),
+        planlagtMoteUuid = getString("planlagtmote_uuid")?.let { planlagtMoteUuid -> UUID.fromString(planlagtMoteUuid) },
         planlagtMoteBekreftetTidspunkt = getTimestamp("planlagtmote_bekreftet_tidspunkt")?.toLocalDateTime(),
         status = getString("status"),
         opprettetAv = getString("opprettet_av"),

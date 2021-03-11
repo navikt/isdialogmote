@@ -49,6 +49,7 @@ spec:
         - host: kafka-schema-registry.nais-q.adeo.no
         - host: "login.microsoftonline.com"
         - host: "modiasyforest.dev-fss-pub.nais.io"
+        - host: "syfobehandlendeenhet.dev-fss-pub.nais.io"
         - host: "syfomoteadmin.dev-fss-pub.nais.io"
         - host: "syfoperson.dev-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
@@ -72,6 +73,8 @@ spec:
       value: "https://tjenester-q1.nav.no/dialogmote"
     - name: MODIASYFOREST_URL
       value: "https://modiasyforest.dev-fss-pub.nais.io"
+    - name: SYFOBEHANDLENDEENHET_URL
+      value: "https://syfobehandlendeenhet.dev-fss-pub.nais.io"
     - name: SYFOMOTEADMIN_URL
       value: "https://syfomoteadmin.dev-fss-pub.nais.io"
     - name: SYFOPERSON_URL

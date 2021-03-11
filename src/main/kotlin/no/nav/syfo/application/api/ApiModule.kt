@@ -7,6 +7,7 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.*
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.pdfgen.PdfGenClient
@@ -57,6 +58,9 @@ fun Application.apiModule(
     val adressebeskyttelseClient = AdressebeskyttelseClient(
         syfopersonBaseUrl = environment.syfopersonUrl
     )
+    val behandlendeEnhetClient = BehandlendeEnhetClient(
+        syfobehandlendeenhetBaseUrl = environment.syfobehandlendeenhetUrl
+    )
     val kontaktinformasjonClient = KontaktinformasjonClient(
         syfopersonBaseUrl = environment.syfopersonUrl
     )
@@ -87,6 +91,7 @@ fun Application.apiModule(
         database = database,
         arbeidstakerVarselService = arbeidstakerVarselService,
         dialogmotedeltakerService = dialogmotedeltakerService,
+        behandlendeEnhetClient = behandlendeEnhetClient,
         moteplanleggerClient = moteplanleggerClient,
         narmesteLederClient = narmesteLederClient,
         pdfGenClient = pdfGenClient,

@@ -24,11 +24,11 @@ fun generateMotedeltakerArbeidsgiver() = NewDialogmotedeltakerArbeidsgiver(
     lederEpost = null,
 )
 
-fun generateNewDialogmote(
+fun generateNewDialogmotePlanlagt(
     personIdentNumber: PersonIdentNumber
-): NewDialogmote {
+): NewDialogmotePlanlagt {
     val planlagtMoteDTO = planlagtMoteDTO(personIdentNumber)
-    return NewDialogmote(
+    return NewDialogmotePlanlagt(
         planlagtMoteUuid = UUID.fromString(planlagtMoteDTO.moteUuid),
         status = DialogmoteStatus.INNKALT,
         opprettetAv = planlagtMoteDTO.opprettetAv,

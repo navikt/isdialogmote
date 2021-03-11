@@ -7,6 +7,16 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class NewDialogmote(
+    val status: DialogmoteStatus,
+    val opprettetAv: String,
+    val tildeltVeilederIdent: String,
+    val tildeltEnhet: String,
+    val arbeidstaker: NewDialogmotedeltakerArbeidstaker,
+    val arbeidsgiver: NewDialogmotedeltakerArbeidsgiver,
+    val tidSted: NewDialogmoteTidSted,
+)
+
+data class NewDialogmotePlanlagt(
     val planlagtMoteUuid: UUID,
     val status: DialogmoteStatus,
     val opprettetAv: String,
@@ -33,6 +43,15 @@ data class NewDialogmoteTidSted(
 )
 
 fun NewDialogmote.toPdfModelInnkallingArbeidstaker() =
+    PdfModelInnkallingArbeidstaker(
+        innkalling = InnkallingArbeidstaker(
+            tidOgSted = InnkallingArbeidstakerTidOgSted(
+                sted = this.tidSted.sted,
+            ),
+        ),
+    )
+
+fun NewDialogmotePlanlagt.toPdfModelInnkallingArbeidstaker() =
     PdfModelInnkallingArbeidstaker(
         innkalling = InnkallingArbeidstaker(
             tidOgSted = InnkallingArbeidstakerTidOgSted(

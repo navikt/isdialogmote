@@ -12,14 +12,14 @@ import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
 import no.nav.syfo.dialogmote.api.dialogmoteApiEnhetUrlPath
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.database.createDialogmoteWithReferences
+import no.nav.syfo.dialogmote.database.createNewDialogmotePlanlagtWithReferences
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.generator.generateNewDialogmote
+import no.nav.syfo.testhelper.generator.generateNewDialogmotePlanlagt
 import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.*
@@ -105,14 +105,14 @@ class GetDialogmoteEnhetApiSpek : Spek({
                 )
                 describe("Happy path") {
 
-                    val newDialogmote = generateNewDialogmote(ARBEIDSTAKER_FNR)
-                    val newDialogmoteAdressebeskyttet = generateNewDialogmote(ARBEIDSTAKER_ADRESSEBESKYTTET)
+                    val newDialogmote = generateNewDialogmotePlanlagt(ARBEIDSTAKER_FNR)
+                    val newDialogmoteAdressebeskyttet = generateNewDialogmotePlanlagt(ARBEIDSTAKER_ADRESSEBESKYTTET)
                     database.connection.use { connection ->
-                        connection.createDialogmoteWithReferences(
-                            newDialogmote = newDialogmote
+                        connection.createNewDialogmotePlanlagtWithReferences(
+                            newDialogmotePlanlagt = newDialogmote
                         )
-                        connection.createDialogmoteWithReferences(
-                            newDialogmote = newDialogmoteAdressebeskyttet
+                        connection.createNewDialogmotePlanlagtWithReferences(
+                            newDialogmotePlanlagt = newDialogmoteAdressebeskyttet
                         )
                     }
 

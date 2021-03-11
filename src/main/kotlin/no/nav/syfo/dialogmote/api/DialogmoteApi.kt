@@ -2,9 +2,11 @@ package no.nav.syfo.dialogmote.api
 
 import io.ktor.application.*
 import io.ktor.http.*
+import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import no.nav.syfo.dialogmote.DialogmoteService
+import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
 import no.nav.syfo.dialogmote.domain.toDialogmoteDTO
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.domain.PersonIdentNumber
@@ -53,6 +55,38 @@ fun Route.registerDialogmoteApi(
             } catch (e: IllegalArgumentException) {
                 val illegalArgumentMessage = "Could not retrieve DialogmoteList for PersonIdent"
                 log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(getCallId()))
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
+        }
+        post(dialogmoteApiPersonIdentUrlPath) {
+            val callId = getCallId()
+            try {
+                val token = getBearerHeader()
+                    ?: throw IllegalArgumentException("No Authorization header supplied")
+
+                val newDialogmoteDTO = call.receive<NewDialogmoteDTO>()
+
+                val personidentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
+
+                if (dialogmoteTilgangService.hasAccessToPlanlagtDialogmoteInnkalling(personidentNumber, token, callId)) {
+                    val created = dialogmoteService.createMoteinnkalling(
+                        newDialogmoteDTO = newDialogmoteDTO,
+                        token = token,
+                        callId = callId,
+                    )
+                    if (created) {
+                        call.respond(HttpStatusCode.OK)
+                    } else {
+                        call.respond(HttpStatusCode.InternalServerError, "Failed to create Dialogmoteinnkalling for PlanlagtMoteUuid")
+                    }
+                } else {
+                    val accessDeniedMessage = "Denied Veileder access to creating new Dialogmote"
+                    log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
+                    call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
+                }
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Could not create new Dialogmote"
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }
         }

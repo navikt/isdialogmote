@@ -20,6 +20,7 @@ data class Environment(
     val dialogmoteArbeidstakerUrl: String = getEnvVar("DIALOGMOTE_ARBEIDSTAKER_URL"),
     val isdialogmotepdfgenUrl: String = "http://isdialogmotepdfgen",
     val modiasyforestUrl: String = getEnvVar("MODIASYFOREST_URL"),
+    val syfobehandlendeenhetUrl: String = getEnvVar("SYFOBEHANDLENDEENHET_URL"),
     val syfomoteadminUrl: String = getEnvVar("SYFOMOTEADMIN_URL"),
     val syfopersonUrl: String = getEnvVar("SYFOPERSON_URL"),
     val syfotilgangskontrollUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL")
