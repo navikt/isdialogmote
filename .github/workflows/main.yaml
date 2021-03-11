@@ -56,15 +56,11 @@ jobs:
           echo ${IMAGE}
 
   deploy-dev:
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/dev-')
     name: Deploy to NAIS Dev-gcp
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: deepakputhraya/action-branch-name@master
-        with:
-          allowed_prefixes: 'd-,master'
-          min_length: 4
-          max_length: 50
       - uses: actions/checkout@v1
       - uses: nais/deploy/actions/deploy@v1
         env:
