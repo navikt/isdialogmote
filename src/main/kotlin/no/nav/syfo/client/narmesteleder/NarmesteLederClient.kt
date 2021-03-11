@@ -12,8 +12,6 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.client.person.COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL
-import no.nav.syfo.client.person.COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_SUCCESS
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.util.*
@@ -67,7 +65,7 @@ class NarmesteLederClient(
                 header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
                 accept(ContentType.Application.Json)
             }
-            COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_SUCCESS.inc()
+            COUNT_CALL_PERSON_NARMESTE_LEDER_LIST_SUCCESS.inc()
             response.receive()
         } catch (e: ClientRequestException) {
             handleUnexpectedResponseException(e.response, callId)
@@ -85,7 +83,7 @@ class NarmesteLederClient(
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             callIdArgument(callId)
         )
-        COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL.inc()
+        COUNT_CALL_PERSON_NARMESTE_LEDER_LIST_FAIL.inc()
         return emptyList()
     }
 
