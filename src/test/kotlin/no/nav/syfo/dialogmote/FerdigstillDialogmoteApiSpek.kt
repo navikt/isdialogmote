@@ -36,6 +36,7 @@ class FerdigstillDialogmoteApiSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
+            val isdialogmotepdfgenMock = IsdialogmotepdfgenMock()
             val modiasyforestMock = ModiasyforestMock()
             val syfomoteadminMock = SyfomoteadminMock()
             val syfopersonMock = SyfopersonMock()
@@ -56,6 +57,7 @@ class FerdigstillDialogmoteApiSpek : Spek({
 
             val environment = testEnvironment(
                 kafkaBootstrapServers = embeddedEnvironment.brokersURL,
+                isdialogmotepdfgenUrl = isdialogmotepdfgenMock.url,
                 modiasyforestUrl = modiasyforestMock.url,
                 syfomoteadminUrl = syfomoteadminMock.url,
                 syfopersonUrl = syfopersonMock.url,
@@ -85,6 +87,7 @@ class FerdigstillDialogmoteApiSpek : Spek({
             }
 
             beforeGroup {
+                isdialogmotepdfgenMock.server.start()
                 modiasyforestMock.server.start()
                 syfomoteadminMock.server.start()
                 syfopersonMock.server.start()
@@ -95,6 +98,7 @@ class FerdigstillDialogmoteApiSpek : Spek({
             }
 
             afterGroup {
+                isdialogmotepdfgenMock.server.stop(1L, 10L)
                 modiasyforestMock.server.stop(1L, 10L)
                 syfomoteadminMock.server.stop(1L, 10L)
                 syfopersonMock.server.stop(1L, 10L)

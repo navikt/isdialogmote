@@ -9,13 +9,13 @@ import no.nav.syfo.application.api.authentication.*
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.dialogmote.api.registerDialogmoteActionsApi
-import no.nav.syfo.dialogmote.api.registerDialogmoteApi
+import no.nav.syfo.dialogmote.api.*
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
@@ -67,6 +67,9 @@ fun Application.apiModule(
     val kontaktinformasjonClient = KontaktinformasjonClient(
         syfopersonBaseUrl = environment.syfopersonUrl
     )
+    val pdfGenClient = PdfGenClient(
+        pdfGenBaseUrl = environment.isdialogmotepdfgenUrl
+    )
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
         tilgangskontrollBaseUrl = environment.syfotilgangskontrollUrl
     )
@@ -92,7 +95,8 @@ fun Application.apiModule(
         arbeidstakerVarselService = arbeidstakerVarselService,
         dialogmotedeltakerService = dialogmotedeltakerService,
         moteplanleggerClient = moteplanleggerClient,
-        narmesteLederClient = narmesteLederClient
+        narmesteLederClient = narmesteLederClient,
+        pdfGenClient = pdfGenClient,
     )
 
     routing {
@@ -106,6 +110,11 @@ fun Application.apiModule(
             registerDialogmoteActionsApi(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService,
+            )
+            registerDialogmoteEnhetApi(
+                dialogmoteService = dialogmoteService,
+                dialogmoteTilgangService = dialogmoteTilgangService,
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             )
         }
         authenticate(JwtIssuerType.selvbetjening.name) {

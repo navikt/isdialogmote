@@ -12,7 +12,10 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.client.veiledertilgang.Tilgang
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
+import no.nav.syfo.testhelper.UserConstants.ENHET_NR_NO_ACCESS
 import no.nav.syfo.testhelper.getRandomPort
 
 class VeilederTilgangskontrollMock {
@@ -50,8 +53,23 @@ class VeilederTilgangskontrollMock {
                 }
             }
             routing {
+                post("/syfo-tilgangskontroll/api/tilgang/brukere") {
+                    call.respond(
+                        listOf(
+                            ARBEIDSTAKER_FNR.value,
+                            ARBEIDSTAKER_ADRESSEBESKYTTET.value,
+                        )
+                    )
+                }
                 get("/syfo-tilgangskontroll/api/tilgang/bruker") {
                     if (ARBEIDSTAKER_VEILEDER_NO_ACCESS.value == call.parameters["fnr"]) {
+                        call.respond(HttpStatusCode.Forbidden, tilgangFalse)
+                    } else {
+                        call.respond(tilgangTrue)
+                    }
+                }
+                get("/syfo-tilgangskontroll/api/tilgang/enhet") {
+                    if (ENHET_NR_NO_ACCESS.value == call.parameters["enhet"]) {
                         call.respond(HttpStatusCode.Forbidden, tilgangFalse)
                     } else {
                         call.respond(tilgangTrue)

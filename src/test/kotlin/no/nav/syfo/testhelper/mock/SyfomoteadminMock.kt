@@ -56,7 +56,7 @@ fun planlagtMoteDTO(personIdentNumber: PersonIdentNumber) = PlanlagtMoteDTO(
     status = PlanlagtMoteStatus.OPPRETTET.name,
     fnr = personIdentNumber.value,
     opprettetTidspunkt = LocalDateTime.now().minusDays(1),
-    navEnhet = ENHET_NR,
+    navEnhet = ENHET_NR.value,
     eier = VEILEDER_IDENT,
     deltakere = listOf(
         planlagtMoteDeltakerDTOArbeidstaker,

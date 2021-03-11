@@ -45,8 +45,6 @@ spec:
             diskAutoresize: true
   accessPolicy:
     outbound:
-      rules:
-        - application: isdialogmote-redis
       external:
         - host: kafka-schema-registry.nais-q.adeo.no
         - host: "login.microsoftonline.com"
@@ -54,6 +52,9 @@ spec:
         - host: "syfomoteadmin.dev-fss-pub.nais.io"
         - host: "syfoperson.dev-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
+      rules:
+        - application: isdialogmote-redis
+        - application: isdialogmotepdfgen
   envFrom:
     - configmap: loginservice-idporten
     - secret: isdialogmote-serviceuser

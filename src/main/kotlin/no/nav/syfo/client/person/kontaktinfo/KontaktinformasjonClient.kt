@@ -38,7 +38,7 @@ class KontaktinformasjonClient(
     suspend fun kontaktinformasjon(
         personIdentNumber: PersonIdentNumber,
         token: String,
-        callId: String?
+        callId: String
     ): DigitalKontaktinfoBolk? {
         return try {
             val response: HttpResponse = httpClient.get(personKontaktinfoUrl) {
@@ -50,18 +50,22 @@ class KontaktinformasjonClient(
             COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS.inc()
             response.receive<DigitalKontaktinfoBolk>()
         } catch (e: ClientRequestException) {
-            handleUnexpectedReponseException(e.response)
+            handleUnexpectedResponseException(e.response, callId)
             null
         } catch (e: ServerResponseException) {
-            handleUnexpectedReponseException(e.response)
+            handleUnexpectedResponseException(e.response, callId)
             null
         }
     }
 
-    private fun handleUnexpectedReponseException(response: HttpResponse) {
+    private fun handleUnexpectedResponseException(
+        response: HttpResponse,
+        callId: String,
+    ) {
         log.error(
-            "Error while requesting Kontaktinformasjon of person from Syfoperson with {}",
-            StructuredArguments.keyValue("statusCode", response.status.value.toString())
+            "Error while requesting Kontaktinformasjon of person from Syfoperson with {}, {}",
+            StructuredArguments.keyValue("statusCode", response.status.value.toString()),
+            callIdArgument(callId)
         )
         COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL.inc()
     }

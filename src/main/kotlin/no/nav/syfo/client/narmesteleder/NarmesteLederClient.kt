@@ -70,16 +70,20 @@ class NarmesteLederClient(
             COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_SUCCESS.inc()
             response.receive()
         } catch (e: ClientRequestException) {
-            handleUnexpectedReponseException(e.response)
+            handleUnexpectedResponseException(e.response, callId)
         } catch (e: ServerResponseException) {
-            handleUnexpectedReponseException(e.response)
+            handleUnexpectedResponseException(e.response, callId)
         }
     }
 
-    private fun handleUnexpectedReponseException(response: HttpResponse): List<NarmesteLederDTO> {
+    private fun handleUnexpectedResponseException(
+        response: HttpResponse,
+        callId: String,
+    ): List<NarmesteLederDTO> {
         log.error(
-            "Error while requesting NarmesteLedere of person from Modiasyforest with {}",
-            StructuredArguments.keyValue("statusCode", response.status.value.toString())
+            "Error while requesting NarmesteLedere of person from Modiasyforest with {}, {}",
+            StructuredArguments.keyValue("statusCode", response.status.value.toString()),
+            callIdArgument(callId)
         )
         COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL.inc()
         return emptyList()

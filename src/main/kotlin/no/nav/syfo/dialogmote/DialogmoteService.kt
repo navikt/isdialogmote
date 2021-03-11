@@ -5,10 +5,11 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.database.domain.toDialogmote
-import no.nav.syfo.dialogmote.database.domain.toDialogmoteTidSted
+import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.varsel.MotedeltakerVarselType
 import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
@@ -22,6 +23,7 @@ class DialogmoteService(
     private val dialogmotedeltakerService: DialogmotedeltakerService,
     private val moteplanleggerClient: MoteplanleggerClient,
     private val narmesteLederClient: NarmesteLederClient,
+    private val pdfGenClient: PdfGenClient,
 ) {
     fun getDialogmote(
         moteUUID: UUID
@@ -42,15 +44,29 @@ class DialogmoteService(
         personIdentNumber: PersonIdentNumber,
     ): List<Dialogmote> {
         return database.getDialogmoteList(personIdentNumber).map { pDialogmote ->
-            val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
-            val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
-            val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
-            pDialogmote.toDialogmote(
-                dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
-                dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
-                dialogmoteTidStedList = dialogmoteTidStedList,
-            )
+            extendDialogmoteRelations(pDialogmote)
         }
+    }
+
+    fun getDialogmoteList(
+        enhetNr: EnhetNr,
+    ): List<Dialogmote> {
+        return database.getDialogmoteList(enhetNr).map { pDialogmote ->
+            extendDialogmoteRelations(pDialogmote)
+        }
+    }
+
+    fun extendDialogmoteRelations(
+        pDialogmote: PDialogmote,
+    ): Dialogmote {
+        val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
+        val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
+        val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
+        return pDialogmote.toDialogmote(
+            dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
+            dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
+            dialogmoteTidStedList = dialogmoteTidStedList,
+        )
     }
 
     fun getDialogmoteTidStedList(
@@ -95,6 +111,11 @@ class DialogmoteService(
                 requestByNAVIdent = getNAVIdentFromToken(token)
             )
 
+            val pdfInnkallingArbeidstaker = pdfGenClient.pdfInnkallingArbeidstaker(
+                callId = callId,
+                pdfBody = newDialogmote.toPdfModelInnkallingArbeidstaker()
+            ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidstaker")
+
             val createdDialogmoteIdentifiers: CreatedDialogmoteIdentifiers
 
             database.connection.use { connection ->
@@ -109,7 +130,7 @@ class DialogmoteService(
                     status = "OK",
                     varselType = MotedeltakerVarselType.INNKALT,
                     digitalt = true,
-                    pdf = byteArrayOf(0x2E, 0x38)
+                    pdf = pdfInnkallingArbeidstaker
                 )
 
                 arbeidstakerVarselService.sendVarsel(
@@ -138,12 +159,19 @@ class DialogmoteService(
         }
     }
 
-    fun avlysMoteinnkalling(
+    suspend fun avlysMoteinnkalling(
+        callId: String,
         dialogmote: Dialogmote,
         opprettetAv: String,
     ): Boolean {
         val isDialogmoteTidPassed = dialogmote.tidStedList.latest()?.passed()
             ?: throw RuntimeException("Failed to Avlys Dialogmote: No TidSted found")
+
+        val pdfAvlysningArbeidstaker = pdfGenClient.pdfAvlysningArbeidstaker(
+            callId = callId,
+            pdfBody = dialogmote.toPdfModelAvlysningArbeidstaker()
+        ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidstaker")
+
         database.connection.use { connection ->
             connection.updateMoteStatus(
                 commit = false,
@@ -158,7 +186,7 @@ class DialogmoteService(
                     status = "OK",
                     varselType = MotedeltakerVarselType.AVLYST,
                     digitalt = true,
-                    pdf = byteArrayOf(0x2E, 0x38)
+                    pdf = pdfAvlysningArbeidstaker,
                 )
                 arbeidstakerVarselService.sendVarsel(
                     createdAt = LocalDateTime.now(),
@@ -173,11 +201,17 @@ class DialogmoteService(
         }
     }
 
-    fun nyttMoteinnkallingTidSted(
+    suspend fun nyttMoteinnkallingTidSted(
+        callId: String,
         dialogmote: Dialogmote,
         newDialogmoteTidSted: NewDialogmoteTidSted,
         opprettetAv: String,
     ): Boolean {
+        val pdfEndringArbeidstaker = pdfGenClient.pdfEndringTidStedArbeidstaker(
+            callId = callId,
+            pdfBody = newDialogmoteTidSted.toPdfModelEndringTidStedArbeidstaker()
+        ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidstaker")
+
         database.connection.use { connection ->
             connection.updateMoteTidSted(
                 commit = false,
@@ -192,7 +226,7 @@ class DialogmoteService(
                 status = "OK",
                 varselType = MotedeltakerVarselType.NYTT_TID_STED,
                 digitalt = true,
-                pdf = byteArrayOf(0x2E, 0x38)
+                pdf = pdfEndringArbeidstaker
             )
             arbeidstakerVarselService.sendVarsel(
                 createdAt = LocalDateTime.now(),

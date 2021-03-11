@@ -12,11 +12,16 @@ import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.jackson.*
 import io.ktor.response.*
+import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.net.URL
 import java.util.*
 import java.util.concurrent.TimeUnit
+
+private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.application.api.authentication")
 
 fun Application.installJwtAuthentication(
     jwtIssuerList: List<JwtIssuer>,
@@ -43,11 +48,11 @@ fun Authentication.Configuration.configureJwt(
             if (hasExpectedAudience(credential, jwtIssuer.accectedAudienceList)) {
                 JWTPrincipal(credential.payload)
             } else {
-//                log.warn(
-//                    "Auth: Unexpected audience for jwt {}, {}",
-//                    StructuredArguments.keyValue("issuer", credential.payload.issuer),
-//                    StructuredArguments.keyValue("audience", credential.payload.audience)
-//                )
+                log.warn(
+                    "Auth: Unexpected audience for jwt {}, {}",
+                    StructuredArguments.keyValue("issuer", credential.payload.issuer),
+                    StructuredArguments.keyValue("audience", credential.payload.audience)
+                )
                 null
             }
         }

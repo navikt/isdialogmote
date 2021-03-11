@@ -51,16 +51,20 @@ class AdressebeskyttelseClient(
             cache.setAdressebeskyttelse(personIdentNumber, adressebeskyttelseResponse.beskyttet)
             adressebeskyttelseResponse.beskyttet
         } catch (e: ClientRequestException) {
-            handleUnexpectedReponseException(e.response)
+            handleUnexpectedResponseException(e.response, callId)
         } catch (e: ServerResponseException) {
-            handleUnexpectedReponseException(e.response)
+            handleUnexpectedResponseException(e.response, callId)
         }
     }
 
-    private fun handleUnexpectedReponseException(response: HttpResponse): Boolean {
+    private fun handleUnexpectedResponseException(
+        response: HttpResponse,
+        callId: String,
+    ): Boolean {
         log.error(
-            "Error while requesting Adressebeskyttelse of person from Syfoperson with {}",
-            StructuredArguments.keyValue("statusCode", response.status.value.toString())
+            "Error while requesting Adressebeskyttelse of person from Syfoperson with {}, {}",
+            StructuredArguments.keyValue("statusCode", response.status.value.toString()),
+            callIdArgument(callId)
         )
         COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL.inc()
         return true

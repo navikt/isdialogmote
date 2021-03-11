@@ -1,5 +1,6 @@
 package no.nav.syfo.dialogmote.domain
 
+import no.nav.syfo.client.pdfgen.model.*
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import java.time.LocalDateTime
 import java.util.*
@@ -36,4 +37,13 @@ fun Dialogmote.toDialogmoteDTO() =
         tidStedList = this.tidStedList.map {
             it.toDialogmoteTidStedDTO()
         },
+    )
+
+fun Dialogmote.toPdfModelAvlysningArbeidstaker() =
+    PdfModelAvlysningArbeidstaker(
+        avlysning = AvlysningArbeidstaker(
+            tidOgSted = AvlysningArbeidstakerTidOgSted(
+                sted = this.tidStedList.latest()?.sted ?: ""
+            ),
+        ),
     )
