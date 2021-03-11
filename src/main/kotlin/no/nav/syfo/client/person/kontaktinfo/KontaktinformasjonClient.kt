@@ -1,16 +1,12 @@
 package no.nav.syfo.client.person.kontaktinfo
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
 import io.ktor.client.features.*
-import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS
 import no.nav.syfo.domain.PersonIdentNumber
@@ -26,14 +22,7 @@ class KontaktinformasjonClient(
         this.personKontaktinfoUrl = "$syfopersonBaseUrl$PERSON_KONTAKTINFORMASJON_PATH"
     }
 
-    private val httpClient = HttpClient(CIO) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
-                registerKotlinModule()
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
-    }
+    private val httpClient = httpClientDefault()
 
     suspend fun kontaktinformasjon(
         personIdentNumber: PersonIdentNumber,

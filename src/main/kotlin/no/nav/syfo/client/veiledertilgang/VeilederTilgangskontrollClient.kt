@@ -1,17 +1,12 @@
 package no.nav.syfo.client.veiledertilgang
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
 import io.ktor.client.features.*
-import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.metric.*
@@ -21,15 +16,7 @@ import org.slf4j.LoggerFactory
 class VeilederTilgangskontrollClient(
     private val tilgangskontrollBaseUrl: String
 ) {
-    private val httpClient = HttpClient(CIO) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
-                registerKotlinModule()
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-            }
-        }
-    }
+    private val httpClient = httpClientDefault()
 
     suspend fun hasAccessToPersonList(
         personIdentNumberList: List<PersonIdentNumber>,
