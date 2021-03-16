@@ -9,7 +9,7 @@ data class PDialogmote(
     val uuid: UUID,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val planlagtMoteUuid: UUID,
+    val planlagtMoteUuid: UUID?,
     val planlagtMoteBekreftetTidspunkt: LocalDateTime?,
     val status: String,
     val opprettetAv: String,

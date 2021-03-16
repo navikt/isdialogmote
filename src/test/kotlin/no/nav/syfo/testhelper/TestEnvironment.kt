@@ -9,6 +9,7 @@ fun testEnvironment(
     kafkaBootstrapServers: String,
     isdialogmotepdfgenUrl: String? = null,
     modiasyforestUrl: String? = null,
+    syfobehandlendeenhetUrl: String? = null,
     syfomoteadminUrl: String? = null,
     syfopersonUrl: String? = null,
     syfotilgangskontrollUrl: String? = null
@@ -32,6 +33,7 @@ fun testEnvironment(
     dialogmoteArbeidstakerUrl = "https://www.nav.no/dialogmote",
     isdialogmotepdfgenUrl = isdialogmotepdfgenUrl ?: "http://isdialogmotepdfgen",
     modiasyforestUrl = modiasyforestUrl ?: "modiasyforest",
+    syfobehandlendeenhetUrl = syfobehandlendeenhetUrl ?: "syfobehandlendeenhet",
     syfomoteadminUrl = syfomoteadminUrl ?: "syfomoteadmin",
     syfopersonUrl = syfopersonUrl ?: "syfoperson",
     syfotilgangskontrollUrl = syfotilgangskontrollUrl ?: "tilgangskontroll"

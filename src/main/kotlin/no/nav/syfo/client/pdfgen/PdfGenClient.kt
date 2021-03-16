@@ -1,18 +1,12 @@
 package no.nav.syfo.client.pdfgen
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
 import io.ktor.client.features.*
-import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.client.pdfgen.model.*
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.callIdArgument
@@ -31,16 +25,7 @@ class PdfGenClient(
         this.inkallingArbeidstakerUrl = "$pdfGenBaseUrl$INNKALLING_ARBEIDSTAKER_PATH"
     }
 
-    private val httpClient = HttpClient(CIO) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-            }
-        }
-    }
+    private val httpClient = httpClientDefault()
 
     suspend fun pdfAvlysningArbeidstaker(
         callId: String,

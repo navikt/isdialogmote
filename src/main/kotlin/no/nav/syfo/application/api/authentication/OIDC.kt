@@ -1,6 +1,7 @@
 package no.nav.syfo.application.api.authentication
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.*
@@ -16,6 +17,7 @@ val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         serializer = JacksonSerializer {
             registerKotlinModule()
             registerModule(JavaTimeModule())
+            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         }
     }
     engine {

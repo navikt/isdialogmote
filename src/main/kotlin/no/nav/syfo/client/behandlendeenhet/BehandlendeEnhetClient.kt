@@ -1,4 +1,4 @@
-package no.nav.syfo.client.person.kontaktinfo
+package no.nav.syfo.client.behandlendeenhet
 
 import io.ktor.client.call.*
 import io.ktor.client.features.*
@@ -7,61 +7,57 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.httpClientDefault
-import no.nav.syfo.client.person.COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL
-import no.nav.syfo.client.person.COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
 
-class KontaktinformasjonClient(
-    syfopersonBaseUrl: String
+class BehandlendeEnhetClient(
+    syfobehandlendeenhetBaseUrl: String
 ) {
-    private val personKontaktinfoUrl: String
+    private val personBehandlendeEnhetUrl: String
 
     init {
-        this.personKontaktinfoUrl = "$syfopersonBaseUrl$PERSON_KONTAKTINFORMASJON_PATH"
+        this.personBehandlendeEnhetUrl = "$syfobehandlendeenhetBaseUrl$PERSON_ENHET_PATH"
     }
 
     private val httpClient = httpClientDefault()
 
-    suspend fun kontaktinformasjon(
+    suspend fun getEnhet(
+        callId: String,
         personIdentNumber: PersonIdentNumber,
-        token: String,
-        callId: String
-    ): DigitalKontaktinfoBolk? {
+        token: String
+    ): BehandlendeEnhetDTO? {
         return try {
-            val response: HttpResponse = httpClient.get(personKontaktinfoUrl) {
+            val response: HttpResponse = httpClient.get(personBehandlendeEnhetUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(token))
                 header(NAV_CALL_ID_HEADER, callId)
                 header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
                 accept(ContentType.Application.Json)
             }
-            COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS.inc()
-            response.receive<DigitalKontaktinfoBolk>()
+            COUNT_CALL_BEHANDLENDEENHET_SUCCESS.inc()
+            response.receive()
         } catch (e: ClientRequestException) {
             handleUnexpectedResponseException(e.response, callId)
-            null
         } catch (e: ServerResponseException) {
             handleUnexpectedResponseException(e.response, callId)
-            null
         }
     }
 
     private fun handleUnexpectedResponseException(
         response: HttpResponse,
         callId: String,
-    ) {
+    ): BehandlendeEnhetDTO? {
         log.error(
-            "Error while requesting Kontaktinformasjon of person from Syfoperson with {}, {}",
+            "Error while requesting BehandlendeEnhet of person from Syfobehandlendeenhet with {}, {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             callIdArgument(callId)
         )
-        COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL.inc()
+        COUNT_CALL_BEHANDLENDEENHET_FAIL.inc()
+        return null
     }
 
     companion object {
-        const val PERSON_PATH = "/syfoperson/api/person"
-        const val PERSON_KONTAKTINFORMASJON_PATH = "$PERSON_PATH/kontaktinformasjon"
-        private val log = LoggerFactory.getLogger(KontaktinformasjonClient::class.java)
+        const val PERSON_ENHET_PATH = "/api/internad/personident"
+        private val log = LoggerFactory.getLogger(BehandlendeEnhetClient::class.java)
     }
 }
