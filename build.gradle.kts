@@ -77,7 +77,6 @@ dependencies {
 
     testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusjosejwtVersion}")
     testImplementation("io.ktor:ktor-server-test-host:${Versions.ktorVersion}")
-    testImplementation("io.ktor:ktor-client-mock:${Versions.ktorVersion}")
     testImplementation("io.mockk:mockk:${Versions.mockkVersion}")
     testImplementation("org.amshove.kluent:kluent:${Versions.kluentVersion}")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:${Versions.ktorVersion}")

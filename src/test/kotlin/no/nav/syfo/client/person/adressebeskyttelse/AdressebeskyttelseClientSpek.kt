@@ -1,66 +1,104 @@
 package no.nav.syfo.client.person.adressebeskyttelse
 
-import io.ktor.client.*
-import io.ktor.client.engine.mock.*
-import io.ktor.client.features.json.*
-import io.ktor.http.*
-import io.mockk.every
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.verify
+import io.ktor.server.testing.*
+import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
+import no.nav.syfo.testhelper.mock.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
 class AdressebeskyttelseClientSpek : Spek({
 
-    val cacheKey = "person-adressebeskyttelse-${ARBEIDSTAKER_FNR.value}"
-    val mock = MockEngine {
-        respond(
-            "{ \"beskyttet\": false }",
-            HttpStatusCode.OK,
-            headersOf("Content-Type", ContentType.Application.Json.toString())
-        )
-    }
+    val arbeidstakerIkkeAdressebeskyttet = ARBEIDSTAKER_FNR
+    val arbeidstakerAdressebeskyttet = ARBEIDSTAKER_ADRESSEBESKYTTET
+    val arbeidstakerIkkeAdressebeskyttetCacheKey = "person-adressebeskyttelse-${arbeidstakerIkkeAdressebeskyttet.value}"
+    val arbeidstakerAdressebeskyttetCacheKey = "person-adressebeskyttelse-${arbeidstakerAdressebeskyttet.value}"
 
-    val httpClientMock = HttpClient(mock) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer()
-        }
-    }
+    val anyToken = "token"
+    val anyCallId = "callId"
 
     describe(AdressebeskyttelseClientSpek::class.java.simpleName) {
-        it("hasAdressebeskyttelse returns true when cached value is true") {
-            val cache = mockk<RedisStore>()
-            every { cache.get(cacheKey) } returns "true"
-            val client = AdressebeskyttelseClient(cache, httpClientMock, "url")
-            runBlocking {
-                client.hasAdressebeskyttelse(ARBEIDSTAKER_FNR, "token", "callID") shouldBeEqualTo true
+
+        with(TestApplicationEngine()) {
+            start()
+
+            val syfopersonMock = SyfopersonMock()
+            val cacheMock = mockk<RedisStore>()
+            val client = AdressebeskyttelseClient(cacheMock, syfopersonMock.url)
+
+            beforeGroup {
+                syfopersonMock.server.start()
             }
-            verify(exactly = 1) { cache.get(cacheKey) }
-        }
-        it("hasAdressebeskyttelse returns false when cached value is false") {
-            val cache = mockk<RedisStore>()
-            every { cache.get(cacheKey) } returns "false"
-            val client = AdressebeskyttelseClient(cache, httpClientMock, "url")
-            runBlocking {
-                client.hasAdressebeskyttelse(ARBEIDSTAKER_FNR, "token", "callID") shouldBeEqualTo false
+
+            afterGroup {
+                syfopersonMock.server.stop(1L, 10L)
             }
-            verify(exactly = 1) { cache.get(cacheKey) }
-        }
-        it("hasAdressebeskyttelse calls api and sets cached value when cached value is null") {
-            val cache = mockk<RedisStore>()
-            every { cache.get(cacheKey) } returns null
-            justRun { cache.set(any(), any(), any()) }
-            val client = AdressebeskyttelseClient(cache, httpClientMock, "url")
-            runBlocking {
-                client.hasAdressebeskyttelse(ARBEIDSTAKER_FNR, "token", "callID") shouldBeEqualTo false
+
+            beforeEachTest {
+                clearMocks(cacheMock)
             }
-            verify(exactly = 1) { cache.get(cacheKey) }
-            verify(exactly = 1) { cache.set(cacheKey, "false", 3600) }
+
+            it("hasAdressebeskyttelse returns true when cached value is true") {
+                every { cacheMock.get(arbeidstakerAdressebeskyttetCacheKey) } returns "true"
+
+                runBlocking {
+                    client.hasAdressebeskyttelse(
+                        arbeidstakerAdressebeskyttet,
+                        anyToken,
+                        anyCallId
+                    ) shouldBeEqualTo true
+                }
+                verify(exactly = 1) { cacheMock.get(arbeidstakerAdressebeskyttetCacheKey) }
+                verify(exactly = 0) { cacheMock.set(any(), any(), any()) }
+            }
+
+            it("hasAdressebeskyttelse returns false when cached value is false") {
+                every { cacheMock.get(arbeidstakerIkkeAdressebeskyttetCacheKey) } returns "false"
+
+                runBlocking {
+                    client.hasAdressebeskyttelse(
+                        arbeidstakerIkkeAdressebeskyttet,
+                        anyToken,
+                        anyCallId
+                    ) shouldBeEqualTo false
+                }
+                verify(exactly = 1) { cacheMock.get(arbeidstakerIkkeAdressebeskyttetCacheKey) }
+                verify(exactly = 0) { cacheMock.set(any(), any(), any()) }
+            }
+
+            it("hasAdressebeskyttelse returns false and caches value when no cached value and arbeidstaker ikke adressebeskyttet") {
+                every { cacheMock.get(arbeidstakerIkkeAdressebeskyttetCacheKey) } returns null
+                justRun { cacheMock.set(any(), any(), any()) }
+
+                runBlocking {
+                    client.hasAdressebeskyttelse(
+                        arbeidstakerIkkeAdressebeskyttet,
+                        anyToken,
+                        anyCallId
+                    ) shouldBeEqualTo false
+                }
+                verify(exactly = 1) { cacheMock.get(arbeidstakerIkkeAdressebeskyttetCacheKey) }
+                verify(exactly = 1) { cacheMock.set(arbeidstakerIkkeAdressebeskyttetCacheKey, "false", 3600) }
+            }
+
+            it("hasAdressebeskyttelse returns true caches value when no cached value and arbeidstaker adressebeskyttet") {
+                every { cacheMock.get(arbeidstakerAdressebeskyttetCacheKey) } returns null
+                justRun { cacheMock.set(any(), any(), any()) }
+
+                runBlocking {
+                    client.hasAdressebeskyttelse(
+                        arbeidstakerAdressebeskyttet,
+                        anyToken,
+                        anyCallId
+                    ) shouldBeEqualTo true
+                }
+                verify(exactly = 1) { cacheMock.get(arbeidstakerAdressebeskyttetCacheKey) }
+                verify(exactly = 1) { cacheMock.set(arbeidstakerAdressebeskyttetCacheKey, "true", 3600) }
+            }
         }
     }
 })
