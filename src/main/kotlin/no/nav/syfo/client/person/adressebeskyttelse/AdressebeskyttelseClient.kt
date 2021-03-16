@@ -1,5 +1,6 @@
 package no.nav.syfo.client.person.adressebeskyttelse
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
@@ -16,11 +17,10 @@ import org.slf4j.LoggerFactory
 
 class AdressebeskyttelseClient(
     private val cache: RedisStore,
+    private val httpClient: HttpClient = httpClientDefault(),
     syfopersonBaseUrl: String,
 ) {
     private val personAdressebeskyttelseUrl: String = "$syfopersonBaseUrl$PERSON_ADRESSEBESKYTTELSE_PATH"
-
-    private val httpClient = httpClientDefault()
 
     suspend fun hasAdressebeskyttelse(
         personIdentNumber: PersonIdentNumber,
@@ -28,9 +28,9 @@ class AdressebeskyttelseClient(
         callId: String
     ): Boolean {
         val cacheKey = "$CACHE_ADRESSEBESKYTTELSE_KEY_PREFIX${personIdentNumber.value}"
-        when (val cachedAdresseBeskyttelse = cache.get(cacheKey)) {
+        return when (val cachedAdresseBeskyttelse = cache.get(cacheKey)) {
             null ->
-                return try {
+                try {
                     val response: HttpResponse = httpClient.get(personAdressebeskyttelseUrl) {
                         header(HttpHeaders.Authorization, bearerHeader(token))
                         header(NAV_CALL_ID_HEADER, callId)
@@ -50,7 +50,7 @@ class AdressebeskyttelseClient(
                 } catch (e: ServerResponseException) {
                     handleUnexpectedResponseException(e.response, callId)
                 }
-            else -> return cachedAdresseBeskyttelse.toBoolean()
+            else -> cachedAdresseBeskyttelse.toBoolean()
         }
     }
 

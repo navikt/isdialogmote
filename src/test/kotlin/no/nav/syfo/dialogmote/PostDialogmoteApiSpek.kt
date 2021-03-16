@@ -67,6 +67,8 @@ class PostDialogmoteApiSpek : Spek({
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
 
+            val redisServer = testRedis(environment)
+
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
 
             val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
@@ -96,6 +98,7 @@ class PostDialogmoteApiSpek : Spek({
                 tilgangskontrollMock.server.start()
 
                 embeddedEnvironment.start()
+                redisServer.start()
             }
 
             afterGroup {
@@ -108,6 +111,7 @@ class PostDialogmoteApiSpek : Spek({
 
                 database.stop()
                 embeddedEnvironment.tearDown()
+                redisServer.stop()
             }
 
             describe("Create Dialogmote for PersonIdent payload") {
