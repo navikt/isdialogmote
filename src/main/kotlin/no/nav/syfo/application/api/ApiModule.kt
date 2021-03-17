@@ -6,6 +6,7 @@ import io.ktor.routing.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.*
+import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
@@ -21,6 +22,9 @@ import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.varsel.arbeidstaker.registerArbeidstakerVarselApi
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
+import redis.clients.jedis.Protocol
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -55,8 +59,18 @@ fun Application.apiModule(
         modiasyforestBaseUrl = environment.modiasyforestUrl
     )
 
+    val cache = RedisStore(
+        JedisPool(
+            JedisPoolConfig(),
+            environment.redisHost,
+            environment.redisPort,
+            Protocol.DEFAULT_TIMEOUT,
+            environment.redisSecret
+        )
+    )
     val adressebeskyttelseClient = AdressebeskyttelseClient(
-        syfopersonBaseUrl = environment.syfopersonUrl
+        cache = cache,
+        syfopersonBaseUrl = environment.syfopersonUrl,
     )
     val behandlendeEnhetClient = BehandlendeEnhetClient(
         syfobehandlendeenhetBaseUrl = environment.syfobehandlendeenhetUrl

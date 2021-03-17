@@ -6,6 +6,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_SUCCESS
@@ -14,14 +15,10 @@ import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
 
 class AdressebeskyttelseClient(
-    syfopersonBaseUrl: String
+    private val cache: RedisStore,
+    syfopersonBaseUrl: String,
 ) {
-    private val personAdressebeskyttelseUrl: String
-
-    init {
-        this.personAdressebeskyttelseUrl = "$syfopersonBaseUrl$PERSON_ADRESSEBESKYTTELSE_PATH"
-    }
-
+    private val personAdressebeskyttelseUrl: String = "$syfopersonBaseUrl$PERSON_ADRESSEBESKYTTELSE_PATH"
     private val httpClient = httpClientDefault()
 
     suspend fun hasAdressebeskyttelse(
@@ -29,19 +26,31 @@ class AdressebeskyttelseClient(
         token: String,
         callId: String
     ): Boolean {
-        return try {
-            val response: HttpResponse = httpClient.get(personAdressebeskyttelseUrl) {
-                header(HttpHeaders.Authorization, bearerHeader(token))
-                header(NAV_CALL_ID_HEADER, callId)
-                header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
-                accept(ContentType.Application.Json)
-            }
-            COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_SUCCESS.inc()
-            response.receive<AdressebeskyttelseResponse>().beskyttet
-        } catch (e: ClientRequestException) {
-            handleUnexpectedResponseException(e.response, callId)
-        } catch (e: ServerResponseException) {
-            handleUnexpectedResponseException(e.response, callId)
+        val cacheKey = "$CACHE_ADRESSEBESKYTTELSE_KEY_PREFIX${personIdentNumber.value}"
+        val cachedAdressebeskyttelse = cache.get(cacheKey)
+        return when (cachedAdressebeskyttelse) {
+            null ->
+                try {
+                    val response: HttpResponse = httpClient.get(personAdressebeskyttelseUrl) {
+                        header(HttpHeaders.Authorization, bearerHeader(token))
+                        header(NAV_CALL_ID_HEADER, callId)
+                        header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
+                        accept(ContentType.Application.Json)
+                    }
+                    val adressebeskyttelseResponse = response.receive<AdressebeskyttelseResponse>()
+                    COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_SUCCESS.inc()
+                    cache.set(
+                        cacheKey,
+                        adressebeskyttelseResponse.beskyttet.toString(),
+                        CACHE_ADRESSEBESKYTTELSE_EXPIRE_SECONDS
+                    )
+                    adressebeskyttelseResponse.beskyttet
+                } catch (e: ClientRequestException) {
+                    handleUnexpectedResponseException(e.response, callId)
+                } catch (e: ServerResponseException) {
+                    handleUnexpectedResponseException(e.response, callId)
+                }
+            else -> cachedAdressebeskyttelse.toBoolean()
         }
     }
 
@@ -61,6 +70,10 @@ class AdressebeskyttelseClient(
     companion object {
         const val PERSON_PATH = "/syfoperson/api/person"
         const val PERSON_ADRESSEBESKYTTELSE_PATH = "$PERSON_PATH/adressebeskyttelse"
+
+        const val CACHE_ADRESSEBESKYTTELSE_KEY_PREFIX = "person-adressebeskyttelse-"
+        const val CACHE_ADRESSEBESKYTTELSE_EXPIRE_SECONDS = 3600
+
         private val log = LoggerFactory.getLogger(AdressebeskyttelseClient::class.java)
     }
 }

@@ -62,6 +62,8 @@ class PostDialogmoteTidStedApiSpek : Spek({
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
 
+            val redisServer = testRedis(environment)
+
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
 
             val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
@@ -90,6 +92,7 @@ class PostDialogmoteTidStedApiSpek : Spek({
                 tilgangskontrollMock.server.start()
 
                 embeddedEnvironment.start()
+                redisServer.start()
             }
 
             afterGroup {
@@ -101,6 +104,7 @@ class PostDialogmoteTidStedApiSpek : Spek({
 
                 database.stop()
                 embeddedEnvironment.tearDown()
+                redisServer.stop()
             }
 
             describe("Post DialogmoteTidSted") {

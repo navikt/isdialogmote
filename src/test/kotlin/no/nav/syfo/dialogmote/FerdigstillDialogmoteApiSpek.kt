@@ -63,6 +63,8 @@ class FerdigstillDialogmoteApiSpek : Spek({
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
 
+            val redisServer = testRedis(environment)
+
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
 
             val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
@@ -91,6 +93,7 @@ class FerdigstillDialogmoteApiSpek : Spek({
                 tilgangskontrollMock.server.start()
 
                 embeddedEnvironment.start()
+                redisServer.start()
             }
 
             afterGroup {
@@ -102,6 +105,7 @@ class FerdigstillDialogmoteApiSpek : Spek({
 
                 database.stop()
                 embeddedEnvironment.tearDown()
+                redisServer.stop()
             }
 
             describe("Ferdigstill Dialogmote") {

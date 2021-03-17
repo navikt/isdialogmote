@@ -61,6 +61,8 @@ class AvlysDialogmoteApiSpek : Spek({
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
 
+            val redisServer = testRedis(environment)
+
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
 
             val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
@@ -89,6 +91,7 @@ class AvlysDialogmoteApiSpek : Spek({
                 tilgangskontrollMock.server.start()
 
                 embeddedEnvironment.start()
+                redisServer.start()
             }
 
             afterGroup {
@@ -100,6 +103,7 @@ class AvlysDialogmoteApiSpek : Spek({
 
                 database.stop()
                 embeddedEnvironment.tearDown()
+                redisServer.stop()
             }
 
             describe("Avlys Dialogmote") {
@@ -145,7 +149,8 @@ class AvlysDialogmoteApiSpek : Spek({
                             createdDialogmoteUUID = dialogmoteDTO.uuid
                         }
 
-                        val urlMoteUUIDAvlys = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                        val urlMoteUUIDAvlys =
+                            "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
 
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
@@ -186,7 +191,8 @@ class AvlysDialogmoteApiSpek : Spek({
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
                             dialogmoteTidStedDTO.sted shouldBeEqualTo planlagtMoteDTO?.tidStedValgt()?.sted
-                            val isTodayBeforeDialogmotetid = LocalDateTime.now().isBefore(planlagtMoteDTO?.tidStedValgt()?.tid)
+                            val isTodayBeforeDialogmotetid =
+                                LocalDateTime.now().isBefore(planlagtMoteDTO?.tidStedValgt()?.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo true
 
                             verify(exactly = 2) { brukernotifikasjonProducer.sendOppgave(any(), any()) }

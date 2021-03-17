@@ -61,6 +61,8 @@ class GetDialogmoteEnhetApiSpek : Spek({
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
 
+            val redisServer = testRedis(environment)
+
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
 
             val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
@@ -85,6 +87,7 @@ class GetDialogmoteEnhetApiSpek : Spek({
                 syfopersonMock.server.start()
                 tilgangskontrollMock.server.start()
                 embeddedEnvironment.start()
+                redisServer.start()
             }
 
             afterGroup {
@@ -93,6 +96,7 @@ class GetDialogmoteEnhetApiSpek : Spek({
 
                 database.stop()
                 embeddedEnvironment.tearDown()
+                redisServer.stop()
             }
 
             describe("Get Dialogmoter for EnhetNr") {

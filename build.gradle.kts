@@ -11,6 +11,7 @@ object Versions {
     const val flywayVersion = "7.5.2"
     const val hikariVersion = "4.0.1"
     const val jacksonVersion = "2.11.3"
+    const val jedisVersion = "3.5.1"
     const val kafkaVersion = "2.7.0"
     const val kafkaEmbeddedVersion = "2.5.0"
     const val ktorVersion = "1.5.0"
@@ -22,6 +23,7 @@ object Versions {
     const val postgresEmbeddedVersion = "0.13.3"
     const val postgresVersion = "42.2.18"
     const val prometheusVersion = "0.9.0"
+    const val redisEmbeddedVersion = "0.7.3"
     const val spekVersion = "2.0.15"
 }
 
@@ -55,6 +57,10 @@ dependencies {
     implementation("io.prometheus:simpleclient_common:${Versions.prometheusVersion}")
 
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jacksonVersion}")
+
+    // Cache
+    implementation("redis.clients:jedis:${Versions.jedisVersion}")
+    testImplementation("it.ozimov:embedded-redis:${Versions.redisEmbeddedVersion}")
 
     // Database
     implementation("org.postgresql:postgresql:${Versions.postgresVersion}")
