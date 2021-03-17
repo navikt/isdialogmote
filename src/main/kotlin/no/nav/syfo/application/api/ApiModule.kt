@@ -75,6 +75,9 @@ fun Application.apiModule(
     val behandlendeEnhetClient = BehandlendeEnhetClient(
         syfobehandlendeenhetBaseUrl = environment.syfobehandlendeenhetUrl
     )
+    val behandlendeEnhetClient = BehandlendeEnhetClient(
+        syfobehandlendeenhetBaseUrl = environment.syfobehandlendeenhetUrl
+    )
     val kontaktinformasjonClient = KontaktinformasjonClient(
         syfopersonBaseUrl = environment.syfopersonUrl
     )
