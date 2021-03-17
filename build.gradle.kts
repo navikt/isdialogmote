@@ -23,7 +23,7 @@ object Versions {
     const val postgresEmbeddedVersion = "0.13.3"
     const val postgresVersion = "42.2.18"
     const val prometheusVersion = "0.9.0"
-    const val redisEmbeddedVersion = "0.6"
+    const val redisEmbeddedVersion = "0.7.3"
     const val spekVersion = "2.0.15"
 }
 
@@ -60,7 +60,7 @@ dependencies {
 
     // Cache
     implementation("redis.clients:jedis:${Versions.jedisVersion}")
-    testImplementation("com.github.kstyrc:embedded-redis:${Versions.redisEmbeddedVersion}")
+    testImplementation("it.ozimov:embedded-redis:${Versions.redisEmbeddedVersion}")
 
     // Database
     implementation("org.postgresql:postgresql:${Versions.postgresVersion}")

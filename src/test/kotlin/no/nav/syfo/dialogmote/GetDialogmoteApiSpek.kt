@@ -26,7 +26,6 @@ import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import redis.embedded.RedisServer
 
 class GetDialogmoteApiSpek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -62,7 +61,7 @@ class GetDialogmoteApiSpek : Spek({
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
 
-            val redisServer = RedisServer(environment.redisPort)
+            val redisServer = testRedis(environment)
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
 

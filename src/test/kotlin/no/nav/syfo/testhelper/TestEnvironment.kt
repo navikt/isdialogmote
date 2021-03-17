@@ -20,6 +20,7 @@ fun testEnvironment(
     kafkaSchemaRegistryUrl = "http://kafka-schema-registry.tpa.svc.nais.local:8081",
     redisHost = "localhost",
     redisPort = 6379,
+    redisSecret = "password",
     serviceuserUsername = "user",
     serviceuserPassword = "password",
     isdialogmoteDbHost = "localhost",

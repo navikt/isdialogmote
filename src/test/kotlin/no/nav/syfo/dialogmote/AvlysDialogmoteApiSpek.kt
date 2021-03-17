@@ -23,7 +23,6 @@ import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.*
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import redis.embedded.RedisServer
 import java.time.LocalDateTime
 
 class AvlysDialogmoteApiSpek : Spek({
@@ -62,7 +61,7 @@ class AvlysDialogmoteApiSpek : Spek({
                 syfotilgangskontrollUrl = tilgangskontrollMock.url
             )
 
-            val redisServer = RedisServer(environment.redisPort)
+            val redisServer = testRedis(environment)
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
 
@@ -150,7 +149,8 @@ class AvlysDialogmoteApiSpek : Spek({
                             createdDialogmoteUUID = dialogmoteDTO.uuid
                         }
 
-                        val urlMoteUUIDAvlys = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                        val urlMoteUUIDAvlys =
+                            "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
 
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
@@ -191,7 +191,8 @@ class AvlysDialogmoteApiSpek : Spek({
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
                             dialogmoteTidStedDTO.sted shouldBeEqualTo planlagtMoteDTO?.tidStedValgt()?.sted
-                            val isTodayBeforeDialogmotetid = LocalDateTime.now().isBefore(planlagtMoteDTO?.tidStedValgt()?.tid)
+                            val isTodayBeforeDialogmotetid =
+                                LocalDateTime.now().isBefore(planlagtMoteDTO?.tidStedValgt()?.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo true
 
                             verify(exactly = 2) { brukernotifikasjonProducer.sendOppgave(any(), any()) }

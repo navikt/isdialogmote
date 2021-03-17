@@ -10,6 +10,7 @@ Isdialogmote is a backend service for handling of DialogmoteInnkallinger. Dialog
 * Kafka
 * Ktor
 * Postgres
+* Redis
 
 ##### Test Libraries:
 * Kluent
@@ -35,3 +36,6 @@ Creating a docker image should be as simple as `docker build -t ispersonoppgave 
 
 #### Run Docker Image
 `docker run --rm -it -p 8080:8080 ispersonoppgave`
+
+### Cache
+This application uses Redis for caching. Redis is deployed automatically on changes to workflow or config on master branch. For manual deploy, run: `kubectl apply -f .nais/redis-config.yaml`.
