@@ -6,13 +6,13 @@ import io.ktor.client.engine.apache.*
 import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.client.defaultJacksonMapper
+import no.nav.syfo.client.configuredJacksonMapper
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import java.net.ProxySelector
 
 val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
     install(JsonFeature) {
-        serializer = JacksonSerializer(defaultJacksonMapper())
+        serializer = JacksonSerializer(configuredJacksonMapper())
     }
     engine {
         customizeClient {

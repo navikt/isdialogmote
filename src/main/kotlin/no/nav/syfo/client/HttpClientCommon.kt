@@ -6,6 +6,6 @@ import io.ktor.client.features.json.*
 
 fun httpClientDefault() = HttpClient(CIO) {
     install(JsonFeature) {
-        serializer = JacksonSerializer(defaultJacksonMapper())
+        serializer = JacksonSerializer(configuredJacksonMapper())
     }
 }

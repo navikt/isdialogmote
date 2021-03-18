@@ -1,11 +1,11 @@
 package no.nav.syfo.application.cache
 
-import no.nav.syfo.client.defaultJacksonMapper
+import no.nav.syfo.client.configuredJacksonMapper
 import redis.clients.jedis.JedisPool
 
 class RedisStore(private val jedisPool: JedisPool) {
 
-    val mapper = defaultJacksonMapper()
+    val mapper = configuredJacksonMapper()
 
     inline fun <reified T> getObject(key: String): T? {
         val value = get(key)

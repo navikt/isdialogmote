@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 
-fun defaultJacksonMapper() = jacksonObjectMapper().apply(configureJacksonMapper())
+fun configuredJacksonMapper() = jacksonObjectMapper().apply(configureJacksonMapper())
 
 fun configureJacksonMapper(): ObjectMapper.() -> Unit = {
     registerModule(JavaTimeModule())
