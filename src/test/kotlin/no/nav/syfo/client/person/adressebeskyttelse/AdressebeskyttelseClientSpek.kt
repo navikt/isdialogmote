@@ -85,7 +85,7 @@ class AdressebeskyttelseClientSpek : Spek({
                 verify(exactly = 1) { cacheMock.set(arbeidstakerIkkeAdressebeskyttetCacheKey, "false", 3600) }
             }
 
-            it("hasAdressebeskyttelse returns true caches value when no cached value and arbeidstaker adressebeskyttet") {
+            it("hasAdressebeskyttelse returns true and caches value when no cached value and arbeidstaker adressebeskyttet") {
                 every { cacheMock.get(arbeidstakerAdressebeskyttetCacheKey) } returns null
                 justRun { cacheMock.set(any(), any(), any()) }
 

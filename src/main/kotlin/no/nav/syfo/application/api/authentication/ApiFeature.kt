@@ -1,10 +1,6 @@
 package no.nav.syfo.application.api.authentication
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.auth.jwt.*
@@ -13,6 +9,7 @@ import io.ktor.http.*
 import io.ktor.jackson.*
 import io.ktor.response.*
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.client.configureJacksonMapper
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
 import org.slf4j.Logger
@@ -79,12 +76,7 @@ fun Application.installCallId() {
 
 fun Application.installContentNegotiation() {
     install(ContentNegotiation) {
-        jackson {
-            registerKotlinModule()
-            registerModule(JavaTimeModule())
-            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        }
+        jackson(block = configureJacksonMapper())
     }
 }
 

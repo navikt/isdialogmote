@@ -6,6 +6,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS
@@ -14,13 +15,10 @@ import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
 
 class KontaktinformasjonClient(
+    private val cache: RedisStore,
     syfopersonBaseUrl: String
 ) {
-    private val personKontaktinfoUrl: String
-
-    init {
-        this.personKontaktinfoUrl = "$syfopersonBaseUrl$PERSON_KONTAKTINFORMASJON_PATH"
-    }
+    private val personKontaktinfoUrl: String = "$syfopersonBaseUrl$PERSON_KONTAKTINFORMASJON_PATH"
 
     private val httpClient = httpClientDefault()
 
@@ -29,21 +27,29 @@ class KontaktinformasjonClient(
         token: String,
         callId: String
     ): DigitalKontaktinfoBolk? {
-        return try {
-            val response: HttpResponse = httpClient.get(personKontaktinfoUrl) {
-                header(HttpHeaders.Authorization, bearerHeader(token))
-                header(NAV_CALL_ID_HEADER, callId)
-                header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
-                accept(ContentType.Application.Json)
-            }
-            COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS.inc()
-            response.receive<DigitalKontaktinfoBolk>()
-        } catch (e: ClientRequestException) {
-            handleUnexpectedResponseException(e.response, callId)
-            null
-        } catch (e: ServerResponseException) {
-            handleUnexpectedResponseException(e.response, callId)
-            null
+        val cacheKey = "${CACHE_KONTAKTINFORMASJON_KEY_PREFIX}${personIdentNumber.value}"
+        val cachedKontaktinformasjon = cache.getObject<DigitalKontaktinfoBolk>(cacheKey)
+        return when (cachedKontaktinformasjon) {
+            null ->
+                try {
+                    val response: HttpResponse = httpClient.get(personKontaktinfoUrl) {
+                        header(HttpHeaders.Authorization, bearerHeader(token))
+                        header(NAV_CALL_ID_HEADER, callId)
+                        header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
+                        accept(ContentType.Application.Json)
+                    }
+                    val digitalKontaktinfoBolkResponse = response.receive<DigitalKontaktinfoBolk>()
+                    COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS.inc()
+                    cache.setObject(cacheKey, digitalKontaktinfoBolkResponse, CACHE_KONTAKTINFORMASJON_EXPIRE_SECONDS)
+                    digitalKontaktinfoBolkResponse
+                } catch (e: ClientRequestException) {
+                    handleUnexpectedResponseException(e.response, callId)
+                    null
+                } catch (e: ServerResponseException) {
+                    handleUnexpectedResponseException(e.response, callId)
+                    null
+                }
+            else -> cachedKontaktinformasjon
         }
     }
 
@@ -62,6 +68,10 @@ class KontaktinformasjonClient(
     companion object {
         const val PERSON_PATH = "/syfoperson/api/person"
         const val PERSON_KONTAKTINFORMASJON_PATH = "$PERSON_PATH/kontaktinformasjon"
+
+        const val CACHE_KONTAKTINFORMASJON_KEY_PREFIX = "person-kontaktinformasjon-"
+        const val CACHE_KONTAKTINFORMASJON_EXPIRE_SECONDS = 600
+
         private val log = LoggerFactory.getLogger(KontaktinformasjonClient::class.java)
     }
 }
