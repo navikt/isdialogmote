@@ -76,6 +76,7 @@ fun Application.apiModule(
         syfobehandlendeenhetBaseUrl = environment.syfobehandlendeenhetUrl
     )
     val kontaktinformasjonClient = KontaktinformasjonClient(
+        cache = cache,
         syfopersonBaseUrl = environment.syfopersonUrl
     )
     val pdfGenClient = PdfGenClient(
