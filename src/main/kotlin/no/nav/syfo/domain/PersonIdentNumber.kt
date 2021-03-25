@@ -5,7 +5,7 @@ data class PersonIdentNumber(val value: String) {
 
     init {
         if (!elevenDigits.matches(value)) {
-            throw IllegalArgumentException("$value is not a valid PersonIdentNumber")
+            throw IllegalArgumentException("Value is not a valid PersonIdentNumber")
         }
     }
 }
