@@ -9,7 +9,7 @@ on:
         default: ""
 
 env:
-  IMAGE: docker.pkg.github.com/${{ github.repository }}/ispengestopp:${{ github.event.inputs.gitCommit }}
+  IMAGE: docker.pkg.github.com/${{ github.repository }}/isdialogmote:${{ github.event.inputs.gitCommit }}
 
 jobs:
   build:
@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: check if built
         run: |
-          manifest=$(curl -X GET "https://docker.pkg.github.com/v2/navikt/ispengestopp/ispengestopp/manifests/${{ github.event.inputs.gitCommit }}" -u "$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}" | jq '.')
+          manifest=$(curl -X GET "https://docker.pkg.github.com/v2/navikt/isdialogmote/isdialogmote/manifests/${{ github.event.inputs.gitCommit }}" -u "$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}" | jq '.')
           echo ${manifest}
           found=$(echo "$manifest" | grep "schemaVersion" || true)
           echo ${found}
