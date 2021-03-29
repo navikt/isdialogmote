@@ -1,0 +1,50 @@
+name: Deploy to dev-fss
+
+on:
+  workflow_dispatch:
+    inputs:
+      gitCommit:
+        description: "Complete git commit to deploy"
+        required: true
+        default: ""
+
+env:
+  IMAGE: docker.pkg.github.com/${{ github.repository }}/ispengestopp:${{ github.event.inputs.gitCommit }}
+
+jobs:
+  build:
+    name: Check if built, if not, Checkout code and create docker tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: check if built
+        run: |
+          manifest=$(curl -X GET "https://docker.pkg.github.com/v2/navikt/ispengestopp/ispengestopp/manifests/${{ github.event.inputs.gitCommit }}" -u "$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}" | jq '.')
+          echo ${manifest}
+          found=$(echo "$manifest" | grep "schemaVersion" || true)
+          echo ${found}
+          echo "found_image=$found" >> $GITHUB_ENV
+      - name: Checkout code
+        if: ${{ !env.found_image }}
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.gitCommit }}
+      - name: Build and publish Docker image if not already done
+        if: ${{ !env.found_image }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          docker build --tag ${IMAGE} .
+          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
+          docker push ${IMAGE}
+          echo ${IMAGE}
+  deploy-dev:
+    name: Deploy to NAIS Dev-fss
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: dev-fss
+          RESOURCE: .nais/naiserator-dev.yaml
