@@ -25,5 +25,6 @@ spec:
     inbound:
       rules:
         - application: isdialogmote
+        - application: isdialogmote-redisexporter
   envFrom:
     - secret: isdialogmote-redis-password
