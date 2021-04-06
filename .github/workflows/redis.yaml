@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/redis.yaml'
       - '.nais/redis-config.yaml'
+      - '.nais/redisexporter.yaml'
 
 jobs:
   apply-redis-cache:
@@ -20,4 +21,4 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
-          RESOURCE: .nais/redis-config.yaml
+          RESOURCE: ".nais/redis-config.yaml,.nais/redisexporter.yaml"
