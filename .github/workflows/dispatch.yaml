@@ -23,11 +23,30 @@ jobs:
           found=$(echo "$manifest" | grep "schemaVersion" || true)
           echo ${found}
           echo "found_image=$found" >> $GITHUB_ENV
+      - name: Setup java
+        if: ${{ !env.found_image }}
+        uses: actions/setup-java@v1
+        with:
+          java-version: '11.x'
       - name: Checkout code
         if: ${{ !env.found_image }}
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.gitCommit }}
+      - name: Run tests
+        if: ${{ !env.found_image }}
+        env:
+          ORG_GRADLE_PROJECT_githubUser: x-access-token
+          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./gradlew test
+      - name: Build jar
+        if: ${{ !env.found_image }}
+        env:
+          ORG_GRADLE_PROJECT_githubUser: x-access-token
+          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./gradlew shadowJar -x test
       - name: Build and publish Docker image if not already done
         if: ${{ !env.found_image }}
         env:
