@@ -5,10 +5,10 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
-import io.mockk.justRun
-import io.mockk.mockk
+import io.mockk.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.api.apiModule
+import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
 import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
@@ -64,6 +64,8 @@ class GetDialogmoteApiSpek : Spek({
             val redisServer = testRedis(environment)
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            val mqSenderMock = mockk<MQSenderInterface>()
+            justRun { mqSenderMock.sendMQMessage(any(), any()) }
 
             val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
             val wellKnownVeileder = wellKnownSelvbetjeningMock()
@@ -72,6 +74,7 @@ class GetDialogmoteApiSpek : Spek({
                 applicationState = applicationState,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 database = database,
+                mqSender = mqSenderMock,
                 environment = environment,
                 wellKnownSelvbetjening = wellKnownSelvbetjening,
                 wellKnownVeileder = wellKnownVeileder,
@@ -123,6 +126,7 @@ class GetDialogmoteApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
 
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
@@ -145,6 +149,7 @@ class GetDialogmoteApiSpek : Spek({
                             handleRequest(HttpMethod.Get, url) {}
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -155,6 +160,7 @@ class GetDialogmoteApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -166,6 +172,7 @@ class GetDialogmoteApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -177,6 +184,7 @@ class GetDialogmoteApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -188,6 +196,7 @@ class GetDialogmoteApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
                 }

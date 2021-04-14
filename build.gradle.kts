@@ -15,6 +15,7 @@ object Versions {
     const val kafkaVersion = "2.7.0"
     const val kafkaEmbeddedVersion = "2.5.0"
     const val ktorVersion = "1.5.0"
+    const val jaxbVersion = "2.3.0"
     const val kluentVersion = "1.61"
     const val logbackVersion = "1.2.3"
     const val logstashEncoderVersion = "6.3"
@@ -25,6 +26,10 @@ object Versions {
     const val prometheusVersion = "0.9.0"
     const val redisEmbeddedVersion = "0.7.3"
     const val spekVersion = "2.0.15"
+    const val jmsVersion = "2.0.3"
+    const val mqVersion = "9.0.4.0"
+    const val tjenesteSpesifikasjonerVersion = "1.2019.09.25-00.21-49b69f0625e0"
+    const val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
 }
 
 plugins {
@@ -33,10 +38,19 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
 }
 
+val githubUser: String by project
+val githubPassword: String by project
 repositories {
     jcenter()
     maven(url = "https://packages.confluent.io/maven/")
     maven(url = "https://jitpack.io")
+    maven {
+        url = uri("https://maven.pkg.github.com/navikt/tjenestespesifikasjoner")
+        credentials {
+            username = githubUser
+            password = githubPassword
+        }
+    }
 }
 
 dependencies {
@@ -57,6 +71,8 @@ dependencies {
     implementation("io.prometheus:simpleclient_common:${Versions.prometheusVersion}")
 
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jacksonVersion}")
+    implementation("javax.xml.bind:jaxb-api:${Versions.jaxbVersion}")
+    implementation("org.glassfish.jaxb:jaxb-runtime:${Versions.jaxbVersion}")
 
     // Cache
     implementation("redis.clients:jedis:${Versions.jedisVersion}")
@@ -74,6 +90,12 @@ dependencies {
     implementation("io.confluent:kafka-schema-registry:${Versions.confluentVersion}")
     implementation("com.github.navikt:brukernotifikasjon-schemas:${Versions.brukernotifikasjonAvroVersion}")
     testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedVersion}")
+
+    // MQ
+    implementation("jakarta.jms:jakarta.jms-api:${Versions.jmsVersion}")
+    implementation("com.ibm.mq:com.ibm.mq.allclient:${Versions.mqVersion}")
+    implementation("no.nav.tjenestespesifikasjoner:nav-virksomhet-varselMedHandling-v1-meldingsdefinisjon:${Versions.tjenesteSpesifikasjonerVersion}")
+    implementation("no.nav.tjenestespesifikasjoner:servicemeldingMedKontaktinformasjon-v1-tjenestespesifikasjon:${Versions.tjenesteSpesifikasjonerGithubVersion}")
 
     testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusjosejwtVersion}")
     testImplementation("io.ktor:ktor-server-test-host:${Versions.ktorVersion}")

@@ -8,6 +8,7 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.api.apiModule
+import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.dialogmote.api.*
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
@@ -65,6 +66,8 @@ class PostDialogmoteTidStedApiSpek : Spek({
             val redisServer = testRedis(environment)
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            val mqSenderMock = mockk<MQSenderInterface>(relaxed = true)
+            justRun { mqSenderMock.sendMQMessage(any(), any()) }
 
             val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
             val wellKnownVeileder = wellKnownSelvbetjeningMock()
@@ -73,6 +76,7 @@ class PostDialogmoteTidStedApiSpek : Spek({
                 applicationState = applicationState,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 database = database,
+                mqSender = mqSenderMock,
                 environment = environment,
                 wellKnownSelvbetjening = wellKnownSelvbetjening,
                 wellKnownVeileder = wellKnownVeileder,
@@ -128,6 +132,8 @@ class PostDialogmoteTidStedApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            clearMocks(mqSenderMock)
                         }
 
                         val createdDialogmoteUUID: String
@@ -139,6 +145,8 @@ class PostDialogmoteTidStedApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
+                            clearMocks(mqSenderMock)
 
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
@@ -164,6 +172,7 @@ class PostDialogmoteTidStedApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.NYTT_TID_STED, any()) }
                         }
 
                         with(

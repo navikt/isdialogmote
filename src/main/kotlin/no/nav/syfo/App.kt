@@ -11,6 +11,7 @@ import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.api.authentication.getWellKnown
 import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
+import no.nav.syfo.application.mq.MQSender
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.kafkaBrukernotifikasjonProducerConfig
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -44,6 +45,7 @@ fun main() {
                 kafkaProducerOppgave = kafkaProducerOppgave,
                 kafkaProducerDone = kafkaProducerDone,
             )
+            val mqSender = MQSender(environment)
 
             module {
                 databaseModule(
@@ -53,12 +55,12 @@ fun main() {
                     applicationState = applicationState,
                     brukernotifikasjonProducer = brukernotifikasjonProducer,
                     database = applicationDatabase,
+                    mqSender = mqSender,
                     environment = environment,
                     wellKnownSelvbetjening = getWellKnown(environment.loginserviceIdportenDiscoveryUrl),
                     wellKnownVeileder = getWellKnown(environment.aadDiscoveryUrl),
                 )
             }
-
             applicationState.ready = true
         }
     )

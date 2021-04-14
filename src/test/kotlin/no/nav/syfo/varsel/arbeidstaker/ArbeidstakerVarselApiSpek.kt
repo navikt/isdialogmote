@@ -8,6 +8,7 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.api.apiModule
+import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
@@ -64,6 +65,7 @@ class ArbeidstakerVarselApiSpek : Spek({
             val redisServer = testRedis(environment)
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            val mqSenderMock = mockk<MQSenderInterface>(relaxed = true)
 
             val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
             val wellKnownVeileder = wellKnownMock()
@@ -72,6 +74,7 @@ class ArbeidstakerVarselApiSpek : Spek({
                 applicationState = applicationState,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 database = database,
+                mqSender = mqSenderMock,
                 environment = environment,
                 wellKnownSelvbetjening = wellKnownSelvbetjening,
                 wellKnownVeileder = wellKnownVeileder,
