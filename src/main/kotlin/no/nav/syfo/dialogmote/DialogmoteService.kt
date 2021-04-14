@@ -6,6 +6,7 @@ import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.toNewDialogmote
@@ -17,6 +18,7 @@ import no.nav.syfo.varsel.MotedeltakerVarselType
 import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.varsel.narmesteleder.NarmesteLederVarselService
 import org.slf4j.LoggerFactory
+import java.sql.Connection
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -129,28 +131,13 @@ class DialogmoteService(
                     newDialogmotePlanlagt = newDialogmotePlanlagt,
                 )
 
-                val motedeltakerArbeidstakerVarselIdPair = connection.createMotedeltakerVarselArbeidstaker(
-                    commit = false,
-                    motedeltakerArbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdList.first,
-                    status = "OK",
-                    varselType = MotedeltakerVarselType.INNKALT,
-                    digitalt = true,
-                    pdf = pdfInnkallingArbeidstaker
-                )
-
-                arbeidstakerVarselService.sendVarsel(
-                    createdAt = LocalDateTime.now(),
-                    personIdent = newDialogmotePlanlagt.arbeidstaker.personIdent,
-                    type = MotedeltakerVarselType.INNKALT,
-                    varselUuid = motedeltakerArbeidstakerVarselIdPair.second,
-                )
-
-                // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver
-
-                narmesteLederVarselService.sendVarsel(
-                    createdAt = LocalDateTime.now(),
+                createAndSendVarsel(
+                    connection = connection,
+                    arbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdList.first,
+                    arbeidstakerPersonIdent = newDialogmotePlanlagt.arbeidstaker.personIdent,
+                    pdf = pdfInnkallingArbeidstaker,
                     narmesteLeder = narmesteLeder,
-                    varseltype = MotedeltakerVarselType.INNKALT
+                    varselType = MotedeltakerVarselType.INNKALT
                 )
 
                 connection.commit()
@@ -211,27 +198,13 @@ class DialogmoteService(
                     commit = false,
                     newDialogmote = newDialogmote,
                 )
-
-                val motedeltakerArbeidstakerVarselIdPair = connection.createMotedeltakerVarselArbeidstaker(
-                    commit = false,
-                    motedeltakerArbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdList.first,
-                    status = "OK",
-                    varselType = MotedeltakerVarselType.INNKALT,
-                    digitalt = true,
-                    pdf = pdfInnkallingArbeidstaker
-                )
-
-                arbeidstakerVarselService.sendVarsel(
-                    createdAt = LocalDateTime.now(),
-                    personIdent = newDialogmote.arbeidstaker.personIdent,
-                    type = MotedeltakerVarselType.INNKALT,
-                    varselUuid = motedeltakerArbeidstakerVarselIdPair.second,
-                )
-
-                narmesteLederVarselService.sendVarsel(
-                    createdAt = LocalDateTime.now(),
+                createAndSendVarsel(
+                    connection = connection,
+                    arbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdList.first,
+                    arbeidstakerPersonIdent = newDialogmote.arbeidstaker.personIdent,
+                    pdf = pdfInnkallingArbeidstaker,
                     narmesteLeder = narmesteLeder,
-                    varseltype = MotedeltakerVarselType.INNKALT
+                    varselType = MotedeltakerVarselType.INNKALT
                 )
 
                 connection.commit()
@@ -271,24 +244,13 @@ class DialogmoteService(
                     opprettetAv = getNAVIdentFromToken(token),
                 )
                 if (!isDialogmoteTidPassed) {
-                    val motedeltakerArbeidstakerVarselIdPair = connection.createMotedeltakerVarselArbeidstaker(
-                        commit = false,
-                        motedeltakerArbeidstakerId = dialogmote.arbeidstaker.id,
-                        status = "OK",
-                        varselType = MotedeltakerVarselType.AVLYST,
-                        digitalt = true,
+                    createAndSendVarsel(
+                        connection = connection,
+                        arbeidstakerId = dialogmote.arbeidstaker.id,
+                        arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
                         pdf = pdfAvlysningArbeidstaker,
-                    )
-                    arbeidstakerVarselService.sendVarsel(
-                        createdAt = LocalDateTime.now(),
-                        personIdent = dialogmote.arbeidstaker.personIdent,
-                        type = MotedeltakerVarselType.AVLYST,
-                        varselUuid = motedeltakerArbeidstakerVarselIdPair.second,
-                    )
-                    narmesteLederVarselService.sendVarsel(
-                        createdAt = LocalDateTime.now(),
                         narmesteLeder = narmesteLeder,
-                        varseltype = MotedeltakerVarselType.AVLYST
+                        varselType = MotedeltakerVarselType.AVLYST
                     )
                 }
                 connection.commit()
@@ -326,31 +288,50 @@ class DialogmoteService(
                     newDialogmoteTidSted = newDialogmoteTidSted,
                     opprettetAv = getNAVIdentFromToken(token),
                 )
-
-                val motedeltakerArbeidstakerVarselIdPair = connection.createMotedeltakerVarselArbeidstaker(
-                    commit = false,
-                    motedeltakerArbeidstakerId = dialogmote.arbeidstaker.id,
-                    status = "OK",
-                    varselType = MotedeltakerVarselType.NYTT_TID_STED,
-                    digitalt = true,
-                    pdf = pdfEndringArbeidstaker
-                )
-                arbeidstakerVarselService.sendVarsel(
-                    createdAt = LocalDateTime.now(),
-                    personIdent = dialogmote.arbeidstaker.personIdent,
-                    type = MotedeltakerVarselType.NYTT_TID_STED,
-                    varselUuid = motedeltakerArbeidstakerVarselIdPair.second,
-                )
-                narmesteLederVarselService.sendVarsel(
-                    createdAt = LocalDateTime.now(),
+                createAndSendVarsel(
+                    connection = connection,
+                    arbeidstakerId = dialogmote.arbeidstaker.id,
+                    arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
+                    pdf = pdfEndringArbeidstaker,
                     narmesteLeder = narmesteLeder,
-                    varseltype = MotedeltakerVarselType.NYTT_TID_STED
+                    varselType = MotedeltakerVarselType.NYTT_TID_STED
                 )
 
                 connection.commit()
             }
             true
         }
+    }
+
+    private fun createAndSendVarsel(
+        connection: Connection,
+        arbeidstakerId: Int,
+        arbeidstakerPersonIdent: PersonIdentNumber,
+        pdf: ByteArray,
+        narmesteLeder: NarmesteLederDTO,
+        varselType: MotedeltakerVarselType
+    ) {
+        val (_, varselId) = connection.createMotedeltakerVarselArbeidstaker(
+            commit = false,
+            motedeltakerArbeidstakerId = arbeidstakerId,
+            status = "OK",
+            varselType = varselType,
+            digitalt = true,
+            pdf = pdf,
+        )
+        val now = LocalDateTime.now()
+        arbeidstakerVarselService.sendVarsel(
+            createdAt = now,
+            personIdent = arbeidstakerPersonIdent,
+            type = varselType,
+            varselUuid = varselId,
+        )
+        narmesteLederVarselService.sendVarsel(
+            createdAt = now,
+            narmesteLeder = narmesteLeder,
+            varseltype = varselType
+        )
+        // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver
     }
 
     fun ferdigstillMoteinnkalling(
