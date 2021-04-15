@@ -33,8 +33,8 @@ data class Environment(
     val mqApplicationName: String = "isdialogmote",
     val mqQueueManager: String = getEnvVar("MQGATEWAY03_NAME", "QM1"),
     val mqPort: Int = getEnvVar("MQGATEWAY03_PORT", "1414").toInt(),
-    val mqUsername: String = getEnvVar("MQ_USER", "app"),
-    val mqPassword: String = getEnvVar("MQ_PASSWORD"),
+    val mqUsername: String = getEnvVar("MQUSER", "app"),
+    val mqPassword: String = getEnvVar("MQPASSWORD"),
     val mqTredjepartsVarselQueue: String = getEnvVar("TREDJEPARTSVARSEL_QUEUENAME"),
     val mqSendingEnabled: Boolean = getEnvVar("TOGGLE_MQ_SENDING_ENABLED").toBoolean()
 ) {

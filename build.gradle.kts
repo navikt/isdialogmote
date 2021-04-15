@@ -26,9 +26,7 @@ object Versions {
     const val prometheusVersion = "0.9.0"
     const val redisEmbeddedVersion = "0.7.3"
     const val spekVersion = "2.0.15"
-    const val jmsVersion = "2.0.3"
-    const val mqVersion = "9.0.4.0"
-    const val tjenesteSpesifikasjonerVersion = "1.2019.09.25-00.21-49b69f0625e0"
+    const val mqVersion = "9.2.2.0"
     const val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
 }
 
@@ -92,9 +90,7 @@ dependencies {
     testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedVersion}")
 
     // MQ
-    implementation("jakarta.jms:jakarta.jms-api:${Versions.jmsVersion}")
     implementation("com.ibm.mq:com.ibm.mq.allclient:${Versions.mqVersion}")
-    implementation("no.nav.tjenestespesifikasjoner:nav-virksomhet-varselMedHandling-v1-meldingsdefinisjon:${Versions.tjenesteSpesifikasjonerVersion}")
     implementation("no.nav.tjenestespesifikasjoner:servicemeldingMedKontaktinformasjon-v1-tjenestespesifikasjon:${Versions.tjenesteSpesifikasjonerGithubVersion}")
 
     testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusjosejwtVersion}")
