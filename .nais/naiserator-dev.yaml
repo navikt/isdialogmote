@@ -89,7 +89,7 @@ spec:
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.dev-fss-pub.nais.io"
     - name: TOGGLE_MQ_SENDING_ENABLED
-      value: 'false'
+      value: 'true'
     - name: MQGATEWAY03_HOSTNAME
       value: b27apvl173.preprod.local
     - name: MQGATEWAY03_PORT
