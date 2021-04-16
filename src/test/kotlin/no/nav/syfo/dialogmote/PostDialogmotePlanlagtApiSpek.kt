@@ -8,6 +8,7 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.api.apiModule
+import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
 import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
@@ -27,7 +28,7 @@ import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.*
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.util.*
+import java.util.UUID
 
 class PostDialogmotePlanlagtApiSpek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -68,6 +69,8 @@ class PostDialogmotePlanlagtApiSpek : Spek({
             val redisServer = testRedis(environment)
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            val mqSenderMock = mockk<MQSenderInterface>()
+            justRun { mqSenderMock.sendMQMessage(any(), any()) }
 
             val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
             val wellKnownVeileder = wellKnownSelvbetjeningMock()
@@ -76,6 +79,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                 applicationState = applicationState,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 database = database,
+                mqSender = mqSenderMock,
                 environment = environment,
                 wellKnownSelvbetjening = wellKnownSelvbetjening,
                 wellKnownVeileder = wellKnownVeileder,
@@ -129,6 +133,8 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            clearMocks(mqSenderMock)
                         }
 
                         with(
@@ -173,6 +179,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                             handleRequest(HttpMethod.Post, url) {}
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -185,6 +192,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -197,6 +205,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -209,6 +218,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -221,6 +231,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
                 }

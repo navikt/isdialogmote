@@ -8,6 +8,7 @@ import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.*
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
@@ -22,6 +23,7 @@ import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.varsel.arbeidstaker.registerArbeidstakerVarselApi
+import no.nav.syfo.varsel.narmesteleder.NarmesteLederVarselService
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
 import redis.clients.jedis.Protocol
@@ -30,6 +32,7 @@ fun Application.apiModule(
     applicationState: ApplicationState,
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
     database: DatabaseInterface,
+    mqSender: MQSenderInterface,
     environment: Environment,
     wellKnownSelvbetjening: WellKnown,
     wellKnownVeileder: WellKnown,
@@ -97,6 +100,11 @@ fun Application.apiModule(
         serviceuserUsername = environment.serviceuserUsername,
     )
 
+    val narmesteLederVarselService = NarmesteLederVarselService(
+        env = environment,
+        mqSender = mqSender
+    )
+
     val dialogmotedeltakerService = DialogmotedeltakerService(
         arbeidstakerVarselService = arbeidstakerVarselService,
         database = database,
@@ -105,6 +113,7 @@ fun Application.apiModule(
     val dialogmoteService = DialogmoteService(
         database = database,
         arbeidstakerVarselService = arbeidstakerVarselService,
+        narmesteLederVarselService = narmesteLederVarselService,
         dialogmotedeltakerService = dialogmotedeltakerService,
         behandlendeEnhetClient = behandlendeEnhetClient,
         moteplanleggerClient = moteplanleggerClient,

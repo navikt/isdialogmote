@@ -12,7 +12,7 @@ import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.UUID
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 
@@ -41,7 +41,7 @@ fun Route.registerDialogmoteActionsApi(
                     val success = dialogmoteService.avlysMoteinnkalling(
                         callId = callId,
                         dialogmote = dialogmote,
-                        opprettetAv = getNAVIdentFromToken(token)
+                        token = token
                     )
                     if (success) {
                         call.respond(HttpStatusCode.OK)
@@ -78,7 +78,7 @@ fun Route.registerDialogmoteActionsApi(
                         callId = callId,
                         dialogmote = dialogmote,
                         newDialogmoteTidSted = newDialogmoteTidSted,
-                        opprettetAv = getNAVIdentFromToken(token)
+                        token = token
                     )
                     if (success) {
                         call.respond(HttpStatusCode.OK)

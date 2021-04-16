@@ -31,12 +31,16 @@ fun testEnvironment(
     isdialogmoteDbPassword = "password",
     loginserviceClientId = "123456789",
     dialogmoteArbeidstakerUrl = "https://www.nav.no/dialogmote",
+    dialogmoteArbeidsgiverUrl = "https://www.nav.no/dialogmote",
     isdialogmotepdfgenUrl = isdialogmotepdfgenUrl ?: "http://isdialogmotepdfgen",
     modiasyforestUrl = modiasyforestUrl ?: "modiasyforest",
     syfobehandlendeenhetUrl = syfobehandlendeenhetUrl ?: "syfobehandlendeenhet",
     syfomoteadminUrl = syfomoteadminUrl ?: "syfomoteadmin",
     syfopersonUrl = syfopersonUrl ?: "syfoperson",
-    syfotilgangskontrollUrl = syfotilgangskontrollUrl ?: "tilgangskontroll"
+    syfotilgangskontrollUrl = syfotilgangskontrollUrl ?: "tilgangskontroll",
+    mqPassword = "password",
+    mqTredjepartsVarselQueue = "queuename",
+    mqSendingEnabled = false
 )
 
 fun testAppState() = ApplicationState(

@@ -21,12 +21,22 @@ data class Environment(
     val sidecarInitialDelay: Long = getEnvVar("SIDECAR_INITIAL_DELAY", "30000").toLong(),
     val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENT_ID"),
     val dialogmoteArbeidstakerUrl: String = getEnvVar("DIALOGMOTE_ARBEIDSTAKER_URL"),
+    val dialogmoteArbeidsgiverUrl: String = getEnvVar("DIALOGMOTE_ARBEIDSGIVER_URL"),
     val isdialogmotepdfgenUrl: String = "http://isdialogmotepdfgen",
     val modiasyforestUrl: String = getEnvVar("MODIASYFOREST_URL"),
     val syfobehandlendeenhetUrl: String = getEnvVar("SYFOBEHANDLENDEENHET_URL"),
     val syfomoteadminUrl: String = getEnvVar("SYFOMOTEADMIN_URL"),
     val syfopersonUrl: String = getEnvVar("SYFOPERSON_URL"),
-    val syfotilgangskontrollUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL")
+    val syfotilgangskontrollUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
+    val mqChannelName: String = getEnvVar("MQGATEWAY03_CHANNEL_NAME", "DEV.APP.SVRCONN"),
+    val mqHostname: String = getEnvVar("MQGATEWAY03_HOSTNAME", "localhost"),
+    val mqApplicationName: String = "isdialogmote",
+    val mqQueueManager: String = getEnvVar("MQGATEWAY03_NAME", "QM1"),
+    val mqPort: Int = getEnvVar("MQGATEWAY03_PORT", "1414").toInt(),
+    val mqUsername: String = getEnvVar("MQUSER", "app"),
+    val mqPassword: String = getEnvVar("MQPASSWORD"),
+    val mqTredjepartsVarselQueue: String = getEnvVar("TREDJEPARTSVARSEL_QUEUENAME"),
+    val mqSendingEnabled: Boolean = getEnvVar("TOGGLE_MQ_SENDING_ENABLED").toBoolean()
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$isdialogmoteDbHost:$isdialogmoteDbPort/$isdialogmoteDbName"
