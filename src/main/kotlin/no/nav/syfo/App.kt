@@ -82,7 +82,7 @@ fun main() {
                     orgnummer = "999999999"
                 )
                 narmesteLederVarselService.sendVarsel(LocalDateTime.now(), dto, MotedeltakerVarselType.INNKALT)
-            } catch (exc : Exception) {
+            } catch (exc: Exception) {
                 log.warn("Tried sending MQ-message, got exception: ", exc)
             }
             applicationState.ready = true
