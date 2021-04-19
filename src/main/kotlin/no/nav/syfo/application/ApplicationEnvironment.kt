@@ -30,10 +30,9 @@ data class Environment(
     val syfotilgangskontrollUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
     val mqChannelName: String = getEnvVar("MQGATEWAY_CHANNEL_NAME", "DEV.APP.SVRCONN"),
     val mqHostname: String = getEnvVar("MQGATEWAY_HOSTNAME", "localhost"),
-    val mqApplicationName: String = "isdialogmote",
     val mqQueueManager: String = getEnvVar("MQGATEWAY_NAME", "QM1"),
     val mqPort: Int = getEnvVar("MQGATEWAY_PORT", "1414").toInt(),
-    val mqUsername: String = getEnvVar("SERVICEUSER_USERNAME", "app"),
+    val mqUsername: String = getEnvVar("SERVICEUSER_USERNAME"),
     val mqPassword: String = getEnvVar("SERVICEUSER_PASSWORD"),
     val mqTredjepartsVarselQueue: String = getEnvVar("TREDJEPARTSVARSEL_QUEUENAME"),
     val mqSendingEnabled: Boolean = getEnvVar("TOGGLE_MQ_SENDING_ENABLED").toBoolean()
