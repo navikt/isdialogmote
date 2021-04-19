@@ -60,7 +60,6 @@ spec:
     - configmap: loginservice-idporten
     - secret: isdialogmote-serviceuser
     - secret: isdialogmote-redis-password
-    - secret: isdialogmote-mquser
   env:
     - name: KTOR_ENV
       value: production
@@ -90,13 +89,13 @@ spec:
       value: "https://syfo-tilgangskontroll.dev-fss-pub.nais.io"
     - name: TOGGLE_MQ_SENDING_ENABLED
       value: 'true'
-    - name: MQGATEWAY03_HOSTNAME
-      value: b27apvl173.preprod.local
-    - name: MQGATEWAY03_PORT
+    - name: MQGATEWAY_HOSTNAME
+      value: b27apvl220.preprod.local
+    - name: MQGATEWAY_PORT
       value: '1413'
-    - name: MQGATEWAY03_NAME
-      value: MQ1LSC03
-    - name: MQGATEWAY03_CHANNEL_NAME
+    - name: MQGATEWAY_NAME
+      value: MQLS02
+    - name: MQGATEWAY_CHANNEL_NAME
       value: Q1_ISDIALOGMOTE
     - name: TREDJEPARTSVARSEL_QUEUENAME
       value: QA.Q1_VARSELPRODUKSJON.BEST_SRVMLD_M_KONTAKT
