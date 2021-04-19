@@ -47,7 +47,7 @@ class MQSender(private val env: Environment) : MQSenderInterface {
             setIntProperty(WMQ_CCSID, UTF_8_WITH_PUA)
             setIntProperty(JMS_IBM_ENCODING, MQENC_NATIVE)
             setIntProperty(JMS_IBM_CHARACTER_SET, UTF_8_WITH_PUA)
-            setBooleanProperty(USER_AUTHENTICATION_MQCSP, false)
+            setBooleanProperty(USER_AUTHENTICATION_MQCSP, true)
             setStringProperty(USERID, env.mqUsername)
             setStringProperty(PASSWORD, env.mqPassword)
         }
