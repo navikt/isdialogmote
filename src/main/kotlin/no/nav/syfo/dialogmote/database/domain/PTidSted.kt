@@ -2,7 +2,7 @@ package no.nav.syfo.dialogmote.database.domain
 
 import no.nav.syfo.dialogmote.domain.DialogmoteTidSted
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class PTidSted(
     val id: Int,
@@ -12,6 +12,7 @@ data class PTidSted(
     val moteId: Int,
     val sted: String,
     val tid: LocalDateTime,
+    val videoLink: String
 )
 
 fun PTidSted.toDialogmoteTidSted() =
@@ -23,4 +24,5 @@ fun PTidSted.toDialogmoteTidSted() =
         moteId = this.moteId,
         sted = this.sted,
         tid = this.tid,
+        videoLink = this.videoLink
     )

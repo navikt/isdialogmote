@@ -4,7 +4,7 @@ import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.dialogmote.domain.DialogmotedeltakerType
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class PMotedeltakerArbeidsgiver(
     val id: Int,
@@ -15,6 +15,7 @@ data class PMotedeltakerArbeidsgiver(
     val virksomhetsnummer: Virksomhetsnummer,
     val lederNavn: String?,
     val lederEpost: String?,
+    val fritekstInnkalling: String
 )
 
 fun PMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver() =
@@ -28,4 +29,5 @@ fun PMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver() =
         lederNavn = this.lederNavn,
         lederEpost = this.lederEpost,
         type = DialogmotedeltakerType.ARBEIDSGIVER,
+        fritekstInnkalling = this.fritekstInnkalling
     )

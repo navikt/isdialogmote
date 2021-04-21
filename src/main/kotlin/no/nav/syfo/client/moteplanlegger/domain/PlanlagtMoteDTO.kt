@@ -4,7 +4,7 @@ import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class PlanlagtMoteDTO(
     val id: Long = 0,
@@ -48,15 +48,18 @@ fun PlanlagtMoteDTO.toNewDialogmotePlanlagt(
         opprettetAv = requestByNAVIdent,
         arbeidstaker = NewDialogmotedeltakerArbeidstaker(
             personIdent = PersonIdentNumber(this.fnr),
+            fritekstInnkalling = ""
         ),
         arbeidsgiver = NewDialogmotedeltakerArbeidsgiver(
             virksomhetsnummer = Virksomhetsnummer(arbeidsgiver.orgnummer!!),
             lederNavn = arbeidsgiver.navn,
             lederEpost = arbeidsgiver.epost,
+            fritekstInnkalling = ""
         ),
         tidSted = NewDialogmoteTidSted(
             sted = tidSted.sted,
             tid = tidSted.tid,
+            videoLink = ""
         )
     )
 }

@@ -6,7 +6,7 @@ import no.nav.syfo.dialogmote.database.domain.PTidSted
 import no.nav.syfo.dialogmote.domain.NewDialogmoteTidSted
 import java.sql.*
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 const val queryCreateTidSted =
     """
@@ -17,7 +17,8 @@ const val queryCreateTidSted =
         updated_at,
         mote_id,
         sted,
-        tid) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?) RETURNING id
+        tid,
+        videolink) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
 fun Connection.createTidSted(
@@ -35,6 +36,7 @@ fun Connection.createTidSted(
         it.setInt(4, moteId)
         it.setString(5, newDialogmoteTidSted.sted)
         it.setTimestamp(6, Timestamp.valueOf(newDialogmoteTidSted.tid))
+        it.setString(7, newDialogmoteTidSted.videoLink)
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -74,4 +76,5 @@ fun ResultSet.toPTidSted(): PTidSted =
         moteId = getInt("mote_id"),
         sted = getString("sted"),
         tid = getTimestamp("tid").toLocalDateTime(),
+        videoLink = getString("videolink")
     )

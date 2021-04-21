@@ -10,4 +10,5 @@ data class InnkallingArbeidstaker(
 
 data class InnkallingArbeidstakerTidOgSted(
     val sted: String,
+    val videoLink: String
 )

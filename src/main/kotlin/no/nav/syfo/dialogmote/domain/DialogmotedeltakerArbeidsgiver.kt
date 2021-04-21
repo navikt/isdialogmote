@@ -3,7 +3,7 @@ package no.nav.syfo.dialogmote.domain
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerArbeidsgiverDTO
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class DialogmotedeltakerArbeidsgiver(
     val id: Int,
@@ -15,6 +15,7 @@ data class DialogmotedeltakerArbeidsgiver(
     val lederNavn: String?,
     val lederEpost: String?,
     val type: DialogmotedeltakerType,
+    val fritekstInnkalling: String
 )
 
 fun DialogmotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiverDTO() =
@@ -24,4 +25,5 @@ fun DialogmotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiverDTO() =
         lederNavn = this.lederNavn,
         lederEpost = this.lederEpost,
         type = this.type.name,
+        fritekstInnkalling = this.fritekstInnkalling
     )

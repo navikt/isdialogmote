@@ -161,6 +161,8 @@ class PostDialogmoteApiSpek : Spek({
 
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
                             dialogmoteDTO.arbeidstaker.varselList.size shouldBeEqualTo 1
+                            dialogmoteDTO.arbeidstaker.fritekstInnkalling shouldBeEqualTo "Ipsum lorum arbeidstaker"
+
                             val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
                             arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
@@ -168,10 +170,12 @@ class PostDialogmoteApiSpek : Spek({
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                            dialogmoteDTO.arbeidsgiver.fritekstInnkalling shouldBeEqualTo "Ipsum lorum arbeidsgiver"
 
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
                             dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            dialogmoteTidStedDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }

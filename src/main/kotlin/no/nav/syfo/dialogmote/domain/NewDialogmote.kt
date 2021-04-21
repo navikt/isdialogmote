@@ -4,7 +4,7 @@ import no.nav.syfo.client.pdfgen.model.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class NewDialogmote(
     val status: DialogmoteStatus,
@@ -29,10 +29,12 @@ data class NewDialogmotePlanlagt(
 
 data class NewDialogmotedeltakerArbeidstaker(
     val personIdent: PersonIdentNumber,
+    val fritekstInnkalling: String
 )
 
 data class NewDialogmotedeltakerArbeidsgiver(
     val virksomhetsnummer: Virksomhetsnummer,
+    val fritekstInnkalling: String,
     val lederNavn: String?,
     val lederEpost: String?,
 )
@@ -40,6 +42,7 @@ data class NewDialogmotedeltakerArbeidsgiver(
 data class NewDialogmoteTidSted(
     val sted: String,
     val tid: LocalDateTime,
+    val videoLink: String
 )
 
 fun NewDialogmote.toPdfModelInnkallingArbeidstaker() =
@@ -47,6 +50,7 @@ fun NewDialogmote.toPdfModelInnkallingArbeidstaker() =
         innkalling = InnkallingArbeidstaker(
             tidOgSted = InnkallingArbeidstakerTidOgSted(
                 sted = this.tidSted.sted,
+                videoLink = this.tidSted.videoLink
             ),
         ),
     )
@@ -56,6 +60,7 @@ fun NewDialogmotePlanlagt.toPdfModelInnkallingArbeidstaker() =
         innkalling = InnkallingArbeidstaker(
             tidOgSted = InnkallingArbeidstakerTidOgSted(
                 sted = this.tidSted.sted,
+                videoLink = this.tidSted.videoLink
             ),
         ),
     )
@@ -65,6 +70,7 @@ fun NewDialogmoteTidSted.toPdfModelEndringTidStedArbeidstaker() =
         endring = EndringTidStedArbeidstaker(
             tidOgSted = EndringTidStedArbeidstakerTidOgSted(
                 sted = this.sted,
+                videoLink = this.videoLink
             ),
         ),
     )
