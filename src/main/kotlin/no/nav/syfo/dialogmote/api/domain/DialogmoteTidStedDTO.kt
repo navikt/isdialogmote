@@ -6,5 +6,5 @@ data class DialogmoteTidStedDTO(
     val uuid: String,
     val sted: String,
     val tid: LocalDateTime,
-    val videoLink: String
+    val videoLink: String?
 )

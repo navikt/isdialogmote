@@ -47,19 +47,16 @@ fun PlanlagtMoteDTO.toNewDialogmotePlanlagt(
         tildeltEnhet = this.navEnhet,
         opprettetAv = requestByNAVIdent,
         arbeidstaker = NewDialogmotedeltakerArbeidstaker(
-            personIdent = PersonIdentNumber(this.fnr),
-            fritekstInnkalling = ""
+            personIdent = PersonIdentNumber(this.fnr)
         ),
         arbeidsgiver = NewDialogmotedeltakerArbeidsgiver(
             virksomhetsnummer = Virksomhetsnummer(arbeidsgiver.orgnummer!!),
             lederNavn = arbeidsgiver.navn,
-            lederEpost = arbeidsgiver.epost,
-            fritekstInnkalling = ""
+            lederEpost = arbeidsgiver.epost
         ),
         tidSted = NewDialogmoteTidSted(
             sted = tidSted.sted,
-            tid = tidSted.tid,
-            videoLink = ""
+            tid = tidSted.tid
         )
     )
 }

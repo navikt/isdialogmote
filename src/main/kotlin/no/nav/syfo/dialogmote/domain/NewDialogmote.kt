@@ -29,12 +29,12 @@ data class NewDialogmotePlanlagt(
 
 data class NewDialogmotedeltakerArbeidstaker(
     val personIdent: PersonIdentNumber,
-    val fritekstInnkalling: String
+    val fritekstInnkalling: String? = ""
 )
 
 data class NewDialogmotedeltakerArbeidsgiver(
     val virksomhetsnummer: Virksomhetsnummer,
-    val fritekstInnkalling: String,
+    val fritekstInnkalling: String? = "",
     val lederNavn: String?,
     val lederEpost: String?,
 )
@@ -42,7 +42,7 @@ data class NewDialogmotedeltakerArbeidsgiver(
 data class NewDialogmoteTidSted(
     val sted: String,
     val tid: LocalDateTime,
-    val videoLink: String
+    val videoLink: String? = ""
 )
 
 fun NewDialogmote.toPdfModelInnkallingArbeidstaker() =

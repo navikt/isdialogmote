@@ -15,7 +15,7 @@ data class DialogmotedeltakerArbeidsgiver(
     val lederNavn: String?,
     val lederEpost: String?,
     val type: DialogmotedeltakerType,
-    val fritekstInnkalling: String
+    val fritekstInnkalling: String?
 )
 
 fun DialogmotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiverDTO() =

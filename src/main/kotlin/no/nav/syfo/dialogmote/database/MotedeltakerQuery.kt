@@ -27,7 +27,7 @@ fun Connection.createMotedeltakerArbeidstaker(
     commit: Boolean = true,
     moteId: Int,
     personIdentNumber: PersonIdentNumber,
-    fritekstInnkalling: String = ""
+    fritekstInnkalling: String?
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 
@@ -38,7 +38,7 @@ fun Connection.createMotedeltakerArbeidstaker(
         it.setTimestamp(3, now)
         it.setInt(4, moteId)
         it.setString(5, personIdentNumber.value)
-        it.setString(6, fritekstInnkalling)
+        it.setString(6, fritekstInnkalling.orEmpty())
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -126,7 +126,7 @@ fun Connection.createMotedeltakerArbeidsgiver(
         it.setString(5, newDialogmotedeltakerArbeidsgiver.virksomhetsnummer.value)
         it.setString(6, newDialogmotedeltakerArbeidsgiver.lederNavn)
         it.setString(7, newDialogmotedeltakerArbeidsgiver.lederEpost)
-        it.setString(8, newDialogmotedeltakerArbeidsgiver.fritekstInnkalling)
+        it.setString(8, newDialogmotedeltakerArbeidsgiver.fritekstInnkalling.orEmpty())
         it.executeQuery().toList { getInt("id") }
     }
 

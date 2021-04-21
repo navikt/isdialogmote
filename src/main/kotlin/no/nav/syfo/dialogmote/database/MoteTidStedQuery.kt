@@ -36,7 +36,7 @@ fun Connection.createTidSted(
         it.setInt(4, moteId)
         it.setString(5, newDialogmoteTidSted.sted)
         it.setTimestamp(6, Timestamp.valueOf(newDialogmoteTidSted.tid))
-        it.setString(7, newDialogmoteTidSted.videoLink)
+        it.setString(7, newDialogmoteTidSted.videoLink.orEmpty())
         it.executeQuery().toList { getInt("id") }
     }
 

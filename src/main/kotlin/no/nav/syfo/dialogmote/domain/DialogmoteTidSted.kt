@@ -12,7 +12,7 @@ data class DialogmoteTidSted(
     val moteId: Int,
     val sted: String,
     val tid: LocalDateTime,
-    val videoLink: String
+    val videoLink: String?
 )
 
 fun DialogmoteTidSted.toDialogmoteTidStedDTO() =

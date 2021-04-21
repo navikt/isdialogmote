@@ -13,7 +13,7 @@ data class DialogmotedeltakerArbeidstaker(
     val moteId: Int,
     val personIdent: PersonIdentNumber,
     val type: DialogmotedeltakerType,
-    val fritekstInnkalling: String,
+    val fritekstInnkalling: String?,
     val varselList: List<DialogmotedeltakerArbeidstakerVarsel>,
 )
 
