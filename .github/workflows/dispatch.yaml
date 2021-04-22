@@ -1,4 +1,4 @@
-name: Deploy to dev-fss
+name: Deploy to dev-gcp
 
 on:
   workflow_dispatch:
@@ -57,7 +57,7 @@ jobs:
           docker push ${IMAGE}
           echo ${IMAGE}
   deploy-dev:
-    name: Deploy to NAIS Dev-fss
+    name: Deploy to NAIS Dev-gcp
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -65,5 +65,5 @@ jobs:
       - uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: dev-fss
+          CLUSTER: dev-gcp
           RESOURCE: .nais/naiserator-dev.yaml
