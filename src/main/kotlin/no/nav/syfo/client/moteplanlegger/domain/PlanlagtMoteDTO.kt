@@ -47,16 +47,16 @@ fun PlanlagtMoteDTO.toNewDialogmotePlanlagt(
         tildeltEnhet = this.navEnhet,
         opprettetAv = requestByNAVIdent,
         arbeidstaker = NewDialogmotedeltakerArbeidstaker(
-            personIdent = PersonIdentNumber(this.fnr)
+            personIdent = PersonIdentNumber(this.fnr),
         ),
         arbeidsgiver = NewDialogmotedeltakerArbeidsgiver(
             virksomhetsnummer = Virksomhetsnummer(arbeidsgiver.orgnummer!!),
             lederNavn = arbeidsgiver.navn,
-            lederEpost = arbeidsgiver.epost
+            lederEpost = arbeidsgiver.epost,
         ),
         tidSted = NewDialogmoteTidSted(
             sted = tidSted.sted,
-            tid = tidSted.tid
+            tid = tidSted.tid,
         )
     )
 }

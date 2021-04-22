@@ -83,7 +83,7 @@ fun Connection.createNewDialogmoteWithReferences(
     newDialogmote: NewDialogmote,
 ): CreatedDialogmoteIdentifiers {
     val moteIdList = this.createDialogmote(
-        commit = true,
+        commit = false,
         newDialogmote = newDialogmote
     )
 

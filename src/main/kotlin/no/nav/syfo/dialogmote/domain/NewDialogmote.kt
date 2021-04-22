@@ -29,7 +29,7 @@ data class NewDialogmotePlanlagt(
 
 data class NewDialogmotedeltakerArbeidstaker(
     val personIdent: PersonIdentNumber,
-    val fritekstInnkalling: String? = ""
+    val fritekstInnkalling: String? = "",
 )
 
 data class NewDialogmotedeltakerArbeidsgiver(
@@ -42,7 +42,7 @@ data class NewDialogmotedeltakerArbeidsgiver(
 data class NewDialogmoteTidSted(
     val sted: String,
     val tid: LocalDateTime,
-    val videoLink: String? = ""
+    val videoLink: String? = "",
 )
 
 fun NewDialogmote.toPdfModelInnkallingArbeidstaker() =
@@ -50,7 +50,7 @@ fun NewDialogmote.toPdfModelInnkallingArbeidstaker() =
         innkalling = InnkallingArbeidstaker(
             tidOgSted = InnkallingArbeidstakerTidOgSted(
                 sted = this.tidSted.sted,
-                videoLink = this.tidSted.videoLink
+                videoLink = this.tidSted.videoLink,
             ),
         ),
     )
@@ -60,7 +60,7 @@ fun NewDialogmotePlanlagt.toPdfModelInnkallingArbeidstaker() =
         innkalling = InnkallingArbeidstaker(
             tidOgSted = InnkallingArbeidstakerTidOgSted(
                 sted = this.tidSted.sted,
-                videoLink = this.tidSted.videoLink
+                videoLink = this.tidSted.videoLink,
             ),
         ),
     )
@@ -70,7 +70,7 @@ fun NewDialogmoteTidSted.toPdfModelEndringTidStedArbeidstaker() =
         endring = EndringTidStedArbeidstaker(
             tidOgSted = EndringTidStedArbeidstakerTidOgSted(
                 sted = this.sted,
-                videoLink = this.videoLink
+                videoLink = this.videoLink,
             ),
         ),
     )
