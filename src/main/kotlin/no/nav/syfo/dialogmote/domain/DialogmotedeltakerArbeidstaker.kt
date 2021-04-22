@@ -13,7 +13,6 @@ data class DialogmotedeltakerArbeidstaker(
     val moteId: Int,
     val personIdent: PersonIdentNumber,
     val type: DialogmotedeltakerType,
-    val fritekstInnkalling: String?,
     val varselList: List<DialogmotedeltakerArbeidstakerVarsel>,
 )
 
@@ -22,7 +21,6 @@ fun DialogmotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstakerDTO() =
         uuid = this.uuid.toString(),
         personIdent = this.personIdent.value,
         type = this.type.name,
-        fritekstInnkalling = this.fritekstInnkalling,
         varselList = this.varselList.map {
             it.toDialogmotedeltakerArbeidstakerVarselDTO()
         }

@@ -3,7 +3,7 @@ package no.nav.syfo.dialogmote.domain
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerArbeidstakerVarselDTO
 import no.nav.syfo.varsel.MotedeltakerVarselType
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class DialogmotedeltakerArbeidstakerVarsel(
     val id: Int,
@@ -16,6 +16,7 @@ data class DialogmotedeltakerArbeidstakerVarsel(
     val pdf: ByteArray,
     val status: String,
     val lestDato: LocalDateTime?,
+    val fritekst: String
 )
 
 fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselDTO() =
@@ -26,4 +27,5 @@ fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselD
         digitalt = this.digitalt,
         pdf = this.pdf,
         lestDato = this.lestDato,
+        fritekst = this.fritekst,
     )

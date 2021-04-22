@@ -104,7 +104,6 @@ fun Connection.createNewDialogmoteWithReferences(
         commit = false,
         moteId = moteId,
         personIdentNumber = newDialogmote.arbeidstaker.personIdent,
-        fritekstInnkalling = newDialogmote.arbeidstaker.fritekstInnkalling
     )
     this.createMotedeltakerArbeidsgiver(
         commit = false,
@@ -190,7 +189,6 @@ fun Connection.createNewDialogmotePlanlagtWithReferences(
         commit = false,
         moteId = moteId,
         personIdentNumber = newDialogmotePlanlagt.arbeidstaker.personIdent,
-        fritekstInnkalling = newDialogmotePlanlagt.arbeidstaker.fritekstInnkalling
     )
     this.createMotedeltakerArbeidsgiver(
         commit = false,

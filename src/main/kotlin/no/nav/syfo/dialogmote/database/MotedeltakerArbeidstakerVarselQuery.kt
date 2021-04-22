@@ -7,7 +7,7 @@ import no.nav.syfo.varsel.MotedeltakerVarselType
 import java.sql.*
 import java.time.Instant
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 const val queryCreateMotedeltakerVarselArbeidstaker =
     """
@@ -20,7 +20,8 @@ const val queryCreateMotedeltakerVarselArbeidstaker =
         varseltype,
         digitalt,
         pdf,
-        status) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+        status, 
+        fritekst) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
 fun Connection.createMotedeltakerVarselArbeidstaker(
@@ -30,6 +31,7 @@ fun Connection.createMotedeltakerVarselArbeidstaker(
     varselType: MotedeltakerVarselType,
     digitalt: Boolean,
     pdf: ByteArray,
+    fritekst: String
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 
@@ -43,6 +45,7 @@ fun Connection.createMotedeltakerVarselArbeidstaker(
         it.setBoolean(6, digitalt)
         it.setBytes(7, pdf)
         it.setString(8, status)
+        it.setString(9, fritekst)
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -105,4 +108,5 @@ fun ResultSet.toPMotedeltakerArbeidstakerVarsel(): PMotedeltakerArbeidstakerVars
         pdf = getBytes("pdf"),
         status = getString("status"),
         lestDato = getTimestamp("lest_dato")?.toLocalDateTime(),
+        fritekst = getString("fritekst"),
     )

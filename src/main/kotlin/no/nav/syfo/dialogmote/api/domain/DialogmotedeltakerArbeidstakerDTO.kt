@@ -4,6 +4,5 @@ data class DialogmotedeltakerArbeidstakerDTO(
     val uuid: String,
     val personIdent: String,
     val type: String,
-    val fritekstInnkalling: String?,
     val varselList: List<DialogmotedeltakerArbeidstakerVarselDTO>,
 )

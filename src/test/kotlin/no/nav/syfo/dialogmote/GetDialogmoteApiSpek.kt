@@ -134,9 +134,7 @@ class GetDialogmoteApiSpek : Spek({
 
                             val dialogmoteDTO = dialogmoteList.first()
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmote.arbeidstaker.personIdent.value
-                            dialogmoteDTO.arbeidstaker.fritekstInnkalling shouldBeEqualTo "Ipsum lorum arbeidstaker"
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmote.arbeidsgiver.virksomhetsnummer.value
-                            dialogmoteDTO.arbeidsgiver.fritekstInnkalling shouldBeEqualTo "Ipsum lorum arbeidsgiver"
 
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()

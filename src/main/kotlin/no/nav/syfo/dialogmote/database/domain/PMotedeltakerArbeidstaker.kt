@@ -12,7 +12,6 @@ data class PMotedeltakerArbeidstaker(
     val updatedAt: LocalDateTime,
     val moteId: Int,
     val personIdent: PersonIdentNumber,
-    val fritekstInnkalling: String?
 )
 
 fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(
@@ -26,5 +25,4 @@ fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(
     personIdent = this.personIdent,
     type = DialogmotedeltakerType.ARBEIDSTAKER,
     varselList = dialogmotedeltakerArbeidstakerVarsel,
-    fritekstInnkalling = this.fritekstInnkalling
 )

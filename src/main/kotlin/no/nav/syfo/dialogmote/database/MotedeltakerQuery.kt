@@ -19,15 +19,13 @@ const val queryCreateMotedeltakerArbeidstaker =
         created_at,
         updated_at,
         mote_id,
-        personident,
-        fritekst_innkalling) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?) RETURNING id
+        personident) VALUES (DEFAULT, ?, ?, ?, ?, ?) RETURNING id
     """
 
 fun Connection.createMotedeltakerArbeidstaker(
     commit: Boolean = true,
     moteId: Int,
     personIdentNumber: PersonIdentNumber,
-    fritekstInnkalling: String?
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 
@@ -38,7 +36,6 @@ fun Connection.createMotedeltakerArbeidstaker(
         it.setTimestamp(3, now)
         it.setInt(4, moteId)
         it.setString(5, personIdentNumber.value)
-        it.setString(6, fritekstInnkalling.orEmpty())
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -93,7 +90,6 @@ fun ResultSet.toPMotedeltakerArbeidstaker(): PMotedeltakerArbeidstaker =
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         moteId = getInt("mote_id"),
         personIdent = PersonIdentNumber(getString("personident")),
-        fritekstInnkalling = getString("fritekst_innkalling")
     )
 
 const val queryCreateMotedeltakerArbeidsgiver =
@@ -106,8 +102,7 @@ const val queryCreateMotedeltakerArbeidsgiver =
         mote_id,
         virksomhetsnummer,
         leder_navn,
-        leder_epost,
-        fritekst_innkalling) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+        leder_epost) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
 fun Connection.createMotedeltakerArbeidsgiver(
@@ -126,7 +121,6 @@ fun Connection.createMotedeltakerArbeidsgiver(
         it.setString(5, newDialogmotedeltakerArbeidsgiver.virksomhetsnummer.value)
         it.setString(6, newDialogmotedeltakerArbeidsgiver.lederNavn)
         it.setString(7, newDialogmotedeltakerArbeidsgiver.lederEpost)
-        it.setString(8, newDialogmotedeltakerArbeidsgiver.fritekstInnkalling.orEmpty())
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -167,5 +161,4 @@ fun ResultSet.toPMotedeltakerArbeidsgiver(): PMotedeltakerArbeidsgiver =
         virksomhetsnummer = Virksomhetsnummer(getString("virksomhetsnummer")),
         lederNavn = getString("leder_navn"),
         lederEpost = getString("leder_epost"),
-        fritekstInnkalling = getString("fritekst_innkalling")
     )

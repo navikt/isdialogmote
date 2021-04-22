@@ -132,9 +132,7 @@ class GetDialogmoteWithMissingValuesApiSpek : Spek({
 
                             val dialogmoteDTO = dialogmoteList.first()
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmote.arbeidstaker.personIdent.value
-                            dialogmoteDTO.arbeidstaker.fritekstInnkalling shouldBeEqualTo ""
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmote.arbeidsgiver.virksomhetsnummer.value
-                            dialogmoteDTO.arbeidsgiver.fritekstInnkalling shouldBeEqualTo ""
 
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()

@@ -15,7 +15,6 @@ data class PMotedeltakerArbeidsgiver(
     val virksomhetsnummer: Virksomhetsnummer,
     val lederNavn: String?,
     val lederEpost: String?,
-    val fritekstInnkalling: String?
 )
 
 fun PMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver() =
@@ -29,5 +28,4 @@ fun PMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver() =
         lederNavn = this.lederNavn,
         lederEpost = this.lederEpost,
         type = DialogmotedeltakerType.ARBEIDSGIVER,
-        fritekstInnkalling = this.fritekstInnkalling
     )

@@ -6,5 +6,4 @@ data class DialogmotedeltakerArbeidsgiverDTO(
     val lederNavn: String?,
     val lederEpost: String?,
     val type: String,
-    val fritekstInnkalling: String?
 )

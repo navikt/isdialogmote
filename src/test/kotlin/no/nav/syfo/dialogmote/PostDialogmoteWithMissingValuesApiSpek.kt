@@ -157,16 +157,15 @@ class PostDialogmoteWithMissingValuesApiSpek : Spek({
 
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
                             dialogmoteDTO.arbeidstaker.varselList.size shouldBeEqualTo 1
-                            dialogmoteDTO.arbeidstaker.fritekstInnkalling shouldBeEqualTo ""
 
                             val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
                             arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
                             arbeidstakerVarselDTO.pdf shouldBeEqualTo isdialogmotepdfgenMock.pdfInnkallingArbeidstaker
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
+                            arbeidstakerVarselDTO.fritekst shouldBeEqualTo ""
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
-                            dialogmoteDTO.arbeidsgiver.fritekstInnkalling shouldBeEqualTo ""
 
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
