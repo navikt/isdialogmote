@@ -14,18 +14,18 @@ data class NewDialogmoteDTO(
 
 data class NewDialogmotedeltakerArbeidstakerDTO(
     val personIdent: String,
-    val fritekstInnkalling: String? = ""
+    val fritekstInnkalling: String?
 )
 
 data class NewDialogmotedeltakerArbeidsgiverDTO(
     val virksomhetsnummer: String,
-    val fritekstInnkalling: String? = ""
+    val fritekstInnkalling: String?
 )
 
 data class NewDialogmoteTidStedDTO(
     val sted: String,
     val tid: LocalDateTime,
-    val videoLink: String? = ""
+    val videoLink: String?
 )
 
 fun NewDialogmoteDTO.toNewDialogmote(
