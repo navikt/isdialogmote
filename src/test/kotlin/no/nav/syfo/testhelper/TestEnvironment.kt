@@ -3,7 +3,7 @@ package no.nav.syfo.testhelper
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import java.net.ServerSocket
-import java.util.*
+import java.util.Properties
 
 fun testEnvironment(
     kafkaBootstrapServers: String,
@@ -38,7 +38,8 @@ fun testEnvironment(
     syfomoteadminUrl = syfomoteadminUrl ?: "syfomoteadmin",
     syfopersonUrl = syfopersonUrl ?: "syfoperson",
     syfotilgangskontrollUrl = syfotilgangskontrollUrl ?: "tilgangskontroll",
-    mqPassword = "password",
+    mqUsername = "mquser",
+    mqPassword = "mqpassword",
     mqTredjepartsVarselQueue = "queuename",
     mqSendingEnabled = false
 )

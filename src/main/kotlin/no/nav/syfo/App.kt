@@ -1,6 +1,7 @@
 package no.nav.syfo
 
 import com.typesafe.config.ConfigFactory
+import io.ktor.application.*
 import io.ktor.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -20,6 +21,11 @@ import java.util.concurrent.TimeUnit
 
 const val applicationPort = 8080
 
+val applicationState = ApplicationState(
+    alive = true,
+    ready = false
+)
+
 fun main() {
     val server = embeddedServer(
         Netty,
@@ -32,11 +38,6 @@ fun main() {
             connector {
                 port = applicationPort
             }
-
-            val applicationState = ApplicationState(
-                alive = true,
-                ready = false
-            )
 
             val kafkaBrukernotifikasjonProducerProperties = kafkaBrukernotifikasjonProducerConfig(environment)
             val kafkaProducerOppgave = KafkaProducer<Nokkel, Oppgave>(kafkaBrukernotifikasjonProducerProperties)
@@ -61,7 +62,6 @@ fun main() {
                     wellKnownVeileder = getWellKnown(environment.aadDiscoveryUrl),
                 )
             }
-            applicationState.ready = true
         }
     )
     Runtime.getRuntime().addShutdownHook(
@@ -70,5 +70,9 @@ fun main() {
         }
     )
 
+    server.environment.monitor.subscribe(ApplicationStarted) { application ->
+        applicationState.ready = true
+        application.environment.log.info("Application is ready")
+    }
     server.start(wait = false)
 }
