@@ -56,6 +56,15 @@ spec:
       rules:
         - application: isdialogmote-redis
         - application: isdialogmotepdfgen
+  azure:
+    application:
+      enabled: true
+      tenant: trygdeetaten.no
+      replyURLs:
+        - "https://isdialogmote.dev.intern.nav.no/oauth2/callback"
+      claims:
+        extra:
+          - "NAVident"
   envFrom:
     - configmap: loginservice-idporten
     - secret: isdialogmote-serviceuser
