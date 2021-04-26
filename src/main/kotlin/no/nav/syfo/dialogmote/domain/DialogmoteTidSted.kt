@@ -20,7 +20,7 @@ fun DialogmoteTidSted.toDialogmoteTidStedDTO() =
         uuid = this.uuid.toString(),
         sted = this.sted,
         tid = this.tid,
-        videoLink = this.videoLink
+        videoLink = this.videoLink,
     )
 
 fun DialogmoteTidSted.passed(): Boolean = this.tid.isBefore(LocalDateTime.now())

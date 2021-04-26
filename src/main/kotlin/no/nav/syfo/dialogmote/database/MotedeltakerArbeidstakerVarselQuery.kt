@@ -31,7 +31,7 @@ fun Connection.createMotedeltakerVarselArbeidstaker(
     varselType: MotedeltakerVarselType,
     digitalt: Boolean,
     pdf: ByteArray,
-    fritekst: String
+    fritekst: String,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 
