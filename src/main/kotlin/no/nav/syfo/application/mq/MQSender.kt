@@ -10,6 +10,7 @@ import no.nav.syfo.varsel.MotedeltakerVarselType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.jms.ConnectionFactory
+import javax.jms.JMSContext
 
 private const val UTF_8_WITH_PUA = 1208
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.application.mq")
@@ -19,14 +20,25 @@ interface MQSenderInterface {
 }
 
 class MQSender(private val env: Environment) : MQSenderInterface {
+
+    private val jmsContext: JMSContext = connectionFactory(env).createContext()
+
+    protected fun finalize() {
+        try {
+            jmsContext.close()
+        } catch (exc: Exception) {
+            log.warn("Got exception when closing MQ-connection", exc)
+        }
+    }
+
     override fun sendMQMessage(varseltype: MotedeltakerVarselType, payload: String) {
         val queueName = getQueueName(env)
         if (env.mqSendingEnabled) {
             log.info("Sending message of type $varseltype to $queueName")
-            connectionFactory(env).createContext().use { jmsContext ->
-                val destination = jmsContext.createQueue("queue:///$queueName")
-                val message = jmsContext.createTextMessage(payload)
-                jmsContext.createProducer().send(destination, message)
+            jmsContext.createContext(AUTO_ACKNOWLEDGE).use { context ->
+                val destination = context.createQueue("queue:///$queueName")
+                val message = context.createTextMessage(payload)
+                context.createProducer().send(destination, message)
             }
         } else {
             log.info("MQ-message sending disabled, would have sent message of type $varseltype to $queueName")
