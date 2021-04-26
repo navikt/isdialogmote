@@ -9,7 +9,7 @@ import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.sql.*
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 const val queryCreateMotedeltakerArbeidstaker =
     """
@@ -25,7 +25,7 @@ const val queryCreateMotedeltakerArbeidstaker =
 fun Connection.createMotedeltakerArbeidstaker(
     commit: Boolean = true,
     moteId: Int,
-    personIdentNumber: PersonIdentNumber
+    personIdentNumber: PersonIdentNumber,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 

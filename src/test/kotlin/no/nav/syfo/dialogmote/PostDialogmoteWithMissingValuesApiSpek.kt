@@ -13,14 +13,10 @@ import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
 import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.testhelper.*
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithMissingValues
 import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -30,10 +26,10 @@ import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
-class PostDialogmoteApiSpek : Spek({
+class PostDialogmoteWithMissingValuesApiSpek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
 
-    describe(PostDialogmoteApiSpek::class.java.simpleName) {
+    describe(PostDialogmoteWithMissingValuesApiSpek::class.java.simpleName) {
 
         with(TestApplicationEngine()) {
             start()
@@ -125,7 +121,7 @@ class PostDialogmoteApiSpek : Spek({
                     VEILEDER_IDENT,
                 )
                 describe("Happy path") {
-                    val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+                    val newDialogmoteDTO = generateNewDialogmoteDTOWithMissingValues(ARBEIDSTAKER_FNR)
                     val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
                     val urlMoter = "$dialogmoteApiBasepath$dialogmoteApiPersonIdentUrlPath"
                     it("should return OK if request is successful") {
@@ -167,88 +163,16 @@ class PostDialogmoteApiSpek : Spek({
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
                             arbeidstakerVarselDTO.pdf shouldBeEqualTo isdialogmotepdfgenMock.pdfInnkallingArbeidstaker
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
-                            arbeidstakerVarselDTO.fritekst shouldBeEqualTo "Ipsum lorum arbeidstaker"
+                            arbeidstakerVarselDTO.fritekst shouldBeEqualTo ""
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
 
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
                             dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
-                            dialogmoteTidStedDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
+                            dialogmoteTidStedDTO.videoLink shouldBeEqualTo ""
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-                        }
-                    }
-                }
-
-                describe("Unhappy paths") {
-                    val url = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
-                    it("should return status Unauthorized if no token is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Post, url) {}
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                        }
-                    }
-
-                    it("should return status Forbidden if denied access to person") {
-                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_VEILEDER_NO_ACCESS)
-                        val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
-                        with(
-                            handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                        }
-                    }
-
-                    it("should return status Forbidden if denied person has Adressbeskyttese") {
-                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_ADRESSEBESKYTTET)
-                        val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
-                        with(
-                            handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                        }
-                    }
-
-                    it("should return status Forbidden if denied person has cannot receive digital documents") {
-                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_IKKE_VARSEL)
-                        val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
-                        with(
-                            handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                        }
-                    }
-
-                    it("should return status InternalServerError if denied person with PlanlagtMote with Virksomhet does not have a leader for that Virksomhet") {
-                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
-                        val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
-                        with(
-                            handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
                 }

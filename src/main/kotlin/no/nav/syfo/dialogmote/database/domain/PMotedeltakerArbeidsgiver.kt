@@ -4,7 +4,7 @@ import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.dialogmote.domain.DialogmotedeltakerType
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class PMotedeltakerArbeidsgiver(
     val id: Int,

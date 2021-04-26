@@ -8,7 +8,7 @@ import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdentNumber
 import java.sql.*
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 const val queryGetDialogmoteForUUID =
     """
@@ -83,7 +83,7 @@ fun Connection.createNewDialogmoteWithReferences(
     newDialogmote: NewDialogmote,
 ): CreatedDialogmoteIdentifiers {
     val moteIdList = this.createDialogmote(
-        commit = true,
+        commit = false,
         newDialogmote = newDialogmote
     )
 
@@ -106,7 +106,7 @@ fun Connection.createNewDialogmoteWithReferences(
         personIdentNumber = newDialogmote.arbeidstaker.personIdent,
     )
     this.createMotedeltakerArbeidsgiver(
-        commit = true,
+        commit = false,
         moteId = moteId,
         newDialogmotedeltakerArbeidsgiver = newDialogmote.arbeidsgiver,
     )
@@ -168,7 +168,7 @@ fun Connection.createNewDialogmotePlanlagtWithReferences(
     newDialogmotePlanlagt: NewDialogmotePlanlagt,
 ): CreatedDialogmoteIdentifiers {
     val moteIdList = this.createDialogmotePlanlagt(
-        commit = true,
+        commit = false,
         newDialogmotePlanlagt = newDialogmotePlanlagt
     )
 
@@ -191,7 +191,7 @@ fun Connection.createNewDialogmotePlanlagtWithReferences(
         personIdentNumber = newDialogmotePlanlagt.arbeidstaker.personIdent,
     )
     this.createMotedeltakerArbeidsgiver(
-        commit = true,
+        commit = false,
         moteId = moteId,
         newDialogmotedeltakerArbeidsgiver = newDialogmotePlanlagt.arbeidsgiver,
     )

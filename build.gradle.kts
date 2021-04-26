@@ -15,7 +15,7 @@ object Versions {
     const val kafkaVersion = "2.7.0"
     const val kafkaEmbeddedVersion = "2.5.0"
     const val ktorVersion = "1.5.0"
-    const val jaxbVersion = "2.3.0"
+    const val jaxbVersion = "2.3.1"
     const val kluentVersion = "1.61"
     const val logbackVersion = "1.2.3"
     const val logstashEncoderVersion = "6.3"

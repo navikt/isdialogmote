@@ -137,7 +137,8 @@ class DialogmoteService(
                     arbeidstakerPersonIdent = newDialogmotePlanlagt.arbeidstaker.personIdent,
                     pdf = pdfInnkallingArbeidstaker,
                     narmesteLeder = narmesteLeder,
-                    varselType = MotedeltakerVarselType.INNKALT
+                    varselType = MotedeltakerVarselType.INNKALT,
+                    fritekst = newDialogmotePlanlagt.arbeidstaker.fritekstInnkalling.orEmpty(),
                 )
 
                 connection.commit()
@@ -204,7 +205,8 @@ class DialogmoteService(
                     arbeidstakerPersonIdent = newDialogmote.arbeidstaker.personIdent,
                     pdf = pdfInnkallingArbeidstaker,
                     narmesteLeder = narmesteLeder,
-                    varselType = MotedeltakerVarselType.INNKALT
+                    varselType = MotedeltakerVarselType.INNKALT,
+                    fritekst = newDialogmote.arbeidstaker.fritekstInnkalling.orEmpty(),
                 )
 
                 connection.commit()
@@ -309,7 +311,8 @@ class DialogmoteService(
         arbeidstakerPersonIdent: PersonIdentNumber,
         pdf: ByteArray,
         narmesteLeder: NarmesteLederDTO,
-        varselType: MotedeltakerVarselType
+        varselType: MotedeltakerVarselType,
+        fritekst: String = "",
     ) {
         val (_, varselId) = connection.createMotedeltakerVarselArbeidstaker(
             commit = false,
@@ -318,6 +321,7 @@ class DialogmoteService(
             varselType = varselType,
             digitalt = true,
             pdf = pdf,
+            fritekst = fritekst,
         )
         val now = LocalDateTime.now()
         arbeidstakerVarselService.sendVarsel(

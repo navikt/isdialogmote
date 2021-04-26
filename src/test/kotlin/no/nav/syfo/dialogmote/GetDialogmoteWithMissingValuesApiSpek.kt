@@ -14,11 +14,9 @@ import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.createNewDialogmotePlanlagtWithReferences
 import no.nav.syfo.testhelper.*
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.generator.generateNewDialogmotePlanlagt
+import no.nav.syfo.testhelper.generator.generateNewDialogmotePlanlagtWithoutInnkallingTexts
 import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -27,10 +25,10 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
-class GetDialogmoteApiSpek : Spek({
+class GetDialogmoteWithMissingValuesApiSpek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
 
-    describe("DialogmoteApiSpek") {
+    describe("DialogmoteWithMissingValuesApiSpek") {
 
         with(TestApplicationEngine()) {
             start()
@@ -109,9 +107,9 @@ class GetDialogmoteApiSpek : Spek({
                     wellKnownVeileder.issuer,
                     VEILEDER_IDENT,
                 )
-                describe("Happy path") {
+                describe("Happy path with missing values") {
 
-                    val newDialogmote = generateNewDialogmotePlanlagt(ARBEIDSTAKER_FNR)
+                    val newDialogmote = generateNewDialogmotePlanlagtWithoutInnkallingTexts(ARBEIDSTAKER_FNR)
                     database.connection.use { connection ->
                         connection.createNewDialogmotePlanlagtWithReferences(
                             newDialogmotePlanlagt = newDialogmote
@@ -139,65 +137,7 @@ class GetDialogmoteApiSpek : Spek({
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
                             dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmote.tidSted.sted
-                            dialogmoteTidStedDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
-                        }
-                    }
-                }
-
-                describe("Unhappy paths") {
-                    it("should return status Unauthorized if no token is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Get, url) {}
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                        }
-                    }
-
-                    it("should return status BadRequest if no $NAV_PERSONIDENT_HEADER is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Get, url) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                        }
-                    }
-
-                    it("should return status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Get, url) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value.drop(1))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                        }
-                    }
-
-                    it("should return status Forbidden if denied access to person") {
-                        with(
-                            handleRequest(HttpMethod.Get, url) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_VEILEDER_NO_ACCESS.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                        }
-                    }
-
-                    it("should return status Forbidden if denied person has Adressbeskyttese") {
-                        with(
-                            handleRequest(HttpMethod.Get, url) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_ADRESSEBESKYTTET.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
+                            dialogmoteTidStedDTO.videoLink shouldBeEqualTo ""
                         }
                     }
                 }

@@ -161,7 +161,8 @@ class PostDialogmoteTidStedApiSpek : Spek({
                         val urlMoteUUIDPostTidSted = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                         val newDialogmoteTidSted = NewDialogmoteTidSted(
                             sted = "Et annet sted",
-                            tid = planlagtMoteDTO?.tidStedValgt()?.tid?.plusDays(1) ?: LocalDateTime.now().plusDays(2)
+                            tid = planlagtMoteDTO?.tidStedValgt()?.tid?.plusDays(1) ?: LocalDateTime.now().plusDays(2),
+                            videoLink = "https://meet.google.com/zyx"
                         )
 
                         with(
@@ -209,6 +210,7 @@ class PostDialogmoteTidStedApiSpek : Spek({
 
                             val dialogmoteTidStedDTOLast = dialogmoteDTO.tidStedList.last()
                             dialogmoteTidStedDTOLast.sted shouldBeEqualTo newDialogmoteTidSted.sted
+                            dialogmoteTidStedDTOLast.videoLink shouldBeEqualTo "https://meet.google.com/zyx"
 
                             verify(exactly = 2) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }

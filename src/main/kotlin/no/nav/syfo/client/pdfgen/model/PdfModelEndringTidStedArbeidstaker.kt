@@ -10,4 +10,5 @@ data class EndringTidStedArbeidstaker(
 
 data class EndringTidStedArbeidstakerTidOgSted(
     val sted: String,
+    val videoLink: String?
 )

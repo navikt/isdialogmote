@@ -9,4 +9,5 @@ data class DialogmotedeltakerArbeidstakerVarselDTO(
     val digitalt: Boolean,
     val pdf: ByteArray,
     val lestDato: LocalDateTime?,
+    val fritekst: String,
 )
