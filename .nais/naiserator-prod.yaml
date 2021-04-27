@@ -1,0 +1,111 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: isdialogmote
+  namespace: teamsykefravr
+  labels:
+    team: teamsykefravr
+spec:
+  image: {{ image }}
+  port: 8080
+  replicas:
+    min: 1
+    max: 2
+    cpuThresholdPercentage: 70
+  liveness:
+    path: /is_alive
+    initialDelay: 10
+    periodSeconds: 5
+    timeout: 5
+    failureThreshold: 30
+  readiness:
+    path: /is_alive
+    initialDelay: 30
+    periodSeconds: 5
+    timeout: 5
+    failureThreshold: 30
+  leaderElection: false
+  prometheus:
+    enabled: true
+    path: /prometheus
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 384Mi
+  ingresses:
+    - "https://isdialogmote.intern.nav.no"
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_12
+        databases:
+          - name: isdialogmote-db
+            diskAutoresize: true
+  accessPolicy:
+    outbound:
+      external:
+        - host: "kafka-schema-registry.nais.adeo.no"
+        - host: "login.microsoftonline.com"
+        - host: "modiasyforest.prod-fss-pub.nais.io"
+        - host: "syfobehandlendeenhet.prod-fss-pub.nais.io"
+        - host: "syfomoteadmin.prod-fss-pub.nais.io"
+        - host: "syfoperson.prod-fss-pub.nais.io"
+        - host: "syfo-tilgangskontroll.prod-fss-pub.nais.io"
+      rules:
+        - application: isdialogmote-redis
+        - application: isdialogmotepdfgen
+  azure:
+    application:
+      enabled: true
+      tenant: nav.no
+      replyURLs:
+        - "https://isdialogmote.intern.nav.no/oauth2/callback"
+      claims:
+        extra:
+          - "NAVident"
+  envFrom:
+    - configmap: loginservice-idporten
+    - secret: isdialogmote-serviceuser
+    - secret: isdialogmote-redis-password
+  env:
+    - name: KTOR_ENV
+      value: "production"
+    - name: AADDISCOVERY_URL
+      value: "https://login.microsoftonline.com/navno.onmicrosoft.com/.well-known/openid-configuration"
+    - name: KAFKA_BOOTSTRAP_SERVERS_URL
+      value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
+    - name: KAFKA_SCHEMA_REGISTRY_URL
+      value: "kafka-schema-registry.nais.adeo.no"
+    - name: REDIS_HOST
+      value: "isdialogmote-redis.teamsykefravr.svc.cluster.local"
+    - name: LOGINSERVICE_CLIENT_ID
+      value: "9b4e07a3-4f4c-4bab-b866-87f62dff480d"
+    - name: DIALOGMOTE_ARBEIDSTAKER_URL
+      value: "https://tjenester.nav.no/dialogmote"
+    - name: DIALOGMOTE_ARBEIDSGIVER_URL
+      value: "https://tjenester.nav.no/dialogmotearbeidsgiver"
+    - name: MODIASYFOREST_URL
+      value: "https://modiasyforest.prod-fss-pub.nais.io"
+    - name: SYFOBEHANDLENDEENHET_URL
+      value: "https://syfobehandlendeenhet.prod-fss-pub.nais.io"
+    - name: SYFOMOTEADMIN_URL
+      value: "https://syfomoteadmin.prod-fss-pub.nais.io"
+    - name: SYFOPERSON_URL
+      value: "https://syfoperson.prod-fss-pub.nais.io"
+    - name: SYFOTILGANGSKONTROLL_URL
+      value: "https://syfo-tilgangskontroll.prod-fss-pub.nais.io"
+    - name: TOGGLE_MQ_SENDING_ENABLED
+      value: 'false'
+    - name: MQGATEWAY_HOSTNAME
+      value: "a01apvl269.adeo.no"
+    - name: MQGATEWAY_PORT
+      value: '1414'
+    - name: MQGATEWAY_NAME
+      value: "MPLS02"
+    - name: MQGATEWAY_CHANNEL_NAME
+      value: "P_ISDIALOGMOTE"
+    - name: TREDJEPARTSVARSEL_QUEUENAME
+      value: "QA.P_VARSELPRODUKSJON.BEST_SRVMLD_M_KONTAKT"
+
