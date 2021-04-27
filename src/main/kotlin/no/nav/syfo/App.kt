@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit
 
 const val applicationPort = 8080
 
-
 fun main() {
     val applicationState = ApplicationState(
         alive = true,
