@@ -69,7 +69,6 @@ spec:
     - configmap: loginservice-idporten
     - secret: isdialogmote-serviceuser
     - secret: isdialogmote-redis-password
-    - secret: isdialogmote-mquser
   env:
     - name: KTOR_ENV
       value: production
