@@ -28,6 +28,15 @@ class TestDatabase : DatabaseInterface {
     }
 }
 
+class TestDatabaseNotResponding : DatabaseInterface {
+
+    override val connection: Connection
+        get() = throw Exception("Not working")
+
+    fun stop() {
+    }
+}
+
 fun DatabaseInterface.dropData() {
     val queryList = listOf(
         """

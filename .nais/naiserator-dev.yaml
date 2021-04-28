@@ -14,16 +14,16 @@ spec:
     cpuThresholdPercentage: 70
   liveness:
     path: /is_alive
-    initialDelay: 10
+    initialDelay: 60
     periodSeconds: 5
     timeout: 5
-    failureThreshold: 30
+    failureThreshold: 3
   readiness:
-    path: /is_alive
-    initialDelay: 30
+    path: /is_ready
+    initialDelay: 60
     periodSeconds: 5
     timeout: 5
-    failureThreshold: 30
+    failureThreshold: 3
   leaderElection: false
   prometheus:
     enabled: true

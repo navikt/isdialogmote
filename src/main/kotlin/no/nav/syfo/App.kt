@@ -21,12 +21,12 @@ import java.util.concurrent.TimeUnit
 
 const val applicationPort = 8080
 
-val applicationState = ApplicationState(
-    alive = true,
-    ready = false
-)
-
 fun main() {
+    val applicationState = ApplicationState(
+        alive = true,
+        ready = false
+    )
+
     val server = embeddedServer(
         Netty,
         applicationEngineEnvironment {

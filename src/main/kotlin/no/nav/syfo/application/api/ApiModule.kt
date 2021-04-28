@@ -122,7 +122,7 @@ fun Application.apiModule(
     )
 
     routing {
-        registerPodApi(applicationState)
+        registerPodApi(applicationState, database)
         registerPrometheusApi()
         authenticate(JwtIssuerType.veileder.name) {
             registerDialogmoteApi(
