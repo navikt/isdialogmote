@@ -36,7 +36,7 @@ spec:
       cpu: 100m
       memory: 384Mi
   ingresses:
-    - "https://isdialogmote.dev.intern.nav.no"
+    - "https://isdialogmote.intern.nav.no"
   gcp:
     sqlInstances:
       - type: POSTGRES_12
@@ -46,22 +46,22 @@ spec:
   accessPolicy:
     outbound:
       external:
-        - host: kafka-schema-registry.nais-q.adeo.no
+        - host: "kafka-schema-registry.nais.adeo.no"
         - host: "login.microsoftonline.com"
-        - host: "modiasyforest.dev-fss-pub.nais.io"
-        - host: "syfobehandlendeenhet.dev-fss-pub.nais.io"
-        - host: "syfomoteadmin.dev-fss-pub.nais.io"
-        - host: "syfoperson.dev-fss-pub.nais.io"
-        - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
+        - host: "modiasyforest.prod-fss-pub.nais.io"
+        - host: "syfobehandlendeenhet.prod-fss-pub.nais.io"
+        - host: "syfomoteadmin.prod-fss-pub.nais.io"
+        - host: "syfoperson.prod-fss-pub.nais.io"
+        - host: "syfo-tilgangskontroll.prod-fss-pub.nais.io"
       rules:
         - application: isdialogmote-redis
         - application: isdialogmotepdfgen
   azure:
     application:
       enabled: true
-      tenant: trygdeetaten.no
+      tenant: nav.no
       replyURLs:
-        - "https://isdialogmote.dev.intern.nav.no/oauth2/callback"
+        - "https://isdialogmote.intern.nav.no/oauth2/callback"
       claims:
         extra:
           - "NAVident"
@@ -71,41 +71,41 @@ spec:
     - secret: isdialogmote-redis-password
   env:
     - name: KTOR_ENV
-      value: production
+      value: "production"
     - name: AADDISCOVERY_URL
-      value: "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/.well-known/openid-configuration"
+      value: "https://login.microsoftonline.com/navno.onmicrosoft.com/.well-known/openid-configuration"
     - name: KAFKA_BOOTSTRAP_SERVERS_URL
-      value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
+      value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
     - name: KAFKA_SCHEMA_REGISTRY_URL
-      value: https://kafka-schema-registry.nais-q.adeo.no
+      value: "kafka-schema-registry.nais.adeo.no"
     - name: REDIS_HOST
       value: "isdialogmote-redis.teamsykefravr.svc.cluster.local"
     - name: LOGINSERVICE_CLIENT_ID
-      value: "38e07d31-659d-4595-939a-f18dce3446c5"
+      value: "9b4e07a3-4f4c-4bab-b866-87f62dff480d"
     - name: DIALOGMOTE_ARBEIDSTAKER_URL
-      value: "https://tjenester-q1.nav.no/dialogmote"
+      value: "https://tjenester.nav.no/dialogmote"
     - name: DIALOGMOTE_ARBEIDSGIVER_URL
-      value: "https://tjenester-q1.nav.no/dialogmotearbeidsgiver"
+      value: "https://tjenester.nav.no/dialogmotearbeidsgiver"
     - name: MODIASYFOREST_URL
-      value: "https://modiasyforest.dev-fss-pub.nais.io"
+      value: "https://modiasyforest.prod-fss-pub.nais.io"
     - name: SYFOBEHANDLENDEENHET_URL
-      value: "https://syfobehandlendeenhet.dev-fss-pub.nais.io"
+      value: "https://syfobehandlendeenhet.prod-fss-pub.nais.io"
     - name: SYFOMOTEADMIN_URL
-      value: "https://syfomoteadmin.dev-fss-pub.nais.io"
+      value: "https://syfomoteadmin.prod-fss-pub.nais.io"
     - name: SYFOPERSON_URL
-      value: "https://syfoperson.dev-fss-pub.nais.io"
+      value: "https://syfoperson.prod-fss-pub.nais.io"
     - name: SYFOTILGANGSKONTROLL_URL
-      value: "https://syfo-tilgangskontroll.dev-fss-pub.nais.io"
+      value: "https://syfo-tilgangskontroll.prod-fss-pub.nais.io"
     - name: TOGGLE_MQ_SENDING_ENABLED
       value: 'false'
     - name: MQGATEWAY_HOSTNAME
-      value: b27apvl220.preprod.local
+      value: "a01apvl269.adeo.no"
     - name: MQGATEWAY_PORT
-      value: '1413'
+      value: '1414'
     - name: MQGATEWAY_NAME
-      value: MQLS02
+      value: "MPLS02"
     - name: MQGATEWAY_CHANNEL_NAME
-      value: Q1_ISDIALOGMOTE
+      value: "P_ISDIALOGMOTE"
     - name: TREDJEPARTSVARSEL_QUEUENAME
-      value: QA.Q1_VARSELPRODUKSJON.BEST_SRVMLD_M_KONTAKT
+      value: "QA.P_VARSELPRODUKSJON.BEST_SRVMLD_M_KONTAKT"
 
