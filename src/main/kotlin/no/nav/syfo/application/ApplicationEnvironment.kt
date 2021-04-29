@@ -4,6 +4,7 @@ import io.ktor.application.*
 
 data class Environment(
     val aadDiscoveryUrl: String = getEnvVar("AADDISCOVERY_URL"),
+    val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
     val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
@@ -28,6 +29,7 @@ data class Environment(
     val syfomoteadminUrl: String = getEnvVar("SYFOMOTEADMIN_URL"),
     val syfopersonUrl: String = getEnvVar("SYFOPERSON_URL"),
     val syfotilgangskontrollUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
+    val journalforingCronjobEnabled: Boolean = getEnvVar("TOGGLE_JOURNALFORING_CRONJOB_ENABLED").toBoolean(),
     val mqChannelName: String = getEnvVar("MQGATEWAY_CHANNEL_NAME", "DEV.APP.SVRCONN"),
     val mqHostname: String = getEnvVar("MQGATEWAY_HOSTNAME", "localhost"),
     val mqQueueManager: String = getEnvVar("MQGATEWAY_NAME", "QM1"),

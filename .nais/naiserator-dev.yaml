@@ -24,7 +24,7 @@ spec:
     periodSeconds: 5
     timeout: 5
     failureThreshold: 3
-  leaderElection: false
+  leaderElection: true
   prometheus:
     enabled: true
     path: /prometheus
@@ -96,6 +96,8 @@ spec:
       value: "https://syfoperson.dev-fss-pub.nais.io"
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.dev-fss-pub.nais.io"
+    - name: TOGGLE_JOURNALFORING_CRONJOB_ENABLED
+      value: "true"
     - name: TOGGLE_MQ_SENDING_ENABLED
       value: 'false'
     - name: MQGATEWAY_HOSTNAME

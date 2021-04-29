@@ -15,6 +15,7 @@ fun testEnvironment(
     syfotilgangskontrollUrl: String? = null
 ) = Environment(
     aadDiscoveryUrl = "",
+    electorPath = "electorPath",
     loginserviceIdportenDiscoveryUrl = "",
     loginserviceIdportenAudience = listOf("idporten"),
     kafkaBootstrapServers = kafkaBootstrapServers,
@@ -38,6 +39,7 @@ fun testEnvironment(
     syfomoteadminUrl = syfomoteadminUrl ?: "syfomoteadmin",
     syfopersonUrl = syfopersonUrl ?: "syfoperson",
     syfotilgangskontrollUrl = syfotilgangskontrollUrl ?: "tilgangskontroll",
+    journalforingCronjobEnabled = false,
     mqUsername = "mquser",
     mqPassword = "mqpassword",
     mqTredjepartsVarselQueue = "queuename",
