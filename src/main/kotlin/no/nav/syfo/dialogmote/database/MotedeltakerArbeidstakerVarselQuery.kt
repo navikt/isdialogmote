@@ -7,7 +7,7 @@ import no.nav.syfo.varsel.MotedeltakerVarselType
 import java.sql.*
 import java.time.Instant
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 const val queryCreateMotedeltakerVarselArbeidstaker =
     """
@@ -73,6 +73,21 @@ fun DatabaseInterface.getMotedeltakerArbeidstakerVarsel(
     return this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerArbeidstakerVarselForMotedeltaker).use {
             it.setInt(1, motedeltakerArbeidstakerId)
+            it.executeQuery().toList { toPMotedeltakerArbeidstakerVarsel() }
+        }
+    }
+}
+
+const val queryGetMotedeltakerArbeidstakerVarselWithoutJournalpost =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_ARBEIDSTAKER_VARSEL
+        WHERE journalpost_id IS NULL
+    """
+
+fun DatabaseInterface.getMotedeltakerArbeidstakerVarselWithoutJournalpost(): List<PMotedeltakerArbeidstakerVarsel> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerArbeidstakerVarselWithoutJournalpost).use {
             it.executeQuery().toList { toPMotedeltakerArbeidstakerVarsel() }
         }
     }

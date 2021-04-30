@@ -3,6 +3,7 @@ package no.nav.syfo.cronjob.journalforing
 import kotlinx.coroutines.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
+import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalforingService
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
@@ -13,6 +14,7 @@ data class JournalforingResult(
 
 class DialogmoteVarselJournalforingCronjob(
     private val applicationState: ApplicationState,
+    private val dialogmotedeltakerVarselJournalforingService: DialogmotedeltakerVarselJournalforingService,
     private val leaderPodClient: LeaderPodClient,
 ) {
     suspend fun start() = coroutineScope {
@@ -45,7 +47,9 @@ class DialogmoteVarselJournalforingCronjob(
     }
 
     private fun dialogmoteVarselJournalforingJob(): JournalforingResult {
-        // TODO: Implement JournaligforingJob
+        val arbeidstakerVarselWithJournalpostList = dialogmotedeltakerVarselJournalforingService.getDialogmotedeltakerArbeidstakerVarselForJournalforingList()
+        log.info("CRONJOB-TRACE: Receiving list of ArbeidstakerVarsel of size=${arbeidstakerVarselWithJournalpostList.size} for Journalforing")
+        // TODO: Implement Journalforing
         return JournalforingResult()
     }
 

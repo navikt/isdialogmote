@@ -9,7 +9,7 @@ import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.sql.*
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 const val queryCreateMotedeltakerArbeidstaker =
     """
@@ -61,6 +61,22 @@ fun DatabaseInterface.getMoteDeltakerArbeidstaker(moteId: Int): List<PMotedeltak
     return this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerArbeidstakerForMote).use {
             it.setInt(1, moteId)
+            it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
+        }
+    }
+}
+
+const val queryGetMotedeltakerArbeidstakerById =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_ARBEIDSTAKER
+        WHERE id = ?
+    """
+
+fun DatabaseInterface.getMotedeltakerArbeidstakerById(motedeltakerId: Int): List<PMotedeltakerArbeidstaker> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerArbeidstakerById).use {
+            it.setInt(1, motedeltakerId)
             it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
         }
     }

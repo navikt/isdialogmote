@@ -64,6 +64,7 @@ fun main() {
                 )
                 cronjobModule(
                     applicationState = applicationState,
+                    database = applicationDatabase,
                     environment = environment,
                 )
             }
