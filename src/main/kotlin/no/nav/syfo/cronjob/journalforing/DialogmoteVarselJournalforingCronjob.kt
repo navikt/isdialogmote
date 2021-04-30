@@ -2,6 +2,7 @@ package no.nav.syfo.cronjob.journalforing
 
 import kotlinx.coroutines.*
 import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalforingService
 import org.slf4j.LoggerFactory
@@ -15,6 +16,7 @@ data class JournalforingResult(
 class DialogmoteVarselJournalforingCronjob(
     private val applicationState: ApplicationState,
     private val dialogmotedeltakerVarselJournalforingService: DialogmotedeltakerVarselJournalforingService,
+    private val dokarkivClient: DokarkivClient,
     private val leaderPodClient: LeaderPodClient,
 ) {
     suspend fun start() = coroutineScope {
@@ -33,7 +35,7 @@ class DialogmoteVarselJournalforingCronjob(
         log.info("CRONJOB-TRACE: Ending job")
     }
 
-    private fun run() {
+    private suspend fun run() {
         try {
             if (leaderPodClient.isLeader()) {
                 val resultat = dialogmoteVarselJournalforingJob()
@@ -46,10 +48,11 @@ class DialogmoteVarselJournalforingCronjob(
         }
     }
 
-    private fun dialogmoteVarselJournalforingJob(): JournalforingResult {
+    private suspend fun dialogmoteVarselJournalforingJob(): JournalforingResult {
         val arbeidstakerVarselWithJournalpostList = dialogmotedeltakerVarselJournalforingService.getDialogmotedeltakerArbeidstakerVarselForJournalforingList()
         log.info("CRONJOB-TRACE: Receiving list of ArbeidstakerVarsel of size=${arbeidstakerVarselWithJournalpostList.size} for Journalforing")
         // TODO: Implement Journalforing
+        dokarkivClient.journalfor()
         return JournalforingResult()
     }
 

@@ -15,6 +15,10 @@ fun testEnvironment(
     syfotilgangskontrollUrl: String? = null
 ) = Environment(
     aadDiscoveryUrl = "",
+    aadAppClient = "isdialogmote-client-id",
+    aadAppSecret = "isdialogmote-secret",
+    aadTokenEndpoint = "",
+    dokarkivClientId = "dokarkiv-client-id",
     electorPath = "electorPath",
     loginserviceIdportenDiscoveryUrl = "",
     loginserviceIdportenAudience = listOf("idporten"),
