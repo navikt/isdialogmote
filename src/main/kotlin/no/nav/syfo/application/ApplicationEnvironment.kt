@@ -4,6 +4,10 @@ import io.ktor.application.*
 
 data class Environment(
     val aadDiscoveryUrl: String = getEnvVar("AADDISCOVERY_URL"),
+    val aadAppClient: String = getEnvVar("AZURE_APP_CLIENT_ID"),
+    val aadAppSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
+    val aadTokenEndpoint: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
+    val dokarkivClientId: String = getEnvVar("JOARK_CLIENT_ID"),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
