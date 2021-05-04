@@ -15,12 +15,30 @@ data class NewDialogmoteDTO(
 data class NewDialogmotedeltakerArbeidstakerDTO(
     val personIdent: String,
     val fritekstInnkalling: String?,
+    val innkalling: List<DocumentComponentDTO>,
 )
 
 data class NewDialogmotedeltakerArbeidsgiverDTO(
     val virksomhetsnummer: String,
     val fritekstInnkalling: String?,
+    val innkalling: List<DocumentComponentDTO>,
 )
+
+data class DocumentComponentDTO(
+    val type: DocumentComponentType,
+    val data: String,
+)
+
+enum class DocumentComponentType {
+    DOCUMENT_COMPONENT_TITLE,
+    DOCUMENT_COMPONENT_HEADER,
+    DOCUMENT_COMPONENT_SUBHEADER,
+    DOCUMENT_COMPONENT_TIME_TITLE,
+    DOCUMENT_COMPONENT_PLACE_TITLE,
+    DOCUMENT_COMPONENT_PARAGRAPH,
+    DOCUMENT_COMPONENT_LINK,
+    DOCUMENT_COMPONENT_VIDEOLINK,
+}
 
 data class NewDialogmoteTidStedDTO(
     val sted: String,
