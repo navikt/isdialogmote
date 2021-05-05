@@ -1,9 +1,8 @@
 package no.nav.syfo.dialogmote
 
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidstaker
-import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerById
-import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerVarselWithoutJournalpost
 import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidstakerVarsel
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.varsel.MotedeltakerVarselType
@@ -31,6 +30,16 @@ class DialogmotedeltakerVarselJournalforingService(
                 motedeltakerArbeidstakerVarsel,
             )
         }
+    }
+
+    fun updateJournalpostId(
+        dialogmotedeltakerArbeidstakerVarsel: DialogmotedeltakerArbeidstakerVarsel,
+        journalpostId: Int,
+    ) {
+        database.updateMotedeltakerArbeidstakerVarselJournalpostId(
+            motedeltakerArbeidstakerVarselId = dialogmotedeltakerArbeidstakerVarsel.id,
+            journalpostId = journalpostId
+        )
     }
 
     private val journalforingVarselTypeList = listOf(

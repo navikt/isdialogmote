@@ -1,10 +1,12 @@
 package no.nav.syfo.cronjob.journalforing
 
 import kotlinx.coroutines.*
+import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalforingService
+import no.nav.syfo.dialogmote.domain.toJournalpostRequest
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
@@ -21,45 +23,71 @@ class DialogmoteVarselJournalforingCronjob(
 ) {
     suspend fun start() = coroutineScope {
         val (initialDelay, intervalDelay) = delays()
-        log.info("CRONJOB-TRACE: Scheduling start of job: initialDelay: $initialDelay ms, interval: $intervalDelay ms")
+        log.info(
+            "Scheduling start of DialogmoteVarselJournalforingCronjob: {} ms, {} ms",
+            StructuredArguments.keyValue("initialDelay", initialDelay),
+            StructuredArguments.keyValue("intervalDelay", intervalDelay),
+        )
         delay(initialDelay)
 
         while (applicationState.alive) {
             val job = launch { run() }
             delay(intervalDelay)
             if (job.isActive) {
-                log.warn("CRONJOB-TRACE: Waiting for job to finish")
+                log.warn("Waiting for job to finish")
                 job.join()
             }
         }
-        log.info("CRONJOB-TRACE: Ending job")
+        log.info("Ending DialogmoteVarselJournalforingCronjob due to failed liveness check ")
     }
 
     private suspend fun run() {
         try {
             if (leaderPodClient.isLeader()) {
                 val resultat = dialogmoteVarselJournalforingJob()
-                log.info("CRONJOB-TRACE: Completed job: failed=${resultat.failed}, updated=${resultat.updated}")
+                log.info(
+                    "Completed job with result: {}, {}",
+                    StructuredArguments.keyValue("failed", resultat.failed),
+                    StructuredArguments.keyValue("updated", resultat.updated),
+                )
             } else {
-                log.info("CRONJOB-TRACE: Pod is not leader and will not perform job")
+                log.debug("Pod is not leader and will not perform job")
             }
         } catch (ex: Exception) {
-            log.error("CRONJOB-TRACE: exception in job. Job will run again after delay.", ex)
+            log.error("Exception in DialogmoteVarselJournalforingCronjob. Job will run again after delay.", ex)
         }
     }
 
     private suspend fun dialogmoteVarselJournalforingJob(): JournalforingResult {
-        val arbeidstakerVarselWithJournalpostList = dialogmotedeltakerVarselJournalforingService.getDialogmotedeltakerArbeidstakerVarselForJournalforingList()
-        log.info("CRONJOB-TRACE: Receiving list of ArbeidstakerVarsel of size=${arbeidstakerVarselWithJournalpostList.size} for Journalforing")
-        // TODO: Implement Journalforing
-        dokarkivClient.journalfor()
-        return JournalforingResult()
+        val journalforingResult = JournalforingResult()
+
+        val arbeidstakerVarselForJournalforingList = dialogmotedeltakerVarselJournalforingService.getDialogmotedeltakerArbeidstakerVarselForJournalforingList()
+        arbeidstakerVarselForJournalforingList.forEach { (personIdent, arbeidstakerVarsel) ->
+            try {
+                val journalpostId = dokarkivClient.journalfor(
+                    journalpostRequest = arbeidstakerVarsel.toJournalpostRequest(
+                        personIdent = personIdent,
+                    ),
+                )?.journalpostId
+
+                journalpostId?.let { it ->
+                    dialogmotedeltakerVarselJournalforingService.updateJournalpostId(
+                        arbeidstakerVarsel,
+                        it,
+                    )
+                    journalforingResult.updated++
+                } ?: throw RuntimeException("Failed to Journalfor ArbeidstakerVarsel: response missing JournalpostId")
+            } catch (e: Exception) {
+                log.error("Exception caught while attempting Journalforing of ArbeidstakerVarsel", e)
+                journalforingResult.failed++
+            }
+        }
+        return journalforingResult
     }
 
     private fun delays(): Pair<Long, Long> {
-        // TODO: Set approriate delay durations
         val initialDelay = Duration.ofMinutes(2).toMillis()
-        val intervalDelay = Duration.ofMinutes(10).toMillis()
+        val intervalDelay = Duration.ofMinutes(60).toMillis()
         return Pair(initialDelay, intervalDelay)
     }
 

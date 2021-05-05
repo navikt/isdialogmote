@@ -101,6 +101,27 @@ fun DatabaseInterface.getMotedeltakerArbeidstakerVarselWithoutJournalpost(): Lis
     }
 }
 
+const val queryUpdateMotedeltakerArbeidstakerVarselJournalpostId =
+    """
+        UPDATE MOTEDELTAKER_ARBEIDSTAKER_VARSEL
+        SET journalpost_id = ?
+        WHERE id = ?
+    """
+
+fun DatabaseInterface.updateMotedeltakerArbeidstakerVarselJournalpostId(
+    motedeltakerArbeidstakerVarselId: Int,
+    journalpostId: Int,
+) {
+    this.connection.use { connection ->
+        connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerVarselJournalpostId).use {
+            it.setInt(1, journalpostId)
+            it.setInt(2, motedeltakerArbeidstakerVarselId)
+            it.execute()
+        }
+        connection.commit()
+    }
+}
+
 const val queryUpdateMotedeltakerArbeidstakerVarselLestDato =
     """
         UPDATE MOTEDELTAKER_ARBEIDSTAKER_VARSEL

@@ -24,6 +24,7 @@ fun Application.cronjobModule(
     val dokarkivClient = DokarkivClient(
         azureAdClient = azureAdClient,
         dokarkivClientId = environment.dokarkivClientId,
+        dokarkivBaseUrl = environment.dokarkivUrl,
     )
     val dialogmotedeltakerVarselJournalforingService = DialogmotedeltakerVarselJournalforingService(
         database = database,
