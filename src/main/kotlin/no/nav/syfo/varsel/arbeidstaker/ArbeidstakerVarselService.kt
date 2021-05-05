@@ -100,6 +100,7 @@ fun createBrukernotifikasjonOppgave(
     .withTekst(tekst)
     .withLink(link)
     .withSikkerhetsnivaa(4)
+    .withEksternVarsling(true)
     .build()
 
 fun createBrukernotifikasjonDone(
