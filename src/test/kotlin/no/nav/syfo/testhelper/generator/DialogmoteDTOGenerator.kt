@@ -1,6 +1,8 @@
 package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.dialogmote.api.domain.*
+import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
+import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.mock.planlagtMoteDTO
@@ -22,24 +24,37 @@ fun generateMotedeltakerArbeidstakerDTO(
     personIdentNumber: PersonIdentNumber,
 ) = NewDialogmotedeltakerArbeidstakerDTO(
     personIdent = personIdentNumber.value,
-    fritekstInnkalling = "Ipsum lorum arbeidstaker"
+    fritekstInnkalling = "Ipsum lorum arbeidstaker",
+    innkalling = generateDocumentComponentList(),
 )
+
+fun generateDocumentComponentList(): List<DocumentComponentDTO> {
+    return listOf(
+        DocumentComponentDTO(DocumentComponentType.PARAGRAPH, "Tittel innkalling", null),
+        DocumentComponentDTO(DocumentComponentType.PARAGRAPH, "Møtetid:", "5. mai 2021"),
+        DocumentComponentDTO(DocumentComponentType.PARAGRAPH, null, "Brødtekst"),
+        DocumentComponentDTO(DocumentComponentType.LINK, null, "https://nav.no/"),
+    )
+}
 
 fun generateMotedeltakerArbeidstakerDTOMissingValues(
     personIdentNumber: PersonIdentNumber,
 ) = NewDialogmotedeltakerArbeidstakerDTO(
     personIdent = personIdentNumber.value,
-    fritekstInnkalling = null
+    fritekstInnkalling = null,
+    innkalling = emptyList(),
 )
 
 fun generateMotedeltakerArbeidsgiverDTO() = NewDialogmotedeltakerArbeidsgiverDTO(
     virksomhetsnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
-    fritekstInnkalling = "Ipsum lorum arbeidsgiver"
+    fritekstInnkalling = "Ipsum lorum arbeidsgiver",
+    innkalling = emptyList(),
 )
 
 fun generateMotedeltakerArbeidsgiverDTOMissingValues() = NewDialogmotedeltakerArbeidsgiverDTO(
     virksomhetsnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
-    fritekstInnkalling = null
+    fritekstInnkalling = null,
+    innkalling = emptyList(),
 )
 
 fun generateNewDialogmoteDTO(

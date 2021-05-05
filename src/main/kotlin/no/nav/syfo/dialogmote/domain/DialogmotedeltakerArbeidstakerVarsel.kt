@@ -17,6 +17,7 @@ data class DialogmotedeltakerArbeidstakerVarsel(
     val status: String,
     val lestDato: LocalDateTime?,
     val fritekst: String,
+    val document: List<DocumentComponentDTO>,
 )
 
 fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselDTO() =
@@ -28,4 +29,5 @@ fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselD
         pdf = this.pdf,
         lestDato = this.lestDato,
         fritekst = this.fritekst,
+        document = this.document,
     )
