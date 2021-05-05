@@ -8,8 +8,7 @@ import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.client.pdfgen.PdfGenClient
-import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
-import no.nav.syfo.dialogmote.api.domain.toNewDialogmote
+import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
@@ -139,6 +138,7 @@ class DialogmoteService(
                     narmesteLeder = narmesteLeder,
                     varselType = MotedeltakerVarselType.INNKALT,
                     fritekst = newDialogmotePlanlagt.arbeidstaker.fritekstInnkalling.orEmpty(),
+                    innkalling = emptyList(),
                 )
 
                 connection.commit()
@@ -207,6 +207,7 @@ class DialogmoteService(
                     narmesteLeder = narmesteLeder,
                     varselType = MotedeltakerVarselType.INNKALT,
                     fritekst = newDialogmote.arbeidstaker.fritekstInnkalling.orEmpty(),
+                    innkalling = newDialogmoteDTO.arbeidstaker.innkalling,
                 )
 
                 connection.commit()
@@ -252,7 +253,7 @@ class DialogmoteService(
                         arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
                         pdf = pdfAvlysningArbeidstaker,
                         narmesteLeder = narmesteLeder,
-                        varselType = MotedeltakerVarselType.AVLYST
+                        varselType = MotedeltakerVarselType.AVLYST,
                     )
                 }
                 connection.commit()
@@ -313,6 +314,7 @@ class DialogmoteService(
         narmesteLeder: NarmesteLederDTO,
         varselType: MotedeltakerVarselType,
         fritekst: String = "",
+        innkalling: List<DocumentComponentDTO> = emptyList(),
     ) {
         val (_, varselId) = connection.createMotedeltakerVarselArbeidstaker(
             commit = false,
@@ -322,6 +324,7 @@ class DialogmoteService(
             digitalt = true,
             pdf = pdf,
             fritekst = fritekst,
+            document = innkalling,
         )
         val now = LocalDateTime.now()
         arbeidstakerVarselService.sendVarsel(

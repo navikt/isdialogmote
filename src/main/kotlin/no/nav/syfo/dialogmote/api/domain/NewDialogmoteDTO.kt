@@ -15,11 +15,13 @@ data class NewDialogmoteDTO(
 data class NewDialogmotedeltakerArbeidstakerDTO(
     val personIdent: String,
     val fritekstInnkalling: String?,
+    val innkalling: List<DocumentComponentDTO>,
 )
 
 data class NewDialogmotedeltakerArbeidsgiverDTO(
     val virksomhetsnummer: String,
     val fritekstInnkalling: String?,
+    val innkalling: List<DocumentComponentDTO>,
 )
 
 data class NewDialogmoteTidStedDTO(

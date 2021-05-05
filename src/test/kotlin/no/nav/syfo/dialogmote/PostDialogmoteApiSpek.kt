@@ -12,6 +12,7 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
 import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -168,6 +169,17 @@ class PostDialogmoteApiSpek : Spek({
                             arbeidstakerVarselDTO.pdf shouldBeEqualTo isdialogmotepdfgenMock.pdfInnkallingArbeidstaker
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
                             arbeidstakerVarselDTO.fritekst shouldBeEqualTo "Ipsum lorum arbeidstaker"
+
+                            arbeidstakerVarselDTO.document.size shouldBeEqualTo 4
+                            arbeidstakerVarselDTO.document[0].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
+                            arbeidstakerVarselDTO.document[0].title shouldBeEqualTo "Tittel innkalling"
+                            arbeidstakerVarselDTO.document[1].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
+                            arbeidstakerVarselDTO.document[1].title shouldBeEqualTo "Møtetid:"
+                            arbeidstakerVarselDTO.document[1].text shouldBeEqualTo "5. mai 2021"
+                            arbeidstakerVarselDTO.document[2].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
+                            arbeidstakerVarselDTO.document[2].text shouldBeEqualTo "Brødtekst"
+                            arbeidstakerVarselDTO.document[3].type shouldBeEqualTo DocumentComponentType.LINK
+                            arbeidstakerVarselDTO.document[3].text shouldBeEqualTo "https://nav.no/"
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
 

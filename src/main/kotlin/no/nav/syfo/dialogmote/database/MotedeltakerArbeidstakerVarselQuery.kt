@@ -1,8 +1,11 @@
 package no.nav.syfo.dialogmote.database
 
+import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
+import no.nav.syfo.client.configuredJacksonMapper
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerArbeidstakerVarsel
+import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.varsel.MotedeltakerVarselType
 import java.sql.*
 import java.time.Instant
@@ -21,8 +24,11 @@ const val queryCreateMotedeltakerVarselArbeidstaker =
         digitalt,
         pdf,
         status, 
-        fritekst) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+        fritekst,
+        document) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb) RETURNING id
     """
+
+private val mapper = configuredJacksonMapper()
 
 fun Connection.createMotedeltakerVarselArbeidstaker(
     commit: Boolean = true,
@@ -32,6 +38,7 @@ fun Connection.createMotedeltakerVarselArbeidstaker(
     digitalt: Boolean,
     pdf: ByteArray,
     fritekst: String,
+    document: List<DocumentComponentDTO>,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 
@@ -46,6 +53,7 @@ fun Connection.createMotedeltakerVarselArbeidstaker(
         it.setBytes(7, pdf)
         it.setString(8, status)
         it.setString(9, fritekst)
+        it.setObject(10, mapper.writeValueAsString(document))
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -124,4 +132,5 @@ fun ResultSet.toPMotedeltakerArbeidstakerVarsel(): PMotedeltakerArbeidstakerVars
         status = getString("status"),
         lestDato = getTimestamp("lest_dato")?.toLocalDateTime(),
         fritekst = getString("fritekst"),
+        document = mapper.readValue(getString("document"), object : TypeReference<List<DocumentComponentDTO>>() {}),
     )

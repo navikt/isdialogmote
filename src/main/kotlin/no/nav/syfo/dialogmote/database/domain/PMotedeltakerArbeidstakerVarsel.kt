@@ -1,6 +1,7 @@
 package no.nav.syfo.dialogmote.database.domain
 
 import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidstakerVarsel
+import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.varsel.MotedeltakerVarselType
 import java.time.LocalDateTime
 import java.util.UUID
@@ -17,6 +18,7 @@ data class PMotedeltakerArbeidstakerVarsel(
     val status: String,
     val lestDato: LocalDateTime?,
     val fritekst: String,
+    val document: List<DocumentComponentDTO>,
 )
 
 fun PMotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstaker() =
@@ -32,4 +34,5 @@ fun PMotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstaker() =
         status = this.status,
         lestDato = this.lestDato,
         fritekst = this.fritekst,
+        document = this.document,
     )
