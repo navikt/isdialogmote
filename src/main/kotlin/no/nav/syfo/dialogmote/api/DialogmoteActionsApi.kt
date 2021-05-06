@@ -7,6 +7,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.dialogmote.DialogmoteService
+import no.nav.syfo.dialogmote.api.domain.AvlysDialogmoteDTO
 import no.nav.syfo.dialogmote.domain.NewDialogmoteTidSted
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.util.*
@@ -34,6 +35,7 @@ fun Route.registerDialogmoteActionsApi(
                     ?: throw IllegalArgumentException("No Authorization header supplied")
 
                 val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
+                val avlysDialogmoteDto = call.receive<AvlysDialogmoteDTO>()
 
                 val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
@@ -41,6 +43,7 @@ fun Route.registerDialogmoteActionsApi(
                     val success = dialogmoteService.avlysMoteinnkalling(
                         callId = callId,
                         dialogmote = dialogmote,
+                        avlysDialogmote = avlysDialogmoteDto,
                         token = token
                     )
                     if (success) {

@@ -11,6 +11,7 @@ import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.dialogmote.api.*
+import no.nav.syfo.dialogmote.api.domain.AvlysDialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.*
@@ -155,10 +156,13 @@ class AvlysDialogmoteApiSpek : Spek({
 
                         val urlMoteUUIDAvlys =
                             "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                        val avlysDialogMoteDto = AvlysDialogmoteDTO(fritekst = "Passer ikke")
 
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(avlysDialogMoteDto))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -190,6 +194,7 @@ class AvlysDialogmoteApiSpek : Spek({
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
                             arbeidstakerVarselDTO.pdf shouldBeEqualTo isdialogmotepdfgenMock.pdfAvlysningArbeidstaker
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
+                            arbeidstakerVarselDTO.fritekst shouldBeEqualTo "Passer ikke"
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo planlagtMoteDTO?.arbeidsgiver()?.orgnummer
 
