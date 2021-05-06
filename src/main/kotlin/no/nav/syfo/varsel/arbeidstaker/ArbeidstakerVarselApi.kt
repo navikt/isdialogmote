@@ -38,7 +38,7 @@ fun Route.registerArbeidstakerVarselApi(
                 }
                 call.respond(dialogmoteDTOList)
             } catch (e: IllegalArgumentException) {
-                val illegalArgumentMessage = "Could not Les Varsel for varselUUID"
+                val illegalArgumentMessage = "Could not retrieve VarselList"
                 log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }
