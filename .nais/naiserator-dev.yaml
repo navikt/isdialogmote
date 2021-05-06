@@ -74,7 +74,7 @@ spec:
       value: production
     - name: AADDISCOVERY_URL
       value: "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/.well-known/openid-configuration"
-    - name: JOARK_CLIENT_ID
+    - name: DOKARKIV_CLIENT_ID
       value: "972814f3-8bdf-44f8-a191-c2ed00020b54"
     - name: KAFKA_BOOTSTRAP_SERVERS_URL
       value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
@@ -88,6 +88,8 @@ spec:
       value: "https://tjenester-q1.nav.no/dialogmote"
     - name: DIALOGMOTE_ARBEIDSGIVER_URL
       value: "https://tjenester-q1.nav.no/dialogmotearbeidsgiver"
+    - name: DOKARKIV_URL
+      value: "https://dokarkiv.dev-fss-pub.nais.io"
     - name: MODIASYFOREST_URL
       value: "https://modiasyforest.dev-fss-pub.nais.io"
     - name: SYFOBEHANDLENDEENHET_URL

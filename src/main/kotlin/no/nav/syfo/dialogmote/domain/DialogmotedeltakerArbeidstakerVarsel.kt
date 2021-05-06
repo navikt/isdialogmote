@@ -1,9 +1,12 @@
 package no.nav.syfo.dialogmote.domain
 
+import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerArbeidstakerVarselDTO
+import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.varsel.MotedeltakerVarselType
+import no.nav.syfo.varsel.toJournalpostTittel
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 data class DialogmotedeltakerArbeidstakerVarsel(
     val id: Int,
@@ -31,3 +34,12 @@ fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselD
         fritekst = this.fritekst,
         document = this.document,
     )
+
+fun DialogmotedeltakerArbeidstakerVarsel.toJournalpostRequest(
+    personIdent: PersonIdentNumber,
+) = createJournalpostRequest(
+    personIdent = personIdent,
+    digitalt = this.digitalt,
+    dokumentName = this.varselType.toJournalpostTittel(),
+    dokumentPdf = this.pdf,
+)
