@@ -19,7 +19,7 @@ import no.nav.syfo.varsel.narmesteleder.NarmesteLederVarselService
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 class DialogmoteService(
     private val database: DatabaseInterface,
@@ -130,9 +130,12 @@ class DialogmoteService(
                     newDialogmotePlanlagt = newDialogmotePlanlagt,
                 )
 
+                val (arbeidstakerId, arbeidstakerUuid) = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdList
+
                 createAndSendVarsel(
                     connection = connection,
-                    arbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdList.first,
+                    arbeidstakerId = arbeidstakerId,
+                    arbeidstakerUuid = arbeidstakerUuid,
                     arbeidstakerPersonIdent = newDialogmotePlanlagt.arbeidstaker.personIdent,
                     pdf = pdfInnkallingArbeidstaker,
                     narmesteLeder = narmesteLeder,
@@ -202,6 +205,7 @@ class DialogmoteService(
                 createAndSendVarsel(
                     connection = connection,
                     arbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdList.first,
+                    arbeidstakerUuid = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdList.second,
                     arbeidstakerPersonIdent = newDialogmote.arbeidstaker.personIdent,
                     pdf = pdfInnkallingArbeidstaker,
                     narmesteLeder = narmesteLeder,
@@ -251,6 +255,7 @@ class DialogmoteService(
                     createAndSendVarsel(
                         connection = connection,
                         arbeidstakerId = dialogmote.arbeidstaker.id,
+                        arbeidstakerUuid = dialogmote.arbeidstaker.uuid,
                         arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
                         pdf = pdfAvlysningArbeidstaker,
                         narmesteLeder = narmesteLeder,
@@ -296,6 +301,7 @@ class DialogmoteService(
                 createAndSendVarsel(
                     connection = connection,
                     arbeidstakerId = dialogmote.arbeidstaker.id,
+                    arbeidstakerUuid = dialogmote.arbeidstaker.uuid,
                     arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
                     pdf = pdfEndringArbeidstaker,
                     narmesteLeder = narmesteLeder,
@@ -310,6 +316,7 @@ class DialogmoteService(
 
     private fun createAndSendVarsel(
         connection: Connection,
+        arbeidstakerUuid: UUID,
         arbeidstakerId: Int,
         arbeidstakerPersonIdent: PersonIdentNumber,
         pdf: ByteArray,
@@ -333,6 +340,7 @@ class DialogmoteService(
             createdAt = now,
             personIdent = arbeidstakerPersonIdent,
             type = varselType,
+            motedeltakerArbeidstakerUuid = arbeidstakerUuid,
             varselUuid = varselId,
         )
         narmesteLederVarselService.sendVarsel(

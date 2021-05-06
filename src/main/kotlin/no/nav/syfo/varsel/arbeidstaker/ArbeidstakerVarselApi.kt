@@ -52,9 +52,10 @@ fun Route.registerArbeidstakerVarselApi(
 
                 val varselUuid = UUID.fromString(call.parameters[arbeidstakerVarselApiVarselParam])
 
-                val motedeltakerArbeidstakerVarsel = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(
+                val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(
                     personIdentNumber = requestPersonIdent
-                ).varselList.find { varsel ->
+                )
+                val motedeltakerArbeidstakerVarsel = motedeltakerArbeidstaker.varselList.find { varsel ->
                     varsel.uuid == varselUuid
                 } ?: throw Exception("No Varsel found for PersonIdent with uuid=$varselUuid")
 
@@ -62,7 +63,8 @@ fun Route.registerArbeidstakerVarselApi(
                 if (hasAccessToVarsel) {
                     dialogmotedeltakerService.lesDialogmotedeltakerArbeidstakerVarsel(
                         personIdentNumber = requestPersonIdent,
-                        dialogmotedeltakerArbeidstakerVarselUuid = motedeltakerArbeidstakerVarsel.uuid
+                        dialogmotedeltakerArbeidstakerUuid = motedeltakerArbeidstaker.uuid,
+                        dialogmotedeltakerArbeidstakerVarselUuid = motedeltakerArbeidstakerVarsel.uuid,
                     )
                     call.respond(HttpStatusCode.OK)
                 } else {

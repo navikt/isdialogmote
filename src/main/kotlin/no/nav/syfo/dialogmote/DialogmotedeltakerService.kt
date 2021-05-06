@@ -53,6 +53,7 @@ class DialogmotedeltakerService(
 
     fun lesDialogmotedeltakerArbeidstakerVarsel(
         personIdentNumber: PersonIdentNumber,
+        dialogmotedeltakerArbeidstakerUuid: UUID,
         dialogmotedeltakerArbeidstakerVarselUuid: UUID,
     ) {
         database.connection.use { connection ->
@@ -62,6 +63,7 @@ class DialogmotedeltakerService(
 
             arbeidstakerVarselService.lesVarsel(
                 personIdent = personIdentNumber,
+                motedeltakerArbeidstakerUuid = dialogmotedeltakerArbeidstakerUuid,
                 varselUuid = dialogmotedeltakerArbeidstakerVarselUuid,
             )
             connection.commit()
