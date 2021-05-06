@@ -219,6 +219,7 @@ class DialogmoteService(
     suspend fun avlysMoteinnkalling(
         callId: String,
         dialogmote: Dialogmote,
+        avlysDialogmote: AvlysDialogmoteDTO,
         token: String
     ): Boolean {
         val isDialogmoteTidPassed = dialogmote.tidStedList.latest()?.passed()
@@ -254,6 +255,7 @@ class DialogmoteService(
                         pdf = pdfAvlysningArbeidstaker,
                         narmesteLeder = narmesteLeder,
                         varselType = MotedeltakerVarselType.AVLYST,
+                        fritekst = avlysDialogmote.fritekst.orEmpty()
                     )
                 }
                 connection.commit()
