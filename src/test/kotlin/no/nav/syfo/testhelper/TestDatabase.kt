@@ -49,7 +49,13 @@ fun DatabaseInterface.dropData() {
         DELETE FROM MOTEDELTAKER_ARBEIDSTAKER
         """.trimIndent(),
         """
+        DELETE FROM MOTEDELTAKER_ARBEIDSTAKER_VARSEL
+        """.trimIndent(),
+        """
         DELETE FROM MOTEDELTAKER_ARBEIDSGIVER
+        """.trimIndent(),
+        """
+        DELETE FROM MOTEDELTAKER_ARBEIDSGIVER_VARSEL
         """.trimIndent(),
         """
         DELETE FROM MOTE_STATUS_ENDRET
