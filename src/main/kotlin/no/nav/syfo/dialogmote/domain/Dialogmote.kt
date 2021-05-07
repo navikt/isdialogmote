@@ -47,3 +47,12 @@ fun Dialogmote.toPdfModelAvlysningArbeidstaker() =
             ),
         ),
     )
+
+fun Dialogmote.toPdfModelAvlysningArbeidsgiver() =
+    PdfModelAvlysningArbeidsgiver(
+        avlysning = AvlysningArbeidsgiver(
+            tidOgSted = AvlysningArbeidsgiverTidOgSted(
+                sted = this.tidStedList.latest()?.sted ?: ""
+            ),
+        ),
+    )

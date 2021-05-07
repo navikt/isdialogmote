@@ -1,7 +1,6 @@
 package no.nav.syfo.dialogmote.database.domain
 
-import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidsgiver
-import no.nav.syfo.dialogmote.domain.DialogmotedeltakerType
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 import java.util.UUID
@@ -17,7 +16,9 @@ data class PMotedeltakerArbeidsgiver(
     val lederEpost: String?,
 )
 
-fun PMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver() =
+fun PMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(
+    dialogmotedeltakerArbeidsgiverVarsel: List<DialogmotedeltakerArbeidsgiverVarsel>
+) =
     DialogmotedeltakerArbeidsgiver(
         id = this.id,
         uuid = this.uuid,
@@ -28,4 +29,5 @@ fun PMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver() =
         lederNavn = this.lederNavn,
         lederEpost = this.lederEpost,
         type = DialogmotedeltakerType.ARBEIDSGIVER,
+        varselList = dialogmotedeltakerArbeidsgiverVarsel,
     )

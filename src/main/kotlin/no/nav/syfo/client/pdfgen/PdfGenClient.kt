@@ -16,13 +16,19 @@ class PdfGenClient(
     pdfGenBaseUrl: String
 ) {
     private val avlysningArbeidstakerUrl: String
+    private val avlysningArbeidsgiverUrl: String
     private val endringTidStedArbeidstakerUrl: String
-    private val inkallingArbeidstakerUrl: String
+    private val endringTidStedArbeidsgiverUrl: String
+    private val innkallingArbeidstakerUrl: String
+    private val innkallingArbeidsgiverUrl: String
 
     init {
         this.avlysningArbeidstakerUrl = "$pdfGenBaseUrl$AVLYSNING_ARBEIDSTAKER_PATH"
+        this.avlysningArbeidsgiverUrl = "$pdfGenBaseUrl$AVLYSNING_ARBEIDSGIVER_PATH"
         this.endringTidStedArbeidstakerUrl = "$pdfGenBaseUrl$ENDRING_TIDSTED_ARBEIDSTAKER_PATH"
-        this.inkallingArbeidstakerUrl = "$pdfGenBaseUrl$INNKALLING_ARBEIDSTAKER_PATH"
+        this.endringTidStedArbeidsgiverUrl = "$pdfGenBaseUrl$ENDRING_TIDSTED_ARBEIDSGIVER_PATH"
+        this.innkallingArbeidstakerUrl = "$pdfGenBaseUrl$INNKALLING_ARBEIDSTAKER_PATH"
+        this.innkallingArbeidsgiverUrl = "$pdfGenBaseUrl$INNKALLING_ARBEIDSGIVER_PATH"
     }
 
     private val httpClient = httpClientDefault()
@@ -38,6 +44,17 @@ class PdfGenClient(
         )
     }
 
+    suspend fun pdfAvlysningArbeidsgiver(
+        callId: String,
+        pdfBody: PdfModelAvlysningArbeidsgiver,
+    ): ByteArray? {
+        return getPdf(
+            callId = callId,
+            pdfBody = pdfBody,
+            pdfUrl = avlysningArbeidsgiverUrl,
+        )
+    }
+
     suspend fun pdfEndringTidStedArbeidstaker(
         callId: String,
         pdfBody: PdfModelEndringTidStedArbeidstaker,
@@ -49,6 +66,17 @@ class PdfGenClient(
         )
     }
 
+    suspend fun pdfEndringTidStedArbeidsgiver(
+        callId: String,
+        pdfBody: PdfModelEndringTidStedArbeidsgiver,
+    ): ByteArray? {
+        return getPdf(
+            callId = callId,
+            pdfBody = pdfBody,
+            pdfUrl = endringTidStedArbeidsgiverUrl,
+        )
+    }
+
     suspend fun pdfInnkallingArbeidstaker(
         callId: String,
         pdfBody: PdfModelInnkallingArbeidstaker,
@@ -56,7 +84,18 @@ class PdfGenClient(
         return getPdf(
             callId = callId,
             pdfBody = pdfBody,
-            pdfUrl = inkallingArbeidstakerUrl
+            pdfUrl = innkallingArbeidstakerUrl
+        )
+    }
+
+    suspend fun pdfInnkallingArbeidsgiver(
+        callId: String,
+        pdfBody: PdfModelInnkallingArbeidsgiver,
+    ): ByteArray? {
+        return getPdf(
+            callId = callId,
+            pdfBody = pdfBody,
+            pdfUrl = innkallingArbeidsgiverUrl
         )
     }
 
@@ -99,8 +138,11 @@ class PdfGenClient(
     companion object {
         private const val API_BASE_PATH = "/api/v1/genpdf/isdialogmote"
         const val AVLYSNING_ARBEIDSTAKER_PATH = "$API_BASE_PATH/avlysning-arbeidstaker"
+        const val AVLYSNING_ARBEIDSGIVER_PATH = "$API_BASE_PATH/avlysning-arbeidsgiver"
         const val ENDRING_TIDSTED_ARBEIDSTAKER_PATH = "$API_BASE_PATH/endring-tidsted-arbeidstaker"
+        const val ENDRING_TIDSTED_ARBEIDSGIVER_PATH = "$API_BASE_PATH/endring-tidsted-arbeidsgiver"
         const val INNKALLING_ARBEIDSTAKER_PATH = "$API_BASE_PATH/innkalling-arbeidstaker"
+        const val INNKALLING_ARBEIDSGIVER_PATH = "$API_BASE_PATH/innkalling-arbeidsgiver"
 
         private val log = LoggerFactory.getLogger(PdfGenClient::class.java)
     }

@@ -15,6 +15,7 @@ data class DialogmotedeltakerArbeidsgiver(
     val lederNavn: String?,
     val lederEpost: String?,
     val type: DialogmotedeltakerType,
+    val varselList: List<DialogmotedeltakerArbeidsgiverVarsel>,
 )
 
 fun DialogmotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiverDTO() =
@@ -24,4 +25,7 @@ fun DialogmotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiverDTO() =
         lederNavn = this.lederNavn,
         lederEpost = this.lederEpost,
         type = this.type.name,
+        varselList = this.varselList.map {
+            it.toDialogmotedeltakerArbeidsgiverVarselDTO()
+        }
     )

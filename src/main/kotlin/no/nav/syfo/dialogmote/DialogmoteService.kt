@@ -122,6 +122,11 @@ class DialogmoteService(
                 pdfBody = newDialogmotePlanlagt.toPdfModelInnkallingArbeidstaker()
             ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidstaker")
 
+            val pdfInnkallingArbeidsgiver = pdfGenClient.pdfInnkallingArbeidsgiver(
+                callId = callId,
+                pdfBody = newDialogmotePlanlagt.toPdfModelInnkallingArbeidsgiver()
+            ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidsgiver")
+
             val createdDialogmoteIdentifiers: CreatedDialogmoteIdentifiers
 
             database.connection.use { connection ->
@@ -136,12 +141,14 @@ class DialogmoteService(
                     connection = connection,
                     arbeidstakerId = arbeidstakerId,
                     arbeidstakerUuid = arbeidstakerUuid,
+                    arbeidsgiverId = createdDialogmoteIdentifiers.motedeltakerArbeidsgiverIdList.first,
                     arbeidstakerPersonIdent = newDialogmotePlanlagt.arbeidstaker.personIdent,
-                    pdf = pdfInnkallingArbeidstaker,
+                    pdfArbeidstaker = pdfInnkallingArbeidstaker,
+                    pdfArbeidsgiver = pdfInnkallingArbeidsgiver,
                     narmesteLeder = narmesteLeder,
                     varselType = MotedeltakerVarselType.INNKALT,
-                    fritekst = newDialogmotePlanlagt.arbeidstaker.fritekstInnkalling.orEmpty(),
-                    innkalling = emptyList(),
+                    fritekstArbeidstaker = newDialogmotePlanlagt.arbeidstaker.fritekstInnkalling.orEmpty(),
+                    fritekstArbeidsgiver = newDialogmotePlanlagt.arbeidsgiver.fritekstInnkalling.orEmpty(),
                 )
 
                 connection.commit()
@@ -195,6 +202,11 @@ class DialogmoteService(
                 pdfBody = newDialogmote.toPdfModelInnkallingArbeidstaker()
             ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidstaker")
 
+            val pdfInnkallingArbeidsgiver = pdfGenClient.pdfInnkallingArbeidsgiver(
+                callId = callId,
+                pdfBody = newDialogmote.toPdfModelInnkallingArbeidsgiver()
+            ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidsgiver")
+
             val createdDialogmoteIdentifiers: CreatedDialogmoteIdentifiers
 
             database.connection.use { connection ->
@@ -206,12 +218,16 @@ class DialogmoteService(
                     connection = connection,
                     arbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdList.first,
                     arbeidstakerUuid = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdList.second,
+                    arbeidsgiverId = createdDialogmoteIdentifiers.motedeltakerArbeidsgiverIdList.first,
                     arbeidstakerPersonIdent = newDialogmote.arbeidstaker.personIdent,
-                    pdf = pdfInnkallingArbeidstaker,
+                    pdfArbeidstaker = pdfInnkallingArbeidstaker,
+                    pdfArbeidsgiver = pdfInnkallingArbeidsgiver,
                     narmesteLeder = narmesteLeder,
                     varselType = MotedeltakerVarselType.INNKALT,
-                    fritekst = newDialogmote.arbeidstaker.fritekstInnkalling.orEmpty(),
-                    innkalling = newDialogmoteDTO.arbeidstaker.innkalling,
+                    fritekstArbeidstaker = newDialogmote.arbeidstaker.fritekstInnkalling.orEmpty(),
+                    fritekstArbeidsgiver = newDialogmote.arbeidsgiver.fritekstInnkalling.orEmpty(),
+                    innkallingArbeidstaker = newDialogmoteDTO.arbeidstaker.innkalling,
+                    innkallingArbeidsgiver = newDialogmoteDTO.arbeidsgiver.innkalling,
                 )
 
                 connection.commit()
@@ -233,6 +249,11 @@ class DialogmoteService(
             callId = callId,
             pdfBody = dialogmote.toPdfModelAvlysningArbeidstaker()
         ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidstaker")
+
+        val pdfAvlysningArbeidsgiver = pdfGenClient.pdfAvlysningArbeidsgiver(
+            callId = callId,
+            pdfBody = dialogmote.toPdfModelAvlysningArbeidsgiver()
+        ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidsgiver")
 
         val narmesteLeder = narmesteLederClient.activeLeader(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
@@ -256,11 +277,14 @@ class DialogmoteService(
                         connection = connection,
                         arbeidstakerId = dialogmote.arbeidstaker.id,
                         arbeidstakerUuid = dialogmote.arbeidstaker.uuid,
+                        arbeidsgiverId = dialogmote.arbeidsgiver.id,
                         arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
-                        pdf = pdfAvlysningArbeidstaker,
+                        pdfArbeidstaker = pdfAvlysningArbeidstaker,
+                        pdfArbeidsgiver = pdfAvlysningArbeidsgiver,
                         narmesteLeder = narmesteLeder,
                         varselType = MotedeltakerVarselType.AVLYST,
-                        fritekst = avlysDialogmote.fritekst.orEmpty()
+                        fritekstArbeidstaker = avlysDialogmote.fritekst.orEmpty(),
+                        fritekstArbeidsgiver = avlysDialogmote.fritekst.orEmpty(),
                     )
                 }
                 connection.commit()
@@ -279,6 +303,11 @@ class DialogmoteService(
             callId = callId,
             pdfBody = newDialogmoteTidSted.toPdfModelEndringTidStedArbeidstaker()
         ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidstaker")
+
+        val pdfEndringArbeidsgiver = pdfGenClient.pdfEndringTidStedArbeidsgiver(
+            callId = callId,
+            pdfBody = newDialogmoteTidSted.toPdfModelEndringTidStedArbeidsgiver()
+        ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidsgiver")
 
         val narmesteLeder = narmesteLederClient.activeLeader(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
@@ -302,8 +331,10 @@ class DialogmoteService(
                     connection = connection,
                     arbeidstakerId = dialogmote.arbeidstaker.id,
                     arbeidstakerUuid = dialogmote.arbeidstaker.uuid,
+                    arbeidsgiverId = dialogmote.arbeidsgiver.id,
                     arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
-                    pdf = pdfEndringArbeidstaker,
+                    pdfArbeidstaker = pdfEndringArbeidstaker,
+                    pdfArbeidsgiver = pdfEndringArbeidsgiver,
                     narmesteLeder = narmesteLeder,
                     varselType = MotedeltakerVarselType.NYTT_TID_STED
                 )
@@ -318,22 +349,35 @@ class DialogmoteService(
         connection: Connection,
         arbeidstakerUuid: UUID,
         arbeidstakerId: Int,
+        arbeidsgiverId: Int,
         arbeidstakerPersonIdent: PersonIdentNumber,
-        pdf: ByteArray,
+        pdfArbeidstaker: ByteArray,
+        pdfArbeidsgiver: ByteArray,
         narmesteLeder: NarmesteLederDTO,
         varselType: MotedeltakerVarselType,
-        fritekst: String = "",
-        innkalling: List<DocumentComponentDTO> = emptyList(),
+        fritekstArbeidstaker: String = "",
+        fritekstArbeidsgiver: String = "",
+        innkallingArbeidstaker: List<DocumentComponentDTO> = emptyList(),
+        innkallingArbeidsgiver: List<DocumentComponentDTO> = emptyList(),
     ) {
-        val (_, varselId) = connection.createMotedeltakerVarselArbeidstaker(
+        val (_, varselArbeidstakerId) = connection.createMotedeltakerVarselArbeidstaker(
             commit = false,
             motedeltakerArbeidstakerId = arbeidstakerId,
             status = "OK",
             varselType = varselType,
             digitalt = true,
-            pdf = pdf,
-            fritekst = fritekst,
-            document = innkalling,
+            pdf = pdfArbeidstaker,
+            fritekst = fritekstArbeidstaker,
+            document = innkallingArbeidstaker,
+        )
+        connection.createMotedeltakerVarselArbeidsgiver(
+            commit = false,
+            motedeltakerArbeidsgiverId = arbeidsgiverId,
+            status = "OK",
+            varselType = varselType,
+            pdf = pdfArbeidsgiver,
+            fritekst = fritekstArbeidsgiver,
+            document = innkallingArbeidsgiver,
         )
         val now = LocalDateTime.now()
         arbeidstakerVarselService.sendVarsel(
@@ -341,14 +385,13 @@ class DialogmoteService(
             personIdent = arbeidstakerPersonIdent,
             type = varselType,
             motedeltakerArbeidstakerUuid = arbeidstakerUuid,
-            varselUuid = varselId,
+            varselUuid = varselArbeidstakerId,
         )
         narmesteLederVarselService.sendVarsel(
             createdAt = now,
             narmesteLeder = narmesteLeder,
             varseltype = varselType
         )
-        // TODO: Implement DialogmoteInnkalling-Varsel to Arbeidsgiver
     }
 
     fun ferdigstillMoteinnkalling(

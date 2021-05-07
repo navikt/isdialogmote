@@ -55,6 +55,16 @@ fun NewDialogmote.toPdfModelInnkallingArbeidstaker() =
         ),
     )
 
+fun NewDialogmote.toPdfModelInnkallingArbeidsgiver() =
+    PdfModelInnkallingArbeidsgiver(
+        innkalling = InnkallingArbeidsgiver(
+            tidOgSted = InnkallingArbeidsgiverTidOgSted(
+                sted = this.tidSted.sted,
+                videoLink = this.tidSted.videoLink,
+            ),
+        ),
+    )
+
 fun NewDialogmotePlanlagt.toPdfModelInnkallingArbeidstaker() =
     PdfModelInnkallingArbeidstaker(
         innkalling = InnkallingArbeidstaker(
@@ -65,10 +75,30 @@ fun NewDialogmotePlanlagt.toPdfModelInnkallingArbeidstaker() =
         ),
     )
 
+fun NewDialogmotePlanlagt.toPdfModelInnkallingArbeidsgiver() =
+    PdfModelInnkallingArbeidsgiver(
+        innkalling = InnkallingArbeidsgiver(
+            tidOgSted = InnkallingArbeidsgiverTidOgSted(
+                sted = this.tidSted.sted,
+                videoLink = this.tidSted.videoLink,
+            ),
+        ),
+    )
+
 fun NewDialogmoteTidSted.toPdfModelEndringTidStedArbeidstaker() =
     PdfModelEndringTidStedArbeidstaker(
         endring = EndringTidStedArbeidstaker(
             tidOgSted = EndringTidStedArbeidstakerTidOgSted(
+                sted = this.sted,
+                videoLink = this.videoLink,
+            ),
+        ),
+    )
+
+fun NewDialogmoteTidSted.toPdfModelEndringTidStedArbeidsgiver() =
+    PdfModelEndringTidStedArbeidsgiver(
+        endring = EndringTidStedArbeidsgiver(
+            tidOgSted = EndringTidStedArbeidsgiverTidOgSted(
                 sted = this.sted,
                 videoLink = this.videoLink,
             ),

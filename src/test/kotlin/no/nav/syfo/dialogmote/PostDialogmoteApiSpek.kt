@@ -182,6 +182,12 @@ class PostDialogmoteApiSpek : Spek({
                             arbeidstakerVarselDTO.document[3].text shouldBeEqualTo "https://nav.no/"
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                            dialogmoteDTO.arbeidsgiver.varselList.size shouldBeEqualTo 1
+                            val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.first()
+                            arbeidsgiverVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
+                            arbeidsgiverVarselDTO.pdf shouldBeEqualTo isdialogmotepdfgenMock.pdfInnkallingArbeidsgiver
+                            arbeidsgiverVarselDTO.lestDato.shouldBeNull()
+                            arbeidsgiverVarselDTO.fritekst shouldBeEqualTo "Ipsum lorum arbeidsgiver"
 
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()

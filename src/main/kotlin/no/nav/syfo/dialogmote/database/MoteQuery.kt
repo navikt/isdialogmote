@@ -76,6 +76,7 @@ const val queryCreateDialogmote =
 data class CreatedDialogmoteIdentifiers(
     val dialogmoteIdPair: Pair<Int, UUID>,
     val motedeltakerArbeidstakerIdList: Pair<Int, UUID>,
+    val motedeltakerArbeidsgiverIdList: Pair<Int, UUID>,
 )
 
 fun Connection.createNewDialogmoteWithReferences(
@@ -105,7 +106,7 @@ fun Connection.createNewDialogmoteWithReferences(
         moteId = moteId,
         personIdentNumber = newDialogmote.arbeidstaker.personIdent,
     )
-    this.createMotedeltakerArbeidsgiver(
+    val motedeltakerArbeidsgiverIdList = this.createMotedeltakerArbeidsgiver(
         commit = false,
         moteId = moteId,
         newDialogmotedeltakerArbeidsgiver = newDialogmote.arbeidsgiver,
@@ -118,6 +119,7 @@ fun Connection.createNewDialogmoteWithReferences(
     return CreatedDialogmoteIdentifiers(
         dialogmoteIdPair = moteIdList,
         motedeltakerArbeidstakerIdList = motedeltakerArbeidstakerIdList,
+        motedeltakerArbeidsgiverIdList = motedeltakerArbeidsgiverIdList,
     )
 }
 
@@ -190,7 +192,7 @@ fun Connection.createNewDialogmotePlanlagtWithReferences(
         moteId = moteId,
         personIdentNumber = newDialogmotePlanlagt.arbeidstaker.personIdent,
     )
-    this.createMotedeltakerArbeidsgiver(
+    val motedeltakerArbeidsgiverIdList = this.createMotedeltakerArbeidsgiver(
         commit = false,
         moteId = moteId,
         newDialogmotedeltakerArbeidsgiver = newDialogmotePlanlagt.arbeidsgiver,
@@ -203,6 +205,7 @@ fun Connection.createNewDialogmotePlanlagtWithReferences(
     return CreatedDialogmoteIdentifiers(
         dialogmoteIdPair = moteIdList,
         motedeltakerArbeidstakerIdList = motedeltakerArbeidstakerIdList,
+        motedeltakerArbeidsgiverIdList = motedeltakerArbeidsgiverIdList,
     )
 }
 
