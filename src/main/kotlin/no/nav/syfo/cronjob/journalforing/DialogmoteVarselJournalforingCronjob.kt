@@ -58,7 +58,7 @@ class DialogmoteVarselJournalforingCronjob(
         }
     }
 
-    private suspend fun dialogmoteVarselJournalforingJob(): JournalforingResult {
+    suspend fun dialogmoteVarselJournalforingJob(): JournalforingResult {
         val journalforingResult = JournalforingResult()
 
         val arbeidstakerVarselForJournalforingList = dialogmotedeltakerVarselJournalforingService.getDialogmotedeltakerArbeidstakerVarselForJournalforingList()

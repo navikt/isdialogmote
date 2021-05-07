@@ -58,7 +58,7 @@ class DokarkivClient(
     }
 
     companion object {
-        private const val JOURNALPOST_PATH = "/rest/journalpostapi/v1/journalpost"
+        const val JOURNALPOST_PATH = "/rest/journalpostapi/v1/journalpost"
         private const val JOURNALPOST_PARAM_STRING = "forsoekFerdigstill"
         private const val JOURNALPOST_PARAM_VALUE = true
         private val log = LoggerFactory.getLogger(DokarkivClient::class.java)
