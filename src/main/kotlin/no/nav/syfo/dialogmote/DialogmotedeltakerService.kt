@@ -32,6 +32,14 @@ class DialogmotedeltakerService(
         }
     }
 
+    fun getDialogmoteDeltakerArbeidsgiverVarselList(
+        motedeltakerArbeidsgiverId: Int,
+    ): List<DialogmotedeltakerArbeidsgiverVarsel> {
+        return database.getMotedeltakerArbeidsgiverVarsel(motedeltakerArbeidsgiverId).map {
+            it.toDialogmotedeltakerArbeidsgiver()
+        }
+    }
+
     fun getDialogmoteDeltakerArbeidstaker(
         personIdentNumber: PersonIdentNumber,
     ): DialogmotedeltakerArbeidstaker {
@@ -46,9 +54,12 @@ class DialogmotedeltakerService(
     fun getDialogmoteDeltakerArbeidsgiver(
         moteId: Int,
     ): DialogmotedeltakerArbeidsgiver {
-        return database.getMoteDeltakerArbeidsgiver(moteId)
+        val pMotedeltakerArbeidsgiver = database.getMoteDeltakerArbeidsgiver(moteId)
             .first()
-            .toDialogmotedeltakerArbeidsgiver()
+        val motedeltakerArbeidsgiverVarselList = getDialogmoteDeltakerArbeidsgiverVarselList(
+            pMotedeltakerArbeidsgiver.id
+        )
+        return pMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(motedeltakerArbeidsgiverVarselList)
     }
 
     fun lesDialogmotedeltakerArbeidstakerVarsel(
