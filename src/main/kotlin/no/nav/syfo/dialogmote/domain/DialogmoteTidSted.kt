@@ -26,4 +26,4 @@ fun DialogmoteTidSted.toDialogmoteTidStedDTO() =
 fun DialogmoteTidSted.passed(): Boolean = this.tid.isBefore(LocalDateTime.now())
 
 fun List<DialogmoteTidSted>.latest() =
-    this.maxByOrNull { it.tid }
+    this.maxByOrNull { it.createdAt }
