@@ -55,6 +55,7 @@ class SyfopersonMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
 
+    val name = "syfoperson"
     val server = mockPersonServer(
         port,
         beskyttetFalse,

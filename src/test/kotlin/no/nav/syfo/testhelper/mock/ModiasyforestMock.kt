@@ -35,6 +35,7 @@ class ModiasyforestMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
 
+    val name = "modiasyforest"
     val server = mockModiasyforestServer(
         port
     )

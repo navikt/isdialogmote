@@ -30,6 +30,7 @@ class VeilederTilgangskontrollMock {
         ""
     )
 
+    val name = "veiledertilgangskontroll"
     val server = mockTilgangServer(
         port,
         tilgangFalse,
