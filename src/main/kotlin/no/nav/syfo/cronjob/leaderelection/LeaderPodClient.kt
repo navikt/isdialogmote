@@ -10,7 +10,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.Environment
-import no.nav.syfo.client.configuredJacksonMapper
+import no.nav.syfo.util.configuredJacksonMapper
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
 

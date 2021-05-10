@@ -1,6 +1,6 @@
 package no.nav.syfo.application.cache
 
-import no.nav.syfo.client.configuredJacksonMapper
+import no.nav.syfo.util.configuredJacksonMapper
 import redis.clients.jedis.JedisPool
 
 class RedisStore(private val jedisPool: JedisPool) {

@@ -3,7 +3,7 @@ package no.nav.syfo.dialogmote.database
 import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.client.configuredJacksonMapper
+import no.nav.syfo.util.configuredJacksonMapper
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerArbeidstakerVarsel
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.varsel.MotedeltakerVarselType

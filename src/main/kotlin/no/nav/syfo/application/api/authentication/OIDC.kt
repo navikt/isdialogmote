@@ -6,7 +6,7 @@ import io.ktor.client.engine.apache.*
 import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.client.configuredJacksonMapper
+import no.nav.syfo.util.configuredJacksonMapper
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import java.net.ProxySelector
 

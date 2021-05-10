@@ -9,7 +9,6 @@ import io.ktor.http.*
 import io.ktor.jackson.*
 import io.ktor.response.*
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.client.configureJacksonMapper
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
 import org.slf4j.Logger
