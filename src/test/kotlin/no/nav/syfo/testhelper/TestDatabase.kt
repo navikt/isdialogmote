@@ -61,7 +61,10 @@ fun DatabaseInterface.dropData() {
         DELETE FROM MOTE_STATUS_ENDRET
         """.trimIndent(),
     )
-    queryList.forEach { query ->
-        this.connection.prepareStatement(query)
+    this.connection.use { connection ->
+        queryList.forEach { query ->
+            connection.prepareStatement(query).execute()
+        }
+        connection.commit()
     }
 }

@@ -16,6 +16,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithMissingValues
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.varsel.MotedeltakerVarselType
@@ -47,10 +48,6 @@ class GetDialogmoteApiSpek : Spek({
                 mqSenderMock = mqSenderMock,
             )
 
-            afterEachTest {
-                database.dropData()
-            }
-
             beforeGroup {
                 startExternalMocks(
                     applicationMockMap = externalMockEnvironment.externalApplicationMockMap,
@@ -76,10 +73,19 @@ class GetDialogmoteApiSpek : Spek({
                     VEILEDER_IDENT,
                 )
                 describe("Happy path") {
-                    val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+                    beforeEachTest {
+                        justRun { mqSenderMock.sendMQMessage(any(), any()) }
+                    }
+
+                    afterEachTest {
+                        database.dropData()
+                    }
+
                     val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
 
                     it("should return DialogmoteList if request is successful") {
+                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -115,9 +121,53 @@ class GetDialogmoteApiSpek : Spek({
                             dialogmoteTidStedDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
                         }
                     }
+
+                    it("should return DialogmoteList if request is successful: optional values missing") {
+                        val newDialogmoteDTO = generateNewDialogmoteDTOWithMissingValues(ARBEIDSTAKER_FNR)
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMote) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            clearMocks(mqSenderMock)
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, url) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
+                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+
+                            dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
+                            val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
+                            dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            dialogmoteTidStedDTO.videoLink shouldBeEqualTo ""
+                        }
+                    }
                 }
 
                 describe("Unhappy paths") {
+                    beforeEachTest {
+                        clearMocks(mqSenderMock)
+                        clearMocks(brukernotifikasjonProducer)
+                    }
+
                     it("should return status Unauthorized if no token is supplied") {
                         with(
                             handleRequest(HttpMethod.Get, url) {}
