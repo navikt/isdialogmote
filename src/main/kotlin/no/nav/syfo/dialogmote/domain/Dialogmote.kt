@@ -2,6 +2,7 @@ package no.nav.syfo.dialogmote.domain
 
 import no.nav.syfo.client.pdfgen.model.*
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.varsel.arbeidstaker.domain.ArbeidstakerVarselDTO
 import java.time.LocalDateTime
 import java.util.*
 
@@ -38,6 +39,17 @@ fun Dialogmote.toDialogmoteDTO() =
             it.toDialogmoteTidStedDTO()
         },
     )
+
+fun List<Dialogmote>.toArbeidstakerVarselDTOList(): List<ArbeidstakerVarselDTO> {
+    return this.map { dialogmote ->
+        dialogmote.arbeidstaker.varselList.map {
+            it.toArbeidstakerVarselDTO(
+                dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
+                virksomhetsummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+            )
+        }
+    }.flatten()
+}
 
 fun Dialogmote.toPdfModelAvlysningArbeidstaker() =
     PdfModelAvlysningArbeidstaker(
