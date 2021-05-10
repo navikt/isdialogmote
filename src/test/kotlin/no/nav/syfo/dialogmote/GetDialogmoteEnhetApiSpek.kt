@@ -7,18 +7,19 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
-import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
-import no.nav.syfo.dialogmote.api.dialogmoteApiEnhetUrlPath
+import no.nav.syfo.dialogmote.api.*
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.database.createNewDialogmotePlanlagtWithReferences
+import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.generator.generateNewDialogmotePlanlagt
+import no.nav.syfo.testhelper.generator.generateNewDialogmote
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.varsel.MotedeltakerVarselType
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -78,18 +79,30 @@ class GetDialogmoteEnhetApiSpek : Spek({
                 )
                 describe("Happy path") {
 
-                    val newDialogmote = generateNewDialogmotePlanlagt(ARBEIDSTAKER_FNR)
-                    val newDialogmoteAdressebeskyttet = generateNewDialogmotePlanlagt(ARBEIDSTAKER_ADRESSEBESKYTTET)
-                    database.connection.use { connection ->
-                        connection.createNewDialogmotePlanlagtWithReferences(
-                            newDialogmotePlanlagt = newDialogmote
-                        )
-                        connection.createNewDialogmotePlanlagtWithReferences(
-                            newDialogmotePlanlagt = newDialogmoteAdressebeskyttet
-                        )
-                    }
+                    val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+                    val newDialogmoteDTOAdressebeskyttet = generateNewDialogmoteDTO(ARBEIDSTAKER_ADRESSEBESKYTTET)
+                    val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
 
                     it("should return DialogmoteList if request is successful") {
+                        with(
+                            handleRequest(HttpMethod.Post, urlMote) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            clearMocks(mqSenderMock)
+                        }
+
+                        val newDialogmoteAdressebeskyttet = generateNewDialogmote(ARBEIDSTAKER_ADRESSEBESKYTTET)
+                        database.connection.use { connection ->
+                            connection.createNewDialogmoteWithReferences(
+                                newDialogmote = newDialogmoteAdressebeskyttet
+                            )
+                        }
+
                         with(
                             handleRequest(HttpMethod.Get, urlEnhetAccess) {
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -103,13 +116,13 @@ class GetDialogmoteEnhetApiSpek : Spek({
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.tildeltEnhet shouldBeEqualTo newDialogmote.tildeltEnhet
-                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmote.arbeidstaker.personIdent.value
-                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmote.arbeidsgiver.virksomhetsnummer.value
+                            dialogmoteDTO.tildeltEnhet shouldBeEqualTo newDialogmoteDTO.tildeltEnhet
+                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
+                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
 
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
-                            dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmote.tidSted.sted
+                            dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                         }
                     }
                 }
