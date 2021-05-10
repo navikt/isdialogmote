@@ -6,7 +6,6 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
@@ -19,7 +18,6 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.varsel.MotedeltakerVarselType
@@ -37,55 +35,20 @@ class PostDialogmotePlanlagtApiSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val isdialogmotepdfgenMock = IsdialogmotepdfgenMock()
-            val modiasyforestMock = ModiasyforestMock()
-            val syfomoteadminMock = SyfomoteadminMock()
-            val syfopersonMock = SyfopersonMock()
-            val tilgangskontrollMock = VeilederTilgangskontrollMock()
-
-            val externalApplicationMockMap = hashMapOf(
-                isdialogmotepdfgenMock.name to isdialogmotepdfgenMock.server,
-                modiasyforestMock.name to modiasyforestMock.server,
-                syfomoteadminMock.name to syfomoteadminMock.server,
-                syfopersonMock.name to syfopersonMock.server,
-                tilgangskontrollMock.name to tilgangskontrollMock.server,
-            )
-
-            val applicationState = testAppState()
-
-            val database = TestDatabase()
-
-            val embeddedEnvironment = testKafka()
-
-            val environment = testEnvironment(
-                kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-                isdialogmotepdfgenUrl = isdialogmotepdfgenMock.url,
-                modiasyforestUrl = modiasyforestMock.url,
-                syfomoteadminUrl = syfomoteadminMock.url,
-                syfopersonUrl = syfopersonMock.url,
-                syfotilgangskontrollUrl = tilgangskontrollMock.url
-            )
-
-            val redisServer = testRedis(environment)
+            val externalMockEnvironment = ExternalMockEnvironment()
+            val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+
             val mqSenderMock = mockk<MQSenderInterface>()
             justRun { mqSenderMock.sendMQMessage(any(), any()) }
 
-            val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
-            val wellKnownVeileder = wellKnownSelvbetjeningMock()
-
-            application.apiModule(
-                applicationState = applicationState,
+            application.testApiModule(
+                externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                database = database,
-                mqSender = mqSenderMock,
-                environment = environment,
-                wellKnownSelvbetjening = wellKnownSelvbetjening,
-                wellKnownVeileder = wellKnownVeileder,
+                mqSenderMock = mqSenderMock,
             )
-
-            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
             afterEachTest {
                 database.dropData()
@@ -93,29 +56,29 @@ class PostDialogmotePlanlagtApiSpek : Spek({
 
             beforeGroup {
                 startExternalMocks(
-                    applicationMockMap = externalApplicationMockMap,
-                    embeddedKafkaEnvironment = embeddedEnvironment,
-                    embeddedRedisServer = redisServer,
+                    applicationMockMap = externalMockEnvironment.externalApplicationMockMap,
+                    embeddedKafkaEnvironment = externalMockEnvironment.embeddedEnvironment,
+                    embeddedRedisServer = externalMockEnvironment.redisServer,
                 )
             }
 
             afterGroup {
                 stopExternalMocks(
-                    applicationMockMap = externalApplicationMockMap,
-                    database = database,
-                    embeddedKafkaEnvironment = embeddedEnvironment,
-                    embeddedRedisServer = redisServer,
+                    applicationMockMap = externalMockEnvironment.externalApplicationMockMap,
+                    database = externalMockEnvironment.database,
+                    embeddedKafkaEnvironment = externalMockEnvironment.embeddedEnvironment,
+                    embeddedRedisServer = externalMockEnvironment.redisServer,
                 )
             }
 
             describe("Create Dialogmote for PersonIdent from PlanlagtMoteUUID") {
                 val validToken = generateJWT(
-                    environment.loginserviceClientId,
-                    wellKnownVeileder.issuer,
+                    externalMockEnvironment.environment.loginserviceClientId,
+                    externalMockEnvironment.wellKnownVeileder.issuer,
                     VEILEDER_IDENT,
                 )
                 describe("Happy path") {
-                    val planlagtMoteDTO: PlanlagtMoteDTO? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_FNR.value]
+                    val planlagtMoteDTO: PlanlagtMoteDTO? = externalMockEnvironment.syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_FNR.value]
                     val moteUUID: String? = planlagtMoteDTO?.moteUuid
                     val urlMoteUUID = "$dialogmoteApiBasepath/$moteUUID"
                     val urlMoter = "$dialogmoteApiBasepath$dialogmoteApiPersonIdentUrlPath"
@@ -177,7 +140,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                     }
 
                     it("should return status Forbidden if denied access to person") {
-                        val moteUUID: String? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_VEILEDER_NO_ACCESS.value]?.moteUuid
+                        val moteUUID: String? = externalMockEnvironment.syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_VEILEDER_NO_ACCESS.value]?.moteUuid
                         val urlMoteUUID = "$dialogmoteApiBasepath/$moteUUID"
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUID) {
@@ -190,7 +153,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                     }
 
                     it("should return status Forbidden if denied person has Adressbeskyttese") {
-                        val moteUUID: String? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_ADRESSEBESKYTTET.value]?.moteUuid
+                        val moteUUID: String? = externalMockEnvironment.syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_ADRESSEBESKYTTET.value]?.moteUuid
                         val urlMoteUUID = "$dialogmoteApiBasepath/$moteUUID"
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUID) {
@@ -203,7 +166,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                     }
 
                     it("should return status Forbidden if denied person has cannot receive digital documents") {
-                        val moteUUID: String? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_IKKE_VARSEL.value]?.moteUuid
+                        val moteUUID: String? = externalMockEnvironment.syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_IKKE_VARSEL.value]?.moteUuid
                         val urlMoteUUID = "$dialogmoteApiBasepath/$moteUUID"
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUID) {
@@ -216,7 +179,7 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                     }
 
                     it("should return status InternalServerError if denied person with PlanlagtMote with Virksomhet does not have a leader for that Virksomhet") {
-                        val moteUUID: String? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value]?.moteUuid
+                        val moteUUID: String? = externalMockEnvironment.syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value]?.moteUuid
                         val urlMoteUUID = "$dialogmoteApiBasepath/$moteUUID"
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUID) {

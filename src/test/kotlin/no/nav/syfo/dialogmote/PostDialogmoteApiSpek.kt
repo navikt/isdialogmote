@@ -6,7 +6,6 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
 import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
@@ -21,7 +20,6 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTEL
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
-import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.varsel.MotedeltakerVarselType
@@ -39,58 +37,20 @@ class PostDialogmoteApiSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val isdialogmotepdfgenMock = IsdialogmotepdfgenMock()
-            val modiasyforestMock = ModiasyforestMock()
-            val syfobehandlendeenhetMock = SyfobehandlendeenhetMock()
-            val syfomoteadminMock = SyfomoteadminMock()
-            val syfopersonMock = SyfopersonMock()
-            val tilgangskontrollMock = VeilederTilgangskontrollMock()
-
-            val externalApplicationMockMap = hashMapOf(
-                isdialogmotepdfgenMock.name to isdialogmotepdfgenMock.server,
-                modiasyforestMock.name to modiasyforestMock.server,
-                syfobehandlendeenhetMock.name to syfobehandlendeenhetMock.server,
-                syfomoteadminMock.name to syfomoteadminMock.server,
-                syfopersonMock.name to syfopersonMock.server,
-                tilgangskontrollMock.name to tilgangskontrollMock.server,
-            )
-
-            val applicationState = testAppState()
-
-            val database = TestDatabase()
-
-            val embeddedEnvironment = testKafka()
-
-            val environment = testEnvironment(
-                kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-                isdialogmotepdfgenUrl = isdialogmotepdfgenMock.url,
-                modiasyforestUrl = modiasyforestMock.url,
-                syfobehandlendeenhetUrl = syfobehandlendeenhetMock.url,
-                syfomoteadminUrl = syfomoteadminMock.url,
-                syfopersonUrl = syfopersonMock.url,
-                syfotilgangskontrollUrl = tilgangskontrollMock.url
-            )
-
-            val redisServer = testRedis(environment)
+            val externalMockEnvironment = ExternalMockEnvironment()
+            val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+
             val mqSenderMock = mockk<MQSenderInterface>()
             justRun { mqSenderMock.sendMQMessage(any(), any()) }
 
-            val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
-            val wellKnownVeileder = wellKnownSelvbetjeningMock()
-
-            application.apiModule(
-                applicationState = applicationState,
+            application.testApiModule(
+                externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                database = database,
-                mqSender = mqSenderMock,
-                environment = environment,
-                wellKnownSelvbetjening = wellKnownSelvbetjening,
-                wellKnownVeileder = wellKnownVeileder,
+                mqSenderMock = mqSenderMock,
             )
-
-            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
             afterEachTest {
                 database.dropData()
@@ -98,25 +58,25 @@ class PostDialogmoteApiSpek : Spek({
 
             beforeGroup {
                 startExternalMocks(
-                    applicationMockMap = externalApplicationMockMap,
-                    embeddedKafkaEnvironment = embeddedEnvironment,
-                    embeddedRedisServer = redisServer,
+                    applicationMockMap = externalMockEnvironment.externalApplicationMockMap,
+                    embeddedKafkaEnvironment = externalMockEnvironment.embeddedEnvironment,
+                    embeddedRedisServer = externalMockEnvironment.redisServer,
                 )
             }
 
             afterGroup {
                 stopExternalMocks(
-                    applicationMockMap = externalApplicationMockMap,
-                    database = database,
-                    embeddedKafkaEnvironment = embeddedEnvironment,
-                    embeddedRedisServer = redisServer,
+                    applicationMockMap = externalMockEnvironment.externalApplicationMockMap,
+                    database = externalMockEnvironment.database,
+                    embeddedKafkaEnvironment = externalMockEnvironment.embeddedEnvironment,
+                    embeddedRedisServer = externalMockEnvironment.redisServer,
                 )
             }
 
             describe("Create Dialogmote for PersonIdent payload") {
                 val validToken = generateJWT(
-                    environment.loginserviceClientId,
-                    wellKnownVeileder.issuer,
+                    externalMockEnvironment.environment.loginserviceClientId,
+                    externalMockEnvironment.wellKnownVeileder.issuer,
                     VEILEDER_IDENT,
                 )
                 describe("Happy path") {

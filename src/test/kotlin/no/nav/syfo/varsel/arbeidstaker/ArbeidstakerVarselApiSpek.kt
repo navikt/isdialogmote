@@ -6,7 +6,6 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
@@ -15,7 +14,6 @@ import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.varsel.MotedeltakerVarselType
@@ -33,88 +31,55 @@ class ArbeidstakerVarselApiSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val isdialogmotepdfgenMock = IsdialogmotepdfgenMock()
-            val modiasyforestMock = ModiasyforestMock()
-            val syfomoteadminMock = SyfomoteadminMock()
-            val syfopersonMock = SyfopersonMock()
-            val tilgangskontrollMock = VeilederTilgangskontrollMock()
-
-            val applicationState = testAppState()
-
-            val database = TestDatabase()
-
-            val embeddedEnvironment = testKafka()
-
-            val environment = testEnvironment(
-                kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-                isdialogmotepdfgenUrl = isdialogmotepdfgenMock.url,
-                modiasyforestUrl = modiasyforestMock.url,
-                syfomoteadminUrl = syfomoteadminMock.url,
-                syfopersonUrl = syfopersonMock.url,
-                syfotilgangskontrollUrl = tilgangskontrollMock.url
-            )
-
-            val redisServer = testRedis(environment)
+            val externalMockEnvironment = ExternalMockEnvironment()
+            val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            val mqSenderMock = mockk<MQSenderInterface>(relaxed = true)
-
-            val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
-            val wellKnownVeileder = wellKnownMock()
-
-            application.apiModule(
-                applicationState = applicationState,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
-                database = database,
-                mqSender = mqSenderMock,
-                environment = environment,
-                wellKnownSelvbetjening = wellKnownSelvbetjening,
-                wellKnownVeileder = wellKnownVeileder,
-            )
-
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
+
+            val mqSenderMock = mockk<MQSenderInterface>(relaxed = true)
+
+            application.testApiModule(
+                externalMockEnvironment = externalMockEnvironment,
+                brukernotifikasjonProducer = brukernotifikasjonProducer,
+                mqSenderMock = mqSenderMock,
+            )
 
             afterEachTest {
                 database.dropData()
             }
 
             beforeGroup {
-                isdialogmotepdfgenMock.server.start()
-                modiasyforestMock.server.start()
-                syfomoteadminMock.server.start()
-                syfopersonMock.server.start()
-                tilgangskontrollMock.server.start()
-
-                embeddedEnvironment.start()
-                redisServer.start()
+                startExternalMocks(
+                    applicationMockMap = externalMockEnvironment.externalApplicationMockMap,
+                    embeddedKafkaEnvironment = externalMockEnvironment.embeddedEnvironment,
+                    embeddedRedisServer = externalMockEnvironment.redisServer,
+                )
             }
 
             afterGroup {
-                isdialogmotepdfgenMock.server.stop(1L, 10L)
-                modiasyforestMock.server.stop(1L, 10L)
-                syfomoteadminMock.server.stop(1L, 10L)
-                syfopersonMock.server.stop(1L, 10L)
-                tilgangskontrollMock.server.stop(1L, 10L)
-
-                database.stop()
-                embeddedEnvironment.tearDown()
-                redisServer.stop()
+                stopExternalMocks(
+                    applicationMockMap = externalMockEnvironment.externalApplicationMockMap,
+                    database = externalMockEnvironment.database,
+                    embeddedKafkaEnvironment = externalMockEnvironment.embeddedEnvironment,
+                    embeddedRedisServer = externalMockEnvironment.redisServer,
+                )
             }
 
             describe("Les ArbeidstakerVarsel") {
                 val validTokenSelvbetjening = generateJWT(
-                    audience = environment.loginserviceIdportenAudience.first(),
-                    issuer = wellKnownSelvbetjening.issuer,
+                    audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
+                    issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
                     subject = ARBEIDSTAKER_FNR.value,
                 )
                 val validTokenVeileder = generateJWT(
-                    environment.loginserviceClientId,
-                    wellKnownSelvbetjening.issuer,
+                    externalMockEnvironment.environment.loginserviceClientId,
+                    externalMockEnvironment.wellKnownSelvbetjening.issuer,
                     VEILEDER_IDENT,
                 )
                 describe("Happy path") {
-                    val planlagtMoteDTO: PlanlagtMoteDTO? = syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_FNR.value]
+                    val planlagtMoteDTO: PlanlagtMoteDTO? = externalMockEnvironment.syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_FNR.value]
                     val planlagtmoteUUID: String? = planlagtMoteDTO?.moteUuid
                     val urlPlanlagtMoteUUID = "$dialogmoteApiBasepath/$planlagtmoteUUID"
 
