@@ -3,8 +3,6 @@ package no.nav.syfo.dialogmote
 import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
-import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
-import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.client.pdfgen.PdfGenClient
@@ -27,7 +25,6 @@ class DialogmoteService(
     private val narmesteLederVarselService: NarmesteLederVarselService,
     private val dialogmotedeltakerService: DialogmotedeltakerService,
     private val behandlendeEnhetClient: BehandlendeEnhetClient,
-    private val moteplanleggerClient: MoteplanleggerClient,
     private val narmesteLederClient: NarmesteLederClient,
     private val pdfGenClient: PdfGenClient,
 ) {
@@ -80,91 +77,6 @@ class DialogmoteService(
     ): List<DialogmoteTidSted> {
         return database.getTidSted(moteId).map {
             it.toDialogmoteTidSted()
-        }
-    }
-
-    suspend fun planlagtMote(
-        planlagtMoteUUID: UUID,
-        token: String,
-        callId: String,
-    ): PlanlagtMoteDTO? {
-        return moteplanleggerClient.planlagtMote(
-            callId = callId,
-            token = token,
-            planlagtMoteUUID = planlagtMoteUUID,
-        )
-    }
-
-    suspend fun createMoteinnkalling(
-        planlagtMote: PlanlagtMoteDTO,
-        callId: String,
-        token: String,
-    ): Boolean {
-        log.info("Received PlanlagtMote with uuid=${planlagtMote.moteUuid}")
-        val virksomhetsnummer = planlagtMote.virksomhetsnummer()
-            ?: throw IllegalArgumentException("No Virksomhetsnummer was found for PlanlagtMote")
-        val narmesteLeder = narmesteLederClient.activeLeader(
-            personIdentNumber = PersonIdentNumber(planlagtMote.fnr),
-            virksomhetsnummer = virksomhetsnummer,
-            token = token,
-            callId = callId
-        )
-        return if (narmesteLeder == null) {
-            log.info("Denied access to Dialogmoter: No NarmesteLeder was found for person")
-            false
-        } else {
-            val newDialogmotePlanlagt = planlagtMote.toNewDialogmotePlanlagt(
-                requestByNAVIdent = getNAVIdentFromToken(token)
-            )
-
-            val pdfInnkallingArbeidstaker = pdfGenClient.pdfInnkallingArbeidstaker(
-                callId = callId,
-                pdfBody = newDialogmotePlanlagt.toPdfModelInnkallingArbeidstaker()
-            ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidstaker")
-
-            val pdfInnkallingArbeidsgiver = pdfGenClient.pdfInnkallingArbeidsgiver(
-                callId = callId,
-                pdfBody = newDialogmotePlanlagt.toPdfModelInnkallingArbeidsgiver()
-            ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidsgiver")
-
-            val createdDialogmoteIdentifiers: CreatedDialogmoteIdentifiers
-
-            database.connection.use { connection ->
-                createdDialogmoteIdentifiers = connection.createNewDialogmotePlanlagtWithReferences(
-                    commit = false,
-                    newDialogmotePlanlagt = newDialogmotePlanlagt,
-                )
-
-                val (arbeidstakerId, arbeidstakerUuid) = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdList
-
-                createAndSendVarsel(
-                    connection = connection,
-                    arbeidstakerId = arbeidstakerId,
-                    arbeidstakerUuid = arbeidstakerUuid,
-                    arbeidsgiverId = createdDialogmoteIdentifiers.motedeltakerArbeidsgiverIdList.first,
-                    arbeidstakerPersonIdent = newDialogmotePlanlagt.arbeidstaker.personIdent,
-                    pdfArbeidstaker = pdfInnkallingArbeidstaker,
-                    pdfArbeidsgiver = pdfInnkallingArbeidsgiver,
-                    narmesteLeder = narmesteLeder,
-                    varselType = MotedeltakerVarselType.INNKALT,
-                    fritekstArbeidstaker = newDialogmotePlanlagt.arbeidstaker.fritekstInnkalling.orEmpty(),
-                    fritekstArbeidsgiver = newDialogmotePlanlagt.arbeidsgiver.fritekstInnkalling.orEmpty(),
-                )
-
-                connection.commit()
-            }
-
-            val planlagtMoteBekreftet = moteplanleggerClient.bekreftPlanlagtMote(
-                planlagtMoteUUID = newDialogmotePlanlagt.planlagtMoteUuid,
-                token = token,
-                callId = callId,
-            )
-            if (planlagtMoteBekreftet) {
-                database.updateMotePlanlagtMoteBekreftet(
-                    moteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first
-                )
-            }
-            true
         }
     }
 

@@ -19,7 +19,6 @@ import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.varsel.MotedeltakerVarselType
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -133,8 +132,6 @@ class FerdigstillDialogmoteApiSpek : Spek({
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.planlagtMoteUuid.shouldBeNull()
-                            dialogmoteDTO.planlagtMoteBekreftetTidspunkt.shouldBeNull()
                             dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.FERDIGSTILT.name
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer

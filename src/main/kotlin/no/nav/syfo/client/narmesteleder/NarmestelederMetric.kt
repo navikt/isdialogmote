@@ -10,7 +10,7 @@ const val CALL_PERSON_NARMESTE_LEDER_LIST_FAIL = "${CALL_NARMESTELEDER_BASE}_fai
 val COUNT_CALL_PERSON_NARMESTE_LEDER_LIST_SUCCESS: Counter = Counter.build()
     .namespace(METRICS_NS)
     .name(CALL_PERSON_NARMESTE_LEDER_LIST_SUCCESS)
-    .help("Counts the number of successful calls to Syfomoteadmin - NarmesteLeder list")
+    .help("Counts the number of successful calls to Modiasyforest - NarmesteLeder list")
     .register()
 val COUNT_CALL_PERSON_NARMESTE_LEDER_LIST_FAIL: Counter = Counter.build()
     .namespace(METRICS_NS)

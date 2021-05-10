@@ -11,7 +11,6 @@ fun testEnvironment(
     isdialogmotepdfgenUrl: String? = null,
     modiasyforestUrl: String? = null,
     syfobehandlendeenhetUrl: String? = null,
-    syfomoteadminUrl: String? = null,
     syfopersonUrl: String? = null,
     syfotilgangskontrollUrl: String? = null
 ) = Environment(
@@ -42,7 +41,6 @@ fun testEnvironment(
     isdialogmotepdfgenUrl = isdialogmotepdfgenUrl ?: "http://isdialogmotepdfgen",
     modiasyforestUrl = modiasyforestUrl ?: "modiasyforest",
     syfobehandlendeenhetUrl = syfobehandlendeenhetUrl ?: "syfobehandlendeenhet",
-    syfomoteadminUrl = syfomoteadminUrl ?: "syfomoteadmin",
     syfopersonUrl = syfopersonUrl ?: "syfoperson",
     syfotilgangskontrollUrl = syfotilgangskontrollUrl ?: "tilgangskontroll",
     journalforingCronjobEnabled = false,

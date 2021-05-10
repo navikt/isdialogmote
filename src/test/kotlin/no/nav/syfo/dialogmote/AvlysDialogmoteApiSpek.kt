@@ -139,8 +139,6 @@ class AvlysDialogmoteApiSpek : Spek({
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.planlagtMoteUuid.shouldBeNull()
-                            dialogmoteDTO.planlagtMoteBekreftetTidspunkt.shouldBeNull()
                             dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.AVLYST.name
 
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent

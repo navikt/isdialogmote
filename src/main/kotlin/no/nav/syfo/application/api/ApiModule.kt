@@ -10,7 +10,6 @@ import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
-import no.nav.syfo.client.moteplanlegger.MoteplanleggerClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
@@ -24,9 +23,7 @@ import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.varsel.arbeidstaker.registerArbeidstakerVarselApi
 import no.nav.syfo.varsel.narmesteleder.NarmesteLederVarselService
-import redis.clients.jedis.JedisPool
-import redis.clients.jedis.JedisPoolConfig
-import redis.clients.jedis.Protocol
+import redis.clients.jedis.*
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -55,9 +52,6 @@ fun Application.apiModule(
     )
     installStatusPages()
 
-    val moteplanleggerClient = MoteplanleggerClient(
-        syfomoteadminBaseUrl = environment.syfomoteadminUrl
-    )
     val narmesteLederClient = NarmesteLederClient(
         modiasyforestBaseUrl = environment.modiasyforestUrl
     )
@@ -116,7 +110,6 @@ fun Application.apiModule(
         narmesteLederVarselService = narmesteLederVarselService,
         dialogmotedeltakerService = dialogmotedeltakerService,
         behandlendeEnhetClient = behandlendeEnhetClient,
-        moteplanleggerClient = moteplanleggerClient,
         narmesteLederClient = narmesteLederClient,
         pdfGenClient = pdfGenClient,
     )

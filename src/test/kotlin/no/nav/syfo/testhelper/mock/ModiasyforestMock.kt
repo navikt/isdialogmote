@@ -14,7 +14,6 @@ import no.nav.syfo.client.narmesteleder.NarmesteLederClient.Companion.PERSON_NAR
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
-import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_NO_PLANLAGTMOTE
 import no.nav.syfo.testhelper.getRandomPort
 import no.nav.syfo.util.getPersonIdentHeader
 import java.time.LocalDate
@@ -25,10 +24,6 @@ val narmesteLederDTOVirksomhetHasLeader = NarmesteLederDTO(
     fomDato = LocalDate.now().minusDays(10),
     orgnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
     organisasjonsnavn = "",
-)
-
-val narmesteLederDTOVirksomhetOther = narmesteLederDTOVirksomhetHasLeader.copy(
-    orgnummer = VIRKSOMHETSNUMMER_NO_PLANLAGTMOTE.value
 )
 
 class ModiasyforestMock {

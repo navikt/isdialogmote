@@ -19,5 +19,4 @@ object UserConstants {
     const val PERSON_EMAIL = "test@nav.no"
 
     val VIRKSOMHETSNUMMER_HAS_NARMESTELEDER = Virksomhetsnummer("912345678")
-    val VIRKSOMHETSNUMMER_NO_PLANLAGTMOTE = Virksomhetsnummer(VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value.replace("2", "1"))
 }

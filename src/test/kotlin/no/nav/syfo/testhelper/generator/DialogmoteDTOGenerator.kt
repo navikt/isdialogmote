@@ -4,8 +4,8 @@ import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
-import no.nav.syfo.testhelper.mock.planlagtMoteDTO
 import java.time.LocalDateTime
 
 fun generateNewDialogmoteTidStedDTO() = NewDialogmoteTidStedDTO(
@@ -60,9 +60,8 @@ fun generateMotedeltakerArbeidsgiverDTOMissingValues() = NewDialogmotedeltakerAr
 fun generateNewDialogmoteDTO(
     personIdentNumber: PersonIdentNumber
 ): NewDialogmoteDTO {
-    val planlagtMoteDTO = planlagtMoteDTO(personIdentNumber)
     return NewDialogmoteDTO(
-        tildeltEnhet = planlagtMoteDTO.navEnhet,
+        tildeltEnhet = UserConstants.ENHET_NR.value,
         arbeidstaker = generateMotedeltakerArbeidstakerDTO(personIdentNumber),
         arbeidsgiver = generateMotedeltakerArbeidsgiverDTO(),
         tidSted = generateNewDialogmoteTidStedDTO()
@@ -72,9 +71,8 @@ fun generateNewDialogmoteDTO(
 fun generateNewDialogmoteDTOWithMissingValues(
     personIdentNumber: PersonIdentNumber
 ): NewDialogmoteDTO {
-    val planlagtMoteDTO = planlagtMoteDTO(personIdentNumber)
     return NewDialogmoteDTO(
-        tildeltEnhet = planlagtMoteDTO.navEnhet,
+        tildeltEnhet = UserConstants.ENHET_NR.value,
         arbeidstaker = generateMotedeltakerArbeidstakerDTOMissingValues(personIdentNumber),
         arbeidsgiver = generateMotedeltakerArbeidsgiverDTOMissingValues(),
         tidSted = generateNewDialogmoteTidStedDTONoVideoLink()

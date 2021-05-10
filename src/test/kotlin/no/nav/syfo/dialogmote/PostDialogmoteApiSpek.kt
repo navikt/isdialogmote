@@ -109,8 +109,6 @@ class PostDialogmoteApiSpek : Spek({
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.planlagtMoteUuid.shouldBeNull()
-                            dialogmoteDTO.planlagtMoteBekreftetTidspunkt.shouldBeNull()
                             dialogmoteDTO.tildeltEnhet shouldBeEqualTo ENHET_NR.value
                             dialogmoteDTO.tildeltVeilederIdent shouldBeEqualTo VEILEDER_IDENT
 
@@ -207,7 +205,7 @@ class PostDialogmoteApiSpek : Spek({
                         }
                     }
 
-                    it("should return status InternalServerError if denied person with PlanlagtMote with Virksomhet does not have a leader for that Virksomhet") {
+                    it("should return status InternalServerError if denied person with Dialogmote with Virksomhet does not have a leader for that Virksomhet") {
                         val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
                         val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
                         with(

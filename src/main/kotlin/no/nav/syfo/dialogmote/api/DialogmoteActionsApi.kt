@@ -39,7 +39,7 @@ fun Route.registerDialogmoteActionsApi(
 
                 val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-                if (dialogmoteTilgangService.hasAccessToPlanlagtDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
+                if (dialogmoteTilgangService.hasAccessToDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.avlysMoteinnkalling(
                         callId = callId,
                         dialogmote = dialogmote,
@@ -76,7 +76,7 @@ fun Route.registerDialogmoteActionsApi(
 
                 val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-                if (dialogmoteTilgangService.hasAccessToPlanlagtDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
+                if (dialogmoteTilgangService.hasAccessToDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.nyttMoteinnkallingTidSted(
                         callId = callId,
                         dialogmote = dialogmote,
@@ -111,7 +111,7 @@ fun Route.registerDialogmoteActionsApi(
 
                 val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-                if (dialogmoteTilgangService.hasAccessToPlanlagtDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
+                if (dialogmoteTilgangService.hasAccessToDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.ferdigstillMoteinnkalling(
                         dialogmote = dialogmote,
                         opprettetAv = getNAVIdentFromToken(token)

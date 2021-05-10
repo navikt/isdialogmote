@@ -104,8 +104,6 @@ class PostDialogmoteWithMissingValuesApiSpek : Spek({
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.planlagtMoteUuid.shouldBeNull()
-                            dialogmoteDTO.planlagtMoteBekreftetTidspunkt.shouldBeNull()
                             dialogmoteDTO.tildeltEnhet shouldBeEqualTo ENHET_NR.value
                             dialogmoteDTO.tildeltVeilederIdent shouldBeEqualTo VEILEDER_IDENT
 

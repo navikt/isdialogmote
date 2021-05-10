@@ -4,20 +4,8 @@ import no.nav.syfo.client.pdfgen.model.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
-import java.util.UUID
 
 data class NewDialogmote(
-    val status: DialogmoteStatus,
-    val opprettetAv: String,
-    val tildeltVeilederIdent: String,
-    val tildeltEnhet: String,
-    val arbeidstaker: NewDialogmotedeltakerArbeidstaker,
-    val arbeidsgiver: NewDialogmotedeltakerArbeidsgiver,
-    val tidSted: NewDialogmoteTidSted,
-)
-
-data class NewDialogmotePlanlagt(
-    val planlagtMoteUuid: UUID,
     val status: DialogmoteStatus,
     val opprettetAv: String,
     val tildeltVeilederIdent: String,
@@ -56,26 +44,6 @@ fun NewDialogmote.toPdfModelInnkallingArbeidstaker() =
     )
 
 fun NewDialogmote.toPdfModelInnkallingArbeidsgiver() =
-    PdfModelInnkallingArbeidsgiver(
-        innkalling = InnkallingArbeidsgiver(
-            tidOgSted = InnkallingArbeidsgiverTidOgSted(
-                sted = this.tidSted.sted,
-                videoLink = this.tidSted.videoLink,
-            ),
-        ),
-    )
-
-fun NewDialogmotePlanlagt.toPdfModelInnkallingArbeidstaker() =
-    PdfModelInnkallingArbeidstaker(
-        innkalling = InnkallingArbeidstaker(
-            tidOgSted = InnkallingArbeidstakerTidOgSted(
-                sted = this.tidSted.sted,
-                videoLink = this.tidSted.videoLink,
-            ),
-        ),
-    )
-
-fun NewDialogmotePlanlagt.toPdfModelInnkallingArbeidsgiver() =
     PdfModelInnkallingArbeidsgiver(
         innkalling = InnkallingArbeidsgiver(
             tidOgSted = InnkallingArbeidsgiverTidOgSted(

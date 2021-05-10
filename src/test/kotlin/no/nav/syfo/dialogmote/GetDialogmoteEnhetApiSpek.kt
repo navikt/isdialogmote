@@ -80,7 +80,6 @@ class GetDialogmoteEnhetApiSpek : Spek({
                 describe("Happy path") {
 
                     val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
-                    val newDialogmoteDTOAdressebeskyttet = generateNewDialogmoteDTO(ARBEIDSTAKER_ADRESSEBESKYTTET)
                     val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
 
                     it("should return DialogmoteList if request is successful") {

@@ -6,8 +6,6 @@ data class DialogmoteDTO(
     val uuid: String,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val planlagtMoteUuid: String?,
-    val planlagtMoteBekreftetTidspunkt: LocalDateTime?,
     val status: String,
     val opprettetAv: String,
     val tildeltVeilederIdent: String,

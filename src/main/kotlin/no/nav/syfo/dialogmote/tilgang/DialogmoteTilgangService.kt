@@ -35,7 +35,7 @@ class DialogmoteTilgangService(
         }
     }
 
-    suspend fun hasAccessToPlanlagtDialogmoteInnkalling(
+    suspend fun hasAccessToDialogmoteInnkalling(
         personIdentNumber: PersonIdentNumber,
         token: String,
         callId: String,

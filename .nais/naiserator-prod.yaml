@@ -50,7 +50,6 @@ spec:
         - host: "login.microsoftonline.com"
         - host: "modiasyforest.prod-fss-pub.nais.io"
         - host: "syfobehandlendeenhet.prod-fss-pub.nais.io"
-        - host: "syfomoteadmin.prod-fss-pub.nais.io"
         - host: "syfoperson.prod-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.prod-fss-pub.nais.io"
       rules:
@@ -94,8 +93,6 @@ spec:
       value: "https://modiasyforest.prod-fss-pub.nais.io"
     - name: SYFOBEHANDLENDEENHET_URL
       value: "https://syfobehandlendeenhet.prod-fss-pub.nais.io"
-    - name: SYFOMOTEADMIN_URL
-      value: "https://syfomoteadmin.prod-fss-pub.nais.io"
     - name: SYFOPERSON_URL
       value: "https://syfoperson.prod-fss-pub.nais.io"
     - name: SYFOTILGANGSKONTROLL_URL
