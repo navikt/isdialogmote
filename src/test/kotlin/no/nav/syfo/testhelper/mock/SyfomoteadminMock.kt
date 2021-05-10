@@ -79,6 +79,7 @@ class SyfomoteadminMock {
         ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value to planlagtMoteDTO(ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
     )
 
+    val name = "syfomoteadmin"
     val server = mockPersonServer(
         port,
         personIdentMoteMap

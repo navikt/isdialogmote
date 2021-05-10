@@ -23,6 +23,7 @@ class DokarkivMock {
         journalstatus = "journalstatus",
     )
 
+    val name = "dokarkiv"
     val server = mockDokarkivServer(
         port
     )

@@ -31,6 +31,7 @@ class SyfobehandlendeenhetMock {
 
     val behandlendeEnhetDTO = mockBehandlendeEnhetDTO
 
+    val name = "behandlendeenhet"
     val server = mockServer(port)
 
     private fun mockServer(

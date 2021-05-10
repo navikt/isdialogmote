@@ -30,6 +30,7 @@ class IsdialogmotepdfgenMock {
     val pdfInnkallingArbeidstaker = byteArrayOf(0x2E, 0x29)
     val pdfInnkallingArbeidsgiver = byteArrayOf(0x2E, 0x28)
 
+    val name = "isdialogmotepdfgen"
     val server = mockIsdialogmotepdfgenServer(
         port
     )
