@@ -43,6 +43,14 @@ class PostDialogmotePlanlagtApiSpek : Spek({
             val syfopersonMock = SyfopersonMock()
             val tilgangskontrollMock = VeilederTilgangskontrollMock()
 
+            val externalApplicationMockMap = hashMapOf(
+                isdialogmotepdfgenMock.name to isdialogmotepdfgenMock.server,
+                modiasyforestMock.name to modiasyforestMock.server,
+                syfomoteadminMock.name to syfomoteadminMock.server,
+                syfopersonMock.name to syfopersonMock.server,
+                tilgangskontrollMock.name to tilgangskontrollMock.server,
+            )
+
             val applicationState = testAppState()
 
             val database = TestDatabase()
@@ -84,26 +92,20 @@ class PostDialogmotePlanlagtApiSpek : Spek({
             }
 
             beforeGroup {
-                isdialogmotepdfgenMock.server.start()
-                modiasyforestMock.server.start()
-                syfomoteadminMock.server.start()
-                syfopersonMock.server.start()
-                tilgangskontrollMock.server.start()
-
-                embeddedEnvironment.start()
-                redisServer.start()
+                startExternalMocks(
+                    applicationMockMap = externalApplicationMockMap,
+                    embeddedKafkaEnvironment = embeddedEnvironment,
+                    embeddedRedisServer = redisServer,
+                )
             }
 
             afterGroup {
-                isdialogmotepdfgenMock.server.stop(1L, 10L)
-                modiasyforestMock.server.stop(1L, 10L)
-                syfomoteadminMock.server.stop(1L, 10L)
-                syfopersonMock.server.stop(1L, 10L)
-                tilgangskontrollMock.server.stop(1L, 10L)
-
-                database.stop()
-                embeddedEnvironment.tearDown()
-                redisServer.stop()
+                stopExternalMocks(
+                    applicationMockMap = externalApplicationMockMap,
+                    database = database,
+                    embeddedKafkaEnvironment = embeddedEnvironment,
+                    embeddedRedisServer = redisServer,
+                )
             }
 
             describe("Create Dialogmote for PersonIdent from PlanlagtMoteUUID") {

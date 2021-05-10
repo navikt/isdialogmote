@@ -39,6 +39,13 @@ class GetDialogmoteEnhetApiSpek : Spek({
             val syfopersonMock = SyfopersonMock()
             val tilgangskontrollMock = VeilederTilgangskontrollMock()
 
+            val externalApplicationMockMap = hashMapOf(
+                modiasyforestMock.name to modiasyforestMock.server,
+                syfomoteadminMock.name to syfomoteadminMock.server,
+                syfopersonMock.name to syfopersonMock.server,
+                tilgangskontrollMock.name to tilgangskontrollMock.server,
+            )
+
             val applicationState = testAppState()
 
             val database = TestDatabase()
@@ -79,19 +86,20 @@ class GetDialogmoteEnhetApiSpek : Spek({
             }
 
             beforeGroup {
-                syfopersonMock.server.start()
-                tilgangskontrollMock.server.start()
-                embeddedEnvironment.start()
-                redisServer.start()
+                startExternalMocks(
+                    applicationMockMap = externalApplicationMockMap,
+                    embeddedKafkaEnvironment = embeddedEnvironment,
+                    embeddedRedisServer = redisServer,
+                )
             }
 
             afterGroup {
-                syfopersonMock.server.stop(1L, 10L)
-                tilgangskontrollMock.server.stop(1L, 10L)
-
-                database.stop()
-                embeddedEnvironment.tearDown()
-                redisServer.stop()
+                stopExternalMocks(
+                    applicationMockMap = externalApplicationMockMap,
+                    database = database,
+                    embeddedKafkaEnvironment = embeddedEnvironment,
+                    embeddedRedisServer = redisServer,
+                )
             }
 
             describe("Get Dialogmoter for EnhetNr") {
