@@ -5,7 +5,6 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.dokarkiv.DokarkivClient
@@ -15,7 +14,6 @@ import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
 import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
-import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import org.amshove.kluent.shouldBeEqualTo
@@ -31,79 +29,36 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val azureADMock = AzureADMock()
-            val dokarkivMock = DokarkivMock()
-            val isdialogmotepdfgenMock = IsdialogmotepdfgenMock()
-            val modiasyforestMock = ModiasyforestMock()
-            val syfobehandlendeenhetMock = SyfobehandlendeenhetMock()
-            val syfomoteadminMock = SyfomoteadminMock()
-            val syfopersonMock = SyfopersonMock()
-            val tilgangskontrollMock = VeilederTilgangskontrollMock()
-
-            val externalApplicationMockMap = hashMapOf(
-                dokarkivMock.name to dokarkivMock.server,
-                isdialogmotepdfgenMock.name to isdialogmotepdfgenMock.server,
-                modiasyforestMock.name to modiasyforestMock.server,
-                syfobehandlendeenhetMock.name to syfobehandlendeenhetMock.server,
-                syfomoteadminMock.name to syfomoteadminMock.server,
-                syfopersonMock.name to syfopersonMock.server,
-                tilgangskontrollMock.name to tilgangskontrollMock.server,
-            )
-
-            val applicationState = testAppState()
-
-            val database = TestDatabase()
-
-            val embeddedEnvironment = testKafka()
-
-            val environment = testEnvironment(
-                kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-                dokarkivUrl = dokarkivMock.url,
-                isdialogmotepdfgenUrl = isdialogmotepdfgenMock.url,
-                modiasyforestUrl = modiasyforestMock.url,
-                syfobehandlendeenhetUrl = syfobehandlendeenhetMock.url,
-                syfomoteadminUrl = syfomoteadminMock.url,
-                syfopersonUrl = syfopersonMock.url,
-                syfotilgangskontrollUrl = tilgangskontrollMock.url
-            )
-
-            val redisServer = testRedis(environment)
+            val externalMockEnvironment = ExternalMockEnvironment()
+            val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             val mqSenderMock = mockk<MQSenderInterface>()
             justRun { mqSenderMock.sendMQMessage(any(), any()) }
 
-            val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
-            val wellKnownVeileder = wellKnownSelvbetjeningMock()
-
-            application.apiModule(
-                applicationState = applicationState,
+            application.testApiModule(
+                externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                database = database,
-                mqSender = mqSenderMock,
-                environment = environment,
-                wellKnownSelvbetjening = wellKnownSelvbetjening,
-                wellKnownVeileder = wellKnownVeileder,
+                mqSenderMock = mqSenderMock,
             )
-
-            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
             val dialogmotedeltakerVarselJournalforingService = DialogmotedeltakerVarselJournalforingService(
                 database = database,
             )
             val azureAdClient = mockk<AzureAdClient>()
             coEvery {
-                azureAdClient.getAccessTokenForResource(environment.dokarkivClientId)
-            } returns azureADMock.aadAccessToken
+                azureAdClient.getAccessTokenForResource(externalMockEnvironment.environment.dokarkivClientId)
+            } returns externalMockEnvironment.azureADMock.aadAccessToken
             val dokarkivClient = DokarkivClient(
                 azureAdClient = azureAdClient,
-                dokarkivClientId = environment.dokarkivClientId,
-                dokarkivBaseUrl = dokarkivMock.url,
+                dokarkivClientId = externalMockEnvironment.environment.dokarkivClientId,
+                dokarkivBaseUrl = externalMockEnvironment.dokarkivMock.url,
             )
             val leaderPodClient = mockk<LeaderPodClient>()
 
             val dialogmoteVarselJournalforingCronjob = DialogmoteVarselJournalforingCronjob(
-                applicationState = applicationState,
+                applicationState = externalMockEnvironment.applicationState,
                 dialogmotedeltakerVarselJournalforingService = dialogmotedeltakerVarselJournalforingService,
                 dokarkivClient = dokarkivClient,
                 leaderPodClient = leaderPodClient,
@@ -115,25 +70,25 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
 
             beforeGroup {
                 startExternalMocks(
-                    applicationMockMap = externalApplicationMockMap,
-                    embeddedKafkaEnvironment = embeddedEnvironment,
-                    embeddedRedisServer = redisServer,
+                    applicationMockMap = externalMockEnvironment.externalApplicationMockMap,
+                    embeddedKafkaEnvironment = externalMockEnvironment.embeddedEnvironment,
+                    embeddedRedisServer = externalMockEnvironment.redisServer,
                 )
             }
 
             afterGroup {
                 stopExternalMocks(
-                    applicationMockMap = externalApplicationMockMap,
-                    database = database,
-                    embeddedKafkaEnvironment = embeddedEnvironment,
-                    embeddedRedisServer = redisServer,
+                    applicationMockMap = externalMockEnvironment.externalApplicationMockMap,
+                    database = externalMockEnvironment.database,
+                    embeddedKafkaEnvironment = externalMockEnvironment.embeddedEnvironment,
+                    embeddedRedisServer = externalMockEnvironment.redisServer,
                 )
             }
 
             describe("Journalfor ArbeidstakerVarsel with type Innkalling") {
                 val validToken = generateJWT(
-                    environment.loginserviceClientId,
-                    wellKnownVeileder.issuer,
+                    externalMockEnvironment.environment.loginserviceClientId,
+                    externalMockEnvironment.wellKnownVeileder.issuer,
                     UserConstants.VEILEDER_IDENT,
                 )
                 val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
