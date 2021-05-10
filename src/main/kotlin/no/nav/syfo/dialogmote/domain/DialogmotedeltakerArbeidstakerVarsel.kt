@@ -29,7 +29,6 @@ fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselD
         createdAt = this.createdAt,
         varselType = this.varselType.name,
         digitalt = this.digitalt,
-        pdf = this.pdf,
         lestDato = this.lestDato,
         fritekst = this.fritekst,
         document = this.document,

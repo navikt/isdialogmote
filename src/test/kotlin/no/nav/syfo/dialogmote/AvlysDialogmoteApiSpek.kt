@@ -187,7 +187,6 @@ class AvlysDialogmoteApiSpek : Spek({
                             }
                             arbeidstakerVarselDTO.shouldNotBeNull()
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
-                            arbeidstakerVarselDTO.pdf shouldBeEqualTo isdialogmotepdfgenMock.pdfAvlysningArbeidstaker
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
                             arbeidstakerVarselDTO.fritekst shouldBeEqualTo "Passer ikke"
 

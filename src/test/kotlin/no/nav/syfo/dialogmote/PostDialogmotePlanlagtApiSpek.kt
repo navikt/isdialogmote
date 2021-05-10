@@ -152,7 +152,6 @@ class PostDialogmotePlanlagtApiSpek : Spek({
                             val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
                             arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
-                            arbeidstakerVarselDTO.pdf shouldBeEqualTo isdialogmotepdfgenMock.pdfInnkallingArbeidstaker
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo planlagtMoteDTO?.arbeidsgiver()?.orgnummer

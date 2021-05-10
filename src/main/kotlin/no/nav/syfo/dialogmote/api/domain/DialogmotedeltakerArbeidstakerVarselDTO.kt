@@ -8,7 +8,6 @@ data class DialogmotedeltakerArbeidstakerVarselDTO(
     val createdAt: LocalDateTime,
     val varselType: String,
     val digitalt: Boolean,
-    val pdf: ByteArray,
     val lestDato: LocalDateTime?,
     val fritekst: String,
     val document: List<DocumentComponentDTO>,

@@ -193,7 +193,6 @@ class PostDialogmoteTidStedApiSpek : Spek({
                             }
                             arbeidstakerVarselDTO.shouldNotBeNull()
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
-                            arbeidstakerVarselDTO.pdf shouldBeEqualTo isdialogmotepdfgenMock.pdfEndringTidStedArbeidstaker
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo planlagtMoteDTO?.arbeidsgiver()?.orgnummer

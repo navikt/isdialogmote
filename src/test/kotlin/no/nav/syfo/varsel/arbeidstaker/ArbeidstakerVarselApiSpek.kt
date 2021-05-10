@@ -148,7 +148,6 @@ class ArbeidstakerVarselApiSpek : Spek({
                             val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
                             arbeidstakerVarselDTO.shouldNotBeNull()
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
-                            arbeidstakerVarselDTO.pdf.shouldNotBeNull()
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
 
                             createdArbeidstakerVarselUUID = arbeidstakerVarselDTO.uuid
@@ -186,7 +185,6 @@ class ArbeidstakerVarselApiSpek : Spek({
                             }
                             arbeidstakerVarselDTO.shouldNotBeNull()
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
-                            arbeidstakerVarselDTO.pdf.shouldNotBeNull()
                             arbeidstakerVarselDTO.lestDato.shouldNotBeNull()
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo planlagtMoteDTO?.arbeidsgiver()?.orgnummer

@@ -160,7 +160,6 @@ class PostDialogmoteApiSpek : Spek({
                             val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
                             arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
-                            arbeidstakerVarselDTO.pdf shouldBeEqualTo isdialogmotepdfgenMock.pdfInnkallingArbeidstaker
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
                             arbeidstakerVarselDTO.fritekst shouldBeEqualTo "Ipsum lorum arbeidstaker"
 
@@ -179,7 +178,6 @@ class PostDialogmoteApiSpek : Spek({
                             dialogmoteDTO.arbeidsgiver.varselList.size shouldBeEqualTo 1
                             val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.first()
                             arbeidsgiverVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
-                            arbeidsgiverVarselDTO.pdf shouldBeEqualTo isdialogmotepdfgenMock.pdfInnkallingArbeidsgiver
                             arbeidsgiverVarselDTO.lestDato.shouldBeNull()
                             arbeidsgiverVarselDTO.fritekst shouldBeEqualTo "Ipsum lorum arbeidsgiver"
 
