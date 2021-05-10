@@ -2,10 +2,11 @@ package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.mock.planlagtMoteDTO
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 fun generateNewDialogmoteTidSted() = NewDialogmoteTidSted(
     sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
@@ -43,6 +44,20 @@ fun generateMotedeltakerArbeidsgiverNoFritekst() = NewDialogmotedeltakerArbeidsg
     lederNavn = null,
     lederEpost = null
 )
+
+fun generateNewDialogmote(
+    personIdentNumber: PersonIdentNumber
+): NewDialogmote {
+    return NewDialogmote(
+        status = DialogmoteStatus.INNKALT,
+        opprettetAv = UserConstants.VEILEDER_IDENT,
+        tildeltVeilederIdent = UserConstants.VEILEDER_IDENT,
+        tildeltEnhet = UserConstants.ENHET_NR.value,
+        arbeidstaker = generateMotedeltakerArbeidstaker(personIdentNumber),
+        arbeidsgiver = generateMotedeltakerArbeidsgiver(),
+        tidSted = generateNewDialogmoteTidSted()
+    )
+}
 
 fun generateNewDialogmotePlanlagt(
     personIdentNumber: PersonIdentNumber

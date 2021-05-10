@@ -7,19 +7,19 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
-import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.dialogmote.api.*
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.varsel.MotedeltakerVarselType
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.shouldBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -74,24 +74,23 @@ class FerdigstillDialogmoteApiSpek : Spek({
                     VEILEDER_IDENT,
                 )
                 describe("Happy path") {
-                    val planlagtMoteDTO: PlanlagtMoteDTO? = externalMockEnvironment.syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_FNR.value]
-                    val planlagtmoteUUID: String? = planlagtMoteDTO?.moteUuid
-                    val urlPlanlagtMoteUUID = "$dialogmoteApiBasepath/$planlagtmoteUUID"
-
+                    val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+                    val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
                     val urlMoter = "$dialogmoteApiBasepath$dialogmoteApiPersonIdentUrlPath"
 
                     it("should return OK if request is successful") {
+                        val createdDialogmoteUUID: String
+
                         with(
-                            handleRequest(HttpMethod.Post, urlPlanlagtMoteUUID) {
+                            handleRequest(HttpMethod.Post, urlMote) {
                                 addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                         }
-
-                        val createdDialogmoteUUID: String
 
                         with(
                             handleRequest(HttpMethod.Get, urlMoter) {
@@ -134,15 +133,17 @@ class FerdigstillDialogmoteApiSpek : Spek({
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.planlagtMoteUuid shouldBeEqualTo planlagtmoteUUID
-                            dialogmoteDTO.planlagtMoteBekreftetTidspunkt.shouldNotBeNull()
+                            dialogmoteDTO.planlagtMoteUuid.shouldBeNull()
+                            dialogmoteDTO.planlagtMoteBekreftetTidspunkt.shouldBeNull()
                             dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.FERDIGSTILT.name
-                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo planlagtMoteDTO?.fnr
-                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo planlagtMoteDTO?.arbeidsgiver()?.orgnummer
+                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
+                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
 
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
-                            dialogmoteTidStedDTO.sted shouldBeEqualTo planlagtMoteDTO?.tidStedValgt()?.sted
+                            dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+
+                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }
                     }
                 }

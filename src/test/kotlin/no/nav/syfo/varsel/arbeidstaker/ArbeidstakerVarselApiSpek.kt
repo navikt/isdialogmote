@@ -7,13 +7,13 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
-import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
+import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
-import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.varsel.MotedeltakerVarselType
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.varsel.arbeidstaker.domain.ArbeidstakerVarselDTO
 import org.amshove.kluent.*
@@ -73,27 +73,28 @@ class ArbeidstakerVarselApiSpek : Spek({
                 )
                 val validTokenVeileder = generateJWT(
                     externalMockEnvironment.environment.loginserviceClientId,
-                    externalMockEnvironment.wellKnownSelvbetjening.issuer,
-                    VEILEDER_IDENT,
+                    externalMockEnvironment.wellKnownVeileder.issuer,
+                    UserConstants.VEILEDER_IDENT,
                 )
                 describe("Happy path") {
-                    val planlagtMoteDTO: PlanlagtMoteDTO? = externalMockEnvironment.syfomoteadminMock.personIdentMoteMap[ARBEIDSTAKER_FNR.value]
-                    val planlagtmoteUUID: String? = planlagtMoteDTO?.moteUuid
-                    val urlPlanlagtMoteUUID = "$dialogmoteApiBasepath/$planlagtmoteUUID"
-
+                    val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+                    val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
                     val urlArbeidstakerMoterList = arbeidstakerVarselApiPath
 
                     it("should return OK if request is successful") {
+                        val createdArbeidstakerVarselUUID: String
+
                         with(
-                            handleRequest(HttpMethod.Post, urlPlanlagtMoteUUID) {
+                            handleRequest(HttpMethod.Post, urlMote) {
                                 addHeader(Authorization, bearerHeader(validTokenVeileder))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            clearMocks(mqSenderMock)
                         }
-
-                        val createdArbeidstakerVarselUUID: String
 
                         with(
                             handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
@@ -138,9 +139,9 @@ class ArbeidstakerVarselApiSpek : Spek({
                             arbeidstakerVarselDTO.shouldNotBeNull()
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
                             arbeidstakerVarselDTO.lestDato.shouldNotBeNull()
-                            arbeidstakerVarselDTO.virksomhetsnummer shouldBeEqualTo planlagtMoteDTO?.arbeidsgiver()?.orgnummer
-                            arbeidstakerVarselDTO.sted shouldBeEqualTo planlagtMoteDTO?.tidStedValgt()?.sted
-                            val isTodayBeforeDialogmotetid = LocalDateTime.now().isBefore(planlagtMoteDTO?.tidStedValgt()?.tid)
+                            arbeidstakerVarselDTO.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                            arbeidstakerVarselDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            val isTodayBeforeDialogmotetid = LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo true
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
