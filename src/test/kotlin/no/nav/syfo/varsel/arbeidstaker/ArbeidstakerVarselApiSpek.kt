@@ -6,7 +6,6 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.moteplanlegger.domain.*
@@ -20,7 +19,7 @@ import no.nav.syfo.testhelper.mock.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.varsel.MotedeltakerVarselType
-import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.*
+import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -44,14 +43,7 @@ class ArbeidstakerVarselApiSpek : Spek({
 
             val database = TestDatabase()
 
-            val embeddedEnvironment = KafkaEnvironment(
-                autoStart = false,
-                withSchemaRegistry = false,
-                topicNames = listOf(
-                    BRUKERNOTIFIKASJON_OPPGAVE_TOPIC,
-                    BRUKERNOTIFIKASJON_DONE_TOPIC,
-                )
-            )
+            val embeddedEnvironment = testKafka()
 
             val environment = testEnvironment(
                 kafkaBootstrapServers = embeddedEnvironment.brokersURL,
