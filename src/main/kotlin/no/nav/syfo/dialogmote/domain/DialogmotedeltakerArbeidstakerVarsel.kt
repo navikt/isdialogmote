@@ -3,7 +3,9 @@ package no.nav.syfo.dialogmote.domain
 import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerArbeidstakerVarselDTO
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.varsel.MotedeltakerVarselType
+import no.nav.syfo.varsel.arbeidstaker.domain.ArbeidstakerVarselDTO
 import no.nav.syfo.varsel.toJournalpostTittel
 import java.time.LocalDateTime
 import java.util.*
@@ -33,6 +35,23 @@ fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselD
         fritekst = this.fritekst,
         document = this.document,
     )
+
+fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerVarselDTO(
+    dialogmoteTidSted: DialogmoteTidSted,
+    virksomhetsummer: Virksomhetsnummer,
+) = ArbeidstakerVarselDTO(
+    uuid = this.uuid.toString(),
+    createdAt = this.createdAt,
+    varselType = this.varselType.name,
+    digitalt = this.digitalt,
+    lestDato = this.lestDato,
+    fritekst = this.fritekst,
+    sted = dialogmoteTidSted.sted,
+    tid = dialogmoteTidSted.tid,
+    videoLink = dialogmoteTidSted.videoLink,
+    virksomhetsnummer = virksomhetsummer.value,
+    document = this.document,
+)
 
 fun DialogmotedeltakerArbeidstakerVarsel.toJournalpostRequest(
     personIdent: PersonIdentNumber,

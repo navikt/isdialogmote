@@ -7,7 +7,7 @@ import io.ktor.routing.*
 import no.nav.syfo.application.api.authentication.personIdent
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.dialogmote.domain.toDialogmoteDTO
+import no.nav.syfo.dialogmote.domain.toArbeidstakerVarselDTOList
 import no.nav.syfo.util.callIdArgument
 import no.nav.syfo.util.getCallId
 import org.slf4j.Logger
@@ -31,12 +31,10 @@ fun Route.registerArbeidstakerVarselApi(
                 val requestPersonIdent = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
-                val dialogmoteDTOList = dialogmoteService.getDialogmoteList(
-                    personIdentNumber = requestPersonIdent
-                ).map { dialogmote ->
-                    dialogmote.toDialogmoteDTO()
-                }
-                call.respond(dialogmoteDTOList)
+                val arbeidstakerVarselDTOList = dialogmoteService.getDialogmoteList(
+                    personIdentNumber = requestPersonIdent,
+                ).toArbeidstakerVarselDTOList()
+                call.respond(arbeidstakerVarselDTOList)
             } catch (e: IllegalArgumentException) {
                 val illegalArgumentMessage = "Could not retrieve VarselList"
                 log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))

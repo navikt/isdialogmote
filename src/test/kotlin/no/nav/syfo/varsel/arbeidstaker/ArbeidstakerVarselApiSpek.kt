@@ -9,15 +9,13 @@ import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.moteplanlegger.domain.*
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
-import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
-import no.nav.syfo.varsel.MotedeltakerVarselType
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.varsel.arbeidstaker.domain.ArbeidstakerVarselDTO
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -104,13 +102,11 @@ class ArbeidstakerVarselApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                            val arbeidstakerVarselList = objectMapper.readValue<List<ArbeidstakerVarselDTO>>(response.content!!)
 
-                            dialogmoteList.size shouldBeEqualTo 1
+                            arbeidstakerVarselList.size shouldBeEqualTo 1
 
-                            val dialogmoteDTO = dialogmoteList.first()
-
-                            val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
+                            val arbeidstakerVarselDTO = arbeidstakerVarselList.first()
                             arbeidstakerVarselDTO.shouldNotBeNull()
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
@@ -135,28 +131,15 @@ class ArbeidstakerVarselApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                            val arbeidstakerVarselList = objectMapper.readValue<List<ArbeidstakerVarselDTO>>(response.content!!)
+                            arbeidstakerVarselList.size shouldBeEqualTo 1
 
-                            dialogmoteList.size shouldBeEqualTo 1
-
-                            val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.planlagtMoteUuid shouldBeEqualTo planlagtmoteUUID
-                            dialogmoteDTO.planlagtMoteBekreftetTidspunkt.shouldNotBeNull()
-                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
-
-                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo planlagtMoteDTO?.fnr
-                            val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
-                                it.varselType == MotedeltakerVarselType.INNKALT.name
-                            }
+                            val arbeidstakerVarselDTO = arbeidstakerVarselList.first()
                             arbeidstakerVarselDTO.shouldNotBeNull()
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
                             arbeidstakerVarselDTO.lestDato.shouldNotBeNull()
-
-                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo planlagtMoteDTO?.arbeidsgiver()?.orgnummer
-
-                            dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
-                            val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
-                            dialogmoteTidStedDTO.sted shouldBeEqualTo planlagtMoteDTO?.tidStedValgt()?.sted
+                            arbeidstakerVarselDTO.virksomhetsnummer shouldBeEqualTo planlagtMoteDTO?.arbeidsgiver()?.orgnummer
+                            arbeidstakerVarselDTO.sted shouldBeEqualTo planlagtMoteDTO?.tidStedValgt()?.sted
                             val isTodayBeforeDialogmotetid = LocalDateTime.now().isBefore(planlagtMoteDTO?.tidStedValgt()?.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo true
 
