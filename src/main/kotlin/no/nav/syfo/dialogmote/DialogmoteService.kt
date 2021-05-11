@@ -111,12 +111,12 @@ class DialogmoteService(
 
             val pdfInnkallingArbeidstaker = pdfGenClient.pdfInnkallingArbeidstaker(
                 callId = callId,
-                pdfBody = newDialogmote.toPdfModelInnkallingArbeidstaker()
+                documentComponentDTOList = newDialogmoteDTO.arbeidstaker.innkalling,
             ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidstaker")
 
             val pdfInnkallingArbeidsgiver = pdfGenClient.pdfInnkallingArbeidsgiver(
                 callId = callId,
-                pdfBody = newDialogmote.toPdfModelInnkallingArbeidsgiver()
+                documentComponentDTOList = newDialogmoteDTO.arbeidsgiver.innkalling,
             ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidsgiver")
 
             val createdDialogmoteIdentifiers: CreatedDialogmoteIdentifiers

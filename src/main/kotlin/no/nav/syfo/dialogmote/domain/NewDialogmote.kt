@@ -33,26 +33,6 @@ data class NewDialogmoteTidSted(
     val videoLink: String? = "",
 )
 
-fun NewDialogmote.toPdfModelInnkallingArbeidstaker() =
-    PdfModelInnkallingArbeidstaker(
-        innkalling = InnkallingArbeidstaker(
-            tidOgSted = InnkallingArbeidstakerTidOgSted(
-                sted = this.tidSted.sted,
-                videoLink = this.tidSted.videoLink,
-            ),
-        ),
-    )
-
-fun NewDialogmote.toPdfModelInnkallingArbeidsgiver() =
-    PdfModelInnkallingArbeidsgiver(
-        innkalling = InnkallingArbeidsgiver(
-            tidOgSted = InnkallingArbeidsgiverTidOgSted(
-                sted = this.tidSted.sted,
-                videoLink = this.tidSted.videoLink,
-            ),
-        ),
-    )
-
 fun NewDialogmoteTidSted.toPdfModelEndringTidStedArbeidstaker() =
     PdfModelEndringTidStedArbeidstaker(
         endring = EndringTidStedArbeidstaker(
