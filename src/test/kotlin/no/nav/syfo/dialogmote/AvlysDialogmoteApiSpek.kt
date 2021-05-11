@@ -9,6 +9,7 @@ import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.dialogmote.api.*
 import no.nav.syfo.dialogmote.api.domain.AvlysDialogmoteDTO
+import no.nav.syfo.dialogmote.api.domain.AvlysningDTO
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.*
@@ -105,8 +106,8 @@ class AvlysDialogmoteApiSpek : Spek({
                         val urlMoteUUIDAvlys =
                             "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
                         val avlysDialogMoteDto = AvlysDialogmoteDTO(
-                            begrunnelseTilArbeidstaker = "Passer ikke for sjefen",
-                            begrunnelseTilArbeidsgiver = "Arbeidsgiver kan ikke"
+                            arbeidstaker = AvlysningDTO(begrunnelse = "Passer ikke for sjefen", avlysning = emptyList()),
+                            arbeidsgiver = AvlysningDTO(begrunnelse = "Arbeidsgiver kan ikke", avlysning = emptyList())
                         )
 
                         with(

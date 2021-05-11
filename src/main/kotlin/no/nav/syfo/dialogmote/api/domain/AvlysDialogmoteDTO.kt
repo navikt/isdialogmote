@@ -1,6 +1,13 @@
 package no.nav.syfo.dialogmote.api.domain
 
+import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
+
 data class AvlysDialogmoteDTO(
-    val begrunnelseTilArbeidstaker: String,
-    val begrunnelseTilArbeidsgiver: String
+    val arbeidstaker: AvlysningDTO,
+    val arbeidsgiver: AvlysningDTO,
+)
+
+data class AvlysningDTO(
+    val begrunnelse: String,
+    val avlysning: List<DocumentComponentDTO>,
 )

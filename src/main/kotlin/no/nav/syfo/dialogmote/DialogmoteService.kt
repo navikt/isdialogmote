@@ -138,8 +138,8 @@ class DialogmoteService(
                     varselType = MotedeltakerVarselType.INNKALT,
                     fritekstArbeidstaker = newDialogmote.arbeidstaker.fritekstInnkalling.orEmpty(),
                     fritekstArbeidsgiver = newDialogmote.arbeidsgiver.fritekstInnkalling.orEmpty(),
-                    innkallingArbeidstaker = newDialogmoteDTO.arbeidstaker.innkalling,
-                    innkallingArbeidsgiver = newDialogmoteDTO.arbeidsgiver.innkalling,
+                    documentArbeidstaker = newDialogmoteDTO.arbeidstaker.innkalling,
+                    documentArbeidsgiver = newDialogmoteDTO.arbeidsgiver.innkalling,
                 )
 
                 connection.commit()
@@ -195,8 +195,10 @@ class DialogmoteService(
                         pdfArbeidsgiver = pdfAvlysningArbeidsgiver,
                         narmesteLeder = narmesteLeder,
                         varselType = MotedeltakerVarselType.AVLYST,
-                        fritekstArbeidstaker = avlysDialogmote.begrunnelseTilArbeidstaker,
-                        fritekstArbeidsgiver = avlysDialogmote.begrunnelseTilArbeidsgiver,
+                        fritekstArbeidstaker = avlysDialogmote.arbeidstaker.begrunnelse,
+                        fritekstArbeidsgiver = avlysDialogmote.arbeidsgiver.begrunnelse,
+                        documentArbeidstaker = avlysDialogmote.arbeidstaker.avlysning,
+                        documentArbeidsgiver = avlysDialogmote.arbeidsgiver.avlysning
                     )
                 }
                 connection.commit()
@@ -269,8 +271,8 @@ class DialogmoteService(
         varselType: MotedeltakerVarselType,
         fritekstArbeidstaker: String = "",
         fritekstArbeidsgiver: String = "",
-        innkallingArbeidstaker: List<DocumentComponentDTO> = emptyList(),
-        innkallingArbeidsgiver: List<DocumentComponentDTO> = emptyList(),
+        documentArbeidstaker: List<DocumentComponentDTO> = emptyList(),
+        documentArbeidsgiver: List<DocumentComponentDTO> = emptyList(),
     ) {
         val (_, varselArbeidstakerId) = connection.createMotedeltakerVarselArbeidstaker(
             commit = false,
@@ -280,7 +282,7 @@ class DialogmoteService(
             digitalt = true,
             pdf = pdfArbeidstaker,
             fritekst = fritekstArbeidstaker,
-            document = innkallingArbeidstaker,
+            document = documentArbeidstaker,
         )
         connection.createMotedeltakerVarselArbeidsgiver(
             commit = false,
@@ -289,7 +291,7 @@ class DialogmoteService(
             varselType = varselType,
             pdf = pdfArbeidsgiver,
             fritekst = fritekstArbeidsgiver,
-            document = innkallingArbeidsgiver,
+            document = documentArbeidsgiver,
         )
         val now = LocalDateTime.now()
         arbeidstakerVarselService.sendVarsel(
