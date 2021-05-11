@@ -1,5 +1,7 @@
 package no.nav.syfo.varsel
 
+import no.nav.syfo.client.dokarkiv.domain.BrevkodeType
+
 enum class MotedeltakerVarselType {
     AVLYST,
     INNKALT,
@@ -7,10 +9,29 @@ enum class MotedeltakerVarselType {
 }
 
 fun MotedeltakerVarselType.toJournalpostTittel(): String {
-    when (this) {
-        MotedeltakerVarselType.INNKALT -> {
-            return "Innkalling til dialogmøte"
+    return when (this) {
+        MotedeltakerVarselType.AVLYST -> {
+            "Avlysning av innkalt dialogmøte"
         }
-        else -> throw RuntimeException("No JournalpostTittel was found for MotedeltakerVarselType")
+        MotedeltakerVarselType.INNKALT -> {
+            "Innkalling til dialogmøte"
+        }
+        MotedeltakerVarselType.NYTT_TID_STED -> {
+            "Endring av tid og sted for innkalt dialogmøte"
+        }
+    }
+}
+
+fun MotedeltakerVarselType.toBrevkodeType(): BrevkodeType {
+    return when (this) {
+        MotedeltakerVarselType.AVLYST -> {
+            BrevkodeType.DIALOGMOTE_AVLYSNING
+        }
+        MotedeltakerVarselType.INNKALT -> {
+            BrevkodeType.DIALOGMOTE_INNKALLING
+        }
+        MotedeltakerVarselType.NYTT_TID_STED -> {
+            BrevkodeType.DIALOGMOTE_ENDRING_TID_STED
+        }
     }
 }

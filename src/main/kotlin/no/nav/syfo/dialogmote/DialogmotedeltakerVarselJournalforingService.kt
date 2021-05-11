@@ -43,6 +43,8 @@ class DialogmotedeltakerVarselJournalforingService(
     }
 
     private val journalforingVarselTypeList = listOf(
+        MotedeltakerVarselType.AVLYST,
         MotedeltakerVarselType.INNKALT,
+        MotedeltakerVarselType.NYTT_TID_STED,
     )
 }
