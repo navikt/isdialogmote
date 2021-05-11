@@ -195,8 +195,8 @@ class DialogmoteService(
                         pdfArbeidsgiver = pdfAvlysningArbeidsgiver,
                         narmesteLeder = narmesteLeder,
                         varselType = MotedeltakerVarselType.AVLYST,
-                        fritekstArbeidstaker = avlysDialogmote.fritekst.orEmpty(),
-                        fritekstArbeidsgiver = avlysDialogmote.fritekst.orEmpty(),
+                        fritekstArbeidstaker = avlysDialogmote.begrunnelseTilArbeidstaker,
+                        fritekstArbeidsgiver = avlysDialogmote.begrunnelseTilArbeidsgiver,
                     )
                 }
                 connection.commit()

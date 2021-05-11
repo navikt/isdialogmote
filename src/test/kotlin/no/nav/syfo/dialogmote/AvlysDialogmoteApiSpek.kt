@@ -104,7 +104,10 @@ class AvlysDialogmoteApiSpek : Spek({
 
                         val urlMoteUUIDAvlys =
                             "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
-                        val avlysDialogMoteDto = AvlysDialogmoteDTO(fritekst = "Passer ikke")
+                        val avlysDialogMoteDto = AvlysDialogmoteDTO(
+                            begrunnelseTilArbeidstaker = "Passer ikke for sjefen",
+                            begrunnelseTilArbeidsgiver = "Arbeidsgiver kan ikke"
+                        )
 
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
@@ -139,9 +142,14 @@ class AvlysDialogmoteApiSpek : Spek({
                             arbeidstakerVarselDTO.shouldNotBeNull()
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
-                            arbeidstakerVarselDTO.fritekst shouldBeEqualTo "Passer ikke"
+                            arbeidstakerVarselDTO.fritekst shouldBeEqualTo "Passer ikke for sjefen"
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                            val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.find {
+                                it.varselType == MotedeltakerVarselType.AVLYST.name
+                            }
+                            arbeidsgiverVarselDTO.shouldNotBeNull()
+                            arbeidsgiverVarselDTO.fritekst shouldBeEqualTo "Arbeidsgiver kan ikke"
 
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
