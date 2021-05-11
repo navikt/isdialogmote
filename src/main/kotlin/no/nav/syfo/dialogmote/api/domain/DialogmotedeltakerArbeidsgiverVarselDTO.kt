@@ -7,7 +7,6 @@ data class DialogmotedeltakerArbeidsgiverVarselDTO(
     val uuid: String,
     val createdAt: LocalDateTime,
     val varselType: String,
-    val pdf: ByteArray,
     val lestDato: LocalDateTime?,
     val fritekst: String,
     val document: List<DocumentComponentDTO>,
