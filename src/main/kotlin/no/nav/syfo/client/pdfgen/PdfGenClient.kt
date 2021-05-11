@@ -8,6 +8,7 @@ import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.client.pdfgen.model.*
+import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.callIdArgument
 import org.slf4j.LoggerFactory
@@ -79,23 +80,23 @@ class PdfGenClient(
 
     suspend fun pdfInnkallingArbeidstaker(
         callId: String,
-        pdfBody: PdfModelInnkallingArbeidstaker,
+        documentComponentDTOList: List<DocumentComponentDTO>,
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            pdfBody = pdfBody,
-            pdfUrl = innkallingArbeidstakerUrl
+            pdfBody = documentComponentDTOList,
+            pdfUrl = innkallingArbeidstakerUrl,
         )
     }
 
     suspend fun pdfInnkallingArbeidsgiver(
         callId: String,
-        pdfBody: PdfModelInnkallingArbeidsgiver,
+        documentComponentDTOList: List<DocumentComponentDTO>,
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            pdfBody = pdfBody,
-            pdfUrl = innkallingArbeidsgiverUrl
+            pdfBody = documentComponentDTOList,
+            pdfUrl = innkallingArbeidsgiverUrl,
         )
     }
 
