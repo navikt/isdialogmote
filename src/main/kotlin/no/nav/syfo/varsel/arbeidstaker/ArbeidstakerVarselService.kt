@@ -1,8 +1,7 @@
 package no.nav.syfo.varsel.arbeidstaker
 
 import no.nav.brukernotifikasjon.schemas.*
-import no.nav.brukernotifikasjon.schemas.builders.DoneBuilder
-import no.nav.brukernotifikasjon.schemas.builders.OppgaveBuilder
+import no.nav.brukernotifikasjon.schemas.builders.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.varsel.MotedeltakerVarselType
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
@@ -22,9 +21,9 @@ class ArbeidstakerVarselService(
         motedeltakerArbeidstakerUuid: UUID,
         varselUuid: UUID,
     ) {
-        val nokkel = Nokkel(
-            serviceuserUsername,
-            varselUuid.toString()
+        val nokkel = createBrukernotifikasjonNokkel(
+            serviceuser = serviceuserUsername,
+            varselUuid = varselUuid,
         )
         when (type) {
             MotedeltakerVarselType.INNKALT -> {
@@ -74,9 +73,9 @@ class ArbeidstakerVarselService(
         motedeltakerArbeidstakerUuid: UUID,
         varselUuid: UUID,
     ) {
-        val nokkel = Nokkel(
-            serviceuserUsername,
-            varselUuid.toString()
+        val nokkel = createBrukernotifikasjonNokkel(
+            serviceuser = serviceuserUsername,
+            varselUuid = varselUuid
         )
         val done = createBrukernotifikasjonDone(
             personIdent = personIdent,
@@ -88,6 +87,14 @@ class ArbeidstakerVarselService(
         )
     }
 }
+
+fun createBrukernotifikasjonNokkel(
+    serviceuser: String,
+    varselUuid: UUID,
+): Nokkel = NokkelBuilder()
+    .withSystembruker(serviceuser)
+    .withEventId(varselUuid.toString())
+    .build()
 
 fun createBrukernotifikasjonOppgave(
     createdAt: LocalDateTime,
