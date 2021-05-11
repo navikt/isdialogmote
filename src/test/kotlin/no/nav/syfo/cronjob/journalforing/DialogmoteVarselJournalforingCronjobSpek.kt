@@ -70,20 +70,11 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             }
 
             beforeGroup {
-                startExternalMocks(
-                    applicationMockMap = externalMockEnvironment.externalApplicationMockMap,
-                    embeddedKafkaEnvironment = externalMockEnvironment.embeddedEnvironment,
-                    embeddedRedisServer = externalMockEnvironment.redisServer,
-                )
+                externalMockEnvironment.startExternalMocks()
             }
 
             afterGroup {
-                stopExternalMocks(
-                    applicationMockMap = externalMockEnvironment.externalApplicationMockMap,
-                    database = externalMockEnvironment.database,
-                    embeddedKafkaEnvironment = externalMockEnvironment.embeddedEnvironment,
-                    embeddedRedisServer = externalMockEnvironment.redisServer,
-                )
+                externalMockEnvironment.stopExternalMocks()
             }
 
             describe("Journalfor ArbeidstakerVarsel with type Innkalling") {

@@ -1,5 +1,6 @@
 package no.nav.syfo.testhelper
 
+import io.ktor.server.netty.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.testhelper.mock.*
@@ -39,4 +40,32 @@ class ExternalMockEnvironment {
 
     val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
     val wellKnownVeileder = wellKnownSelvbetjeningMock()
+}
+
+fun ExternalMockEnvironment.startExternalMocks() {
+    this.externalApplicationMockMap.start()
+    this.embeddedEnvironment.start()
+    this.redisServer.start()
+}
+
+fun ExternalMockEnvironment.stopExternalMocks() {
+    this.externalApplicationMockMap.stop()
+    this.database.stop()
+    this.embeddedEnvironment.tearDown()
+    this.redisServer.stop()
+}
+
+fun HashMap<String, NettyApplicationEngine>.start() {
+    this.forEach {
+        it.value.start()
+    }
+}
+
+fun HashMap<String, NettyApplicationEngine>.stop(
+    gracePeriodMillis: Long = 1L,
+    timeoutMillis: Long = 10L,
+) {
+    this.forEach {
+        it.value.stop(gracePeriodMillis, timeoutMillis)
+    }
 }
