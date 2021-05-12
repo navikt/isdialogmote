@@ -17,3 +17,9 @@ spec:
       description: "Det er ingen pods for app kjørende i namespace og dermed er appen nede"
       action: "Undersøk hvorfor pods er nede og få den kjørende igjen!"
       severity: danger
+    - alert: FAILURES IN CRONJOB FOR JOURNALFORING
+      expr: sum(increase(isdialogmote_cronjob_journalforing_fail_count{app="isdialogmote"} [1h])) > 0
+      for: 5m
+      description: "{{ $labels.app }} klarer ikke å journalføre en eller flere Varsel."
+      action: "Undersøk hvorfor det feiler i logger og om det er en midlertidig feil eller ikke."
+      severity: danger
