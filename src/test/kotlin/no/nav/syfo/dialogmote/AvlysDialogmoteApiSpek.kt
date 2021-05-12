@@ -8,13 +8,12 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.dialogmote.api.*
-import no.nav.syfo.dialogmote.api.domain.AvlysDialogmoteDTO
-import no.nav.syfo.dialogmote.api.domain.AvlysningDTO
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.testhelper.generator.generateAvlysDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -105,10 +104,7 @@ class AvlysDialogmoteApiSpek : Spek({
 
                         val urlMoteUUIDAvlys =
                             "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
-                        val avlysDialogMoteDto = AvlysDialogmoteDTO(
-                            arbeidstaker = AvlysningDTO(begrunnelse = "Passer ikke for sjefen", avlysning = emptyList()),
-                            arbeidsgiver = AvlysningDTO(begrunnelse = "Arbeidsgiver kan ikke", avlysning = emptyList())
-                        )
+                        val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
 
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
@@ -143,14 +139,14 @@ class AvlysDialogmoteApiSpek : Spek({
                             arbeidstakerVarselDTO.shouldNotBeNull()
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
-                            arbeidstakerVarselDTO.fritekst shouldBeEqualTo "Passer ikke for sjefen"
+                            arbeidstakerVarselDTO.fritekst shouldBeEqualTo avlysDialogMoteDto.arbeidstaker.begrunnelse
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
                             val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.find {
                                 it.varselType == MotedeltakerVarselType.AVLYST.name
                             }
                             arbeidsgiverVarselDTO.shouldNotBeNull()
-                            arbeidsgiverVarselDTO.fritekst shouldBeEqualTo "Arbeidsgiver kan ikke"
+                            arbeidsgiverVarselDTO.fritekst shouldBeEqualTo avlysDialogMoteDto.arbeidsgiver.begrunnelse
 
                             dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
                             val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
