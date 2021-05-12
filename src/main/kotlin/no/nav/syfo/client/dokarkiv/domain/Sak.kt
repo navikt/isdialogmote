@@ -10,7 +10,7 @@ data class Sak private constructor(
     val sakstype: String,
 ) {
     companion object {
-        fun create(
+        operator fun invoke(
             sakstype: SaksType,
         ) = Sak(
             sakstype = sakstype.value,

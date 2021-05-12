@@ -80,9 +80,9 @@ fun createJournalpostRequest(
     } else {
         JournalpostKanal.SENTRAL_UTSKRIFT
     }
-    val sak = Sak.create(
+    val sak = Sak.invoke(
         sakstype = SaksType.GENERELL,
-    )
+    ).copy(sakstype = "")
     val dokumenter = createDokumentList(
         brevkodeType = brevkodeType,
         dokumentNavn = dokumentName,
