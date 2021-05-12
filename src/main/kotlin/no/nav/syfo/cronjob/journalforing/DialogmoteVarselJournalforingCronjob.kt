@@ -4,6 +4,8 @@ import kotlinx.coroutines.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.client.dokarkiv.DokarkivClient
+import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL
+import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalforingService
 import no.nav.syfo.dialogmote.domain.toJournalpostRequest
@@ -76,10 +78,12 @@ class DialogmoteVarselJournalforingCronjob(
                         it,
                     )
                     journalforingResult.updated++
+                    COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE.inc()
                 } ?: throw RuntimeException("Failed to Journalfor ArbeidstakerVarsel: response missing JournalpostId")
             } catch (e: Exception) {
                 log.error("Exception caught while attempting Journalforing of ArbeidstakerVarsel", e)
                 journalforingResult.failed++
+                COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL.inc()
             }
         }
         return journalforingResult
