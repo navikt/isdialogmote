@@ -18,6 +18,7 @@ data class DialogmoteTidSted(
 fun DialogmoteTidSted.toDialogmoteTidStedDTO() =
     DialogmoteTidStedDTO(
         uuid = this.uuid.toString(),
+        createdAt = this.createdAt,
         sted = this.sted,
         tid = this.tid,
         videoLink = this.videoLink,
