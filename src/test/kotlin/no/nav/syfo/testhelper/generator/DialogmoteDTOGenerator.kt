@@ -8,6 +8,18 @@ import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import java.time.LocalDateTime
 
+fun generateAvlysningDTO() =
+    AvlysningDTO(
+        begrunnelse = "Passer ikke",
+        avlysning = emptyList(),
+    )
+
+fun generateAvlysDialogmoteDTO() =
+    AvlysDialogmoteDTO(
+        arbeidstaker = generateAvlysningDTO(),
+        arbeidsgiver = generateAvlysningDTO(),
+    )
+
 fun generateNewDialogmoteTidStedDTO() = NewDialogmoteTidStedDTO(
     sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
     tid = LocalDateTime.now().plusDays(30),

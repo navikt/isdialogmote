@@ -4,9 +4,8 @@ import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerArbeidstakerVarselDTO
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
-import no.nav.syfo.varsel.MotedeltakerVarselType
+import no.nav.syfo.varsel.*
 import no.nav.syfo.varsel.arbeidstaker.domain.ArbeidstakerVarselDTO
-import no.nav.syfo.varsel.toJournalpostTittel
 import java.time.LocalDateTime
 import java.util.*
 
@@ -59,5 +58,6 @@ fun DialogmotedeltakerArbeidstakerVarsel.toJournalpostRequest(
     personIdent = personIdent,
     digitalt = this.digitalt,
     dokumentName = this.varselType.toJournalpostTittel(),
+    brevkodeType = this.varselType.toBrevkodeType(),
     dokumentPdf = this.pdf,
 )

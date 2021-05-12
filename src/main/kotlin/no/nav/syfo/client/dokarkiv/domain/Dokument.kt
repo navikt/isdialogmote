@@ -4,6 +4,8 @@ package no.nav.syfo.client.dokarkiv.domain
 enum class BrevkodeType(
     val value: String,
 ) {
+    DIALOGMOTE_AVLYSNING("OPPF_DM_AVLYS_AT"),
+    DIALOGMOTE_ENDRING_TID_STED("OPPF_DM_ENDR_AT"),
     DIALOGMOTE_INNKALLING("OPPF_DM_INK_AT"),
 }
 

@@ -61,6 +61,7 @@ data class JournalpostRequest private constructor(
 
 fun createJournalpostRequest(
     personIdent: PersonIdentNumber,
+    brevkodeType: BrevkodeType,
     digitalt: Boolean,
     dokumentName: String,
     dokumentPdf: ByteArray,
@@ -83,6 +84,7 @@ fun createJournalpostRequest(
         sakstype = SaksType.GENERELL,
     )
     val dokumenter = createDokumentList(
+        brevkodeType = brevkodeType,
         dokumentNavn = dokumentName,
         dokumentPdf = dokumentPdf,
     )
@@ -100,6 +102,7 @@ fun createJournalpostRequest(
 }
 
 private fun createDokumentList(
+    brevkodeType: BrevkodeType,
     dokumentNavn: String,
     dokumentPdf: ByteArray,
 ): List<Dokument> {
@@ -113,7 +116,7 @@ private fun createDokumentList(
     )
     return listOf(
         Dokument.create(
-            brevkode = BrevkodeType.DIALOGMOTE_INNKALLING,
+            brevkode = brevkodeType,
             dokumentvarianter = dokumentvariantList,
             tittel = dokumentNavn,
         )
