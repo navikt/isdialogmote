@@ -50,6 +50,12 @@ fun List<Dialogmote>.toArbeidstakerVarselDTOList(): List<ArbeidstakerVarselDTO> 
     }.flatten()
 }
 
+fun List<Dialogmote>.anyUnfinished(): Boolean {
+    return this.any {
+        it.status.unfinished()
+    }
+}
+
 fun Dialogmote.toPdfModelAvlysningArbeidstaker() =
     PdfModelAvlysningArbeidstaker(
         avlysning = AvlysningArbeidstaker(
