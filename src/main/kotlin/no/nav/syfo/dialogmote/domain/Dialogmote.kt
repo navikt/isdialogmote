@@ -43,6 +43,7 @@ fun List<Dialogmote>.toArbeidstakerVarselDTOList(): List<ArbeidstakerVarselDTO> 
         dialogmote.arbeidstaker.varselList.map {
             it.toArbeidstakerVarselDTO(
                 dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
+                deltakerUuid = dialogmote.arbeidstaker.uuid,
                 virksomhetsummer = dialogmote.arbeidsgiver.virksomhetsnummer,
             )
         }
