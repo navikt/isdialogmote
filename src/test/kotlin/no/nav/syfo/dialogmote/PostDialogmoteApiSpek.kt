@@ -137,10 +137,8 @@ class PostDialogmoteApiSpek : Spek({
                             arbeidsgiverVarselDTO.lestDato.shouldBeNull()
                             arbeidsgiverVarselDTO.fritekst shouldBeEqualTo "Ipsum lorum arbeidsgiver"
 
-                            dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
-                            val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
-                            dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
-                            dialogmoteTidStedDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
+                            dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }
@@ -188,10 +186,8 @@ class PostDialogmoteApiSpek : Spek({
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
 
-                            dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
-                            val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
-                            dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
-                            dialogmoteTidStedDTO.videoLink shouldBeEqualTo ""
+                            dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            dialogmoteDTO.videoLink shouldBeEqualTo ""
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }

@@ -106,10 +106,8 @@ class GetDialogmoteApiSpek : Spek({
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
 
-                            dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
-                            val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
-                            dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
-                            dialogmoteTidStedDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
+                            dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
                         }
                     }
 
@@ -145,10 +143,8 @@ class GetDialogmoteApiSpek : Spek({
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
 
-                            dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
-                            val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
-                            dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
-                            dialogmoteTidStedDTO.videoLink shouldBeEqualTo ""
+                            dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            dialogmoteDTO.videoLink shouldBeEqualTo ""
                         }
                     }
                 }

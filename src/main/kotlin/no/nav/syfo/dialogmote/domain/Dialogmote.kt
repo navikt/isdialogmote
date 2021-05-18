@@ -20,8 +20,9 @@ data class Dialogmote(
     val tidStedList: List<DialogmoteTidSted>,
 )
 
-fun Dialogmote.toDialogmoteDTO() =
-    DialogmoteDTO(
+fun Dialogmote.toDialogmoteDTO(): DialogmoteDTO {
+    val dialogmoteTidSted = this.tidStedList.latest()!!
+    return DialogmoteDTO(
         uuid = this.uuid.toString(),
         createdAt = this.createdAt,
         updatedAt = this.updatedAt,
@@ -31,10 +32,11 @@ fun Dialogmote.toDialogmoteDTO() =
         tildeltEnhet = this.tildeltEnhet,
         arbeidstaker = this.arbeidstaker.toDialogmotedeltakerArbeidstakerDTO(),
         arbeidsgiver = this.arbeidsgiver.toDialogmotedeltakerArbeidsgiverDTO(),
-        tidStedList = this.tidStedList.map {
-            it.toDialogmoteTidStedDTO()
-        },
+        sted = dialogmoteTidSted.sted,
+        tid = dialogmoteTidSted.tid,
+        videoLink = dialogmoteTidSted.videoLink,
     )
+}
 
 fun List<Dialogmote>.toArbeidstakerVarselDTOList(): List<ArbeidstakerVarselDTO> {
     return this.map { dialogmote ->

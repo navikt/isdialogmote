@@ -144,13 +144,8 @@ class PostDialogmoteTidStedApiSpek : Spek({
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
 
-                            dialogmoteDTO.tidStedList.size shouldBeEqualTo 2
-                            val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
-                            dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
-
-                            val dialogmoteTidStedDTOLast = dialogmoteDTO.tidStedList.last()
-                            dialogmoteTidStedDTOLast.sted shouldBeEqualTo newDialogmoteTidSted.sted
-                            dialogmoteTidStedDTOLast.videoLink shouldBeEqualTo "https://meet.google.com/zyx"
+                            dialogmoteDTO.sted shouldBeEqualTo newDialogmoteTidSted.sted
+                            dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/zyx"
 
                             verify(exactly = 2) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }
