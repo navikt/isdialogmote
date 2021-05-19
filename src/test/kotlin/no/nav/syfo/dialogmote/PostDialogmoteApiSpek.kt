@@ -58,25 +58,28 @@ class PostDialogmoteApiSpek : Spek({
                 externalMockEnvironment.stopExternalMocks()
             }
 
+            val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
+
             describe("Create Dialogmote for PersonIdent payload") {
                 val validToken = generateJWT(
                     externalMockEnvironment.environment.loginserviceClientId,
                     externalMockEnvironment.wellKnownVeileder.issuer,
                     VEILEDER_IDENT,
                 )
+
+                beforeEachTest {
+                    clearMocks(brukernotifikasjonProducer)
+                    justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                    clearMocks(mqSenderMock)
+                    justRun { mqSenderMock.sendMQMessage(any(), any()) }
+                }
+
+                afterEachTest {
+                    database.dropData()
+                }
+
                 describe("Happy path") {
-                    beforeEachTest {
-                        clearMocks(brukernotifikasjonProducer)
-                        justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-                        clearMocks(mqSenderMock)
-                        justRun { mqSenderMock.sendMQMessage(any(), any()) }
-                    }
 
-                    afterEachTest {
-                        database.dropData()
-                    }
-
-                    val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
                     val urlMoter = "$dialogmoteApiBasepath$dialogmoteApiPersonIdentUrlPath"
 
                     it("should return OK if request is successful") {
@@ -195,9 +198,6 @@ class PostDialogmoteApiSpek : Spek({
                 }
 
                 describe("Unhappy paths") {
-                    clearMocks(mqSenderMock)
-                    clearMocks(brukernotifikasjonProducer)
-
                     val url = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
                     it("should return status Unauthorized if no token is supplied") {
                         with(
@@ -265,6 +265,34 @@ class PostDialogmoteApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
                             verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
+                        }
+                    }
+
+                    it("should return Forbidden if requesting to create Dialogmote for PersonIdent with an existing unfinished Dialogmote") {
+                        val newDialogmoteDTO = generateNewDialogmoteDTOWithMissingValues(ARBEIDSTAKER_FNR)
+
+                        with(
+                            handleRequest(HttpMethod.Post, url) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            clearMocks(mqSenderMock)
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMote) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            clearMocks(mqSenderMock)
                         }
                     }
                 }

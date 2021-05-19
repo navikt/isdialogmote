@@ -86,6 +86,12 @@ class DialogmoteService(
         token: String,
     ): Boolean {
         val personIdentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
+
+        val anyUnfinishedDialogmote = getDialogmoteList(personIdentNumber).anyUnfinished()
+        if (anyUnfinishedDialogmote) {
+            throw IllegalStateException("Denied access to create Dialogmote: unfinished Dialogmote exists for PersonIdent")
+        }
+
         val virksomhetsnummer = Virksomhetsnummer(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer)
         val narmesteLeder = narmesteLederClient.activeLeader(
             personIdentNumber = personIdentNumber,

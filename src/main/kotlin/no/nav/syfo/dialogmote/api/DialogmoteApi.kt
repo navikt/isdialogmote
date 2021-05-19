@@ -86,6 +86,10 @@ fun Route.registerDialogmoteApi(
                 val illegalArgumentMessage = "Could not create new Dialogmote"
                 log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            } catch (e: IllegalStateException) {
+                val illegalStateExceptionMessage = "Could not create new Dialogmote"
+                log.warn("$illegalStateExceptionMessage: {}, {}", e.message, callIdArgument(callId))
+                call.respond(HttpStatusCode.Forbidden, e.message ?: illegalStateExceptionMessage)
             }
         }
     }
