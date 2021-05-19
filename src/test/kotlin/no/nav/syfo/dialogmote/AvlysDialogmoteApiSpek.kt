@@ -148,9 +148,7 @@ class AvlysDialogmoteApiSpek : Spek({
                             arbeidsgiverVarselDTO.shouldNotBeNull()
                             arbeidsgiverVarselDTO.fritekst shouldBeEqualTo avlysDialogMoteDto.arbeidsgiver.begrunnelse
 
-                            dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
-                            val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
-                            dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             val isTodayBeforeDialogmotetid =
                                 LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo true

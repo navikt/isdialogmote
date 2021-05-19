@@ -127,9 +127,7 @@ class FerdigstillDialogmoteApiSpek : Spek({
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
 
-                            dialogmoteDTO.tidStedList.size shouldBeEqualTo 1
-                            val dialogmoteTidStedDTO = dialogmoteDTO.tidStedList.first()
-                            dialogmoteTidStedDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }
