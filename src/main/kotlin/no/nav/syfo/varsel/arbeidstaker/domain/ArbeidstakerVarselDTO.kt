@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 
 data class ArbeidstakerVarselDTO(
     val uuid: String,
+    val deltakerUuid: String,
     val createdAt: LocalDateTime,
     val varselType: String,
     val digitalt: Boolean,

@@ -37,9 +37,11 @@ fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselD
 
 fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerVarselDTO(
     dialogmoteTidSted: DialogmoteTidSted,
+    deltakerUuid: UUID,
     virksomhetsummer: Virksomhetsnummer,
 ) = ArbeidstakerVarselDTO(
     uuid = this.uuid.toString(),
+    deltakerUuid = deltakerUuid.toString(),
     createdAt = this.createdAt,
     varselType = this.varselType.name,
     digitalt = this.digitalt,
