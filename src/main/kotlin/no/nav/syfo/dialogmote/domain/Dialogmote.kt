@@ -1,6 +1,5 @@
 package no.nav.syfo.dialogmote.domain
 
-import no.nav.syfo.client.pdfgen.model.*
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.varsel.arbeidstaker.domain.ArbeidstakerVarselDTO
 import java.time.LocalDateTime
@@ -55,21 +54,3 @@ fun List<Dialogmote>.anyUnfinished(): Boolean {
         it.status.unfinished()
     }
 }
-
-fun Dialogmote.toPdfModelAvlysningArbeidstaker() =
-    PdfModelAvlysningArbeidstaker(
-        avlysning = AvlysningArbeidstaker(
-            tidOgSted = AvlysningArbeidstakerTidOgSted(
-                sted = this.tidStedList.latest()?.sted ?: ""
-            ),
-        ),
-    )
-
-fun Dialogmote.toPdfModelAvlysningArbeidsgiver() =
-    PdfModelAvlysningArbeidsgiver(
-        avlysning = AvlysningArbeidsgiver(
-            tidOgSted = AvlysningArbeidsgiverTidOgSted(
-                sted = this.tidStedList.latest()?.sted ?: ""
-            ),
-        ),
-    )
