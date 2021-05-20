@@ -1,0 +1,25 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  annotations:
+    dcat.data.nav.no/title: "Statusendringer for innkalte dialogmøte"
+    dcat.data.nav.no/description: >-
+      Topic inneholder alle statusendringer for innkalte dialogmøter.
+      En statusendring kan være en av disse typene: INNKALT, NYTT_TID_STED, AVLYST eller FERDIGSTILT
+  name: isdialogmote-dialogmote-statusendring
+  namespace: teamsykefravr
+  labels:
+    team: teamsykefravr
+spec:
+  pool: {{ kafkaPool }}
+  config:
+    cleanupPolicy: delete
+    minimumInSyncReplicas: 1
+    partitions: 1
+    replication: 3
+    retentionBytes: -1  # -1 means unlimited
+    retentionHours: -1  # -1 means unlimited
+  acl:
+    - team: teamsykefravr
+      application: isdialogmote
+      access: readwrite
