@@ -36,22 +36,22 @@ class PdfGenClient(
 
     suspend fun pdfAvlysningArbeidstaker(
         callId: String,
-        pdfBody: PdfModelAvlysningArbeidstaker,
+        documentComponentDTOList: List<DocumentComponentDTO>,
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            pdfBody = pdfBody,
+            pdfBody = documentComponentDTOList,
             pdfUrl = avlysningArbeidstakerUrl,
         )
     }
 
     suspend fun pdfAvlysningArbeidsgiver(
         callId: String,
-        pdfBody: PdfModelAvlysningArbeidsgiver,
+        documentComponentDTOList: List<DocumentComponentDTO>,
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            pdfBody = pdfBody,
+            pdfBody = documentComponentDTOList,
             pdfUrl = avlysningArbeidsgiverUrl,
         )
     }

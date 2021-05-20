@@ -165,12 +165,12 @@ class DialogmoteService(
 
         val pdfAvlysningArbeidstaker = pdfGenClient.pdfAvlysningArbeidstaker(
             callId = callId,
-            pdfBody = dialogmote.toPdfModelAvlysningArbeidstaker()
+            documentComponentDTOList = avlysDialogmote.arbeidstaker.avlysning,
         ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidstaker")
 
         val pdfAvlysningArbeidsgiver = pdfGenClient.pdfAvlysningArbeidsgiver(
             callId = callId,
-            pdfBody = dialogmote.toPdfModelAvlysningArbeidsgiver()
+            documentComponentDTOList = avlysDialogmote.arbeidsgiver.avlysning,
         ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidsgiver")
 
         val narmesteLeder = narmesteLederClient.activeLeader(
