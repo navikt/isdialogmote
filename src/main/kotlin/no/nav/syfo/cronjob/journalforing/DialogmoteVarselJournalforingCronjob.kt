@@ -32,7 +32,7 @@ class DialogmoteVarselJournalforingCronjob(
         )
         delay(initialDelay)
 
-        while (applicationState.alive) {
+        while (applicationState.ready) {
             val job = launch { run() }
             delay(intervalDelay)
             if (job.isActive) {
