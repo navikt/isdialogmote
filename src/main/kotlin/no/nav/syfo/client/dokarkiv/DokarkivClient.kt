@@ -39,19 +39,21 @@ class DokarkivClient(
                 COUNT_CALL_DOKARKIV_JOURNALPOST_SUCCESS.inc()
                 journalpostResponse
             } catch (e: ClientRequestException) {
-                handleUnexpectedResponseException(e.response)
+                handleUnexpectedResponseException(e.response, e.message)
             } catch (e: ServerResponseException) {
-                handleUnexpectedResponseException(e.response)
+                handleUnexpectedResponseException(e.response, e.message)
             }
         } ?: throw RuntimeException("Failed to Journalfor Journalpost: No accessToken was found")
     }
 
     private fun handleUnexpectedResponseException(
         response: HttpResponse,
+        message: String?,
     ): JournalpostResponse? {
         log.error(
-            "Error while requesting Dokarkiv to Journalpost PDF with {}",
-            StructuredArguments.keyValue("statusCode", response.status.value.toString())
+            "Error while requesting Dokarkiv to Journalpost PDF with {}, {}",
+            StructuredArguments.keyValue("statusCode", response.status.value.toString()),
+            StructuredArguments.keyValue("message", message),
         )
         COUNT_CALL_DOKARKIV_JOURNALPOST_FAIL.inc()
         return null
