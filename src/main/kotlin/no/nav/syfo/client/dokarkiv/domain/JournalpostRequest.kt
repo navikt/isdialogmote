@@ -82,7 +82,7 @@ fun createJournalpostRequest(
     }
     val sak = Sak.invoke(
         sakstype = SaksType.GENERELL,
-    ).copy(sakstype = "")
+    )
     val dokumenter = createDokumentList(
         brevkodeType = brevkodeType,
         dokumentNavn = dokumentName,
