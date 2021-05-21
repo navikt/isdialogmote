@@ -41,6 +41,8 @@ class DokarkivMock {
                     val journalpostRequest = call.receive<JournalpostRequest>()
                     if (journalpostRequest.bruker?.id == ARBEIDSTAKER_NO_JOURNALFORING.value) {
                         call.respond(HttpStatusCode.InternalServerError, "")
+                    } else if (journalpostRequest.sak.sakstype.trim() == "") {
+                        call.respond(HttpStatusCode.BadRequest, "")
                     } else {
                         call.respond(journalpostResponse)
                     }
