@@ -14,7 +14,7 @@ object Versions {
     const val jedisVersion = "3.5.1"
     const val kafkaVersion = "2.7.0"
     const val kafkaEmbeddedVersion = "2.5.0"
-    const val ktorVersion = "1.5.0"
+    const val ktorVersion = "1.5.4"
     const val jaxbVersion = "2.3.1"
     const val kluentVersion = "1.61"
     const val logbackVersion = "1.2.3"
@@ -31,7 +31,7 @@ object Versions {
 }
 
 plugins {
-    kotlin("jvm") version "1.4.21"
+    kotlin("jvm") version "1.4.30"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
 }
