@@ -122,16 +122,19 @@ class PostDialogmoteApiSpek : Spek({
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
                             arbeidstakerVarselDTO.fritekst shouldBeEqualTo "Ipsum lorum arbeidstaker"
 
-                            arbeidstakerVarselDTO.document.size shouldBeEqualTo 4
+                            arbeidstakerVarselDTO.document.size shouldBeEqualTo 5
                             arbeidstakerVarselDTO.document[0].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
                             arbeidstakerVarselDTO.document[0].title shouldBeEqualTo "Tittel innkalling"
+                            arbeidstakerVarselDTO.document[0].texts shouldBeEqualTo emptyList()
                             arbeidstakerVarselDTO.document[1].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
                             arbeidstakerVarselDTO.document[1].title shouldBeEqualTo "Møtetid:"
-                            arbeidstakerVarselDTO.document[1].text shouldBeEqualTo "5. mai 2021"
+                            arbeidstakerVarselDTO.document[1].texts shouldBeEqualTo listOf("5. mai 2021")
                             arbeidstakerVarselDTO.document[2].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
-                            arbeidstakerVarselDTO.document[2].text shouldBeEqualTo "Brødtekst"
+                            arbeidstakerVarselDTO.document[2].texts shouldBeEqualTo listOf("Brødtekst")
                             arbeidstakerVarselDTO.document[3].type shouldBeEqualTo DocumentComponentType.LINK
-                            arbeidstakerVarselDTO.document[3].text shouldBeEqualTo "https://nav.no/"
+                            arbeidstakerVarselDTO.document[3].texts shouldBeEqualTo listOf("https://nav.no/")
+                            arbeidstakerVarselDTO.document[4].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
+                            arbeidstakerVarselDTO.document[4].texts shouldBeEqualTo listOf("Vennlig hilsen", "NAV Staden", "Kari Saksbehandler")
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
                             dialogmoteDTO.arbeidsgiver.varselList.size shouldBeEqualTo 1
