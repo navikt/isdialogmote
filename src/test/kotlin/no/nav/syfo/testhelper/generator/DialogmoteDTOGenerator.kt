@@ -42,10 +42,31 @@ fun generateMotedeltakerArbeidstakerDTO(
 
 fun generateDocumentComponentList(): List<DocumentComponentDTO> {
     return listOf(
-        DocumentComponentDTO(DocumentComponentType.PARAGRAPH, "Tittel innkalling", null),
-        DocumentComponentDTO(DocumentComponentType.PARAGRAPH, "Møtetid:", "5. mai 2021"),
-        DocumentComponentDTO(DocumentComponentType.PARAGRAPH, null, "Brødtekst"),
-        DocumentComponentDTO(DocumentComponentType.LINK, null, "https://nav.no/"),
+        DocumentComponentDTO(
+            type = DocumentComponentType.PARAGRAPH,
+            title = "Tittel innkalling",
+            texts = emptyList(),
+        ),
+        DocumentComponentDTO(
+            type = DocumentComponentType.PARAGRAPH,
+            title = "Møtetid:",
+            texts = listOf("5. mai 2021"),
+        ),
+        DocumentComponentDTO(
+            type = DocumentComponentType.PARAGRAPH,
+            title = null,
+            texts = listOf("Brødtekst"),
+        ),
+        DocumentComponentDTO(
+            type = DocumentComponentType.LINK,
+            title = null,
+            texts = listOf("https://nav.no/"),
+        ),
+        DocumentComponentDTO(
+            type = DocumentComponentType.PARAGRAPH,
+            title = null,
+            texts = listOf("Vennlig hilsen", "NAV Staden", "Kari Saksbehandler"),
+        ),
     )
 }
 
