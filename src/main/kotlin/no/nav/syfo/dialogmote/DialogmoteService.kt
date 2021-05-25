@@ -216,17 +216,17 @@ class DialogmoteService(
     suspend fun nyttMoteinnkallingTidSted(
         callId: String,
         dialogmote: Dialogmote,
-        newDialogmoteTidSted: NewDialogmoteTidSted,
+        endreDialogmoteTidSted: EndreTidStedDialogmoteDTO,
         token: String
     ): Boolean {
         val pdfEndringArbeidstaker = pdfGenClient.pdfEndringTidStedArbeidstaker(
             callId = callId,
-            pdfBody = newDialogmoteTidSted.toPdfModelEndringTidStedArbeidstaker()
+            documentComponentDTOList = endreDialogmoteTidSted.arbeidstaker.endringsdokument
         ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidstaker")
 
         val pdfEndringArbeidsgiver = pdfGenClient.pdfEndringTidStedArbeidsgiver(
             callId = callId,
-            pdfBody = newDialogmoteTidSted.toPdfModelEndringTidStedArbeidsgiver()
+            documentComponentDTOList = endreDialogmoteTidSted.arbeidsgiver.endringsdokument
         ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidsgiver")
 
         val narmesteLeder = narmesteLederClient.activeLeader(
@@ -244,7 +244,7 @@ class DialogmoteService(
                 connection.updateMoteTidSted(
                     commit = false,
                     moteId = dialogmote.id,
-                    newDialogmoteTidSted = newDialogmoteTidSted,
+                    newDialogmoteTidSted = endreDialogmoteTidSted,
                     opprettetAv = getNAVIdentFromToken(token),
                 )
                 createAndSendVarsel(
@@ -256,7 +256,11 @@ class DialogmoteService(
                     pdfArbeidstaker = pdfEndringArbeidstaker,
                     pdfArbeidsgiver = pdfEndringArbeidsgiver,
                     narmesteLeder = narmesteLeder,
-                    varselType = MotedeltakerVarselType.NYTT_TID_STED
+                    varselType = MotedeltakerVarselType.NYTT_TID_STED,
+                    fritekstArbeidstaker = endreDialogmoteTidSted.arbeidstaker.begrunnelse,
+                    fritekstArbeidsgiver = endreDialogmoteTidSted.arbeidsgiver.begrunnelse,
+                    documentArbeidstaker = endreDialogmoteTidSted.arbeidstaker.endringsdokument,
+                    documentArbeidsgiver = endreDialogmoteTidSted.arbeidsgiver.endringsdokument,
                 )
 
                 connection.commit()

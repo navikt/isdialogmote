@@ -2,8 +2,8 @@ package no.nav.syfo.dialogmote.database
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
+import no.nav.syfo.dialogmote.domain.TidStedDTO
 import no.nav.syfo.dialogmote.database.domain.PTidSted
-import no.nav.syfo.dialogmote.domain.NewDialogmoteTidSted
 import java.sql.*
 import java.time.Instant
 import java.util.UUID
@@ -24,7 +24,7 @@ const val queryCreateTidSted =
 fun Connection.createTidSted(
     commit: Boolean = true,
     moteId: Int,
-    newDialogmoteTidSted: NewDialogmoteTidSted,
+    newDialogmoteTidSted: TidStedDTO,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 

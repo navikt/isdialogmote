@@ -32,6 +32,20 @@ fun generateNewDialogmoteTidStedDTONoVideoLink() = NewDialogmoteTidStedDTO(
     videoLink = null
 )
 
+fun generateEndreDialogmoteTidStedDTO() = EndreTidStedDialogmoteDTO(
+    sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
+    tid = LocalDateTime.now().plusDays(30),
+    videoLink = "https://meet.google.com/xyz",
+    arbeidstaker = EndreTidStedBegrunnelseDTO(
+        begrunnelse = "",
+        endringsdokument = emptyList(),
+    ),
+    arbeidsgiver = EndreTidStedBegrunnelseDTO(
+        begrunnelse = "",
+        endringsdokument = emptyList(),
+    ),
+)
+
 fun generateMotedeltakerArbeidstakerDTO(
     personIdentNumber: PersonIdentNumber,
 ) = NewDialogmotedeltakerArbeidstakerDTO(
