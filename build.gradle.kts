@@ -11,7 +11,7 @@ object Versions {
     const val flywayVersion = "7.5.2"
     const val hikariVersion = "4.0.1"
     const val jacksonVersion = "2.11.3"
-    const val jedisVersion = "3.5.1"
+    const val jedisVersion = "3.6.0"
     const val kafkaVersion = "2.7.0"
     const val kafkaEmbeddedVersion = "2.5.0"
     const val ktorVersion = "1.5.4"
