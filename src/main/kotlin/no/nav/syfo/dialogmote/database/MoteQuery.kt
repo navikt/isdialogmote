@@ -31,8 +31,9 @@ const val queryGetDialogmoteListForPersonIdent =
     """
         SELECT *
         FROM MOTE
-        left join MOTEDELTAKER_ARBEIDSTAKER on MOTEDELTAKER_ARBEIDSTAKER.mote_id = MOTE.id
+        INNER JOIN MOTEDELTAKER_ARBEIDSTAKER on MOTEDELTAKER_ARBEIDSTAKER.mote_id = MOTE.id
         WHERE personident = ?
+        ORDER BY MOTE.created_at DESC
     """
 
 fun DatabaseInterface.getDialogmoteList(personIdentNumber: PersonIdentNumber): List<PDialogmote> {
@@ -48,8 +49,9 @@ const val queryGetDialogmoteListForEnhetNr =
     """
         SELECT *
         FROM MOTE
-        left join MOTEDELTAKER_ARBEIDSTAKER on MOTEDELTAKER_ARBEIDSTAKER.mote_id = MOTE.id
+        INNER JOIN MOTEDELTAKER_ARBEIDSTAKER on MOTEDELTAKER_ARBEIDSTAKER.mote_id = MOTE.id
         WHERE tildelt_enhet = ?
+        ORDER BY MOTE.created_at DESC
     """
 
 fun DatabaseInterface.getDialogmoteList(enhetNr: EnhetNr): List<PDialogmote> {
