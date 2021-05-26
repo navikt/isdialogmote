@@ -1,6 +1,5 @@
 package no.nav.syfo.dialogmote.domain
 
-import no.nav.syfo.client.pdfgen.model.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
@@ -28,27 +27,7 @@ data class NewDialogmotedeltakerArbeidsgiver(
 )
 
 data class NewDialogmoteTidSted(
-    val sted: String,
-    val tid: LocalDateTime,
-    val videoLink: String? = "",
-)
-
-fun NewDialogmoteTidSted.toPdfModelEndringTidStedArbeidstaker() =
-    PdfModelEndringTidStedArbeidstaker(
-        endring = EndringTidStedArbeidstaker(
-            tidOgSted = EndringTidStedArbeidstakerTidOgSted(
-                sted = this.sted,
-                videoLink = this.videoLink,
-            ),
-        ),
-    )
-
-fun NewDialogmoteTidSted.toPdfModelEndringTidStedArbeidsgiver() =
-    PdfModelEndringTidStedArbeidsgiver(
-        endring = EndringTidStedArbeidsgiver(
-            tidOgSted = EndringTidStedArbeidsgiverTidOgSted(
-                sted = this.sted,
-                videoLink = this.videoLink,
-            ),
-        ),
-    )
+    override val sted: String,
+    override val tid: LocalDateTime,
+    override val videoLink: String? = "",
+) : TidStedDTO()

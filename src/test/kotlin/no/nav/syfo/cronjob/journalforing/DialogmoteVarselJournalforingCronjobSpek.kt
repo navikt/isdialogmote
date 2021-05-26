@@ -122,7 +122,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                     }
 
                     val urlMoteUUIDPostTidSted = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
-                    val newDialogmoteTidSted = generateNewDialogmoteTidStedDTO()
+                    val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTO()
                     with(
                         handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
                             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())

@@ -7,7 +7,6 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.httpClientDefault
-import no.nav.syfo.client.pdfgen.model.*
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.callIdArgument
@@ -40,7 +39,7 @@ class PdfGenClient(
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            pdfBody = documentComponentDTOList,
+            documentComponentDTOList = documentComponentDTOList,
             pdfUrl = avlysningArbeidstakerUrl,
         )
     }
@@ -51,29 +50,29 @@ class PdfGenClient(
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            pdfBody = documentComponentDTOList,
+            documentComponentDTOList = documentComponentDTOList,
             pdfUrl = avlysningArbeidsgiverUrl,
         )
     }
 
     suspend fun pdfEndringTidStedArbeidstaker(
         callId: String,
-        pdfBody: PdfModelEndringTidStedArbeidstaker,
+        documentComponentDTOList: List<DocumentComponentDTO>,
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            pdfBody = pdfBody,
+            documentComponentDTOList = documentComponentDTOList,
             pdfUrl = endringTidStedArbeidstakerUrl,
         )
     }
 
     suspend fun pdfEndringTidStedArbeidsgiver(
         callId: String,
-        pdfBody: PdfModelEndringTidStedArbeidsgiver,
+        documentComponentDTOList: List<DocumentComponentDTO>,
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            pdfBody = pdfBody,
+            documentComponentDTOList = documentComponentDTOList,
             pdfUrl = endringTidStedArbeidsgiverUrl,
         )
     }
@@ -84,7 +83,7 @@ class PdfGenClient(
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            pdfBody = documentComponentDTOList,
+            documentComponentDTOList = documentComponentDTOList,
             pdfUrl = innkallingArbeidstakerUrl,
         )
     }
@@ -95,14 +94,14 @@ class PdfGenClient(
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            pdfBody = documentComponentDTOList,
+            documentComponentDTOList = documentComponentDTOList,
             pdfUrl = innkallingArbeidsgiverUrl,
         )
     }
 
     private suspend fun getPdf(
         callId: String,
-        pdfBody: Any,
+        documentComponentDTOList: List<DocumentComponentDTO>,
         pdfUrl: String,
     ): ByteArray? {
         return try {
@@ -110,7 +109,7 @@ class PdfGenClient(
                 header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
-                body = pdfBody
+                body = documentComponentDTOList
             }
             COUNT_CALL_PDFGEN_SUCCESS.inc()
             response.receive()

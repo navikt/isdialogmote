@@ -2,6 +2,7 @@ package no.nav.syfo.dialogmote.database
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
+import no.nav.syfo.dialogmote.domain.TidStedDTO
 import no.nav.syfo.dialogmote.database.domain.PDialogmote
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.EnhetNr
@@ -185,7 +186,7 @@ fun Connection.updateMoteStatus(
 fun Connection.updateMoteTidSted(
     commit: Boolean = true,
     moteId: Int,
-    newDialogmoteTidSted: NewDialogmoteTidSted,
+    newDialogmoteTidSted: TidStedDTO,
     opprettetAv: String,
 ) {
     this.createTidSted(

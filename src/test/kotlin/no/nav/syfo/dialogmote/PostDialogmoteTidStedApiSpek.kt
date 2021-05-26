@@ -8,9 +8,8 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.dialogmote.api.*
-import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.dialogmote.domain.NewDialogmoteTidSted
+import no.nav.syfo.dialogmote.api.domain.*
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
@@ -102,10 +101,30 @@ class PostDialogmoteTidStedApiSpek : Spek({
                         }
 
                         val urlMoteUUIDPostTidSted = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
-                        val newDialogmoteTidSted = NewDialogmoteTidSted(
+                        val newDialogmoteTidSted = EndreTidStedDialogmoteDTO(
                             sted = "Et annet sted",
                             tid = newDialogmoteDTO.tidSted.tid.plusDays(1),
-                            videoLink = "https://meet.google.com/zyx"
+                            videoLink = "https://meet.google.com/zyx",
+                            arbeidstaker = EndreTidStedBegrunnelseDTO(
+                                begrunnelse = "begrunnelse arbeidstaker",
+                                endringsdokument = listOf(
+                                    DocumentComponentDTO(
+                                        type = DocumentComponentType.PARAGRAPH,
+                                        title = null,
+                                        texts = listOf("dokumenttekst arbeidstaker"),
+                                    )
+                                )
+                            ),
+                            arbeidsgiver = EndreTidStedBegrunnelseDTO(
+                                begrunnelse = "begrunnelse arbeidsgiver",
+                                endringsdokument = listOf(
+                                    DocumentComponentDTO(
+                                        type = DocumentComponentType.PARAGRAPH,
+                                        title = null,
+                                        texts = listOf("dokumenttekst arbeidsgiver"),
+                                    )
+                                )
+                            ),
                         )
 
                         with(
@@ -141,8 +160,19 @@ class PostDialogmoteTidStedApiSpek : Spek({
                             arbeidstakerVarselDTO.shouldNotBeNull()
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
+                            arbeidstakerVarselDTO.fritekst shouldBeEqualTo "begrunnelse arbeidstaker"
+                            arbeidstakerVarselDTO.document.isEmpty() shouldNotBeEqualTo true
+                            arbeidstakerVarselDTO.document.first().texts shouldBeEqualTo listOf("dokumenttekst arbeidstaker")
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                            val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.find {
+                                it.varselType == MotedeltakerVarselType.NYTT_TID_STED.name
+                            }
+                            arbeidsgiverVarselDTO.shouldNotBeNull()
+                            arbeidsgiverVarselDTO.lestDato.shouldBeNull()
+                            arbeidsgiverVarselDTO.fritekst shouldBeEqualTo "begrunnelse arbeidsgiver"
+                            arbeidsgiverVarselDTO.document.isEmpty() shouldNotBeEqualTo true
+                            arbeidsgiverVarselDTO.document.first().texts shouldBeEqualTo listOf("dokumenttekst arbeidsgiver")
 
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteTidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/zyx"

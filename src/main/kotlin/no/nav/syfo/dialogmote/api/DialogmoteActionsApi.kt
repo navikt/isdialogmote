@@ -8,7 +8,7 @@ import io.ktor.routing.*
 import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.api.domain.AvlysDialogmoteDTO
-import no.nav.syfo.dialogmote.domain.NewDialogmoteTidSted
+import no.nav.syfo.dialogmote.api.domain.EndreTidStedDialogmoteDTO
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.util.*
 import org.slf4j.Logger
@@ -72,7 +72,7 @@ fun Route.registerDialogmoteActionsApi(
 
                 val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
 
-                val newDialogmoteTidSted = call.receive<NewDialogmoteTidSted>()
+                val endreDialogmoteTidSted = call.receive<EndreTidStedDialogmoteDTO>()
 
                 val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
@@ -80,7 +80,7 @@ fun Route.registerDialogmoteActionsApi(
                     val success = dialogmoteService.nyttMoteinnkallingTidSted(
                         callId = callId,
                         dialogmote = dialogmote,
-                        newDialogmoteTidSted = newDialogmoteTidSted,
+                        endreDialogmoteTidSted = endreDialogmoteTidSted,
                         token = token
                     )
                     if (success) {
