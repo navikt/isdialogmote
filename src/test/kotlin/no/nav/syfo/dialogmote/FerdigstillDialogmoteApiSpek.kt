@@ -8,12 +8,14 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.dialogmote.api.*
-import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewReferatDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.varsel.MotedeltakerVarselType
@@ -65,6 +67,8 @@ class FerdigstillDialogmoteApiSpek : Spek({
                 )
                 describe("Happy path") {
                     val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+                    val newReferatDTO = generateNewReferatDTO()
+
                     val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
                     val urlMoter = "$dialogmoteApiBasepath$dialogmoteApiPersonIdentUrlPath"
 
@@ -96,15 +100,17 @@ class FerdigstillDialogmoteApiSpek : Spek({
 
                             val dialogmoteDTO = dialogmoteList.first()
                             dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+                            dialogmoteDTO.referat shouldBeEqualTo null
 
                             createdDialogmoteUUID = dialogmoteDTO.uuid
                         }
 
                         val urlMoteUUIDFerdigstill = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
-
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
                                 addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newReferatDTO))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -128,6 +134,18 @@ class FerdigstillDialogmoteApiSpek : Spek({
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
 
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+
+                            val referat = dialogmoteDTO.referat!!
+                            referat.situasjon shouldBeEqualTo "Dette er en beskrivelse av situasjonen"
+                            referat.document[0].type shouldBeEqualTo DocumentComponentType.HEADER
+                            referat.document[0].title shouldBeEqualTo "Tittel referat"
+                            referat.document[0].texts shouldBeEqualTo emptyList()
+
+                            referat.document[1].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
+                            referat.document[1].texts shouldBeEqualTo listOf("Brødtekst")
+
+                            referat.andreDeltakere.first().funksjon shouldBeEqualTo "Verneombud"
+                            referat.andreDeltakere.first().navn shouldBeEqualTo "Tøff Pyjamas"
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }

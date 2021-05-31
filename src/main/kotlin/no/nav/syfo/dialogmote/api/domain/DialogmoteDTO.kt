@@ -15,4 +15,5 @@ data class DialogmoteDTO(
     val sted: String,
     val tid: LocalDateTime,
     val videoLink: String?,
+    val referat: ReferatDTO?,
 )

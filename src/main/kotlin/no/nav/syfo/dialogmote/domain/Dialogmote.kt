@@ -17,6 +17,7 @@ data class Dialogmote(
     val arbeidstaker: DialogmotedeltakerArbeidstaker,
     val arbeidsgiver: DialogmotedeltakerArbeidsgiver,
     val tidStedList: List<DialogmoteTidSted>,
+    val referat: Referat?,
 )
 
 fun Dialogmote.toDialogmoteDTO(): DialogmoteDTO {
@@ -34,6 +35,7 @@ fun Dialogmote.toDialogmoteDTO(): DialogmoteDTO {
         sted = dialogmoteTidSted.sted,
         tid = dialogmoteTidSted.tid,
         videoLink = dialogmoteTidSted.videoLink,
+        referat = this.referat?.toReferatDTO(),
     )
 }
 
