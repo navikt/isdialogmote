@@ -16,6 +16,7 @@ data class PReferat(
     val arbeidsgiverOppgave: String?,
     val veilederOppgave: String?,
     val document: List<DocumentComponentDTO>,
+    val pdf: ByteArray,
 )
 
 data class PMotedeltakerAnnen(
@@ -43,6 +44,7 @@ fun PReferat.toReferat(
         arbeidsgiverOppgave = this.arbeidsgiverOppgave,
         veilederOppgave = this.veilederOppgave,
         document = this.document,
+        pdf = this.pdf,
         andreDeltakere = andreDeltakere,
     )
 

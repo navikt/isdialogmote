@@ -21,6 +21,7 @@ class PdfGenClient(
     private val endringTidStedArbeidsgiverUrl: String
     private val innkallingArbeidstakerUrl: String
     private val innkallingArbeidsgiverUrl: String
+    private val referatUrl: String
 
     init {
         this.avlysningArbeidstakerUrl = "$pdfGenBaseUrl$AVLYSNING_ARBEIDSTAKER_PATH"
@@ -29,6 +30,7 @@ class PdfGenClient(
         this.endringTidStedArbeidsgiverUrl = "$pdfGenBaseUrl$ENDRING_TIDSTED_ARBEIDSGIVER_PATH"
         this.innkallingArbeidstakerUrl = "$pdfGenBaseUrl$INNKALLING_ARBEIDSTAKER_PATH"
         this.innkallingArbeidsgiverUrl = "$pdfGenBaseUrl$INNKALLING_ARBEIDSGIVER_PATH"
+        this.referatUrl = "$pdfGenBaseUrl$REFERAT_PATH"
     }
 
     private val httpClient = httpClientDefault()
@@ -99,6 +101,17 @@ class PdfGenClient(
         )
     }
 
+    suspend fun pdfReferat(
+        callId: String,
+        documentComponentDTOList: List<DocumentComponentDTO>,
+    ): ByteArray? {
+        return getPdf(
+            callId = callId,
+            documentComponentDTOList = documentComponentDTOList,
+            pdfUrl = referatUrl,
+        )
+    }
+
     private suspend fun getPdf(
         callId: String,
         documentComponentDTOList: List<DocumentComponentDTO>,
@@ -143,6 +156,7 @@ class PdfGenClient(
         const val ENDRING_TIDSTED_ARBEIDSGIVER_PATH = "$API_BASE_PATH/endring-tidsted-arbeidsgiver"
         const val INNKALLING_ARBEIDSTAKER_PATH = "$API_BASE_PATH/innkalling-arbeidstaker"
         const val INNKALLING_ARBEIDSGIVER_PATH = "$API_BASE_PATH/innkalling-arbeidsgiver"
+        const val REFERAT_PATH = "$API_BASE_PATH/referat"
 
         private val log = LoggerFactory.getLogger(PdfGenClient::class.java)
     }

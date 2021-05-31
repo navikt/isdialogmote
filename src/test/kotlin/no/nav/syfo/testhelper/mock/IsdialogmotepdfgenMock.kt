@@ -17,6 +17,7 @@ import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.ENDRING_TIDSTED_ARBEIDSG
 import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.ENDRING_TIDSTED_ARBEIDSTAKER_PATH
 import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.INNKALLING_ARBEIDSGIVER_PATH
 import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.INNKALLING_ARBEIDSTAKER_PATH
+import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.REFERAT_PATH
 import no.nav.syfo.testhelper.getRandomPort
 
 class IsdialogmotepdfgenMock {
@@ -29,6 +30,7 @@ class IsdialogmotepdfgenMock {
     val pdfEndringTidStedArbeidsgiver = byteArrayOf(0x2E, 0x30)
     val pdfInnkallingArbeidstaker = byteArrayOf(0x2E, 0x29)
     val pdfInnkallingArbeidsgiver = byteArrayOf(0x2E, 0x28)
+    val pdfReferat = byteArrayOf(0x2E, 0x27)
 
     val name = "isdialogmotepdfgen"
     val server = mockIsdialogmotepdfgenServer(
@@ -68,6 +70,9 @@ class IsdialogmotepdfgenMock {
                 }
                 post(INNKALLING_ARBEIDSGIVER_PATH) {
                     call.respond(pdfInnkallingArbeidsgiver)
+                }
+                post(REFERAT_PATH) {
+                    call.respond(pdfReferat)
                 }
             }
         }

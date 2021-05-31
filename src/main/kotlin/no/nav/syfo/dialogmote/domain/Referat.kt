@@ -17,6 +17,7 @@ data class Referat(
     val arbeidsgiverOppgave: String?,
     val veilederOppgave: String?,
     val document: List<DocumentComponentDTO>,
+    val pdf: ByteArray,
     val andreDeltakere: List<DialogmotedeltakerAnnen>,
 )
 
@@ -40,6 +41,7 @@ fun Referat.toReferatDTO(): ReferatDTO {
         arbeidsgiverOppgave = this.arbeidsgiverOppgave,
         veilederOppgave = this.veilederOppgave,
         document = this.document,
+        pdf = this.pdf,
         andreDeltakere = this.andreDeltakere.map {
             it.toDialogmotedeltakerAnnenDTO()
         }

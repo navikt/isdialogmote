@@ -147,6 +147,8 @@ class FerdigstillDialogmoteApiSpek : Spek({
                             referat.andreDeltakere.first().funksjon shouldBeEqualTo "Verneombud"
                             referat.andreDeltakere.first().navn shouldBeEqualTo "Tøff Pyjamas"
 
+                            referat.pdf shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
+
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }
                     }

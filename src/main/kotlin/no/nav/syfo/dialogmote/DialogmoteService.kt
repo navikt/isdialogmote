@@ -322,11 +322,17 @@ class DialogmoteService(
         )
     }
 
-    fun ferdigstillMote(
+    suspend fun ferdigstillMote(
+        callId: String,
         dialogmote: Dialogmote,
         opprettetAv: String,
         referat: NewReferatDTO,
     ): Boolean {
+        val pdfReferat = pdfGenClient.pdfReferat(
+            callId = callId,
+            documentComponentDTOList = referat.document,
+        ) ?: throw RuntimeException("Failed to request PDF - Referat")
+
         database.connection.use { connection ->
             connection.updateMoteStatus(
                 commit = false,
@@ -337,6 +343,7 @@ class DialogmoteService(
             connection.createNewReferat(
                 commit = false,
                 newReferat = referat.toNewReferat(dialogmote.id),
+                pdf = pdfReferat,
             )
             connection.commit()
         }

@@ -113,6 +113,7 @@ fun Route.registerDialogmoteActionsApi(
 
                 if (dialogmoteTilgangService.hasAccessToDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.ferdigstillMote(
+                        callId = callId,
                         dialogmote = dialogmote,
                         opprettetAv = getNAVIdentFromToken(token),
                         referat = newReferat,
