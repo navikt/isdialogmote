@@ -35,10 +35,12 @@ class DialogmoteService(
             val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
             val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
             val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
+            val referat = getReferat(pDialogmote.uuid)
             pDialogmote.toDialogmote(
                 dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
                 dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
                 dialogmoteTidStedList = dialogmoteTidStedList,
+                referat = referat,
             )
         }
     }
@@ -65,10 +67,12 @@ class DialogmoteService(
         val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
         val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
         val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
+        val referat = getReferat(pDialogmote.uuid)
         return pDialogmote.toDialogmote(
             dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
             dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
             dialogmoteTidStedList = dialogmoteTidStedList,
+            referat = referat,
         )
     }
 
@@ -318,20 +322,42 @@ class DialogmoteService(
         )
     }
 
-    fun ferdigstillMoteinnkalling(
+    fun ferdigstillMote(
         dialogmote: Dialogmote,
         opprettetAv: String,
+        referat: NewReferatDTO,
     ): Boolean {
         database.connection.use { connection ->
             connection.updateMoteStatus(
-                commit = true,
+                commit = false,
                 moteId = dialogmote.id,
                 moteStatus = DialogmoteStatus.FERDIGSTILT,
                 opprettetAv = opprettetAv,
             )
+            connection.createNewReferat(
+                commit = false,
+                newReferat = referat.toNewReferat(dialogmote.id),
+            )
+            connection.commit()
         }
-        // TODO: Implement DialogmoteInnkalling-Referat
         return true
+    }
+
+    fun getReferat(
+        moteUUID: UUID
+    ): Referat? {
+        return database.getReferat(moteUUID).firstOrNull()?.let { pReferat ->
+            val andreDeltakere = getAndreDeltakere(pReferat.id)
+            pReferat.toReferat(andreDeltakere)
+        }
+    }
+
+    private fun getAndreDeltakere(
+        referatId: Int
+    ): List<DialogmotedeltakerAnnen> {
+        return database.getAndreDeltakereForReferatID(referatId).map { pMotedeltakerAnnen ->
+            pMotedeltakerAnnen.toDialogmoteDeltakerAnnen()
+        }
     }
 
     companion object {

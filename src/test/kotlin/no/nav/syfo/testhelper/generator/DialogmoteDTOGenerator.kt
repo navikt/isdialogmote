@@ -125,3 +125,34 @@ fun generateNewDialogmoteDTOWithMissingValues(
         tidSted = generateNewDialogmoteTidStedDTONoVideoLink()
     )
 }
+
+fun generateNewReferatDTO() =
+    NewReferatDTO(
+        situasjon = "Dette er en beskrivelse av situasjonen",
+        konklusjon = "Dette er en beskrivelse av konklusjon",
+        arbeidstakerOppgave = "Dette er en beskrivelse av arbeidstakerOppgave",
+        arbeidsgiverOppgave = "Dette er en beskrivelse av arbeidsgiverOppgave",
+        veilederOppgave = "Dette er en beskrivelse av veilederOppgave",
+        document = generateReferatComponentList(),
+        andreDeltakere = listOf(
+            NewDialogmotedeltakerAnnenDTO(
+                funksjon = "Verneombud",
+                navn = "Tøff Pyjamas"
+            )
+        ),
+    )
+
+fun generateReferatComponentList(): List<DocumentComponentDTO> {
+    return listOf(
+        DocumentComponentDTO(
+            type = DocumentComponentType.HEADER,
+            title = "Tittel referat",
+            texts = emptyList(),
+        ),
+        DocumentComponentDTO(
+            type = DocumentComponentType.PARAGRAPH,
+            title = null,
+            texts = listOf("Brødtekst"),
+        ),
+    )
+}

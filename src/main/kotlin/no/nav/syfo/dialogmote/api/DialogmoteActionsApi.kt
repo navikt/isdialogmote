@@ -7,8 +7,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.dialogmote.DialogmoteService
-import no.nav.syfo.dialogmote.api.domain.AvlysDialogmoteDTO
-import no.nav.syfo.dialogmote.api.domain.EndreTidStedDialogmoteDTO
+import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.util.*
 import org.slf4j.Logger
@@ -108,13 +107,15 @@ fun Route.registerDialogmoteActionsApi(
                     ?: throw IllegalArgumentException("No Authorization header supplied")
 
                 val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
+                val newReferat = call.receive<NewReferatDTO>()
 
                 val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
                 if (dialogmoteTilgangService.hasAccessToDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
-                    val success = dialogmoteService.ferdigstillMoteinnkalling(
+                    val success = dialogmoteService.ferdigstillMote(
                         dialogmote = dialogmote,
-                        opprettetAv = getNAVIdentFromToken(token)
+                        opprettetAv = getNAVIdentFromToken(token),
+                        referat = newReferat,
                     )
                     if (success) {
                         call.respond(HttpStatusCode.OK)
