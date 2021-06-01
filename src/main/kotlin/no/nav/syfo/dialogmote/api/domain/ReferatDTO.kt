@@ -13,6 +13,7 @@ data class ReferatDTO(
     val arbeidsgiverOppgave: String?,
     val veilederOppgave: String?,
     val document: List<DocumentComponentDTO>,
+    val pdf: ByteArray,
     val andreDeltakere: List<DialogmotedeltakerAnnenDTO>,
 )
 
