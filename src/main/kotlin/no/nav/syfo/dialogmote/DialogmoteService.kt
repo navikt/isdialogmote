@@ -136,6 +136,12 @@ class DialogmoteService(
                     commit = false,
                     newDialogmote = newDialogmote,
                 )
+                createAndPublishMoteStatusEndring(
+                    connection = connection,
+                    dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
+                    dialogmoteStatus = newDialogmote.status,
+                    opprettetAv = newDialogmote.opprettetAv,
+                )
                 createAndSendVarsel(
                     connection = connection,
                     arbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdList.first,
@@ -188,10 +194,10 @@ class DialogmoteService(
             false
         } else {
             database.connection.use { connection ->
-                connection.updateMoteStatus(
-                    commit = false,
-                    moteId = dialogmote.id,
-                    moteStatus = DialogmoteStatus.AVLYST,
+                updateMoteStatus(
+                    connection = connection,
+                    dialogmoteId = dialogmote.id,
+                    dialogmoteStatus = DialogmoteStatus.AVLYST,
                     opprettetAv = getNAVIdentFromToken(token),
                 )
                 if (!isDialogmoteTidPassed) {
@@ -249,6 +255,11 @@ class DialogmoteService(
                     commit = false,
                     moteId = dialogmote.id,
                     newDialogmoteTidSted = endreDialogmoteTidSted,
+                )
+                updateMoteStatus(
+                    connection = connection,
+                    dialogmoteId = dialogmote.id,
+                    dialogmoteStatus = DialogmoteStatus.NYTT_TID_STED,
                     opprettetAv = getNAVIdentFromToken(token),
                 )
                 createAndSendVarsel(
@@ -334,10 +345,10 @@ class DialogmoteService(
         ) ?: throw RuntimeException("Failed to request PDF - Referat")
 
         database.connection.use { connection ->
-            connection.updateMoteStatus(
-                commit = false,
-                moteId = dialogmote.id,
-                moteStatus = DialogmoteStatus.FERDIGSTILT,
+            updateMoteStatus(
+                connection = connection,
+                dialogmoteId = dialogmote.id,
+                dialogmoteStatus = DialogmoteStatus.FERDIGSTILT,
                 opprettetAv = opprettetAv,
             )
             connection.createNewReferat(
@@ -348,6 +359,43 @@ class DialogmoteService(
             connection.commit()
         }
         return true
+    }
+
+    private fun updateMoteStatus(
+        connection: Connection,
+        dialogmoteId: Int,
+        dialogmoteStatus: DialogmoteStatus,
+        opprettetAv: String,
+    ) {
+        connection.updateMoteStatus(
+            commit = false,
+            moteId = dialogmoteId,
+            moteStatus = dialogmoteStatus,
+        )
+        createAndPublishMoteStatusEndring(
+            connection = connection,
+            dialogmoteId = dialogmoteId,
+            dialogmoteStatus = dialogmoteStatus,
+            opprettetAv = opprettetAv,
+        )
+    }
+
+    private fun createAndPublishMoteStatusEndring(
+        connection: Connection,
+        dialogmoteId: Int,
+        dialogmoteStatus: DialogmoteStatus,
+        opprettetAv: String,
+        publish: Boolean = false,
+    ) {
+        connection.createMoteStatusEndring(
+            commit = false,
+            moteId = dialogmoteId,
+            opprettetAv = opprettetAv,
+            status = dialogmoteStatus,
+        )
+        if (publish) {
+            // TODO: Implement publish to Kafka-topic
+        }
     }
 
     fun getReferat(
