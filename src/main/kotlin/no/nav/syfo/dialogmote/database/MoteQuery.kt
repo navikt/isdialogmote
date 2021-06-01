@@ -18,12 +18,10 @@ const val queryGetDialogmoteForUUID =
         WHERE uuid = ?
     """
 
-fun DatabaseInterface.getDialogmote(moteUUID: UUID): List<PDialogmote> {
-    return connection.use { connection ->
-        connection.prepareStatement(queryGetDialogmoteForUUID).use {
-            it.setString(1, moteUUID.toString())
-            it.executeQuery().toList { toPDialogmote() }
-        }
+fun Connection.getDialogmote(moteUUID: UUID): List<PDialogmote> {
+    return this.prepareStatement(queryGetDialogmoteForUUID).use {
+        it.setString(1, moteUUID.toString())
+        it.executeQuery().toList { toPDialogmote() }
     }
 }
 

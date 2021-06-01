@@ -31,17 +31,19 @@ class DialogmoteService(
     fun getDialogmote(
         moteUUID: UUID
     ): Dialogmote {
-        return database.getDialogmote(moteUUID).first().let { pDialogmote ->
-            val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
-            val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
-            val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
-            val referat = getReferat(pDialogmote.uuid)
-            pDialogmote.toDialogmote(
-                dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
-                dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
-                dialogmoteTidStedList = dialogmoteTidStedList,
-                referat = referat,
-            )
+        return database.connection.use { connection ->
+            connection.getDialogmote(moteUUID).first().let { pDialogmote ->
+                val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
+                val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
+                val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
+                val referat = getReferat(pDialogmote.uuid)
+                pDialogmote.toDialogmote(
+                    dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
+                    dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
+                    dialogmoteTidStedList = dialogmoteTidStedList,
+                    referat = referat,
+                )
+            }
         }
     }
 
@@ -138,7 +140,7 @@ class DialogmoteService(
                 )
                 createAndPublishMoteStatusEndring(
                     connection = connection,
-                    dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
+                    dialogmoteIdPair = createdDialogmoteIdentifiers.dialogmoteIdPair,
                     dialogmoteStatus = newDialogmote.status,
                     opprettetAv = newDialogmote.opprettetAv,
                 )
@@ -196,8 +198,8 @@ class DialogmoteService(
             database.connection.use { connection ->
                 updateMoteStatus(
                     connection = connection,
-                    dialogmoteId = dialogmote.id,
-                    dialogmoteStatus = DialogmoteStatus.AVLYST,
+                    dialogmote = dialogmote,
+                    newDialogmoteStatus = DialogmoteStatus.AVLYST,
                     opprettetAv = getNAVIdentFromToken(token),
                 )
                 if (!isDialogmoteTidPassed) {
@@ -258,8 +260,8 @@ class DialogmoteService(
                 )
                 updateMoteStatus(
                     connection = connection,
-                    dialogmoteId = dialogmote.id,
-                    dialogmoteStatus = DialogmoteStatus.NYTT_TID_STED,
+                    dialogmote = dialogmote,
+                    newDialogmoteStatus = DialogmoteStatus.NYTT_TID_STED,
                     opprettetAv = getNAVIdentFromToken(token),
                 )
                 createAndSendVarsel(
@@ -347,8 +349,8 @@ class DialogmoteService(
         database.connection.use { connection ->
             updateMoteStatus(
                 connection = connection,
-                dialogmoteId = dialogmote.id,
-                dialogmoteStatus = DialogmoteStatus.FERDIGSTILT,
+                dialogmote = dialogmote,
+                newDialogmoteStatus = DialogmoteStatus.FERDIGSTILT,
                 opprettetAv = opprettetAv,
             )
             connection.createNewReferat(
@@ -363,30 +365,33 @@ class DialogmoteService(
 
     private fun updateMoteStatus(
         connection: Connection,
-        dialogmoteId: Int,
-        dialogmoteStatus: DialogmoteStatus,
+        dialogmote: Dialogmote,
+        newDialogmoteStatus: DialogmoteStatus,
         opprettetAv: String,
     ) {
         connection.updateMoteStatus(
             commit = false,
-            moteId = dialogmoteId,
-            moteStatus = dialogmoteStatus,
+            moteId = dialogmote.id,
+            moteStatus = newDialogmoteStatus,
         )
         createAndPublishMoteStatusEndring(
             connection = connection,
-            dialogmoteId = dialogmoteId,
-            dialogmoteStatus = dialogmoteStatus,
+            maybeDialogmote = dialogmote,
+            dialogmoteIdPair = Pair(dialogmote.id, dialogmote.uuid),
+            dialogmoteStatus = newDialogmoteStatus,
             opprettetAv = opprettetAv,
         )
     }
 
     private fun createAndPublishMoteStatusEndring(
         connection: Connection,
-        dialogmoteId: Int,
+        maybeDialogmote: Dialogmote? = null,
+        dialogmoteIdPair: Pair<Int, UUID>,
         dialogmoteStatus: DialogmoteStatus,
         opprettetAv: String,
         publish: Boolean = false,
     ) {
+        val (dialogmoteId, dialogmoteUuid) = dialogmoteIdPair
         connection.createMoteStatusEndring(
             commit = false,
             moteId = dialogmoteId,
@@ -394,6 +399,7 @@ class DialogmoteService(
             status = dialogmoteStatus,
         )
         if (publish) {
+            val dialogmote = maybeDialogmote ?: connection.getDialogmote(dialogmoteUuid)
             // TODO: Implement publish to Kafka-topic
         }
     }
