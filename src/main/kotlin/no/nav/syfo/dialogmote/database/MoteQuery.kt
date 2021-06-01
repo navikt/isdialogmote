@@ -98,12 +98,6 @@ fun Connection.createNewDialogmoteWithReferences(
         moteId = moteId,
         newDialogmoteTidSted = newDialogmote.tidSted
     )
-    this.createMoteStatusEndring(
-        commit = false,
-        moteId = moteId,
-        opprettetAv = newDialogmote.opprettetAv,
-        status = newDialogmote.status,
-    )
     val motedeltakerArbeidstakerIdList = this.createMotedeltakerArbeidstaker(
         commit = false,
         moteId = moteId,
@@ -165,7 +159,6 @@ fun Connection.updateMoteStatus(
     commit: Boolean = true,
     moteId: Int,
     moteStatus: DialogmoteStatus,
-    opprettetAv: String,
 ) {
     val now = Timestamp.from(Instant.now())
     this.prepareStatement(queryUpdateMoteStatus).use {
@@ -174,12 +167,6 @@ fun Connection.updateMoteStatus(
         it.setInt(3, moteId)
         it.execute()
     }
-    this.createMoteStatusEndring(
-        commit = false,
-        moteId = moteId,
-        opprettetAv = opprettetAv,
-        status = moteStatus,
-    )
     if (commit) {
         this.commit()
     }
@@ -189,18 +176,11 @@ fun Connection.updateMoteTidSted(
     commit: Boolean = true,
     moteId: Int,
     newDialogmoteTidSted: TidStedDTO,
-    opprettetAv: String,
 ) {
     this.createTidSted(
         commit = false,
         moteId = moteId,
         newDialogmoteTidSted = newDialogmoteTidSted,
-    )
-    this.updateMoteStatus(
-        commit = false,
-        moteId = moteId,
-        moteStatus = DialogmoteStatus.NYTT_TID_STED,
-        opprettetAv = opprettetAv,
     )
     if (commit) {
         this.commit()
