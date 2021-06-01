@@ -31,19 +31,17 @@ class DialogmoteService(
     fun getDialogmote(
         moteUUID: UUID
     ): Dialogmote {
-        return database.connection.use { connection ->
-            connection.getDialogmote(moteUUID).first().let { pDialogmote ->
-                val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
-                val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
-                val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
-                val referat = getReferat(pDialogmote.uuid)
-                pDialogmote.toDialogmote(
-                    dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
-                    dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
-                    dialogmoteTidStedList = dialogmoteTidStedList,
-                    referat = referat,
-                )
-            }
+        return database.getDialogmote(moteUUID).first().let { pDialogmote ->
+            val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
+            val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
+            val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
+            val referat = getReferat(pDialogmote.uuid)
+            pDialogmote.toDialogmote(
+                dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
+                dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
+                dialogmoteTidStedList = dialogmoteTidStedList,
+                referat = referat,
+            )
         }
     }
 
@@ -399,7 +397,7 @@ class DialogmoteService(
             status = dialogmoteStatus,
         )
         if (publish) {
-            val dialogmote = maybeDialogmote ?: connection.getDialogmote(dialogmoteUuid)
+            val dialogmote: Dialogmote = maybeDialogmote ?: getDialogmote(dialogmoteUuid)
             // TODO: Implement publish to Kafka-topic
         }
     }
