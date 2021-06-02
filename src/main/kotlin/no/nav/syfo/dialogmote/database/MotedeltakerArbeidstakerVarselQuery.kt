@@ -86,6 +86,24 @@ fun DatabaseInterface.getMotedeltakerArbeidstakerVarsel(
     }
 }
 
+const val queryGetMotedeltakerArbeidstakerVarselForMotedeltakerByUUID =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_ARBEIDSTAKER_VARSEL
+        WHERE uuid = ?
+    """
+
+fun DatabaseInterface.getMotedeltakerArbeidstakerVarsel(
+    uuid: UUID
+): List<PMotedeltakerArbeidstakerVarsel> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerArbeidstakerVarselForMotedeltakerByUUID).use {
+            it.setString(1, uuid.toString())
+            it.executeQuery().toList { toPMotedeltakerArbeidstakerVarsel() }
+        }
+    }
+}
+
 const val queryGetMotedeltakerArbeidstakerVarselWithoutJournalpost =
     """
         SELECT *

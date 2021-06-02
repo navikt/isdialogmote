@@ -7,11 +7,14 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
-import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
-import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.*
+import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
+import no.nav.syfo.testhelper.generator.generateAvlysDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.varsel.MotedeltakerVarselType
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
@@ -137,6 +140,106 @@ class ArbeidstakerVarselApiSpek : Spek({
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                             verify(exactly = 1) { brukernotifikasjonProducer.sendDone(any(), any()) }
+                        }
+                    }
+                }
+                describe("Happy path med mer enn et møte for aktuell person") {
+                    val newDialogmoteAvlyst1 = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 1", LocalDateTime.now().plusDays(10))
+                    val newDialogmoteAvlyst2 = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 2", LocalDateTime.now().plusDays(20))
+                    val newDialogmoteInnkalt = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 3", LocalDateTime.now().plusDays(30))
+
+                    val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
+
+                    it("should return OK if request is successful") {
+                        for (dialogmoteDTO in listOf(newDialogmoteAvlyst1, newDialogmoteAvlyst2, newDialogmoteInnkalt)) {
+                            with(
+                                handleRequest(HttpMethod.Post, urlMote) {
+                                    addHeader(Authorization, bearerHeader(validTokenVeileder))
+                                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                    setBody(objectMapper.writeValueAsString(dialogmoteDTO))
+                                }
+                            ) {
+                                response.status() shouldBeEqualTo HttpStatusCode.OK
+                            }
+
+                            var createdDialogmoteUUID: String
+                            with(
+                                handleRequest(HttpMethod.Get, urlMote) {
+                                    addHeader(Authorization, bearerHeader(validTokenVeileder))
+                                    addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                                }
+                            ) {
+                                response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                                val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                                val dto = dialogmoteList.first()
+                                dto.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+                                createdDialogmoteUUID = dto.uuid
+                            }
+                            if (dialogmoteDTO != newDialogmoteInnkalt) {
+                                val urlMoteUUIDAvlys = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                                val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
+
+                                with(
+                                    handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
+                                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                        addHeader(Authorization, bearerHeader(validTokenVeileder))
+                                        setBody(objectMapper.writeValueAsString(avlysDialogMoteDto))
+                                    }
+                                ) {
+                                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                                }
+                            }
+                        }
+                        val createdArbeidstakerVarselUUID: String
+                        with(
+                            handleRequest(HttpMethod.Get, arbeidstakerVarselApiPath) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerVarselList = objectMapper.readValue<List<ArbeidstakerVarselDTO>>(response.content!!)
+
+                            arbeidstakerVarselList.size shouldBeEqualTo 5
+
+                            val arbeidstakerVarselDTO = arbeidstakerVarselList.first()
+                            arbeidstakerVarselDTO.shouldNotBeNull()
+                            arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
+                            arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
+                            arbeidstakerVarselDTO.lestDato.shouldBeNull()
+
+                            createdArbeidstakerVarselUUID = arbeidstakerVarselDTO.uuid
+                        }
+
+                        val urlArbeidstakerVarselUUIDLes = "$arbeidstakerVarselApiPath/$createdArbeidstakerVarselUUID$arbeidstakerVarselApiLesPath"
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlArbeidstakerVarselUUIDLes) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, arbeidstakerVarselApiPath) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val arbeidstakerVarselList = objectMapper.readValue<List<ArbeidstakerVarselDTO>>(response.content!!)
+                            arbeidstakerVarselList.size shouldBeEqualTo 5
+
+                            val arbeidstakerVarselDTO = arbeidstakerVarselList.first()
+                            arbeidstakerVarselDTO.shouldNotBeNull()
+                            arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
+                            arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
+                            arbeidstakerVarselDTO.lestDato.shouldNotBeNull()
+                            arbeidstakerVarselDTO.virksomhetsnummer shouldBeEqualTo newDialogmoteInnkalt.arbeidsgiver.virksomhetsnummer
+                            arbeidstakerVarselDTO.sted shouldBeEqualTo newDialogmoteInnkalt.tidSted.sted
+                            val isCorrectDialogmotetid = LocalDateTime.now().plusDays(29).isBefore(arbeidstakerVarselDTO.tid)
+                            isCorrectDialogmotetid shouldBeEqualTo true
                         }
                     }
                 }
