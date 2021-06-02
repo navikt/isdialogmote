@@ -14,6 +14,7 @@ import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
+import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
@@ -76,6 +77,9 @@ fun Application.apiModule(
         cache = cache,
         syfopersonBaseUrl = environment.syfopersonUrl
     )
+    val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
+        syfopersonBaseUrl = environment.syfopersonUrl,
+    )
     val pdfGenClient = PdfGenClient(
         pdfGenBaseUrl = environment.isdialogmotepdfgenUrl
     )
@@ -111,6 +115,7 @@ fun Application.apiModule(
         dialogmotedeltakerService = dialogmotedeltakerService,
         behandlendeEnhetClient = behandlendeEnhetClient,
         narmesteLederClient = narmesteLederClient,
+        oppfolgingstilfelleClient = oppfolgingstilfelleClient,
         pdfGenClient = pdfGenClient,
     )
 

@@ -10,6 +10,7 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
 import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
@@ -21,6 +22,7 @@ import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithMissingValues
+import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.varsel.MotedeltakerVarselType
@@ -147,6 +149,13 @@ class PostDialogmoteApiSpek : Spek({
                             dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+
+                            val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
+                            moteStatusEndretList.size shouldBeEqualTo 1
+
+                            moteStatusEndretList.first().status.name shouldBeEqualTo dialogmoteDTO.status
+                            moteStatusEndretList.first().opprettetAv shouldBeEqualTo VEILEDER_IDENT
+                            moteStatusEndretList.first().tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO.fom
                         }
                     }
 

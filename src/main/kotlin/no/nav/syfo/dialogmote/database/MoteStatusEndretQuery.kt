@@ -1,9 +1,12 @@
 package no.nav.syfo.dialogmote.database
 
+import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
+import no.nav.syfo.dialogmote.database.domain.PMoteStatusEndret
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import java.sql.*
 import java.time.Instant
+import java.time.LocalDate
 import java.util.*
 
 const val queryCreateMoteStatusEndring =
@@ -15,14 +18,17 @@ const val queryCreateMoteStatusEndring =
         updated_at,
         mote_id,
         status,
-        opprettet_av) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?) RETURNING id
+        opprettet_av,
+        tilfelle_start
+        ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
 fun Connection.createMoteStatusEndring(
     commit: Boolean = true,
     moteId: Int,
     opprettetAv: String,
-    status: DialogmoteStatus
+    status: DialogmoteStatus,
+    tilfelleStart: LocalDate,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 
@@ -35,6 +41,7 @@ fun Connection.createMoteStatusEndring(
         it.setInt(4, moteId)
         it.setString(5, status.name)
         it.setString(6, opprettetAv)
+        it.setTimestamp(7, Timestamp.valueOf(tilfelleStart.atStartOfDay()))
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -48,3 +55,31 @@ fun Connection.createMoteStatusEndring(
 
     return Pair(moteStatusEndringIdList.first(), moteStatusEndringUuid)
 }
+
+const val queryMoteStatusEndretWihtoutPublished =
+    """
+        SELECT *
+        FROM MOTE_STATUS_ENDRET
+        WHERE published_at IS NULL
+    """
+
+fun DatabaseInterface.getMoteStatusEndretNotPublished(): List<PMoteStatusEndret> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryMoteStatusEndretWihtoutPublished).use {
+            it.executeQuery().toList { toPMoteStatusEndret() }
+        }
+    }
+}
+
+fun ResultSet.toPMoteStatusEndret(): PMoteStatusEndret =
+    PMoteStatusEndret(
+        id = getInt("id"),
+        uuid = UUID.fromString(getString("uuid")),
+        createdAt = getTimestamp("created_at").toLocalDateTime(),
+        updatedAt = getTimestamp("updated_at").toLocalDateTime(),
+        moteId = getInt("mote_id"),
+        status = DialogmoteStatus.valueOf(getString("status")),
+        opprettetAv = getString("opprettet_av"),
+        tilfelleStart = getTimestamp("tilfelle_start").toLocalDateTime().toLocalDate(),
+        publishedAt = getTimestamp("published_at")?.toLocalDateTime(),
+    )

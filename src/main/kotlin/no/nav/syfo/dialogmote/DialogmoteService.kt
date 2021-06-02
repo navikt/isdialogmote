@@ -6,6 +6,7 @@ import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.client.pdfgen.PdfGenClient
+import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
@@ -26,6 +27,7 @@ class DialogmoteService(
     private val dialogmotedeltakerService: DialogmotedeltakerService,
     private val behandlendeEnhetClient: BehandlendeEnhetClient,
     private val narmesteLederClient: NarmesteLederClient,
+    private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     private val pdfGenClient: PdfGenClient,
 ) {
     fun getDialogmote(
@@ -136,11 +138,14 @@ class DialogmoteService(
                     commit = false,
                     newDialogmote = newDialogmote,
                 )
-                createAndPublishMoteStatusEndring(
+                createMoteStatusEndring(
+                    callId = callId,
                     connection = connection,
-                    dialogmoteIdPair = createdDialogmoteIdentifiers.dialogmoteIdPair,
+                    dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
                     dialogmoteStatus = newDialogmote.status,
                     opprettetAv = newDialogmote.opprettetAv,
+                    personIdentNumber = newDialogmote.arbeidstaker.personIdent,
+                    token = token,
                 )
                 createAndSendVarsel(
                     connection = connection,
@@ -195,10 +200,13 @@ class DialogmoteService(
         } else {
             database.connection.use { connection ->
                 updateMoteStatus(
+                    callId = callId,
                     connection = connection,
-                    dialogmote = dialogmote,
+                    dialogmoteId = dialogmote.id,
                     newDialogmoteStatus = DialogmoteStatus.AVLYST,
                     opprettetAv = getNAVIdentFromToken(token),
+                    personIdentNumber = dialogmote.arbeidstaker.personIdent,
+                    token = token,
                 )
                 if (!isDialogmoteTidPassed) {
                     createAndSendVarsel(
@@ -257,10 +265,13 @@ class DialogmoteService(
                     newDialogmoteTidSted = endreDialogmoteTidSted,
                 )
                 updateMoteStatus(
+                    callId = callId,
                     connection = connection,
-                    dialogmote = dialogmote,
+                    dialogmoteId = dialogmote.id,
                     newDialogmoteStatus = DialogmoteStatus.NYTT_TID_STED,
                     opprettetAv = getNAVIdentFromToken(token),
+                    personIdentNumber = dialogmote.arbeidstaker.personIdent,
+                    token = token,
                 )
                 createAndSendVarsel(
                     connection = connection,
@@ -338,6 +349,7 @@ class DialogmoteService(
         dialogmote: Dialogmote,
         opprettetAv: String,
         referat: NewReferatDTO,
+        token: String,
     ): Boolean {
         val pdfReferat = pdfGenClient.pdfReferat(
             callId = callId,
@@ -346,10 +358,13 @@ class DialogmoteService(
 
         database.connection.use { connection ->
             updateMoteStatus(
+                callId = callId,
                 connection = connection,
-                dialogmote = dialogmote,
+                dialogmoteId = dialogmote.id,
                 newDialogmoteStatus = DialogmoteStatus.FERDIGSTILT,
                 opprettetAv = opprettetAv,
+                personIdentNumber = dialogmote.arbeidstaker.personIdent,
+                token = token,
             )
             connection.createNewReferat(
                 commit = false,
@@ -361,45 +376,52 @@ class DialogmoteService(
         return true
     }
 
-    private fun updateMoteStatus(
+    private suspend fun updateMoteStatus(
+        callId: String,
         connection: Connection,
-        dialogmote: Dialogmote,
+        dialogmoteId: Int,
         newDialogmoteStatus: DialogmoteStatus,
         opprettetAv: String,
+        personIdentNumber: PersonIdentNumber,
+        token: String,
     ) {
         connection.updateMoteStatus(
             commit = false,
-            moteId = dialogmote.id,
+            moteId = dialogmoteId,
             moteStatus = newDialogmoteStatus,
         )
-        createAndPublishMoteStatusEndring(
+        createMoteStatusEndring(
+            callId = callId,
             connection = connection,
-            maybeDialogmote = dialogmote,
-            dialogmoteIdPair = Pair(dialogmote.id, dialogmote.uuid),
+            dialogmoteId = dialogmoteId,
             dialogmoteStatus = newDialogmoteStatus,
             opprettetAv = opprettetAv,
+            personIdentNumber = personIdentNumber,
+            token = token,
         )
     }
 
-    private fun createAndPublishMoteStatusEndring(
+    private suspend fun createMoteStatusEndring(
+        callId: String,
         connection: Connection,
-        maybeDialogmote: Dialogmote? = null,
-        dialogmoteIdPair: Pair<Int, UUID>,
+        dialogmoteId: Int,
         dialogmoteStatus: DialogmoteStatus,
         opprettetAv: String,
-        publish: Boolean = false,
+        personIdentNumber: PersonIdentNumber,
+        token: String,
     ) {
-        val (dialogmoteId, dialogmoteUuid) = dialogmoteIdPair
+        val tilfelleStart = oppfolgingstilfelleClient.oppfolgingstilfelle(
+            callId = callId,
+            personIdentNumber = personIdentNumber,
+            token = token,
+        )?.fom ?: throw RuntimeException("Cannot create MoteStatusEndring: No TilfelleStart was found")
         connection.createMoteStatusEndring(
             commit = false,
             moteId = dialogmoteId,
             opprettetAv = opprettetAv,
             status = dialogmoteStatus,
+            tilfelleStart = tilfelleStart,
         )
-        if (publish) {
-            val dialogmote: Dialogmote = maybeDialogmote ?: getDialogmote(dialogmoteUuid)
-            // TODO: Implement publish to Kafka-topic
-        }
     }
 
     fun getReferat(
