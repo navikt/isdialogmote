@@ -370,6 +370,7 @@ class DialogmoteService(
                 commit = false,
                 newReferat = referat.toNewReferat(dialogmote.id),
                 pdf = pdfReferat,
+                digitalt = true,
             )
             connection.commit()
         }

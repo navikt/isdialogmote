@@ -1,7 +1,10 @@
 package no.nav.syfo.dialogmote.domain
 
+import no.nav.syfo.client.dokarkiv.domain.BrevkodeType
+import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerAnnenDTO
 import no.nav.syfo.dialogmote.api.domain.ReferatDTO
+import no.nav.syfo.domain.PersonIdentNumber
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -11,6 +14,7 @@ data class Referat(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val moteId: Int,
+    val digitalt: Boolean,
     val situasjon: String?,
     val konklusjon: String?,
     val arbeidstakerOppgave: String?,
@@ -18,6 +22,7 @@ data class Referat(
     val veilederOppgave: String?,
     val document: List<DocumentComponentDTO>,
     val pdf: ByteArray,
+    val journalpostId: String?,
     val andreDeltakere: List<DialogmotedeltakerAnnen>,
 )
 
@@ -35,6 +40,7 @@ fun Referat.toReferatDTO(): ReferatDTO {
         uuid = this.uuid.toString(),
         createdAt = this.createdAt,
         updatedAt = this.updatedAt,
+        digitalt = this.digitalt,
         situasjon = this.situasjon,
         konklusjon = this.konklusjon,
         arbeidstakerOppgave = this.arbeidstakerOppgave,
@@ -57,3 +63,13 @@ fun DialogmotedeltakerAnnen.toDialogmotedeltakerAnnenDTO(): DialogmotedeltakerAn
         navn = this.navn,
     )
 }
+
+fun Referat.toJournalforingRequest(
+    personIdent: PersonIdentNumber,
+) = createJournalpostRequest(
+    personIdent = personIdent,
+    digitalt = this.digitalt,
+    dokumentName = "Referat fra dialogmøte",
+    brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT,
+    dokumentPdf = this.pdf
+)
