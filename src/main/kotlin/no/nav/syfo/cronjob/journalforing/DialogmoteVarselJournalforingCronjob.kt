@@ -8,7 +8,8 @@ import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL
 import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalforingService
-import no.nav.syfo.dialogmote.domain.toJournalpostRequest
+import no.nav.syfo.dialogmote.ReferatJournalforingService
+import no.nav.syfo.dialogmote.domain.*
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
@@ -20,6 +21,7 @@ data class JournalforingResult(
 class DialogmoteVarselJournalforingCronjob(
     private val applicationState: ApplicationState,
     private val dialogmotedeltakerVarselJournalforingService: DialogmotedeltakerVarselJournalforingService,
+    private val referatJournalforingService: ReferatJournalforingService,
     private val dokarkivClient: DokarkivClient,
     private val leaderPodClient: LeaderPodClient,
 ) {
@@ -46,12 +48,8 @@ class DialogmoteVarselJournalforingCronjob(
     private suspend fun run() {
         try {
             if (leaderPodClient.isLeader()) {
-                val resultat = dialogmoteVarselJournalforingJob()
-                log.info(
-                    "Completed job with result: {}, {}",
-                    StructuredArguments.keyValue("failed", resultat.failed),
-                    StructuredArguments.keyValue("updated", resultat.updated),
-                )
+                dialogmoteVarselJournalforingJob()
+                referatJournalforingJob()
             } else {
                 log.debug("Pod is not leader and will not perform job")
             }
@@ -86,6 +84,43 @@ class DialogmoteVarselJournalforingCronjob(
                 COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL.inc()
             }
         }
+        log.info(
+            "Completed varsel-journalforing with result: {}, {}",
+            StructuredArguments.keyValue("failed", journalforingResult.failed),
+            StructuredArguments.keyValue("updated", journalforingResult.updated),
+        )
+        return journalforingResult
+    }
+
+    suspend fun referatJournalforingJob(): JournalforingResult {
+        val journalforingResult = JournalforingResult()
+
+        val referatList = referatJournalforingService.getDialogmoteReferatJournalforingList()
+        referatList.forEach { (personIdentNumber, referat) ->
+            try {
+                val journalpostId = dokarkivClient.journalfor(
+                    journalpostRequest = referat.toJournalforingRequest(personIdentNumber)
+                )?.journalpostId
+
+                journalpostId?.let { it ->
+                    referatJournalforingService.updateJournalpostIdForReferat(
+                        referat,
+                        it,
+                    )
+                    journalforingResult.updated++
+                    COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE.inc()
+                } ?: throw RuntimeException("Failed to Journalfor Referat: response missing JournalpostId")
+            } catch (e: Exception) {
+                log.error("Exception caught while attempting Journalforing of Referat", e)
+                journalforingResult.failed++
+                COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL.inc()
+            }
+        }
+        log.info(
+            "Completed referat-journalforing with result: {}, {}",
+            StructuredArguments.keyValue("failed", journalforingResult.failed),
+            StructuredArguments.keyValue("updated", journalforingResult.updated),
+        )
         return journalforingResult
     }
 

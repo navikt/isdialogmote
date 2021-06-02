@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.*
-import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
-import no.nav.syfo.dialogmote.domain.NewReferat
+import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.configuredJacksonMapper
 import java.sql.*
 import java.time.Instant
@@ -36,6 +36,7 @@ fun ResultSet.toPReferat(): PReferat =
         createdAt = getTimestamp("created_at").toLocalDateTime(),
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         moteId = getInt("mote_id"),
+        digitalt = getBoolean("digitalt"),
         situasjon = getString("situasjon"),
         konklusjon = getString("konklusjon"),
         arbeidstakerOppgave = getString("arbeidstaker_oppgave"),
@@ -43,6 +44,7 @@ fun ResultSet.toPReferat(): PReferat =
         veilederOppgave = getString("veileder_oppgave"),
         document = mapper.readValue(getString("document"), object : TypeReference<List<DocumentComponentDTO>>() {}),
         pdf = getBytes("pdf"),
+        journalpostId = getString("journalpost_id"),
     )
 
 const val queryGetDialogmotedeltakerAnnenForReferatID =
@@ -80,6 +82,7 @@ const val queryCreateReferat =
         created_at,
         updated_at,
         mote_id,
+        digitalt,
         situasjon,
         konklusjon,
         arbeidstaker_oppgave,
@@ -87,7 +90,7 @@ const val queryCreateReferat =
         veileder_oppgave,
         document,
         pdf
-    ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?) RETURNING id
+    ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?) RETURNING id
     """
 
 const val queryCreateMotedeltakerAnnen =
@@ -107,6 +110,7 @@ fun Connection.createNewReferat(
     commit: Boolean = true,
     newReferat: NewReferat,
     pdf: ByteArray,
+    digitalt: Boolean,
 ): Pair<Int, UUID> {
     val referatUuid = UUID.randomUUID()
     val now = Timestamp.from(Instant.now())
@@ -116,13 +120,14 @@ fun Connection.createNewReferat(
         it.setTimestamp(2, now)
         it.setTimestamp(3, now)
         it.setInt(4, newReferat.moteId)
-        it.setString(5, newReferat.situasjon)
-        it.setString(6, newReferat.konklusjon)
-        it.setString(7, newReferat.arbeidstakerOppgave)
-        it.setString(8, newReferat.arbeidsgiverOppgave)
-        it.setString(9, newReferat.veilederOppgave)
-        it.setObject(10, mapper.writeValueAsString(newReferat.document))
-        it.setBytes(11, pdf)
+        it.setBoolean(5, digitalt)
+        it.setString(6, newReferat.situasjon)
+        it.setString(7, newReferat.konklusjon)
+        it.setString(8, newReferat.arbeidstakerOppgave)
+        it.setString(9, newReferat.arbeidsgiverOppgave)
+        it.setString(10, newReferat.veilederOppgave)
+        it.setObject(11, mapper.writeValueAsString(newReferat.document))
+        it.setBytes(12, pdf)
         it.executeQuery().toList { getInt("id") }
     }
     if (referatIdList.size != 1) {
@@ -146,4 +151,43 @@ fun Connection.createNewReferat(
         this.commit()
     }
     return Pair(referatId, referatUuid)
+}
+
+const val queryGetReferatWithoutJournalpost =
+    """
+        SELECT MOTEDELTAKER_ARBEIDSTAKER.PERSONIDENT, MOTE_REFERAT.*
+        FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
+                  INNER JOIN MOTEDELTAKER_ARBEIDSTAKER ON (MOTE.ID = MOTEDELTAKER_ARBEIDSTAKER.MOTE_ID) 
+        WHERE MOTE_REFERAT.journalpost_id IS NULL
+    """
+
+fun DatabaseInterface.getReferatWithoutJournalpostList(): List<Pair<PersonIdentNumber, PReferat>> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetReferatWithoutJournalpost).use {
+            it.executeQuery().toList {
+                Pair(PersonIdentNumber(getString(1)), toPReferat())
+            }
+        }
+    }
+}
+
+const val queryUpdateReferatJournalpostId =
+    """
+        UPDATE MOTE_REFERAT
+        SET journalpost_id = ?
+        WHERE id = ?
+    """
+
+fun DatabaseInterface.updateReferatJournalpostId(
+    referatId: Int,
+    journalpostId: Int,
+) {
+    this.connection.use { connection ->
+        connection.prepareStatement(queryUpdateReferatJournalpostId).use {
+            it.setInt(1, journalpostId)
+            it.setInt(2, referatId)
+            it.execute()
+        }
+        connection.commit()
+    }
 }

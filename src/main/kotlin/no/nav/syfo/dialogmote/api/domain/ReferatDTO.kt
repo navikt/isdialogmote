@@ -7,6 +7,7 @@ data class ReferatDTO(
     val uuid: String,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
+    val digitalt: Boolean,
     val situasjon: String?,
     val konklusjon: String?,
     val arbeidstakerOppgave: String?,

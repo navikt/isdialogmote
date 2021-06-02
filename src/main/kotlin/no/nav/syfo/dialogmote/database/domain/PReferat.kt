@@ -10,6 +10,7 @@ data class PReferat(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val moteId: Int,
+    val digitalt: Boolean,
     val situasjon: String?,
     val konklusjon: String?,
     val arbeidstakerOppgave: String?,
@@ -17,6 +18,7 @@ data class PReferat(
     val veilederOppgave: String?,
     val document: List<DocumentComponentDTO>,
     val pdf: ByteArray,
+    val journalpostId: String?,
 )
 
 data class PMotedeltakerAnnen(
@@ -38,6 +40,7 @@ fun PReferat.toReferat(
         createdAt = this.createdAt,
         updatedAt = this.updatedAt,
         moteId = this.moteId,
+        digitalt = this.digitalt,
         situasjon = this.situasjon,
         konklusjon = this.konklusjon,
         arbeidstakerOppgave = this.arbeidstakerOppgave,
@@ -45,6 +48,7 @@ fun PReferat.toReferat(
         veilederOppgave = this.veilederOppgave,
         document = this.document,
         pdf = this.pdf,
+        journalpostId = this.journalpostId,
         andreDeltakere = andreDeltakere,
     )
 

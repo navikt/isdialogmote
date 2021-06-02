@@ -11,6 +11,7 @@ import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalforingService
+import no.nav.syfo.dialogmote.ReferatJournalforingService
 import no.nav.syfo.dialogmote.api.*
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
@@ -50,6 +51,9 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             val dialogmotedeltakerVarselJournalforingService = DialogmotedeltakerVarselJournalforingService(
                 database = database,
             )
+            val referatJournalforingService = ReferatJournalforingService(
+                database = database,
+            )
             val azureAdClient = mockk<AzureAdClient>()
             coEvery {
                 azureAdClient.getAccessTokenForResource(externalMockEnvironment.environment.dokarkivClientId)
@@ -64,6 +68,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             val dialogmoteVarselJournalforingCronjob = DialogmoteVarselJournalforingCronjob(
                 applicationState = externalMockEnvironment.applicationState,
                 dialogmotedeltakerVarselJournalforingService = dialogmotedeltakerVarselJournalforingService,
+                referatJournalforingService = referatJournalforingService,
                 dokarkivClient = dokarkivClient,
                 leaderPodClient = leaderPodClient,
             )
@@ -147,11 +152,31 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                     }
 
+                    val urlMoteUUIDFerdigstill =
+                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                    val ferdigstillDialogMoteDto = generateNewReferatDTO()
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(ferdigstillDialogMoteDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
                     runBlocking {
                         val result = dialogmoteVarselJournalforingCronjob.dialogmoteVarselJournalforingJob()
 
                         result.failed shouldBeEqualTo 0
                         result.updated shouldBeEqualTo 3
+                    }
+                    runBlocking {
+                        val result = dialogmoteVarselJournalforingCronjob.referatJournalforingJob()
+
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 1
                     }
                 }
 

@@ -10,6 +10,7 @@ import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalforingService
+import no.nav.syfo.dialogmote.ReferatJournalforingService
 
 fun Application.cronjobModule(
     applicationState: ApplicationState,
@@ -29,12 +30,16 @@ fun Application.cronjobModule(
     val dialogmotedeltakerVarselJournalforingService = DialogmotedeltakerVarselJournalforingService(
         database = database,
     )
+    val referatJournalforingService = ReferatJournalforingService(
+        database = database,
+    )
     val leaderPodClient = LeaderPodClient(
         environment = environment,
     )
     val journalforDialogmoteVarslerCronjob = DialogmoteVarselJournalforingCronjob(
         applicationState = applicationState,
         dialogmotedeltakerVarselJournalforingService = dialogmotedeltakerVarselJournalforingService,
+        referatJournalforingService = referatJournalforingService,
         dokarkivClient = dokarkivClient,
         leaderPodClient = leaderPodClient,
     )
