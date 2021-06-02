@@ -20,9 +20,12 @@ fun generateAvlysDialogmoteDTO() =
         arbeidsgiver = generateAvlysningDTO(),
     )
 
-fun generateNewDialogmoteTidStedDTO() = NewDialogmoteTidStedDTO(
-    sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
-    tid = LocalDateTime.now().plusDays(30),
+fun generateNewDialogmoteTidStedDTO(
+    sted: String,
+    dato: LocalDateTime,
+) = NewDialogmoteTidStedDTO(
+    sted = sted,
+    tid = dato,
     videoLink = "https://meet.google.com/xyz"
 )
 
@@ -105,13 +108,15 @@ fun generateMotedeltakerArbeidsgiverDTOMissingValues() = NewDialogmotedeltakerAr
 )
 
 fun generateNewDialogmoteDTO(
-    personIdentNumber: PersonIdentNumber
+    personIdentNumber: PersonIdentNumber,
+    sted: String = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
+    dato: LocalDateTime = LocalDateTime.now().plusDays(30),
 ): NewDialogmoteDTO {
     return NewDialogmoteDTO(
         tildeltEnhet = UserConstants.ENHET_NR.value,
         arbeidstaker = generateMotedeltakerArbeidstakerDTO(personIdentNumber),
         arbeidsgiver = generateMotedeltakerArbeidsgiverDTO(),
-        tidSted = generateNewDialogmoteTidStedDTO()
+        tidSted = generateNewDialogmoteTidStedDTO(sted, dato)
     )
 }
 

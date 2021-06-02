@@ -2,8 +2,7 @@ package no.nav.syfo.dialogmote
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidsgiver
-import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidstaker
+import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
@@ -40,15 +39,23 @@ class DialogmotedeltakerService(
         }
     }
 
-    fun getDialogmoteDeltakerArbeidstaker(
-        personIdentNumber: PersonIdentNumber,
+    fun getDialogmoteDeltakerArbeidstakerFromId(
+        moteDeltakerArbeidstakerId: Int,
     ): DialogmotedeltakerArbeidstaker {
-        val pMotedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(personIdentNumber)
+        val pMotedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(moteDeltakerArbeidstakerId)
             .first()
         val motedeltakerArbeidstakerVarselList = getDialogmoteDeltakerArbeidstakerVarselList(
             pMotedeltakerArbeidstaker.id
         )
         return pMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(motedeltakerArbeidstakerVarselList)
+    }
+
+    fun getDialogmoteDeltakerArbeidstakerVarselList(
+        uuid: UUID,
+    ): List<DialogmotedeltakerArbeidstakerVarsel> {
+        return database.getMotedeltakerArbeidstakerVarsel(uuid).map {
+            it.toDialogmotedeltakerArbeidstaker()
+        }
     }
 
     fun getDialogmoteDeltakerArbeidsgiver(
