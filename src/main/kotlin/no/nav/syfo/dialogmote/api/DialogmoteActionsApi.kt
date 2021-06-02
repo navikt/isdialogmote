@@ -117,6 +117,7 @@ fun Route.registerDialogmoteActionsApi(
                         dialogmote = dialogmote,
                         opprettetAv = getNAVIdentFromToken(token),
                         referat = newReferat,
+                        token = token,
                     )
                     if (success) {
                         call.respond(HttpStatusCode.OK)

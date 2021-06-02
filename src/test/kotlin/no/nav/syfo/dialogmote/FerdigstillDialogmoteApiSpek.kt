@@ -9,6 +9,7 @@ import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.dialogmote.api.*
 import no.nav.syfo.dialogmote.api.domain.*
+import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.testhelper.*
@@ -16,6 +17,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewReferatDTO
+import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.varsel.MotedeltakerVarselType
@@ -150,6 +152,14 @@ class FerdigstillDialogmoteApiSpek : Spek({
                             referat.pdf shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+
+                            val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
+                            moteStatusEndretList.size shouldBeEqualTo 2
+
+                            moteStatusEndretList.forEach { moteStatusEndret ->
+                                moteStatusEndret.opprettetAv shouldBeEqualTo VEILEDER_IDENT
+                                moteStatusEndret.tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO.fom
+                            }
                         }
                     }
                 }

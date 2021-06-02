@@ -13,12 +13,15 @@ import io.ktor.server.netty.*
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseResponse
 import no.nav.syfo.client.person.kontaktinfo.*
+import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfellePersonDTO
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.PERSON_EMAIL
 import no.nav.syfo.testhelper.UserConstants.PERSON_TLF
 import no.nav.syfo.testhelper.getRandomPort
 import no.nav.syfo.util.getPersonIdentHeader
+import java.time.LocalDate
 
 val beskyttetFalse = AdressebeskyttelseResponse(
     beskyttet = false,
@@ -49,6 +52,11 @@ val digitalKontaktinfoBolkKanVarslesFalse = DigitalKontaktinfoBolk(
             personident = ARBEIDSTAKER_IKKE_VARSEL.value
         )
     )
+)
+
+val oppfolgingstilfellePersonDTO = OppfolgingstilfellePersonDTO(
+    fom = LocalDate.now().minusDays(10),
+    tom = LocalDate.now().plusDays(10),
 )
 
 class SyfopersonMock {
@@ -92,6 +100,9 @@ class SyfopersonMock {
                     } else {
                         call.respond(digitalKontaktinfoBolkKanVarslesTrue(getPersonIdentHeader()!!))
                     }
+                }
+                get(OppfolgingstilfelleClient.PERSON_OPPFOLGINGSTILFELLE_PATH) {
+                    call.respond(oppfolgingstilfellePersonDTO)
                 }
             }
         }
