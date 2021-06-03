@@ -34,17 +34,29 @@ class DialogmoteService(
         moteUUID: UUID
     ): Dialogmote {
         return database.getDialogmote(moteUUID).first().let { pDialogmote ->
-            val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
-            val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
-            val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
-            val referat = getReferat(pDialogmote.uuid)
-            pDialogmote.toDialogmote(
-                dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
-                dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
-                dialogmoteTidStedList = dialogmoteTidStedList,
-                referat = referat,
-            )
+            dialogmote(pDialogmote)
         }
+    }
+
+    fun getDialogmote(
+        id: Int
+    ): Dialogmote {
+        return database.getDialogmote(id).first().let { pDialogmote ->
+            dialogmote(pDialogmote)
+        }
+    }
+
+    private fun dialogmote(pDialogmote: PDialogmote): Dialogmote {
+        val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
+        val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
+        val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
+        val referat = getReferatForMote(pDialogmote.uuid)
+        return pDialogmote.toDialogmote(
+            dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
+            dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
+            dialogmoteTidStedList = dialogmoteTidStedList,
+            referat = referat,
+        )
     }
 
     fun getDialogmoteList(
@@ -69,7 +81,7 @@ class DialogmoteService(
         val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
         val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
         val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
-        val referat = getReferat(pDialogmote.uuid)
+        val referat = getReferatForMote(pDialogmote.uuid)
         return pDialogmote.toDialogmote(
             dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
             dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
@@ -426,9 +438,18 @@ class DialogmoteService(
     }
 
     fun getReferat(
+        referatUUID: UUID
+    ): Referat? {
+        return database.getReferat(referatUUID).firstOrNull()?.let { pReferat ->
+            val andreDeltakere = getAndreDeltakere(pReferat.id)
+            pReferat.toReferat(andreDeltakere)
+        }
+    }
+
+    fun getReferatForMote(
         moteUUID: UUID
     ): Referat? {
-        return database.getReferat(moteUUID).firstOrNull()?.let { pReferat ->
+        return database.getReferatForMote(moteUUID).firstOrNull()?.let { pReferat ->
             val andreDeltakere = getAndreDeltakere(pReferat.id)
             pReferat.toReferat(andreDeltakere)
         }

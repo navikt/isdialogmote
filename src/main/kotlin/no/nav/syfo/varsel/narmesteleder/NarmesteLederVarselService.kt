@@ -49,6 +49,7 @@ class NarmesteLederVarselService(
             MotedeltakerVarselType.INNKALT -> NarmesteLederVarselType.NARMESTE_LEDER_MOTE_PLANLAGT
             MotedeltakerVarselType.AVLYST -> NarmesteLederVarselType.NARMESTE_LEDER_MOTE_AVLYST
             MotedeltakerVarselType.NYTT_TID_STED -> NarmesteLederVarselType.NARMESTE_LEDER_MOTE_NYTID
+            MotedeltakerVarselType.REFERAT -> NarmesteLederVarselType.NARMESTE_LEDER_REFERAT
         }
     }
 

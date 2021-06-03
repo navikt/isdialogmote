@@ -38,7 +38,7 @@ fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselD
 fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerVarselDTO(
     dialogmoteTidSted: DialogmoteTidSted,
     deltakerUuid: UUID,
-    virksomhetsummer: Virksomhetsnummer,
+    virksomhetsnummer: Virksomhetsnummer,
 ) = ArbeidstakerVarselDTO(
     uuid = this.uuid.toString(),
     deltakerUuid = deltakerUuid.toString(),
@@ -50,7 +50,7 @@ fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerVarselDTO(
     sted = dialogmoteTidSted.sted,
     tid = dialogmoteTidSted.tid,
     videoLink = dialogmoteTidSted.videoLink,
-    virksomhetsnummer = virksomhetsummer.value,
+    virksomhetsnummer = virksomhetsnummer.value,
     document = this.document,
 )
 

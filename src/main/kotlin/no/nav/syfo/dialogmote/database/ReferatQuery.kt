@@ -9,6 +9,7 @@ import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.configuredJacksonMapper
 import java.sql.*
 import java.time.Instant
+import java.time.LocalDateTime
 import java.util.UUID
 
 private val mapper = configuredJacksonMapper()
@@ -20,10 +21,26 @@ const val queryGetReferatForMoteUUID =
         WHERE MOTE.uuid = ?
     """
 
-fun DatabaseInterface.getReferat(moteUUID: UUID): List<PReferat> {
+fun DatabaseInterface.getReferatForMote(moteUUID: UUID): List<PReferat> {
     return connection.use { connection ->
         connection.prepareStatement(queryGetReferatForMoteUUID).use {
             it.setString(1, moteUUID.toString())
+            it.executeQuery().toList { toPReferat() }
+        }
+    }
+}
+
+const val queryGetReferat =
+    """
+        SELECT *
+        FROM MOTE_REFERAT
+        WHERE uuid = ?
+    """
+
+fun DatabaseInterface.getReferat(referatUUID: UUID): List<PReferat> {
+    return connection.use { connection ->
+        connection.prepareStatement(queryGetReferat).use {
+            it.setString(1, referatUUID.toString())
             it.executeQuery().toList { toPReferat() }
         }
     }
@@ -45,6 +62,8 @@ fun ResultSet.toPReferat(): PReferat =
         document = mapper.readValue(getString("document"), object : TypeReference<List<DocumentComponentDTO>>() {}),
         pdf = getBytes("pdf"),
         journalpostId = getString("journalpost_id"),
+        lestDatoArbeidstaker = getTimestamp("lest_dato_arbeidstaker")?.toLocalDateTime(),
+        lestDatoArbeidsgiver = getTimestamp("lest_dato_arbeidsgiver")?.toLocalDateTime(),
     )
 
 const val queryGetDialogmotedeltakerAnnenForReferatID =
@@ -189,5 +208,23 @@ fun DatabaseInterface.updateReferatJournalpostId(
             it.execute()
         }
         connection.commit()
+    }
+}
+
+const val queryUpdateReferatLestDatoArbeidstaker =
+    """
+    UPDATE MOTE_REFERAT 
+    SET lest_dato_arbeidstaker=?
+    WHERE uuid = ?
+    """
+
+fun Connection.updateReferatLestDatoArbeidstaker(
+    referatUUID: UUID,
+) {
+    val now = LocalDateTime.now()
+    this.prepareStatement(queryUpdateReferatLestDatoArbeidstaker).use {
+        it.setTimestamp(1, Timestamp.valueOf(now))
+        it.setString(2, referatUUID.toString())
+        it.execute()
     }
 }

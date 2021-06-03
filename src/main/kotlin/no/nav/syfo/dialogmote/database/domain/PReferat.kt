@@ -19,6 +19,8 @@ data class PReferat(
     val document: List<DocumentComponentDTO>,
     val pdf: ByteArray,
     val journalpostId: String?,
+    val lestDatoArbeidstaker: LocalDateTime?,
+    val lestDatoArbeidsgiver: LocalDateTime?,
 )
 
 data class PMotedeltakerAnnen(
@@ -49,6 +51,8 @@ fun PReferat.toReferat(
         document = this.document,
         pdf = this.pdf,
         journalpostId = this.journalpostId,
+        lestDatoArbeidstaker = this.lestDatoArbeidstaker,
+        lestDatoArbeidsgiver = this.lestDatoArbeidsgiver,
         andreDeltakere = andreDeltakere,
     )
 

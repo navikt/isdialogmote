@@ -31,6 +31,14 @@ class DialogmotedeltakerService(
         }
     }
 
+    fun getDialogmoteDeltakerArbeidstakerVarselList(
+        uuid: UUID,
+    ): List<DialogmotedeltakerArbeidstakerVarsel> {
+        return database.getMotedeltakerArbeidstakerVarsel(uuid).map {
+            it.toDialogmotedeltakerArbeidstaker()
+        }
+    }
+
     fun getDialogmoteDeltakerArbeidsgiverVarselList(
         motedeltakerArbeidsgiverId: Int,
     ): List<DialogmotedeltakerArbeidsgiverVarsel> {
@@ -48,14 +56,6 @@ class DialogmotedeltakerService(
             pMotedeltakerArbeidstaker.id
         )
         return pMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(motedeltakerArbeidstakerVarselList)
-    }
-
-    fun getDialogmoteDeltakerArbeidstakerVarselList(
-        uuid: UUID,
-    ): List<DialogmotedeltakerArbeidstakerVarsel> {
-        return database.getMotedeltakerArbeidstakerVarsel(uuid).map {
-            it.toDialogmotedeltakerArbeidstaker()
-        }
     }
 
     fun getDialogmoteDeltakerArbeidsgiver(
@@ -83,6 +83,25 @@ class DialogmotedeltakerService(
                 personIdent = personIdentNumber,
                 motedeltakerArbeidstakerUuid = dialogmotedeltakerArbeidstakerUuid,
                 varselUuid = dialogmotedeltakerArbeidstakerVarselUuid,
+            )
+            connection.commit()
+        }
+    }
+
+    fun lesReferatArbeidstaker(
+        personIdentNumber: PersonIdentNumber,
+        dialogmotedeltakerArbeidstakerUuid: UUID,
+        referatUuid: UUID,
+    ) {
+        database.connection.use { connection ->
+            connection.updateReferatLestDatoArbeidstaker(
+                referatUUID = referatUuid
+            )
+
+            arbeidstakerVarselService.lesVarsel(
+                personIdent = personIdentNumber,
+                motedeltakerArbeidstakerUuid = dialogmotedeltakerArbeidstakerUuid,
+                varselUuid = referatUuid,
             )
             connection.commit()
         }

@@ -11,6 +11,22 @@ import java.sql.*
 import java.time.Instant
 import java.util.UUID
 
+const val queryGetDialogmoteForId =
+    """
+        SELECT *
+        FROM MOTE
+        WHERE id = ?
+    """
+
+fun DatabaseInterface.getDialogmote(id: Int): List<PDialogmote> {
+    return connection.use { connection ->
+        connection.prepareStatement(queryGetDialogmoteForId).use {
+            it.setInt(1, id)
+            it.executeQuery().toList { toPDialogmote() }
+        }
+    }
+}
+
 const val queryGetDialogmoteForUUID =
     """
         SELECT *

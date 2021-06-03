@@ -53,22 +53,39 @@ fun Route.registerArbeidstakerVarselApi(
                 val motedeltakerArbeidstakerVarselList = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerVarselList(
                     uuid = varselUuid
                 )
-                if (motedeltakerArbeidstakerVarselList.isEmpty()) {
+                val referat = dialogmoteService.getReferat(
+                    referatUUID = varselUuid
+                )
+
+                if (motedeltakerArbeidstakerVarselList.isEmpty() && referat == null) {
                     throw IllegalArgumentException("No Varsel found for PersonIdent with uuid=$varselUuid")
                 }
-                val motedeltakerArbeidstakerVarsel = motedeltakerArbeidstakerVarselList.first()
+
+                val motedeltakerArbeidstakerId = if (referat != null) {
+                    dialogmoteService.getDialogmote(referat.moteId).arbeidstaker.id
+                } else {
+                    motedeltakerArbeidstakerVarselList.first().motedeltakerArbeidstakerId
+                }
 
                 val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerFromId(
-                    moteDeltakerArbeidstakerId = motedeltakerArbeidstakerVarsel.motedeltakerArbeidstakerId
+                    moteDeltakerArbeidstakerId = motedeltakerArbeidstakerId
                 )
 
                 val hasAccessToVarsel = motedeltakerArbeidstaker.personIdent == requestPersonIdent
                 if (hasAccessToVarsel) {
-                    dialogmotedeltakerService.lesDialogmotedeltakerArbeidstakerVarsel(
-                        personIdentNumber = requestPersonIdent,
-                        dialogmotedeltakerArbeidstakerUuid = motedeltakerArbeidstaker.uuid,
-                        dialogmotedeltakerArbeidstakerVarselUuid = motedeltakerArbeidstakerVarsel.uuid,
-                    )
+                    if (referat != null) {
+                        dialogmotedeltakerService.lesReferatArbeidstaker(
+                            personIdentNumber = requestPersonIdent,
+                            dialogmotedeltakerArbeidstakerUuid = motedeltakerArbeidstaker.uuid,
+                            referatUuid = varselUuid,
+                        )
+                    } else {
+                        dialogmotedeltakerService.lesDialogmotedeltakerArbeidstakerVarsel(
+                            personIdentNumber = requestPersonIdent,
+                            dialogmotedeltakerArbeidstakerUuid = motedeltakerArbeidstaker.uuid,
+                            dialogmotedeltakerArbeidstakerVarselUuid = varselUuid,
+                        )
+                    }
                     call.respond(HttpStatusCode.OK)
                 } else {
                     val accessDeniedMessage = "Denied access to Les Varsel for varselUUID"
