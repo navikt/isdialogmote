@@ -71,6 +71,28 @@ fun DatabaseInterface.getMoteStatusEndretNotPublished(): List<PMoteStatusEndret>
     }
 }
 
+const val queryUpdateMoteStatusEndretPublishedAt =
+    """
+        UPDATE MOTE_STATUS_ENDRET
+        SET published_at = ?, updated_at = ?
+        WHERE id = ?
+    """
+
+fun DatabaseInterface.updateMoteStatusEndretPublishedAt(
+    moteStatusEndretId: Int,
+) {
+    val now = Timestamp.from(Instant.now())
+    this.connection.use { connection ->
+        connection.prepareStatement(queryUpdateMoteStatusEndretPublishedAt).use {
+            it.setTimestamp(1, now)
+            it.setTimestamp(2, now)
+            it.setInt(3, moteStatusEndretId)
+            it.execute()
+        }
+        connection.commit()
+    }
+}
+
 fun ResultSet.toPMoteStatusEndret(): PMoteStatusEndret =
     PMoteStatusEndret(
         id = getInt("id"),

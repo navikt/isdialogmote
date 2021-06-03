@@ -71,6 +71,8 @@ spec:
     - configmap: loginservice-idporten
     - secret: isdialogmote-serviceuser
     - secret: isdialogmote-redis-password
+  kafka:
+    pool: nav-prod
   env:
     - name: KTOR_ENV
       value: "production"
@@ -100,6 +102,8 @@ spec:
       value: "https://syfoperson.prod-fss-pub.nais.io"
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.prod-fss-pub.nais.io"
+    - name: TOGGLE_PUBLISH_STATUS_ENDRING_CRONJOB_ENABLED
+      value: "false"
     - name: TOGGLE_JOURNALFORING_CRONJOB_ENABLED
       value: "false"
     - name: TOGGLE_MQ_SENDING_ENABLED

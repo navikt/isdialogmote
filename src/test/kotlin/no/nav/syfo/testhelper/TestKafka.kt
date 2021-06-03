@@ -1,6 +1,7 @@
 package no.nav.syfo.testhelper
 
 import no.nav.common.KafkaEnvironment
+import no.nav.syfo.cronjob.statusendring.DialogmoteStatusEndringProducer.Companion.DIALOGMOTE_STATUS_ENDRING_TOPIC
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BRUKERNOTIFIKASJON_DONE_TOPIC
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BRUKERNOTIFIKASJON_OPPGAVE_TOPIC
 
@@ -10,6 +11,7 @@ fun testKafka(
     topicNames: List<String> = listOf(
         BRUKERNOTIFIKASJON_OPPGAVE_TOPIC,
         BRUKERNOTIFIKASJON_DONE_TOPIC,
+        DIALOGMOTE_STATUS_ENDRING_TOPIC,
     )
 ) = KafkaEnvironment(
     autoStart = autoStart,
