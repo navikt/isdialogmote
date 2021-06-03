@@ -1,10 +1,14 @@
 package no.nav.syfo.application.cache
 
 import no.nav.syfo.util.configuredJacksonMapper
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import redis.clients.jedis.JedisPool
+import redis.clients.jedis.exceptions.JedisConnectionException
 
 class RedisStore(private val jedisPool: JedisPool) {
 
+    private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.application.cache")
     val mapper = configuredJacksonMapper()
 
     inline fun <reified T> getObject(key: String): T? {
@@ -13,7 +17,12 @@ class RedisStore(private val jedisPool: JedisPool) {
     }
 
     fun get(key: String): String? {
-        jedisPool.resource.use { jedis -> return jedis.get(key) }
+        try {
+            jedisPool.resource.use { jedis -> return jedis.get(key) }
+        } catch (e: JedisConnectionException) {
+            log.warn("Got connection error when fetching from redis! Continuing without cached value", e)
+            return null
+        }
     }
 
     fun <T> setObject(key: String, value: T, expireSeconds: Int) {
@@ -21,12 +30,16 @@ class RedisStore(private val jedisPool: JedisPool) {
     }
 
     fun set(key: String, value: String, expireSeconds: Int) {
-        jedisPool.resource.use { jedis ->
-            jedis.setex(
-                key,
-                expireSeconds,
-                value,
-            )
+        try {
+            jedisPool.resource.use { jedis ->
+                jedis.setex(
+                    key,
+                    expireSeconds,
+                    value,
+                )
+            }
+        } catch (e: JedisConnectionException) {
+            log.warn("Got connection error when storing in redis! Continue without caching", e)
         }
     }
 }
