@@ -12,15 +12,18 @@ spec:
     min: 1
     max: 2
     cpuThresholdPercentage: 70
+  startup:
+    path: /is_ready
+    periodSeconds: 5
+    timeout: 5
+    failureThreshold: 30
   liveness:
     path: /is_alive
-    initialDelay: 60
     periodSeconds: 5
     timeout: 5
     failureThreshold: 3
   readiness:
     path: /is_ready
-    initialDelay: 60
     periodSeconds: 5
     timeout: 5
     failureThreshold: 3
