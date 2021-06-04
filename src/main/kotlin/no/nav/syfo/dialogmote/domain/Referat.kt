@@ -5,6 +5,9 @@ import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerAnnenDTO
 import no.nav.syfo.dialogmote.api.domain.ReferatDTO
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Virksomhetsnummer
+import no.nav.syfo.varsel.MotedeltakerVarselType
+import no.nav.syfo.varsel.arbeidstaker.domain.ArbeidstakerVarselDTO
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -23,6 +26,8 @@ data class Referat(
     val document: List<DocumentComponentDTO>,
     val pdf: ByteArray,
     val journalpostId: String?,
+    val lestDatoArbeidstaker: LocalDateTime?,
+    val lestDatoArbeidsgiver: LocalDateTime?,
     val andreDeltakere: List<DialogmotedeltakerAnnen>,
 )
 
@@ -48,6 +53,8 @@ fun Referat.toReferatDTO(): ReferatDTO {
         veilederOppgave = this.veilederOppgave,
         document = this.document,
         pdf = this.pdf,
+        lestDatoArbeidstaker = this.lestDatoArbeidstaker,
+        lestDatoArbeidsgiver = this.lestDatoArbeidsgiver,
         andreDeltakere = this.andreDeltakere.map {
             it.toDialogmotedeltakerAnnenDTO()
         }
@@ -72,4 +79,23 @@ fun Referat.toJournalforingRequest(
     dokumentName = "Referat fra dialogmøte",
     brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT,
     dokumentPdf = this.pdf
+)
+
+fun Referat.toArbeidstakerVarselDTO(
+    dialogmoteTidSted: DialogmoteTidSted,
+    deltakerUuid: UUID,
+    virksomhetsnummer: Virksomhetsnummer,
+) = ArbeidstakerVarselDTO(
+    uuid = this.uuid.toString(),
+    deltakerUuid = deltakerUuid.toString(),
+    createdAt = this.createdAt,
+    varselType = MotedeltakerVarselType.REFERAT.name,
+    digitalt = this.digitalt,
+    lestDato = this.lestDatoArbeidstaker,
+    fritekst = konklusjon ?: "",
+    sted = dialogmoteTidSted.sted,
+    tid = dialogmoteTidSted.tid,
+    videoLink = dialogmoteTidSted.videoLink,
+    virksomhetsnummer = virksomhetsnummer.value,
+    document = this.document,
 )

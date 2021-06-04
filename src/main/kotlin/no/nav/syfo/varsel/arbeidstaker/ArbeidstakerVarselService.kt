@@ -25,47 +25,31 @@ class ArbeidstakerVarselService(
             serviceuser = serviceuserUsername,
             varselUuid = varselUuid,
         )
-        when (type) {
+        val tekst = when (type) {
             MotedeltakerVarselType.INNKALT -> {
-                val oppgave = createBrukernotifikasjonOppgave(
-                    createdAt = createdAt,
-                    personIdent = personIdent,
-                    tekst = "Du har mottatt et brev om innkalling til dialogmøte",
-                    link = URL(dialogmoteArbeidstakerUrl),
-                    grupperingsId = motedeltakerArbeidstakerUuid,
-                )
-                brukernotifikasjonProducer.sendOppgave(
-                    nokkel,
-                    oppgave,
-                )
+                "Du har mottatt et brev om innkalling til dialogmøte"
             }
             MotedeltakerVarselType.AVLYST -> {
-                val oppgave = createBrukernotifikasjonOppgave(
-                    createdAt = createdAt,
-                    personIdent = personIdent,
-                    tekst = "Du har mottatt et brev om avlyst dialogmøte",
-                    link = URL(dialogmoteArbeidstakerUrl),
-                    grupperingsId = motedeltakerArbeidstakerUuid,
-                )
-                brukernotifikasjonProducer.sendOppgave(
-                    nokkel,
-                    oppgave,
-                )
+                "Du har mottatt et brev om avlyst dialogmøte"
             }
             MotedeltakerVarselType.NYTT_TID_STED -> {
-                val oppgave = createBrukernotifikasjonOppgave(
-                    createdAt = createdAt,
-                    personIdent = personIdent,
-                    tekst = "Du har mottatt et brev om endret dialogmøte",
-                    link = URL(dialogmoteArbeidstakerUrl),
-                    grupperingsId = motedeltakerArbeidstakerUuid,
-                )
-                brukernotifikasjonProducer.sendOppgave(
-                    nokkel,
-                    oppgave,
-                )
+                "Du har mottatt et brev om endret dialogmøte"
+            }
+            MotedeltakerVarselType.REFERAT -> {
+                "Du har mottatt et referat fra dialogmøte"
             }
         }
+        val oppgave = createBrukernotifikasjonOppgave(
+            createdAt = createdAt,
+            personIdent = personIdent,
+            tekst = tekst,
+            link = URL(dialogmoteArbeidstakerUrl),
+            grupperingsId = motedeltakerArbeidstakerUuid,
+        )
+        brukernotifikasjonProducer.sendOppgave(
+            nokkel,
+            oppgave,
+        )
     }
 
     fun lesVarsel(

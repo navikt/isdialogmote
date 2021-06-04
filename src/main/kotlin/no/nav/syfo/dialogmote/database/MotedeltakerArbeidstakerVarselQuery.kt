@@ -73,6 +73,7 @@ const val queryGetMotedeltakerArbeidstakerVarselForMotedeltaker =
         SELECT *
         FROM MOTEDELTAKER_ARBEIDSTAKER_VARSEL
         WHERE motedeltaker_arbeidstaker_id = ?
+        ORDER BY created_at DESC
     """
 
 fun DatabaseInterface.getMotedeltakerArbeidstakerVarsel(

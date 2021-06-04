@@ -15,6 +15,8 @@ data class ReferatDTO(
     val veilederOppgave: String?,
     val document: List<DocumentComponentDTO>,
     val pdf: ByteArray,
+    val lestDatoArbeidstaker: LocalDateTime?,
+    val lestDatoArbeidsgiver: LocalDateTime?,
     val andreDeltakere: List<DialogmotedeltakerAnnenDTO>,
 )
 

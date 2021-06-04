@@ -41,13 +41,26 @@ fun Dialogmote.toDialogmoteDTO(): DialogmoteDTO {
 
 fun List<Dialogmote>.toArbeidstakerVarselDTOList(): List<ArbeidstakerVarselDTO> {
     return this.map { dialogmote ->
-        dialogmote.arbeidstaker.varselList.map {
-            it.toArbeidstakerVarselDTO(
-                dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
-                deltakerUuid = dialogmote.arbeidstaker.uuid,
-                virksomhetsummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+        val varselList = mutableListOf<ArbeidstakerVarselDTO>()
+        dialogmote.referat?.let {
+            varselList.add(
+                it.toArbeidstakerVarselDTO(
+                    dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
+                    deltakerUuid = dialogmote.arbeidstaker.uuid,
+                    virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+                )
             )
         }
+        varselList.addAll(
+            dialogmote.arbeidstaker.varselList.map {
+                it.toArbeidstakerVarselDTO(
+                    dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
+                    deltakerUuid = dialogmote.arbeidstaker.uuid,
+                    virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+                )
+            }
+        )
+        varselList
     }.flatten()
 }
 
