@@ -23,3 +23,9 @@ spec:
       description: "{{ $labels.app }} klarer ikke å journalføre en eller flere Varsel."
       action: "Undersøk hvorfor det feiler i logger og om det er en midlertidig feil eller ikke."
       severity: danger
+    - alert: FAILURES IN CRONJOB FOR PUBLISHING MOTESTATUS-ENDRING
+      expr: sum(increase(isdialogmote_cronjob_publish_status_endring_fail_count{app="isdialogmote"} [1h])) > 0
+      for: 5m
+      description: "{{ $labels.app }} klarer ikke å publisere en eller flere DialogmoteStatusEndring."
+      action: "Undersøk hvorfor det feiler i logger og om det er en midlertidig feil eller ikke."
+      severity: danger

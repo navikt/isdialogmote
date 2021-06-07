@@ -7,6 +7,7 @@ version = "1.0.0"
 object Versions {
     const val avroVersion = "1.10.0"
     const val brukernotifikasjonAvroVersion = "1.2021.01.18-11.12-b9c8c40b98d1"
+    const val isdialogmoteSchemaVersion = "1.0.3"
     const val confluentVersion = "5.5.0"
     const val flywayVersion = "7.5.2"
     const val hikariVersion = "4.0.1"
@@ -42,6 +43,13 @@ repositories {
     jcenter()
     maven(url = "https://packages.confluent.io/maven/")
     maven(url = "https://jitpack.io")
+    maven {
+        url = uri("https://maven.pkg.github.com/navikt/isdialogmote-schema")
+        credentials {
+            username = githubUser
+            password = githubPassword
+        }
+    }
     maven {
         url = uri("https://maven.pkg.github.com/navikt/tjenestespesifikasjoner")
         credentials {
@@ -87,6 +95,7 @@ dependencies {
     implementation("io.confluent:kafka-avro-serializer:${Versions.confluentVersion}")
     implementation("io.confluent:kafka-schema-registry:${Versions.confluentVersion}")
     implementation("com.github.navikt:brukernotifikasjon-schemas:${Versions.brukernotifikasjonAvroVersion}")
+    implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchemaVersion}")
     testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedVersion}")
 
     // MQ

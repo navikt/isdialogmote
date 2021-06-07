@@ -9,8 +9,11 @@ import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
+import no.nav.syfo.cronjob.statusendring.*
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalforingService
 import no.nav.syfo.dialogmote.ReferatJournalforingService
+import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
+import org.apache.kafka.clients.producer.KafkaProducer
 
 fun Application.cronjobModule(
     applicationState: ApplicationState,
@@ -44,6 +47,24 @@ fun Application.cronjobModule(
         leaderPodClient = leaderPodClient,
     )
 
+    val kafkaDialogmoteStatusEndringProducerProperties = kafkaDialogmoteStatusEndringProducerConfig(environment)
+    val kafkaDialogmoteStatusEndringProducer = KafkaProducer<String, KDialogmoteStatusEndring>(
+        kafkaDialogmoteStatusEndringProducerProperties
+    )
+
+    val dialogmoteStatusEndringProducer = DialogmoteStatusEndringProducer(
+        kafkaDialogmoteStatusEndringProducer = kafkaDialogmoteStatusEndringProducer,
+    )
+    val publishDialogmoteStatusEndringService = PublishDialogmoteStatusEndringService(
+        database = database,
+        dialogmoteStatusEndringProducer = dialogmoteStatusEndringProducer,
+    )
+    val publishDialogmoteStatusEndringCronjob = PublishDialogmoteStatusEndringCronjob(
+        applicationState = applicationState,
+        publishDialogmoteStatusEndringService = publishDialogmoteStatusEndringService,
+        leaderPodClient = leaderPodClient,
+    )
+
     if (environment.journalforingCronjobEnabled) {
         createListenerCronjob(
             applicationState = applicationState,
@@ -52,6 +73,15 @@ fun Application.cronjobModule(
         }
     } else {
         log.info("JournalforingCronjob is not enabled")
+    }
+    if (environment.publishDialogmoteStatusEndringCronjobEnabled) {
+        createListenerCronjob(
+            applicationState = applicationState,
+        ) {
+            publishDialogmoteStatusEndringCronjob.start()
+        }
+    } else {
+        log.info("PublishDialogmoteStatusEndringCronjob is not enabled")
     }
 }
 
