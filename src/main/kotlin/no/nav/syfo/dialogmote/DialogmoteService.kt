@@ -363,10 +363,23 @@ class DialogmoteService(
         referat: NewReferatDTO,
         token: String,
     ): Boolean {
+        val narmesteLeder = narmesteLederClient.activeLeader(
+            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+            token = token,
+            callId = callId
+        )
+        if (narmesteLeder == null) {
+            log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
+            throw RuntimeException("Denied access to Dialogmoter: No NarmesteLeder was found for person")
+        }
+
         val pdfReferat = pdfGenClient.pdfReferat(
             callId = callId,
             documentComponentDTOList = referat.document,
         ) ?: throw RuntimeException("Failed to request PDF - Referat")
+
+        val now = LocalDateTime.now()
 
         database.connection.use { connection ->
             updateMoteStatus(
@@ -378,11 +391,23 @@ class DialogmoteService(
                 personIdentNumber = dialogmote.arbeidstaker.personIdent,
                 token = token,
             )
-            connection.createNewReferat(
+            val (_, referatUuid) = connection.createNewReferat(
                 commit = false,
                 newReferat = referat.toNewReferat(dialogmote.id),
                 pdf = pdfReferat,
                 digitalt = true,
+            )
+            arbeidstakerVarselService.sendVarsel(
+                createdAt = now,
+                personIdent = dialogmote.arbeidstaker.personIdent,
+                type = MotedeltakerVarselType.REFERAT,
+                motedeltakerArbeidstakerUuid = dialogmote.arbeidstaker.uuid,
+                varselUuid = referatUuid,
+            )
+            narmesteLederVarselService.sendVarsel(
+                createdAt = now,
+                narmesteLeder = narmesteLeder,
+                varseltype = MotedeltakerVarselType.REFERAT,
             )
             connection.commit()
         }

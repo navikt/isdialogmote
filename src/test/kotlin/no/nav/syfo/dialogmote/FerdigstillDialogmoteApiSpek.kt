@@ -116,6 +116,7 @@ class FerdigstillDialogmoteApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.REFERAT, any()) }
                         }
 
                         with(
@@ -151,7 +152,7 @@ class FerdigstillDialogmoteApiSpek : Spek({
 
                             referat.pdf shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
 
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                            verify(exactly = 2) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2
