@@ -80,7 +80,7 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
                 )
                 val urlMote = "$dialogmoteApiBasepath$dialogmoteApiPersonIdentUrlPath"
 
-                it("should update publishedAt") {
+                it("should update publishedAt (ferdigstilt)") {
                     val newDialogmoteDTO = generateNewDialogmoteDTO(UserConstants.ARBEIDSTAKER_FNR)
                     val createdDialogmoteUUID: String
 
@@ -92,7 +92,71 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
-                        verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                    }
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                        dialogmoteList.size shouldBeEqualTo 1
+
+                        val dialogmoteDTO = dialogmoteList.first()
+                        dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+
+                        createdDialogmoteUUID = dialogmoteDTO.uuid
+                    }
+
+                    val urlMoteUUIDPostTidSted = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                    val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTO()
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(newDialogmoteTidSted))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    val urlMoteUUIDFerdigstill =
+                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                    val ferdigstillDialogMoteDto = generateNewReferatDTO()
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(ferdigstillDialogMoteDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    runBlocking {
+                        val result = publishDialogmoteStatusEndringCronjob.dialogmoteStatusEndringPublishJob()
+
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 3
+                    }
+                }
+                it("should update publishedAt (avlyst)") {
+                    val newDialogmoteDTO = generateNewDialogmoteDTO(UserConstants.ARBEIDSTAKER_FNR)
+                    val createdDialogmoteUUID: String
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
                     }
 
                     with(
@@ -139,25 +203,11 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                     }
 
-                    val urlMoteUUIDFerdigstill =
-                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
-                    val ferdigstillDialogMoteDto = generateNewReferatDTO()
-
-                    with(
-                        handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
-                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            setBody(objectMapper.writeValueAsString(ferdigstillDialogMoteDto))
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-                    }
-
                     runBlocking {
                         val result = publishDialogmoteStatusEndringCronjob.dialogmoteStatusEndringPublishJob()
 
                         result.failed shouldBeEqualTo 0
-                        result.updated shouldBeEqualTo 4
+                        result.updated shouldBeEqualTo 3
                     }
                 }
             }

@@ -187,6 +187,12 @@ class DialogmoteService(
         avlysDialogmote: AvlysDialogmoteDTO,
         token: String
     ): Boolean {
+        if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
+            throw RuntimeException("Failed to Avlys Dialogmote: already Ferdigstilt")
+        }
+        if (dialogmote.status == DialogmoteStatus.AVLYST) {
+            throw RuntimeException("Failed to Avlys Dialogmote: already Avlyst")
+        }
         val isDialogmoteTidPassed = dialogmote.tidStedList.latest()?.passed()
             ?: throw RuntimeException("Failed to Avlys Dialogmote: No TidSted found")
 
@@ -249,6 +255,12 @@ class DialogmoteService(
         endreDialogmoteTidSted: EndreTidStedDialogmoteDTO,
         token: String
     ): Boolean {
+        if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
+            throw RuntimeException("Failed to change tid/sted, already Ferdigstilt")
+        }
+        if (dialogmote.status == DialogmoteStatus.AVLYST) {
+            throw RuntimeException("Failed to change tid/sted, already Avlyst")
+        }
         val pdfEndringArbeidstaker = pdfGenClient.pdfEndringTidStedArbeidstaker(
             callId = callId,
             documentComponentDTOList = endreDialogmoteTidSted.arbeidstaker.endringsdokument
@@ -363,6 +375,13 @@ class DialogmoteService(
         referat: NewReferatDTO,
         token: String,
     ): Boolean {
+        if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
+            throw RuntimeException("Failed to Ferdigstille Dialogmote, already Ferdigstilt")
+        }
+        if (dialogmote.status == DialogmoteStatus.AVLYST) {
+            throw RuntimeException("Failed to Ferdigstille Dialogmote, already Avlyst")
+        }
+
         val narmesteLeder = narmesteLederClient.activeLeader(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
