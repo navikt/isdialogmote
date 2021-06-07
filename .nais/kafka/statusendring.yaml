@@ -23,3 +23,6 @@ spec:
     - team: teamsykefravr
       application: isdialogmote
       access: readwrite
+    - team: disykefravar
+      application: dvh-syfodm2-konsument
+      access: read
