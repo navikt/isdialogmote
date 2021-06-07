@@ -14,8 +14,7 @@ import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.generator.generateAvlysDialogmoteDTO
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -25,6 +24,7 @@ import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDateTime
+import kotlin.test.assertFailsWith
 
 class AvlysDialogmoteApiSpek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -165,6 +165,34 @@ class AvlysDialogmoteApiSpek : Spek({
                                 moteStatusEndret.tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO.fom
                             }
                         }
+
+                        assertFailsWith<RuntimeException> {
+                            handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(avlysDialogMoteDto))
+                            }
+                        }.message shouldBeEqualTo "Failed to Avlys Dialogmote: already Avlyst"
+
+                        val urlMoteUUIDFerdigstill = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        val newReferatDTO = generateNewReferatDTO()
+                        assertFailsWith<RuntimeException> {
+                            handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newReferatDTO))
+                            }
+                        }.message shouldBeEqualTo "Failed to Ferdigstille Dialogmote, already Avlyst"
+
+                        val urlMoteUUIDPostTidSted = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                        val endreTidStedDialogMoteDto = generateEndreDialogmoteTidStedDTO()
+                        assertFailsWith<RuntimeException> {
+                            handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(endreTidStedDialogMoteDto))
+                            }
+                        }.message shouldBeEqualTo "Failed to change tid/sted, already Avlyst"
                     }
                 }
             }
