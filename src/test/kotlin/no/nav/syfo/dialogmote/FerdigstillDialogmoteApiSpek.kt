@@ -141,11 +141,14 @@ class FerdigstillDialogmoteApiSpek : Spek({
                             val referat = dialogmoteDTO.referat!!
                             referat.situasjon shouldBeEqualTo "Dette er en beskrivelse av situasjonen"
                             referat.document[0].type shouldBeEqualTo DocumentComponentType.HEADER
-                            referat.document[0].title shouldBeEqualTo "Tittel referat"
-                            referat.document[0].texts shouldBeEqualTo emptyList()
+                            referat.document[0].texts shouldBeEqualTo listOf("Tittel referat")
 
                             referat.document[1].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
                             referat.document[1].texts shouldBeEqualTo listOf("Brødtekst")
+
+                            referat.document[2].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
+                            referat.document[2].key shouldBeEqualTo "Standardtekst"
+                            referat.document[2].texts shouldBeEqualTo listOf("Dette er en standardtekst")
 
                             referat.andreDeltakere.first().funksjon shouldBeEqualTo "Verneombud"
                             referat.andreDeltakere.first().navn shouldBeEqualTo "Tøff Pyjamas"
