@@ -3,10 +3,10 @@ package no.nav.syfo.dialogmote.api.domain
 import no.nav.syfo.dialogmote.domain.*
 
 data class NewReferatDTO(
-    val situasjon: String?,
-    val konklusjon: String?,
-    val arbeidstakerOppgave: String?,
-    val arbeidsgiverOppgave: String?,
+    val situasjon: String,
+    val konklusjon: String,
+    val arbeidstakerOppgave: String,
+    val arbeidsgiverOppgave: String,
     val veilederOppgave: String?,
     val document: List<DocumentComponentDTO>,
     val andreDeltakere: List<NewDialogmotedeltakerAnnenDTO>,
