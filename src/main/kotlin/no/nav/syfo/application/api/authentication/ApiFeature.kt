@@ -83,7 +83,9 @@ fun Application.installStatusPages() {
     install(StatusPages) {
         exception<Throwable> { cause ->
             call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-            log.error("Caught exception {} {} {}", cause, getCallId(), getConsumerId())
+            val callId = getCallId()
+            val consumerId = getConsumerId()
+            log.error("Caught exception, callId=$callId, consumerId=$consumerId", cause)
             throw cause
         }
     }
