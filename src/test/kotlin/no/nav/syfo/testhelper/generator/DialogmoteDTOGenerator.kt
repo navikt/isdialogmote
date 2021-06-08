@@ -151,13 +151,19 @@ fun generateReferatComponentList(): List<DocumentComponentDTO> {
     return listOf(
         DocumentComponentDTO(
             type = DocumentComponentType.HEADER,
-            title = "Tittel referat",
-            texts = emptyList(),
+            title = null,
+            texts = listOf("Tittel referat"),
         ),
         DocumentComponentDTO(
             type = DocumentComponentType.PARAGRAPH,
             title = null,
             texts = listOf("Brødtekst"),
+        ),
+        DocumentComponentDTO(
+            type = DocumentComponentType.PARAGRAPH,
+            key = "Standardtekst",
+            title = null,
+            texts = listOf("Dette er en standardtekst"),
         ),
     )
 }
