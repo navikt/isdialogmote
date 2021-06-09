@@ -50,21 +50,21 @@ fun Route.registerArbeidstakerVarselApi(
 
                 val varselUuid = UUID.fromString(call.parameters[arbeidstakerVarselApiVarselParam])
 
-                val motedeltakerArbeidstakerVarselList = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerVarselList(
+                val motedeltakerArbeidstakerVarsel = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerVarselList(
                     uuid = varselUuid
-                )
+                ).firstOrNull()
+
                 val referat = dialogmoteService.getReferat(
                     referatUUID = varselUuid
                 )
 
-                if (motedeltakerArbeidstakerVarselList.isEmpty() && referat == null) {
+                if (motedeltakerArbeidstakerVarsel == null && referat == null) {
                     throw IllegalArgumentException("No Varsel found for PersonIdent with uuid=$varselUuid")
                 }
-
                 val motedeltakerArbeidstakerId = if (referat != null) {
                     dialogmoteService.getDialogmote(referat.moteId).arbeidstaker.id
                 } else {
-                    motedeltakerArbeidstakerVarselList.first().motedeltakerArbeidstakerId
+                    motedeltakerArbeidstakerVarsel!!.motedeltakerArbeidstakerId
                 }
 
                 val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerFromId(
@@ -73,13 +73,14 @@ fun Route.registerArbeidstakerVarselApi(
 
                 val hasAccessToVarsel = motedeltakerArbeidstaker.personIdent == requestPersonIdent
                 if (hasAccessToVarsel) {
-                    if (referat != null) {
+                    if (referat != null && referat.lestDatoArbeidstaker == null) {
                         dialogmotedeltakerService.lesReferatArbeidstaker(
                             personIdentNumber = requestPersonIdent,
                             dialogmotedeltakerArbeidstakerUuid = motedeltakerArbeidstaker.uuid,
                             referatUuid = varselUuid,
                         )
-                    } else {
+                    }
+                    if (motedeltakerArbeidstakerVarsel != null && motedeltakerArbeidstakerVarsel.lestDato == null) {
                         dialogmotedeltakerService.lesDialogmotedeltakerArbeidstakerVarsel(
                             personIdentNumber = requestPersonIdent,
                             dialogmotedeltakerArbeidstakerUuid = motedeltakerArbeidstaker.uuid,
