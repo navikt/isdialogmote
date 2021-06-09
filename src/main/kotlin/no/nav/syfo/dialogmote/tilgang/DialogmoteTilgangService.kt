@@ -16,9 +16,11 @@ class DialogmoteTilgangService(
         callId: String,
     ): Boolean {
         val veilederHasAccessToPerson = veilederTilgangskontrollClient.hasAccess(personIdentNumber, token, callId)
-        val personHasAdressebeskyttelse = adressebeskyttelseClient.hasAdressebeskyttelse(personIdentNumber, token, callId)
-
-        return veilederHasAccessToPerson && !personHasAdressebeskyttelse
+        return if (veilederHasAccessToPerson) {
+            val personHasAdressebeskyttelse =
+                adressebeskyttelseClient.hasAdressebeskyttelse(personIdentNumber, token, callId)
+            !personHasAdressebeskyttelse
+        } else false
     }
 
     suspend fun hasAccessToDialogmotePersonList(
