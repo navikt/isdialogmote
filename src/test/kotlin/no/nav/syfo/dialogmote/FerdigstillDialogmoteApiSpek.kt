@@ -15,6 +15,7 @@ import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT_2
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
@@ -193,6 +194,75 @@ class FerdigstillDialogmoteApiSpek : Spek({
                                 setBody(objectMapper.writeValueAsString(endreTidStedDialogMoteDto))
                             }
                         }.message shouldBeEqualTo "Failed to change tid/sted, already Ferdigstilt"
+                    }
+                }
+                describe("Happy path: ferdigstilling gjøres av annen bruker enn den som gjør innkalling") {
+                    val validToken2 = generateJWT(
+                        externalMockEnvironment.environment.loginserviceClientId,
+                        externalMockEnvironment.wellKnownVeileder.issuer,
+                        VEILEDER_IDENT_2,
+                    )
+                    val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+                    val newReferatDTO = generateNewReferatDTO()
+
+                    val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
+                    val urlMoter = "$dialogmoteApiBasepath$dialogmoteApiPersonIdentUrlPath"
+
+                    it("should return OK if request is successful") {
+                        val createdDialogmoteUUID: String
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMote) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                            dialogmoteList.size shouldBeEqualTo 1
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.tildeltVeilederIdent shouldBeEqualTo VEILEDER_IDENT
+                            createdDialogmoteUUID = dialogmoteDTO.uuid
+                        }
+
+                        val urlMoteUUIDFerdigstill =
+                            "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                                addHeader(Authorization, bearerHeader(validToken2))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newReferatDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.FERDIGSTILT.name
+                            dialogmoteDTO.tildeltVeilederIdent shouldBeEqualTo VEILEDER_IDENT_2
+                        }
                     }
                 }
             }
