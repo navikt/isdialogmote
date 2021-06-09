@@ -118,6 +118,7 @@ class ArbeidstakerVarselApiSpek : Spek({
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                         }
 
+                        var arbeidstakerVarselDTO: ArbeidstakerVarselDTO?
                         with(
                             handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
@@ -128,15 +129,38 @@ class ArbeidstakerVarselApiSpek : Spek({
                             val arbeidstakerVarselList = objectMapper.readValue<List<ArbeidstakerVarselDTO>>(response.content!!)
                             arbeidstakerVarselList.size shouldBeEqualTo 1
 
-                            val arbeidstakerVarselDTO = arbeidstakerVarselList.first()
+                            arbeidstakerVarselDTO = arbeidstakerVarselList.firstOrNull()
                             arbeidstakerVarselDTO.shouldNotBeNull()
-                            arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
-                            arbeidstakerVarselDTO.lestDato.shouldNotBeNull()
-                            arbeidstakerVarselDTO.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
-                            arbeidstakerVarselDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            arbeidstakerVarselDTO!!.digitalt shouldBeEqualTo true
+                            arbeidstakerVarselDTO!!.lestDato.shouldNotBeNull()
+                            arbeidstakerVarselDTO!!.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                            arbeidstakerVarselDTO!!.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             val isTodayBeforeDialogmotetid = LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo true
 
+                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                            verify(exactly = 1) { brukernotifikasjonProducer.sendDone(any(), any()) }
+                        }
+                        with(
+                            handleRequest(HttpMethod.Post, urlArbeidstakerVarselUUIDLes) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val arbeidstakerVarselList = objectMapper.readValue<List<ArbeidstakerVarselDTO>>(response.content!!)
+                            arbeidstakerVarselList.size shouldBeEqualTo 1
+
+                            val arbeidstakerVarselUpdatedDTO = arbeidstakerVarselList.first()
+                            arbeidstakerVarselUpdatedDTO.lestDato shouldBeEqualTo arbeidstakerVarselDTO!!.lestDato
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                             verify(exactly = 1) { brukernotifikasjonProducer.sendDone(any(), any()) }
                         }
@@ -288,6 +312,7 @@ class ArbeidstakerVarselApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                         }
+                        var arbeidstakerVarselDTO: ArbeidstakerVarselDTO?
                         with(
                             handleRequest(HttpMethod.Get, arbeidstakerVarselApiPath) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
@@ -297,10 +322,31 @@ class ArbeidstakerVarselApiSpek : Spek({
                             val arbeidstakerVarselList = objectMapper.readValue<List<ArbeidstakerVarselDTO>>(response.content!!)
                             arbeidstakerVarselList.size shouldBeEqualTo 6
 
-                            val arbeidstakerVarselDTO = arbeidstakerVarselList.first()
+                            arbeidstakerVarselDTO = arbeidstakerVarselList.firstOrNull()
                             arbeidstakerVarselDTO.shouldNotBeNull()
-                            arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.REFERAT.name
-                            arbeidstakerVarselDTO.lestDato.shouldNotBeNull()
+                            arbeidstakerVarselDTO!!.varselType shouldBeEqualTo MotedeltakerVarselType.REFERAT.name
+                            arbeidstakerVarselDTO!!.lestDato.shouldNotBeNull()
+                        }
+                        with(
+                            handleRequest(HttpMethod.Post, urlReferatUUIDLes) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        }
+                        with(
+                            handleRequest(HttpMethod.Get, arbeidstakerVarselApiPath) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerVarselList = objectMapper.readValue<List<ArbeidstakerVarselDTO>>(response.content!!)
+                            arbeidstakerVarselList.size shouldBeEqualTo 6
+
+                            val arbeidstakerVarselUpdatedDTO = arbeidstakerVarselList.firstOrNull()
+                            arbeidstakerVarselUpdatedDTO.shouldNotBeNull()
+                            arbeidstakerVarselUpdatedDTO.varselType shouldBeEqualTo MotedeltakerVarselType.REFERAT.name
+                            arbeidstakerVarselUpdatedDTO.lestDato shouldBeEqualTo arbeidstakerVarselDTO!!.lestDato
                         }
                     }
                 }
