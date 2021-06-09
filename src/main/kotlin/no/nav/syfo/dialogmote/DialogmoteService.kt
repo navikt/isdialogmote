@@ -401,6 +401,14 @@ class DialogmoteService(
         val now = LocalDateTime.now()
 
         database.connection.use { connection ->
+
+            if (dialogmote.tildeltVeilederIdent != opprettetAv) {
+                connection.updateMoteTildeltVeileder(
+                    commit = false,
+                    moteId = dialogmote.id,
+                    veilederId = opprettetAv,
+                )
+            }
             updateMoteStatus(
                 callId = callId,
                 connection = connection,

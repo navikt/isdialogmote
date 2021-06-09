@@ -12,6 +12,7 @@ object UserConstants {
 
     val ARBEIDSTAKER_AKTORID = "10" + ARBEIDSTAKER_FNR.value
     const val VEILEDER_IDENT = "Z999999"
+    const val VEILEDER_IDENT_2 = "Z999998"
     val ENHET_NR = EnhetNr("1000")
     val ENHET_NR_NO_ACCESS = EnhetNr(ENHET_NR.value.replace("1", "2"))
 

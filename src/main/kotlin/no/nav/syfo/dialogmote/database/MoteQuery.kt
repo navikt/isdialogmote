@@ -164,6 +164,30 @@ fun Connection.createDialogmote(
     return Pair(moteIdList.first(), moteUuid)
 }
 
+const val queryUpdateMoteTildeltVeileder =
+    """
+    UPDATE MOTE
+    SET tildelt_veileder_ident = ?, updated_at = ?
+    WHERE id = ?
+    """
+
+fun Connection.updateMoteTildeltVeileder(
+    commit: Boolean = true,
+    moteId: Int,
+    veilederId: String,
+) {
+    val now = Timestamp.from(Instant.now())
+    this.prepareStatement(queryUpdateMoteTildeltVeileder).use {
+        it.setString(1, veilederId)
+        it.setTimestamp(2, now)
+        it.setInt(3, moteId)
+        it.execute()
+    }
+    if (commit) {
+        this.commit()
+    }
+}
+
 const val queryUpdateMoteStatus =
     """
     UPDATE MOTE
