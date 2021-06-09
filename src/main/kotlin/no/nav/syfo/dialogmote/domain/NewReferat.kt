@@ -7,6 +7,7 @@ data class NewReferat(
     val arbeidstakerOppgave: String,
     val arbeidsgiverOppgave: String,
     val veilederOppgave: String?,
+    val narmesteLederNavn: String,
     val document: List<DocumentComponentDTO>,
     val andreDeltakere: List<NewDialogmotedeltakerAnnen>,
 )
