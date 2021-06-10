@@ -8,6 +8,7 @@ data class NewReferatDTO(
     val arbeidstakerOppgave: String,
     val arbeidsgiverOppgave: String,
     val veilederOppgave: String?,
+    val narmesteLederNavn: String,
     val document: List<DocumentComponentDTO>,
     val andreDeltakere: List<NewDialogmotedeltakerAnnenDTO>,
 )
@@ -25,6 +26,7 @@ fun NewReferatDTO.toNewReferat(moteId: Int): NewReferat {
         arbeidstakerOppgave = arbeidstakerOppgave,
         arbeidsgiverOppgave = arbeidsgiverOppgave,
         veilederOppgave = veilederOppgave,
+        narmesteLederNavn = narmesteLederNavn,
         document = document,
         andreDeltakere = andreDeltakere.map {
             it.toNewDialogmotedeltakerAnnen()

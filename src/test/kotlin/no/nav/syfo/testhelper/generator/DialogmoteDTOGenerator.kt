@@ -138,6 +138,7 @@ fun generateNewReferatDTO() =
         arbeidstakerOppgave = "Dette er en beskrivelse av arbeidstakerOppgave",
         arbeidsgiverOppgave = "Dette er en beskrivelse av arbeidsgiverOppgave",
         veilederOppgave = "Dette er en beskrivelse av veilederOppgave",
+        narmesteLederNavn = "Grønn Bamse",
         document = generateReferatComponentList(),
         andreDeltakere = listOf(
             NewDialogmotedeltakerAnnenDTO(

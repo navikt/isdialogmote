@@ -59,6 +59,7 @@ fun ResultSet.toPReferat(): PReferat =
         arbeidstakerOppgave = getString("arbeidstaker_oppgave"),
         arbeidsgiverOppgave = getString("arbeidsgiver_oppgave"),
         veilederOppgave = getString("veileder_oppgave"),
+        narmesteLederNavn = getString("narmeste_leder_navn"),
         document = mapper.readValue(getString("document"), object : TypeReference<List<DocumentComponentDTO>>() {}),
         pdf = getBytes("pdf"),
         journalpostId = getString("journalpost_id"),
@@ -107,9 +108,10 @@ const val queryCreateReferat =
         arbeidstaker_oppgave,
         arbeidsgiver_oppgave,
         veileder_oppgave,
+        narmeste_leder_navn,
         document,
         pdf
-    ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?) RETURNING id
+    ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?) RETURNING id
     """
 
 const val queryCreateMotedeltakerAnnen =
@@ -145,8 +147,9 @@ fun Connection.createNewReferat(
         it.setString(8, newReferat.arbeidstakerOppgave)
         it.setString(9, newReferat.arbeidsgiverOppgave)
         it.setString(10, newReferat.veilederOppgave)
-        it.setObject(11, mapper.writeValueAsString(newReferat.document))
-        it.setBytes(12, pdf)
+        it.setString(11, newReferat.narmesteLederNavn)
+        it.setObject(12, mapper.writeValueAsString(newReferat.document))
+        it.setBytes(13, pdf)
         it.executeQuery().toList { getInt("id") }
     }
     if (referatIdList.size != 1) {
