@@ -5,6 +5,7 @@ import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.httpClientDefault
@@ -12,6 +13,7 @@ import no.nav.syfo.client.person.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
+import java.lang.RuntimeException
 
 class AdressebeskyttelseClient(
     private val cache: RedisStore,
@@ -49,6 +51,8 @@ class AdressebeskyttelseClient(
                     handleUnexpectedResponseException(e.response, callId)
                 } catch (e: ServerResponseException) {
                     handleUnexpectedResponseException(e.response, callId)
+                } catch (e: ClosedReceiveChannelException) {
+                    handleClosedReceiveChannelException(e)
                 } finally {
                     timer.observeDuration()
                 }
@@ -68,6 +72,13 @@ class AdressebeskyttelseClient(
         )
         COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL.inc()
         return true
+    }
+
+    private fun handleClosedReceiveChannelException(
+        e: ClosedReceiveChannelException
+    ): Boolean {
+        COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL.inc()
+        throw RuntimeException("Caught ClosedReceiveChannelException in hasAdressebeskyttelse", e)
     }
 
     companion object {
