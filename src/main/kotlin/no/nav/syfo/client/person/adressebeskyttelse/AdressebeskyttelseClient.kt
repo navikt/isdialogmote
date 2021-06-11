@@ -8,8 +8,7 @@ import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.httpClientDefault
-import no.nav.syfo.client.person.COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL
-import no.nav.syfo.client.person.COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_SUCCESS
+import no.nav.syfo.client.person.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
@@ -29,7 +28,8 @@ class AdressebeskyttelseClient(
         val cacheKey = "$CACHE_ADRESSEBESKYTTELSE_KEY_PREFIX${personIdentNumber.value}"
         val cachedAdressebeskyttelse = cache.get(cacheKey)
         return when (cachedAdressebeskyttelse) {
-            null ->
+            null -> {
+                val timer = HISTOGRAM_CALL_PERSON_ADRESSEBESKYTTELSE_TIMER.startTimer()
                 try {
                     val response: HttpResponse = httpClient.get(personAdressebeskyttelseUrl) {
                         header(HttpHeaders.Authorization, bearerHeader(token))
@@ -49,7 +49,10 @@ class AdressebeskyttelseClient(
                     handleUnexpectedResponseException(e.response, callId)
                 } catch (e: ServerResponseException) {
                     handleUnexpectedResponseException(e.response, callId)
+                } finally {
+                    timer.observeDuration()
                 }
+            }
             else -> cachedAdressebeskyttelse.toBoolean()
         }
     }
