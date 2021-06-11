@@ -5,6 +5,7 @@ import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.domain.EnhetNr
@@ -12,6 +13,7 @@ import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.metric.*
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
+import java.lang.RuntimeException
 
 class VeilederTilgangskontrollClient(
     private val tilgangskontrollBaseUrl: String
@@ -23,7 +25,7 @@ class VeilederTilgangskontrollClient(
         token: String,
         callId: String
     ): List<PersonIdentNumber> {
-        try {
+        return try {
             val personIdentStringList = personIdentNumberList.map { it.value }
 
             val response: HttpResponse = httpClient.post(getTilgangskontrollUrl()) {
@@ -34,18 +36,20 @@ class VeilederTilgangskontrollClient(
                 body = personIdentStringList
             }
             COUNT_CALL_TILGANGSKONTROLL_PERSONS_SUCCESS.inc()
-            return response.receive<List<String>>().map { personIdent -> PersonIdentNumber(personIdent) }
+            response.receive<List<String>>().map { personIdent -> PersonIdentNumber(personIdent) }
         } catch (e: ClientRequestException) {
-            return if (e.response.status == HttpStatusCode.Forbidden) {
+            if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_CALL_TILGANGSKONTROLL_PERSONS_FORBIDDEN.inc()
-                emptyList()
             } else {
                 handleUnexpectedResponseException(e.response, resourceEnhet, callId)
-                return emptyList()
             }
+            emptyList()
         } catch (e: ServerResponseException) {
             handleUnexpectedResponseException(e.response, resourceEnhet, callId)
-            return emptyList()
+            emptyList()
+        } catch (e: ClosedReceiveChannelException) {
+            handleClosedReceiveChannelException(e, "hasAccessToPersonList", resourceEnhet)
+            emptyList()
         }
     }
 
@@ -58,23 +62,27 @@ class VeilederTilgangskontrollClient(
         token: String,
         callId: String
     ): Boolean {
-        try {
+        return try {
             val response: HttpResponse = httpClient.get(getTilgangskontrollUrl(personIdentNumber)) {
                 header(HttpHeaders.Authorization, bearerHeader(token))
                 header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
             }
             COUNT_CALL_TILGANGSKONTROLL_PERSON_SUCCESS.inc()
-            return response.receive<Tilgang>().harTilgang
+            response.receive<Tilgang>().harTilgang
         } catch (e: ClientRequestException) {
-            return if (e.response.status == HttpStatusCode.Forbidden) {
+            if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN.inc()
-                false
             } else {
-                return handleUnexpectedResponseException(e.response, resourcePerson, callId) ?: false
+                handleUnexpectedResponseException(e.response, resourcePerson, callId)
             }
+            false
         } catch (e: ServerResponseException) {
-            return handleUnexpectedResponseException(e.response, resourcePerson, callId) ?: false
+            handleUnexpectedResponseException(e.response, resourcePerson, callId)
+            false
+        } catch (e: ClosedReceiveChannelException) {
+            handleClosedReceiveChannelException(e, "hasAccess", resourcePerson)
+            false
         }
     }
 
@@ -87,24 +95,28 @@ class VeilederTilgangskontrollClient(
         token: String,
         callId: String
     ): Boolean {
-        try {
+        return try {
             val response: HttpResponse = httpClient.get(getTilgangskontrollUrl(enhetNr)) {
                 header(HttpHeaders.Authorization, bearerHeader(token))
                 header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
             }
             COUNT_CALL_TILGANGSKONTROLL_ENHET_SUCCESS.inc()
-            return response.receive<Tilgang>().harTilgang
+            response.receive<Tilgang>().harTilgang
         } catch (e: ClientRequestException) {
-            return if (e.response.status == HttpStatusCode.Forbidden) {
+            if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_CALL_TILGANGSKONTROLL_ENHET_FORBIDDEN.inc()
-                false
             } else {
-                return handleUnexpectedResponseException(e.response, resourceEnhet, callId) ?: false
+                handleUnexpectedResponseException(e.response, resourceEnhet, callId)
             }
+            false
         } catch (e: ServerResponseException) {
             COUNT_CALL_TILGANGSKONTROLL_ENHET_FAIL.inc()
-            return handleUnexpectedResponseException(e.response, resourceEnhet, callId) ?: false
+            handleUnexpectedResponseException(e.response, resourceEnhet, callId)
+            false
+        } catch (e: ClosedReceiveChannelException) {
+            handleClosedReceiveChannelException(e, "hasAccessToEnhet", resourceEnhet)
+            false
         }
     }
 
@@ -116,27 +128,36 @@ class VeilederTilgangskontrollClient(
         response: HttpResponse,
         resource: String,
         callId: String,
-    ): Boolean? {
+    ) {
         log.error(
             "Error while requesting access to $resource from syfo-tilgangskontroll with {}, {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             callIdArgument(callId)
         )
+        incrementFailCounter(resource)
+    }
+
+    private fun incrementFailCounter(resource: String) {
         when (resource) {
             resourcePerson -> {
                 COUNT_CALL_TILGANGSKONTROLL_PERSON_FAIL.inc()
-                return false
             }
             resourceEnhet -> {
                 COUNT_CALL_TILGANGSKONTROLL_ENHET_FAIL.inc()
-                return false
             }
             resourcePersonList -> {
                 COUNT_CALL_TILGANGSKONTROLL_PERSONS_FAIL.inc()
-                return null
             }
         }
-        return false
+    }
+
+    private fun handleClosedReceiveChannelException(
+        e: ClosedReceiveChannelException,
+        failingFunction: String,
+        resource: String,
+    ) {
+        incrementFailCounter(resource)
+        throw RuntimeException("Caught ClosedReceiveChannelException in $failingFunction", e)
     }
 
     companion object {
