@@ -42,9 +42,11 @@ class DialogmoteTilgangService(
         token: String,
         callId: String,
     ): Boolean {
-        val kontaktinfo = kontaktinformasjonClient.kontaktinformasjon(personIdentNumber, token, callId)
-        val isDigitalVarselAllowed = kontaktinfo?.kontaktinfo?.get(personIdentNumber.value)?.kanVarsles ?: false
 
-        return hasAccessToDialogmotePerson(personIdentNumber, token, callId) && isDigitalVarselAllowed
+        return if (hasAccessToDialogmotePerson(personIdentNumber, token, callId)) {
+            val kontaktinfo = kontaktinformasjonClient.kontaktinformasjon(personIdentNumber, token, callId)
+            val isDigitalVarselAllowed = kontaktinfo?.kontaktinfo?.get(personIdentNumber.value)?.kanVarsles ?: false
+            isDigitalVarselAllowed
+        } else false
     }
 }
