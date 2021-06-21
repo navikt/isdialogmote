@@ -7,8 +7,8 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
-import no.nav.syfo.dialogmote.api.dialogmoteApiBasepath
-import no.nav.syfo.dialogmote.api.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.v1.dialogmoteApiBasepath
+import no.nav.syfo.dialogmote.api.v1.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.DocumentComponentType
