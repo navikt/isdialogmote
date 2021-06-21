@@ -3,11 +3,12 @@ package no.nav.syfo.testhelper
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import java.net.ServerSocket
-import java.util.Properties
+import java.util.*
 
 fun testEnvironment(
     kafkaBootstrapServers: String,
     dokarkivUrl: String = "http://dokarkiv",
+    azureTokenEndpoint: String = "azureTokenEndpoint",
     isdialogmotepdfgenUrl: String? = null,
     modiasyforestUrl: String? = null,
     syfobehandlendeenhetUrl: String? = null,
@@ -17,7 +18,8 @@ fun testEnvironment(
     aadDiscoveryUrl = "",
     aadAppClient = "isdialogmote-client-id",
     aadAppSecret = "isdialogmote-secret",
-    aadTokenEndpoint = "",
+    aadTokenEndpoint = azureTokenEndpoint,
+    azureAppWellKnownUrl = "wellknown",
     dokarkivClientId = "dokarkiv-client-id",
     electorPath = "electorPath",
     loginserviceIdportenDiscoveryUrl = "",
@@ -49,7 +51,9 @@ fun testEnvironment(
     isdialogmotepdfgenUrl = isdialogmotepdfgenUrl ?: "http://isdialogmotepdfgen",
     modiasyforestUrl = modiasyforestUrl ?: "modiasyforest",
     syfobehandlendeenhetUrl = syfobehandlendeenhetUrl ?: "syfobehandlendeenhet",
+    syfopersonClientId = "syfopersonClientId",
     syfopersonUrl = syfopersonUrl ?: "syfoperson",
+    syfotilgangskontrollClientId = "syfotilgangskontrollclientid",
     syfotilgangskontrollUrl = syfotilgangskontrollUrl ?: "tilgangskontroll",
     journalforingCronjobEnabled = false,
     publishDialogmoteStatusEndringCronjobEnabled = false,

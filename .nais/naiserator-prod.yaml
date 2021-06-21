@@ -47,6 +47,11 @@ spec:
           - name: isdialogmote-db
             diskAutoresize: true
   accessPolicy:
+    inbound:
+      rules:
+        - application: syfomoteoversikt
+          namespace: teamsykefravr
+          cluster: prod-fss
     outbound:
       external:
         - host: "kafka-schema-registry.nais.adeo.no"
@@ -98,8 +103,12 @@ spec:
       value: "https://modiasyforest.prod-fss-pub.nais.io"
     - name: SYFOBEHANDLENDEENHET_URL
       value: "https://syfobehandlendeenhet.prod-fss-pub.nais.io"
+    - name: SYFOPERSON_CLIENT_ID
+      value: "65bd6a4c-e757-487f-9767-619a5307278f"
     - name: SYFOPERSON_URL
       value: "https://syfoperson.prod-fss-pub.nais.io"
+    - name: SYFOTILGANGSKONTROLL_CLIENT_ID
+      value: "dfaa2699-7390-4459-9cfc-2e8de64dfaf9"
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.prod-fss-pub.nais.io"
     - name: TOGGLE_PUBLISH_STATUS_ENDRING_CRONJOB_ENABLED

@@ -61,6 +61,7 @@ fun main() {
                     environment = environment,
                     wellKnownSelvbetjening = getWellKnown(environment.loginserviceIdportenDiscoveryUrl),
                     wellKnownVeileder = getWellKnown(environment.aadDiscoveryUrl),
+                    wellKnownVeilederV2 = getWellKnown(environment.azureAppWellKnownUrl),
                 )
                 cronjobModule(
                     applicationState = applicationState,

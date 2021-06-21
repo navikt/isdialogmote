@@ -7,28 +7,49 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.client.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.metric.*
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
-import java.lang.RuntimeException
 
 class VeilederTilgangskontrollClient(
-    private val tilgangskontrollBaseUrl: String
+    private val azureAdV2Client: AzureAdV2Client,
+    private val syfotilgangskontrollClientId: String,
+    private val tilgangskontrollBaseUrl: String,
 ) {
     private val httpClient = httpClientDefault()
+
+    suspend fun hasAccessToPersonListWithOBO(
+        personIdentNumberList: List<PersonIdentNumber>,
+        token: String,
+        callId: String,
+    ): List<PersonIdentNumber> {
+        val oboToken = azureAdV2Client.getOnBehalfOfToken(
+            scopeClientId = syfotilgangskontrollClientId,
+            token = token
+        )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
+
+        return hasAccessToPersonList(
+            personIdentNumberList = personIdentNumberList,
+            token = oboToken,
+            url = getTilgangskontrollUrl(true),
+            callId = callId,
+        )
+    }
 
     suspend fun hasAccessToPersonList(
         personIdentNumberList: List<PersonIdentNumber>,
         token: String,
+        url: String = getTilgangskontrollUrl(),
         callId: String
     ): List<PersonIdentNumber> {
         return try {
             val personIdentStringList = personIdentNumberList.map { it.value }
 
-            val response: HttpResponse = httpClient.post(getTilgangskontrollUrl()) {
+            val response: HttpResponse = httpClient.post(url) {
                 header(HttpHeaders.Authorization, bearerHeader(token))
                 header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
@@ -53,8 +74,10 @@ class VeilederTilgangskontrollClient(
         }
     }
 
-    private fun getTilgangskontrollUrl(): String {
-        return "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/brukere"
+    private fun getTilgangskontrollUrl(onBehalfOf: Boolean = false): String {
+        return if (onBehalfOf) {
+            "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/brukere"
+        } else "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/brukere"
     }
 
     suspend fun hasAccess(
@@ -90,13 +113,32 @@ class VeilederTilgangskontrollClient(
         return "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/bruker?fnr=${personIdentNumber.value}"
     }
 
-    suspend fun hasAccessToEnhet(
+    suspend fun hasAccessToEnhetWithOBO(
         enhetNr: EnhetNr,
         token: String,
         callId: String
     ): Boolean {
+        val oboToken = azureAdV2Client.getOnBehalfOfToken(
+            scopeClientId = syfotilgangskontrollClientId,
+            token = token
+        )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
+
+        return hasAccessToEnhet(
+            enhetNr = enhetNr,
+            token = oboToken,
+            url = getTilgangskontrollUrl(enhetNr, true),
+            callId = callId,
+        )
+    }
+
+    suspend fun hasAccessToEnhet(
+        enhetNr: EnhetNr,
+        token: String,
+        url: String = getTilgangskontrollUrl(enhetNr),
+        callId: String,
+    ): Boolean {
         return try {
-            val response: HttpResponse = httpClient.get(getTilgangskontrollUrl(enhetNr)) {
+            val response: HttpResponse = httpClient.get(url) {
                 header(HttpHeaders.Authorization, bearerHeader(token))
                 header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
@@ -120,8 +162,10 @@ class VeilederTilgangskontrollClient(
         }
     }
 
-    private fun getTilgangskontrollUrl(enhetNr: EnhetNr): String {
-        return "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/enhet?enhet=${enhetNr.value}"
+    private fun getTilgangskontrollUrl(enhetNr: EnhetNr, onBehalfOf: Boolean = false): String {
+        return if (onBehalfOf) {
+            "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/enhet/${enhetNr.value}"
+        } else "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/enhet?enhet=${enhetNr.value}"
     }
 
     private fun handleUnexpectedResponseException(

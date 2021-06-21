@@ -9,6 +9,7 @@ import no.nav.syfo.application.api.authentication.*
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.mq.MQSenderInterface
+import no.nav.syfo.client.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.pdfgen.PdfGenClient
@@ -19,6 +20,7 @@ import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.api.v1.*
+import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
@@ -34,6 +36,7 @@ fun Application.apiModule(
     environment: Environment,
     wellKnownSelvbetjening: WellKnown,
     wellKnownVeileder: WellKnown,
+    wellKnownVeilederV2: WellKnown,
 ) {
     installCallId()
     installContentNegotiation()
@@ -48,7 +51,12 @@ fun Application.apiModule(
                 accectedAudienceList = listOf(environment.loginserviceClientId),
                 jwtIssuerType = JwtIssuerType.veileder,
                 wellKnown = wellKnownVeileder,
-            )
+            ),
+            JwtIssuer(
+                accectedAudienceList = listOf(environment.aadAppClient),
+                jwtIssuerType = JwtIssuerType.VEILEDER_V2,
+                wellKnown = wellKnownVeilederV2,
+            ),
         ),
     )
     installStatusPages()
@@ -66,7 +74,14 @@ fun Application.apiModule(
             environment.redisSecret
         )
     )
+    val azureAdV2Client = AzureAdV2Client(
+        aadAppClient = environment.aadAppClient,
+        aadAppSecret = environment.aadAppSecret,
+        aadTokenEndpoint = environment.aadTokenEndpoint,
+    )
     val adressebeskyttelseClient = AdressebeskyttelseClient(
+        azureAdV2Client = azureAdV2Client,
+        syfopersonClientId = environment.syfopersonClientId,
         cache = cache,
         syfopersonBaseUrl = environment.syfopersonUrl,
     )
@@ -84,6 +99,8 @@ fun Application.apiModule(
         pdfGenBaseUrl = environment.isdialogmotepdfgenUrl
     )
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
+        azureAdV2Client = azureAdV2Client,
+        syfotilgangskontrollClientId = environment.syfotilgangskontrollClientId,
         tilgangskontrollBaseUrl = environment.syfotilgangskontrollUrl
     )
     val dialogmoteTilgangService = DialogmoteTilgangService(
@@ -132,6 +149,13 @@ fun Application.apiModule(
                 dialogmoteTilgangService = dialogmoteTilgangService,
             )
             registerDialogmoteEnhetApi(
+                dialogmoteService = dialogmoteService,
+                dialogmoteTilgangService = dialogmoteTilgangService,
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+            )
+        }
+        authenticate(JwtIssuerType.VEILEDER_V2.name) {
+            registerDialogmoteEnhetApiV2(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
