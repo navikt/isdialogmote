@@ -8,24 +8,46 @@ import io.ktor.http.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.client.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.client.person.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
-import java.lang.RuntimeException
 
 class AdressebeskyttelseClient(
+    private val azureAdV2Client: AzureAdV2Client,
+    private val syfopersonClientId: String,
     private val cache: RedisStore,
     syfopersonBaseUrl: String,
 ) {
     private val personAdressebeskyttelseUrl: String = "$syfopersonBaseUrl$PERSON_ADRESSEBESKYTTELSE_PATH"
+    private val personV2AdressebeskyttelseUrl: String = "$syfopersonBaseUrl$PERSON_V2_ADRESSEBESKYTTELSE_PATH"
     private val httpClient = httpClientDefault()
+
+    suspend fun hasAdressebeskyttelseWithOBO(
+        personIdentNumber: PersonIdentNumber,
+        token: String,
+        callId: String,
+    ): Boolean {
+        val oboToken = azureAdV2Client.getOnBehalfOfToken(
+            scopeClientId = syfopersonClientId,
+            token = token
+        )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
+
+        return hasAdressebeskyttelse(
+            personIdentNumber = personIdentNumber,
+            token = oboToken,
+            url = personV2AdressebeskyttelseUrl,
+            callId = callId,
+        )
+    }
 
     suspend fun hasAdressebeskyttelse(
         personIdentNumber: PersonIdentNumber,
         token: String,
-        callId: String
+        url: String = personAdressebeskyttelseUrl,
+        callId: String,
     ): Boolean {
         val cacheKey = "$CACHE_ADRESSEBESKYTTELSE_KEY_PREFIX${personIdentNumber.value}"
         val cachedAdressebeskyttelse = cache.get(cacheKey)
@@ -33,7 +55,7 @@ class AdressebeskyttelseClient(
             null -> {
                 val timer = HISTOGRAM_CALL_PERSON_ADRESSEBESKYTTELSE_TIMER.startTimer()
                 try {
-                    val response: HttpResponse = httpClient.get(personAdressebeskyttelseUrl) {
+                    val response: HttpResponse = httpClient.get(url) {
                         header(HttpHeaders.Authorization, bearerHeader(token))
                         header(NAV_CALL_ID_HEADER, callId)
                         header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
@@ -84,6 +106,9 @@ class AdressebeskyttelseClient(
     companion object {
         const val PERSON_PATH = "/syfoperson/api/person"
         const val PERSON_ADRESSEBESKYTTELSE_PATH = "$PERSON_PATH/adressebeskyttelse"
+
+        const val PERSON_V2_PATH = "/syfoperson/v2/api/person"
+        const val PERSON_V2_ADRESSEBESKYTTELSE_PATH = "$PERSON_V2_PATH/adressebeskyttelse"
 
         const val CACHE_ADRESSEBESKYTTELSE_KEY_PREFIX = "person-adressebeskyttelse-"
         const val CACHE_ADRESSEBESKYTTELSE_EXPIRE_SECONDS = 3600

@@ -8,5 +8,6 @@ data class JwtIssuer(
 
 enum class JwtIssuerType {
     selvbetjening,
-    veileder
+    veileder,
+    VEILEDER_V2,
 }

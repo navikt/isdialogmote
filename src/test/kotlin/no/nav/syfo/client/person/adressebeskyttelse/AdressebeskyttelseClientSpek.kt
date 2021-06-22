@@ -4,12 +4,15 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.client.azuread.v2.AzureAdV2Client
+import no.nav.syfo.client.azuread.v2.AzureAdV2Token
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
-import no.nav.syfo.testhelper.mock.*
+import no.nav.syfo.testhelper.mock.SyfopersonMock
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDateTime
 
 class AdressebeskyttelseClientSpek : Spek({
 
@@ -26,9 +29,17 @@ class AdressebeskyttelseClientSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
+            val azureAdV2ClientMock = mockk<AzureAdV2Client>()
             val syfopersonMock = SyfopersonMock()
             val cacheMock = mockk<RedisStore>()
-            val client = AdressebeskyttelseClient(cacheMock, syfopersonMock.url)
+            val client = AdressebeskyttelseClient(azureAdV2ClientMock, "", cacheMock, syfopersonMock.url)
+
+            coEvery {
+                azureAdV2ClientMock.getOnBehalfOfToken("", anyToken)
+            } returns AzureAdV2Token(
+                accessToken = anyToken,
+                expires = LocalDateTime.now().plusDays(1)
+            )
 
             beforeGroup {
                 syfopersonMock.server.start()
@@ -47,9 +58,9 @@ class AdressebeskyttelseClientSpek : Spek({
 
                 runBlocking {
                     client.hasAdressebeskyttelse(
-                        arbeidstakerAdressebeskyttet,
-                        anyToken,
-                        anyCallId
+                        personIdentNumber = arbeidstakerAdressebeskyttet,
+                        token = anyToken,
+                        callId = anyCallId,
                     ) shouldBeEqualTo true
                 }
                 verify(exactly = 1) { cacheMock.get(arbeidstakerAdressebeskyttetCacheKey) }
@@ -61,9 +72,9 @@ class AdressebeskyttelseClientSpek : Spek({
 
                 runBlocking {
                     client.hasAdressebeskyttelse(
-                        arbeidstakerIkkeAdressebeskyttet,
-                        anyToken,
-                        anyCallId
+                        personIdentNumber = arbeidstakerIkkeAdressebeskyttet,
+                        token = anyToken,
+                        callId = anyCallId,
                     ) shouldBeEqualTo false
                 }
                 verify(exactly = 1) { cacheMock.get(arbeidstakerIkkeAdressebeskyttetCacheKey) }
@@ -76,9 +87,9 @@ class AdressebeskyttelseClientSpek : Spek({
 
                 runBlocking {
                     client.hasAdressebeskyttelse(
-                        arbeidstakerIkkeAdressebeskyttet,
-                        anyToken,
-                        anyCallId
+                        personIdentNumber = arbeidstakerIkkeAdressebeskyttet,
+                        token = anyToken,
+                        callId = anyCallId,
                     ) shouldBeEqualTo false
                 }
                 verify(exactly = 1) { cacheMock.get(arbeidstakerIkkeAdressebeskyttetCacheKey) }
@@ -91,9 +102,9 @@ class AdressebeskyttelseClientSpek : Spek({
 
                 runBlocking {
                     client.hasAdressebeskyttelse(
-                        arbeidstakerAdressebeskyttet,
-                        anyToken,
-                        anyCallId
+                        personIdentNumber = arbeidstakerAdressebeskyttet,
+                        token = anyToken,
+                        callId = anyCallId,
                     ) shouldBeEqualTo true
                 }
                 verify(exactly = 1) { cacheMock.get(arbeidstakerAdressebeskyttetCacheKey) }

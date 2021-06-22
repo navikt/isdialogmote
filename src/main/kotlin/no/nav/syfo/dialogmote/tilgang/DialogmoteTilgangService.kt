@@ -18,9 +18,27 @@ class DialogmoteTilgangService(
         val veilederHasAccessToPerson = veilederTilgangskontrollClient.hasAccess(personIdentNumber, token, callId)
         return if (veilederHasAccessToPerson) {
             val personHasAdressebeskyttelse =
-                adressebeskyttelseClient.hasAdressebeskyttelse(personIdentNumber, token, callId)
+                adressebeskyttelseClient.hasAdressebeskyttelse(
+                    personIdentNumber = personIdentNumber,
+                    token = token,
+                    callId = callId,
+                )
             !personHasAdressebeskyttelse
         } else false
+    }
+
+    suspend fun hasAccessToDialogmotePersonListWithObo(
+        personIdentNumberList: List<PersonIdentNumber>,
+        token: String,
+        callId: String,
+    ): List<PersonIdentNumber> {
+        return veilederTilgangskontrollClient.hasAccessToPersonListWithOBO(
+            personIdentNumberList = personIdentNumberList,
+            token = token,
+            callId = callId,
+        ).filter { personIdentNumber ->
+            !adressebeskyttelseClient.hasAdressebeskyttelseWithOBO(personIdentNumber, token, callId)
+        }
     }
 
     suspend fun hasAccessToDialogmotePersonList(
@@ -33,7 +51,11 @@ class DialogmoteTilgangService(
             token = token,
             callId = callId,
         ).filter { personIdentNumber ->
-            !adressebeskyttelseClient.hasAdressebeskyttelse(personIdentNumber, token, callId)
+            !adressebeskyttelseClient.hasAdressebeskyttelse(
+                personIdentNumber = personIdentNumber,
+                token = token,
+                callId = callId,
+            )
         }
     }
 

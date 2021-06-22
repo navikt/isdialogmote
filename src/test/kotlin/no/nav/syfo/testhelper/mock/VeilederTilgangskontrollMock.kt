@@ -15,6 +15,7 @@ import no.nav.syfo.client.veiledertilgang.Tilgang
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
+import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR_NO_ACCESS
 import no.nav.syfo.testhelper.getRandomPort
 
@@ -75,6 +76,20 @@ class VeilederTilgangskontrollMock {
                     } else {
                         call.respond(tilgangTrue)
                     }
+                }
+                post("/syfo-tilgangskontroll/api/tilgang/navident/brukere") {
+                    call.respond(
+                        listOf(
+                            ARBEIDSTAKER_FNR.value,
+                            ARBEIDSTAKER_ADRESSEBESKYTTET.value,
+                        )
+                    )
+                }
+                get("/syfo-tilgangskontroll/api/tilgang/navident/enhet/${ENHET_NR.value}") {
+                    call.respond(tilgangTrue)
+                }
+                get("/syfo-tilgangskontroll/api/tilgang/navident/enhet/${ENHET_NR_NO_ACCESS.value}") {
+                    call.respond(HttpStatusCode.Forbidden, tilgangFalse)
                 }
             }
         }
