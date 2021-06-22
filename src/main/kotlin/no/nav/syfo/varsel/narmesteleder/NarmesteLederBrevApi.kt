@@ -28,14 +28,15 @@ fun Route.registerNarmestelederBrevApi(
         get {
             val callId = getCallId()
             try {
-                val requestPersonIdent = call.personIdent()
+                val requestNarmesteLederIdent = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
-                // TODO: Fix getDialogmoteList så den takler både arbeidsgiver og taker
                 val narmesteLederBrevDTOList =
-                    dialogmoteService.getDialogmoteList(personIdentNumber = requestPersonIdent)
+                    dialogmoteService.getDialogmoteList(personIdentNumber = requestNarmesteLederIdent)
                         .toNarmesteLederBrevDTOList()
-                //2. Finn alle nærmeste ledere til
+                //2. Finn alle nærmeste ledere til den ansatte
+                //3. Koble nærmeste leder på møtet via orgnummer
+                //4. Fjerne møter som ikke har riktig nærmeste leder basert på fnr til
 
                 call.respond(narmesteLederBrevDTOList)
             } catch (e: IllegalArgumentException) {
