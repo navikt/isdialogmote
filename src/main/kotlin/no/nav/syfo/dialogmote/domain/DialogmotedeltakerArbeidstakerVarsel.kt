@@ -5,6 +5,7 @@ import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerArbeidstakerVarselDTO
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.varsel.*
+import no.nav.syfo.varsel.narmesteleder.domain.NarmestelederBrevDTO
 import no.nav.syfo.varsel.arbeidstaker.domain.ArbeidstakerVarselDTO
 import java.time.LocalDateTime
 import java.util.*
@@ -53,6 +54,25 @@ fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerVarselDTO(
     virksomhetsnummer = virksomhetsnummer.value,
     document = this.document,
 )
+
+fun DialogmotedeltakerArbeidsgiverVarsel.toNarmesteLederBrevDTO(
+    dialogmoteTidSted: DialogmoteTidSted,
+    deltakerUuid: UUID,
+    virksomhetsnummer: Virksomhetsnummer,
+) = NarmestelederBrevDTO(
+    uuid = this.uuid.toString(),
+    deltakerUuid = deltakerUuid.toString(),
+    createdAt = this.createdAt,
+    varselType = this.varselType.name,
+    lestDato = this.lestDato,
+    fritekst = this.fritekst,
+    sted = dialogmoteTidSted.sted,
+    tid = dialogmoteTidSted.tid,
+    videoLink = dialogmoteTidSted.videoLink,
+    virksomhetsnummer = virksomhetsnummer.value,
+    document = this.document,
+)
+
 
 fun DialogmotedeltakerArbeidstakerVarsel.toJournalpostRequest(
     personIdent: PersonIdentNumber,

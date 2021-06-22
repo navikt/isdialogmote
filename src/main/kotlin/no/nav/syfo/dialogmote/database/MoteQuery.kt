@@ -2,14 +2,19 @@ package no.nav.syfo.dialogmote.database
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.dialogmote.domain.TidStedDTO
 import no.nav.syfo.dialogmote.database.domain.PDialogmote
-import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.dialogmote.domain.NewDialogmote
+import no.nav.syfo.dialogmote.domain.TidStedDTO
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdentNumber
-import java.sql.*
+import no.nav.syfo.domain.Virksomhetsnummer
+import java.sql.Connection
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.sql.Timestamp
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 const val queryGetDialogmoteForId =
     """
@@ -60,6 +65,27 @@ fun DatabaseInterface.getDialogmoteList(personIdentNumber: PersonIdentNumber): L
         }
     }
 }
+
+const val queryGetDialogmoteListForVirksomhetsnummer =
+    """
+        SELECT *
+        FROM MOTE
+        INNER JOIN MOTEDELTAKER_ARBEIDSTAKER AT on MOTEDELTAKER_ARBEIDSTAKER.mote_id = MOTE.id
+        INNER JOIN MOTEDELTAKER_ARBEIDSGIVER AG on MOTEDELTAKER_ARBEIDSGIVER.mote_id = MOTE.id
+        WHERE virksomhetsnummer = ?
+        AND personident = ?
+        ORDER BY MOTE.created_at DESC
+    """
+
+fun DatabaseInterface.getDialogmoteList(virksomhetsnummer: Virksomhetsnummer): List<PDialogmote> {
+    return connection.use { connection ->
+        connection.prepareStatement(queryGetDialogmoteListForVirksomhetsnummer).use {
+            it.setString(1, virksomhetsnummer.value)
+            it.executeQuery().toList { toPDialogmote() }
+        }
+    }
+}
+
 
 const val queryGetDialogmoteListForEnhetNr =
     """

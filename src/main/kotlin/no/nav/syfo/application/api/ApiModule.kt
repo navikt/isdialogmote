@@ -18,13 +18,18 @@ import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.dialogmote.api.*
+import no.nav.syfo.dialogmote.api.registerDialogmoteActionsApi
+import no.nav.syfo.dialogmote.api.registerDialogmoteApi
+import no.nav.syfo.dialogmote.api.registerDialogmoteEnhetApi
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
+import no.nav.syfo.varsel.arbeidsgiver.registerNarmestelederBrevApi
 import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.varsel.arbeidstaker.registerArbeidstakerVarselApi
 import no.nav.syfo.varsel.narmesteleder.NarmesteLederVarselService
-import redis.clients.jedis.*
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
+import redis.clients.jedis.Protocol
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -141,6 +146,10 @@ fun Application.apiModule(
             registerArbeidstakerVarselApi(
                 dialogmoteService = dialogmoteService,
                 dialogmotedeltakerService = dialogmotedeltakerService,
+            )
+            registerNarmestelederBrevApi(
+                dialogmoteService = dialogmoteService,
+                dialogmotedeltakerService = dialogmotedeltakerService
             )
         }
     }

@@ -7,6 +7,7 @@ import no.nav.syfo.dialogmote.api.domain.ReferatDTO
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.varsel.MotedeltakerVarselType
+import no.nav.syfo.varsel.narmesteleder.domain.NarmestelederBrevDTO
 import no.nav.syfo.varsel.arbeidstaker.domain.ArbeidstakerVarselDTO
 import java.time.LocalDateTime
 import java.util.UUID
@@ -101,3 +102,22 @@ fun Referat.toArbeidstakerVarselDTO(
     virksomhetsnummer = virksomhetsnummer.value,
     document = this.document,
 )
+
+fun Referat.toNarmesteLederBrevDTO(
+    dialogmoteTidSted: DialogmoteTidSted,
+    deltakerUuid: UUID,
+    virksomhetsnummer: Virksomhetsnummer,
+) = NarmestelederBrevDTO(
+    uuid = this.uuid.toString(),
+    deltakerUuid = deltakerUuid.toString(),
+    createdAt = this.createdAt,
+    varselType = MotedeltakerVarselType.REFERAT.name,
+    lestDato = this.lestDatoArbeidsgiver,
+    fritekst = konklusjon,
+    sted = dialogmoteTidSted.sted,
+    tid = dialogmoteTidSted.tid,
+    videoLink = dialogmoteTidSted.videoLink,
+    virksomhetsnummer = virksomhetsnummer.value,
+    document = this.document,
+)
+

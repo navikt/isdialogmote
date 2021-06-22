@@ -1,6 +1,7 @@
 package no.nav.syfo.dialogmote.domain
 
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.varsel.narmesteleder.domain.NarmestelederBrevDTO
 import no.nav.syfo.varsel.arbeidstaker.domain.ArbeidstakerVarselDTO
 import java.time.LocalDateTime
 import java.util.*
@@ -62,6 +63,28 @@ fun List<Dialogmote>.toArbeidstakerVarselDTOList(): List<ArbeidstakerVarselDTO> 
         )
         varselList
     }.flatten()
+}
+
+fun List<Dialogmote>.toNarmesteLederBrevDTOList(): List<NarmestelederBrevDTO> {
+    return this.map { dialogmote ->
+        val varselList = mutableListOf<NarmestelederBrevDTO>()
+        dialogmote.referat?.let {
+            varselList.add(
+                it.toNarmesteLederBrevDTO(
+                    dialogmoteTidSted = dialogmote.tidStedList.latest()!!, deltakerUuid = dialogmote.arbeidsgiver.uuid,
+                    virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer
+                )
+            )
+        }
+        varselList.addAll(
+            dialogmote.arbeidsgiver.varselList.map {
+                it.toNarmesteLederBrevDTO(dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
+                deltakerUuid = dialogmote.arbeidsgiver.uuid,
+                virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer)
+            }
+        )
+            varselList
+        }.flatten()
 }
 
 fun List<Dialogmote>.anyUnfinished(): Boolean {
