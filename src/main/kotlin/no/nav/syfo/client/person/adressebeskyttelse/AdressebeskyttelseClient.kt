@@ -107,7 +107,7 @@ class AdressebeskyttelseClient(
         const val PERSON_PATH = "/syfoperson/api/person"
         const val PERSON_ADRESSEBESKYTTELSE_PATH = "$PERSON_PATH/adressebeskyttelse"
 
-        const val PERSON_V2_PATH = "/syfoperson/v2/api/person"
+        const val PERSON_V2_PATH = "/syfoperson/api/v2/person"
         const val PERSON_V2_ADRESSEBESKYTTELSE_PATH = "$PERSON_V2_PATH/adressebeskyttelse"
 
         const val CACHE_ADRESSEBESKYTTELSE_KEY_PREFIX = "person-adressebeskyttelse-"
