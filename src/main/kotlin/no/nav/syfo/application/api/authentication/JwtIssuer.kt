@@ -7,7 +7,7 @@ data class JwtIssuer(
 )
 
 enum class JwtIssuerType {
-    selvbetjening,
-    veileder,
+    SELVBETJENING,
+    VEILEDER,
     VEILEDER_V2,
 }
