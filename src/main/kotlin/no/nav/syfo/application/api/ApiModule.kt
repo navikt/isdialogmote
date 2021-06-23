@@ -44,12 +44,12 @@ fun Application.apiModule(
         jwtIssuerList = listOf(
             JwtIssuer(
                 accectedAudienceList = environment.loginserviceIdportenAudience,
-                jwtIssuerType = JwtIssuerType.selvbetjening,
+                jwtIssuerType = JwtIssuerType.SELVBETJENING,
                 wellKnown = wellKnownSelvbetjening,
             ),
             JwtIssuer(
                 accectedAudienceList = listOf(environment.loginserviceClientId),
-                jwtIssuerType = JwtIssuerType.veileder,
+                jwtIssuerType = JwtIssuerType.VEILEDER,
                 wellKnown = wellKnownVeileder,
             ),
             JwtIssuer(
@@ -139,7 +139,7 @@ fun Application.apiModule(
     routing {
         registerPodApi(applicationState, database)
         registerPrometheusApi()
-        authenticate(JwtIssuerType.veileder.name) {
+        authenticate(JwtIssuerType.VEILEDER.name) {
             registerDialogmoteApi(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService,
@@ -161,7 +161,7 @@ fun Application.apiModule(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             )
         }
-        authenticate(JwtIssuerType.selvbetjening.name) {
+        authenticate(JwtIssuerType.SELVBETJENING.name) {
             registerArbeidstakerVarselApi(
                 dialogmoteService = dialogmoteService,
                 dialogmotedeltakerService = dialogmotedeltakerService,
