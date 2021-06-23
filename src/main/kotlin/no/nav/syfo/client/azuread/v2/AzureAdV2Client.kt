@@ -6,8 +6,6 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import no.nav.syfo.client.httpClientProxy
 import org.slf4j.LoggerFactory
 
@@ -22,32 +20,17 @@ class AzureAdV2Client(
         scopeClientId: String,
         token: String
     ): AzureAdV2Token? {
-        val scopeToken = scopeTokenMap[scopeClientId]
-
-        return mutex.withLock {
-            if (scopeToken == null || scopeToken.isExpired()) {
-                val azureAdV2TokenResponse = getAccessToken(
-                    Parameters.build {
-                        append("client_id", aadAppClient)
-                        append("client_secret", aadAppSecret)
-                        append("client_assertion_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
-                        append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
-                        append("assertion", token)
-                        append("scope", "api://$scopeClientId/.default")
-                        append("requested_token_use", "on_behalf_of")
-                    }
-                )
-                if (azureAdV2TokenResponse == null) {
-                    null
-                } else {
-                    val azureADV2Token = azureAdV2TokenResponse.toAzureAdV2Token()
-                    scopeTokenMap[scopeClientId] = azureADV2Token
-                    azureADV2Token
-                }
-            } else {
-                scopeToken
+        return getAccessToken(
+            Parameters.build {
+                append("client_id", aadAppClient)
+                append("client_secret", aadAppSecret)
+                append("client_aqssertion_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
+                append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
+                append("assertion", token)
+                append("scope", "api://$scopeClientId/.default")
+                append("requested_token_use", "on_behalf_of")
             }
-        }
+        )?.toAzureAdV2Token()
     }
 
     private suspend fun getAccessToken(formParameters: Parameters): AzureAdV2TokenResponse? {
@@ -76,10 +59,5 @@ class AzureAdV2Client(
 
     companion object {
         private val log = LoggerFactory.getLogger(AzureAdV2Client::class.java)
-
-        private val mutex = Mutex()
-
-        @Volatile
-        private var scopeTokenMap = HashMap<String, AzureAdV2Token>()
     }
 }
