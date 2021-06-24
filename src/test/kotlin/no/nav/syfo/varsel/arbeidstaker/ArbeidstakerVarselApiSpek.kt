@@ -11,6 +11,7 @@ import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v1.*
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
@@ -359,6 +360,151 @@ class ArbeidstakerVarselApiSpek : Spek({
                             pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkallingArbeidstaker
                         }
                         val urlPdfForReferatNedlasting = "$arbeidstakerVarselApiPath/$createdReferatArbeidstakerVarselUUID$arbeidstakerVarselApiPdfPath"
+                        with(
+                            handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val pdfContent = response.byteContent!!
+                            pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
+                        }
+                    }
+                }
+                describe("Uautorisert person nektes tilgang") {
+                    val newDialogmoteInnkalt = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted", LocalDateTime.now().plusDays(30))
+
+                    val validTokenSelvbetjeningAnnenPerson = generateJWT(
+                        audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
+                        issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
+                        subject = ARBEIDSTAKER_ANNEN_FNR.value,
+                    )
+
+                    val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
+                    var createdDialogmoteUUID = ""
+
+                    it("should return Forbidden when bearer header contains token for unauthorized person") {
+                        with(
+                            handleRequest(HttpMethod.Post, urlMote) {
+                                addHeader(Authorization, bearerHeader(validTokenVeileder))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteInnkalt))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        }
+                        with(
+                            handleRequest(HttpMethod.Get, urlMote) {
+                                addHeader(Authorization, bearerHeader(validTokenVeileder))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                            val dto = dialogmoteList.first()
+                            dto.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+                            createdDialogmoteUUID = dto.uuid
+                        }
+
+                        val createdArbeidstakerVarselUUID: String
+                        with(
+                            handleRequest(HttpMethod.Get, arbeidstakerVarselApiPath) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerVarselList = objectMapper.readValue<List<ArbeidstakerVarselDTO>>(response.content!!)
+
+                            arbeidstakerVarselList.size shouldBeEqualTo 1
+
+                            val arbeidstakerVarselDTO = arbeidstakerVarselList.first()
+                            arbeidstakerVarselDTO.shouldNotBeNull()
+                            createdArbeidstakerVarselUUID = arbeidstakerVarselDTO.uuid
+                        }
+
+                        val urlArbeidstakerVarselUUIDLes = "$arbeidstakerVarselApiPath/$createdArbeidstakerVarselUUID$arbeidstakerVarselApiLesPath"
+                        with(
+                            handleRequest(HttpMethod.Post, urlArbeidstakerVarselUUIDLes) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, arbeidstakerVarselApiPath) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val arbeidstakerVarselList = objectMapper.readValue<List<ArbeidstakerVarselDTO>>(response.content!!)
+                            arbeidstakerVarselList.size shouldBeEqualTo 0
+                        }
+
+                        val urlMoteUUIDReferat = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        val referatDto = generateNewReferatDTO()
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoteUUIDReferat) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(Authorization, bearerHeader(validTokenVeileder))
+                                setBody(objectMapper.writeValueAsString(referatDto))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        }
+
+                        val createdReferatArbeidstakerVarselUUID: String
+                        with(
+                            handleRequest(HttpMethod.Get, arbeidstakerVarselApiPath) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerVarselList = objectMapper.readValue<List<ArbeidstakerVarselDTO>>(response.content!!)
+                            arbeidstakerVarselList.size shouldBeEqualTo 2
+
+                            val arbeidstakerVarselDTO = arbeidstakerVarselList.first()
+                            arbeidstakerVarselDTO.shouldNotBeNull()
+                            arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.REFERAT.name
+                            createdReferatArbeidstakerVarselUUID = arbeidstakerVarselDTO.uuid
+                        }
+                        val urlReferatUUIDLes = "$arbeidstakerVarselApiPath/$createdReferatArbeidstakerVarselUUID$arbeidstakerVarselApiLesPath"
+                        with(
+                            handleRequest(HttpMethod.Post, urlReferatUUIDLes) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                        }
+
+                        val urlPdfForInnkallingNedlasting = "$arbeidstakerVarselApiPath/$createdArbeidstakerVarselUUID$arbeidstakerVarselApiPdfPath"
+                        with(
+                            handleRequest(HttpMethod.Get, urlPdfForInnkallingNedlasting) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                        }
+                        with(
+                            handleRequest(HttpMethod.Get, urlPdfForInnkallingNedlasting) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val pdfContent = response.byteContent!!
+                            pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkallingArbeidstaker
+                        }
+
+                        val urlPdfForReferatNedlasting = "$arbeidstakerVarselApiPath/$createdReferatArbeidstakerVarselUUID$arbeidstakerVarselApiPdfPath"
+                        with(
+                            handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                        }
                         with(
                             handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
