@@ -348,6 +348,26 @@ class ArbeidstakerVarselApiSpek : Spek({
                             arbeidstakerVarselUpdatedDTO.varselType shouldBeEqualTo MotedeltakerVarselType.REFERAT.name
                             arbeidstakerVarselUpdatedDTO.lestDato shouldBeEqualTo arbeidstakerVarselDTO!!.lestDato
                         }
+                        val urlPdfForInnkallingNedlasting = "$arbeidstakerVarselApiPath/$createdArbeidstakerVarselUUID$arbeidstakerVarselApiPdfPath"
+                        with(
+                            handleRequest(HttpMethod.Get, urlPdfForInnkallingNedlasting) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val pdfContent = response.byteContent!!
+                            pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkallingArbeidstaker
+                        }
+                        val urlPdfForReferatNedlasting = "$arbeidstakerVarselApiPath/$createdReferatArbeidstakerVarselUUID$arbeidstakerVarselApiPdfPath"
+                        with(
+                            handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val pdfContent = response.byteContent!!
+                            pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
+                        }
                     }
                 }
             }

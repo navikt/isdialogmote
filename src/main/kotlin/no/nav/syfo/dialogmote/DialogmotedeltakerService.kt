@@ -68,6 +68,11 @@ class DialogmotedeltakerService(
         )
         return pMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(motedeltakerArbeidsgiverVarselList)
     }
+    fun getDialogmotedeltakerArbeidstakerVarselPdf(
+        dialogmotedeltakerArbeidstakerVarselUuid: UUID,
+    ): ByteArray {
+        return database.getMotedeltakerArbeidstakerVarsel(dialogmotedeltakerArbeidstakerVarselUuid).first().pdf
+    }
 
     fun lesDialogmotedeltakerArbeidstakerVarsel(
         personIdentNumber: PersonIdentNumber,
@@ -86,6 +91,12 @@ class DialogmotedeltakerService(
             )
             connection.commit()
         }
+    }
+
+    fun getReferatPdf(
+        referatUuid: UUID,
+    ): ByteArray {
+        return database.getReferat(referatUuid).first().pdf
     }
 
     fun lesReferatArbeidstaker(
