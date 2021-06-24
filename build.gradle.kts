@@ -32,7 +32,7 @@ object Versions {
 }
 
 plugins {
-    kotlin("jvm") version "1.4.30"
+    kotlin("jvm") version "1.5.10"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
 }
@@ -131,6 +131,9 @@ tasks {
     }
 
     withType<ShadowJar> {
+        archiveBaseName.set("app")
+        archiveClassifier.set("")
+        archiveVersion.set("")
     }
 
     withType<Test> {
