@@ -13,10 +13,6 @@ fun httpClientDefault() = HttpClient(CIO) {
     install(JsonFeature) {
         serializer = JacksonSerializer(configuredJacksonMapper())
     }
-    install(HttpTimeout) {
-        requestTimeoutMillis = 120000
-        connectTimeoutMillis = 60000
-    }
 }
 
 val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
