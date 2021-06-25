@@ -40,7 +40,7 @@ fun Dialogmote.toDialogmoteDTO(): DialogmoteDTO {
     )
 }
 
-fun List<Dialogmote>.toArbeidstakerVarselDTOList(): List<ArbeidstakerVarselDTO> {
+fun List<Dialogmote>.toArbeidstakerVarselDTOList(): List<ArbeidstakerVarselDTO> { // TODO: endre Varsel til Brev
     return this.map { dialogmote ->
         val varselList = mutableListOf<ArbeidstakerVarselDTO>()
         dialogmote.referat?.let {
