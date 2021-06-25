@@ -11,18 +11,18 @@ import java.util.*
 
 data class DialogmotedeltakerArbeidstakerVarsel(
     val id: Int,
-    val uuid: UUID,
+    override val uuid: UUID,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val motedeltakerArbeidstakerId: Int,
+    override val motedeltakerArbeidstakerId: Int,
     val varselType: MotedeltakerVarselType,
     val digitalt: Boolean,
-    val pdf: ByteArray,
+    override val pdf: ByteArray,
     val status: String,
-    val lestDato: LocalDateTime?,
+    override val lestDatoArbeidstaker: LocalDateTime?,
     val fritekst: String,
-    val document: List<DocumentComponentDTO>,
-)
+    override val document: List<DocumentComponentDTO>,
+) : ArbeidstakerBrev
 
 fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselDTO() =
     DialogmotedeltakerArbeidstakerVarselDTO(
@@ -30,7 +30,7 @@ fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselD
         createdAt = this.createdAt,
         varselType = this.varselType.name,
         digitalt = this.digitalt,
-        lestDato = this.lestDato,
+        lestDato = this.lestDatoArbeidstaker,
         fritekst = this.fritekst,
         document = this.document,
     )
@@ -45,7 +45,7 @@ fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerVarselDTO(
     createdAt = this.createdAt,
     varselType = this.varselType.name,
     digitalt = this.digitalt,
-    lestDato = this.lestDato,
+    lestDato = this.lestDatoArbeidstaker,
     fritekst = this.fritekst,
     sted = dialogmoteTidSted.sted,
     tid = dialogmoteTidSted.tid,

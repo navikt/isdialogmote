@@ -7,6 +7,7 @@ import no.nav.syfo.dialogmote.database.domain.PMotedeltakerArbeidstaker
 import no.nav.syfo.dialogmote.domain.NewDialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
+import java.lang.RuntimeException
 import java.sql.*
 import java.time.Instant
 import java.util.*
@@ -57,13 +58,20 @@ const val queryGetMotedeltakerArbeidstakerForMote =
         WHERE mote_id = ?
     """
 
-fun DatabaseInterface.getMoteDeltakerArbeidstaker(moteId: Int): List<PMotedeltakerArbeidstaker> {
-    return this.connection.use { connection ->
+fun DatabaseInterface.getMoteDeltakerArbeidstaker(moteId: Int): PMotedeltakerArbeidstaker {
+    val pMotedeltakerArbeidstakerList = this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerArbeidstakerForMote).use {
             it.setInt(1, moteId)
             it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
         }
     }
+    if (pMotedeltakerArbeidstakerList.isEmpty()) {
+        throw RuntimeException("No motedeltakerArbeidstaker found for mote with id $moteId")
+    }
+    if (pMotedeltakerArbeidstakerList.size > 1) {
+        throw RuntimeException("More than one motedeltakerArbeidstaker found for mote with id $moteId")
+    }
+    return pMotedeltakerArbeidstakerList.first()
 }
 
 const val queryGetMotedeltakerArbeidstakerById =

@@ -50,41 +50,17 @@ fun Route.registerArbeidstakerVarselApi(
                 val requestPersonIdent = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
-                val varselUuid = UUID.fromString(call.parameters[arbeidstakerVarselApiVarselParam])
+                val brevUuid = UUID.fromString(call.parameters[arbeidstakerVarselApiVarselParam])
 
-                val motedeltakerArbeidstakerVarsel = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerVarselList(
-                    uuid = varselUuid
-                ).firstOrNull()
-
-                val referat = dialogmoteService.getReferat(
-                    referatUUID = varselUuid
-                )
-
-                if (motedeltakerArbeidstakerVarsel == null && referat == null) {
-                    throw IllegalArgumentException("No Varsel found for PersonIdent with uuid=$varselUuid")
-                }
-                val motedeltakerArbeidstakerId = if (referat != null) {
-                    dialogmoteService.getDialogmote(referat.moteId).arbeidstaker.id
-                } else {
-                    motedeltakerArbeidstakerVarsel!!.motedeltakerArbeidstakerId
-                }
+                val brev = dialogmoteService.getArbeidstakerBrevFromUuid(brevUuid)
 
                 val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerFromId(
-                    moteDeltakerArbeidstakerId = motedeltakerArbeidstakerId
+                    moteDeltakerArbeidstakerId = brev.motedeltakerArbeidstakerId
                 )
 
                 val hasAccessToVarsel = motedeltakerArbeidstaker.personIdent == requestPersonIdent
                 if (hasAccessToVarsel) {
-                    val pdf = if (referat != null) {
-                        dialogmotedeltakerService.getReferatPdf(
-                            referatUuid = varselUuid,
-                        )
-                    } else { // motedeltakerArbeidstakerVarsel != null
-                        dialogmotedeltakerService.getDialogmotedeltakerArbeidstakerVarselPdf(
-                            dialogmotedeltakerArbeidstakerVarselUuid = varselUuid,
-                        )
-                    }
-                    call.respond(PdfContent(pdf))
+                    call.respond(PdfContent(brev.pdf))
                 } else {
                     val accessDeniedMessage = "Denied access to pdf for Varsel for varselUUID"
                     log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
@@ -103,43 +79,21 @@ fun Route.registerArbeidstakerVarselApi(
                 val requestPersonIdent = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
-                val varselUuid = UUID.fromString(call.parameters[arbeidstakerVarselApiVarselParam])
+                val brevUuid = UUID.fromString(call.parameters[arbeidstakerVarselApiVarselParam])
 
-                val motedeltakerArbeidstakerVarsel = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerVarselList(
-                    uuid = varselUuid
-                ).firstOrNull()
-
-                val referat = dialogmoteService.getReferat(
-                    referatUUID = varselUuid
-                )
-
-                if (motedeltakerArbeidstakerVarsel == null && referat == null) {
-                    throw IllegalArgumentException("No Varsel found for PersonIdent with uuid=$varselUuid")
-                }
-                val motedeltakerArbeidstakerId = if (referat != null) {
-                    dialogmoteService.getDialogmote(referat.moteId).arbeidstaker.id
-                } else {
-                    motedeltakerArbeidstakerVarsel!!.motedeltakerArbeidstakerId
-                }
+                val brev = dialogmoteService.getArbeidstakerBrevFromUuid(brevUuid)
 
                 val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerFromId(
-                    moteDeltakerArbeidstakerId = motedeltakerArbeidstakerId
+                    moteDeltakerArbeidstakerId = brev.motedeltakerArbeidstakerId
                 )
 
                 val hasAccessToVarsel = motedeltakerArbeidstaker.personIdent == requestPersonIdent
                 if (hasAccessToVarsel) {
-                    if (referat != null && referat.lestDatoArbeidstaker == null) {
-                        dialogmotedeltakerService.lesReferatArbeidstaker(
+                    if (brev.lestDatoArbeidstaker == null) {
+                        dialogmotedeltakerService.updateArbeidstakerBrevSettSomLest(
                             personIdentNumber = requestPersonIdent,
                             dialogmotedeltakerArbeidstakerUuid = motedeltakerArbeidstaker.uuid,
-                            referatUuid = varselUuid,
-                        )
-                    }
-                    if (motedeltakerArbeidstakerVarsel != null && motedeltakerArbeidstakerVarsel.lestDato == null) {
-                        dialogmotedeltakerService.lesDialogmotedeltakerArbeidstakerVarsel(
-                            personIdentNumber = requestPersonIdent,
-                            dialogmotedeltakerArbeidstakerUuid = motedeltakerArbeidstaker.uuid,
-                            dialogmotedeltakerArbeidstakerVarselUuid = varselUuid,
+                            brevUuid = brevUuid,
                         )
                     }
                     call.respond(HttpStatusCode.OK)

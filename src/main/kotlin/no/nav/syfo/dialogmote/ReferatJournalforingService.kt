@@ -14,7 +14,14 @@ class ReferatJournalforingService(
             val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id).map {
                 it.toDialogmoteDeltakerAnnen()
             }
-            Pair(personIdentNumber, pReferat.toReferat(andreDeltakere))
+            val motedeltakerArbeidstakerId = database.getMoteDeltakerArbeidstaker(pReferat.moteId).id
+            Pair(
+                first = personIdentNumber,
+                second = pReferat.toReferat(
+                    andreDeltakere = andreDeltakere,
+                    motedeltakerArbeidstakerId = motedeltakerArbeidstakerId,
+                )
+            )
         }
     }
 

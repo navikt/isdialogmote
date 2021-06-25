@@ -13,10 +13,11 @@ import java.util.UUID
 
 data class Referat(
     val id: Int,
-    val uuid: UUID,
+    override val uuid: UUID,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val moteId: Int,
+    override val motedeltakerArbeidstakerId: Int,
     val digitalt: Boolean,
     val situasjon: String,
     val konklusjon: String,
@@ -24,13 +25,13 @@ data class Referat(
     val arbeidsgiverOppgave: String,
     val veilederOppgave: String?,
     val narmesteLederNavn: String,
-    val document: List<DocumentComponentDTO>,
-    val pdf: ByteArray,
+    override val document: List<DocumentComponentDTO>,
+    override val pdf: ByteArray,
     val journalpostId: String?,
-    val lestDatoArbeidstaker: LocalDateTime?,
+    override val lestDatoArbeidstaker: LocalDateTime?,
     val lestDatoArbeidsgiver: LocalDateTime?,
     val andreDeltakere: List<DialogmotedeltakerAnnen>,
-)
+) : ArbeidstakerBrev
 
 data class DialogmotedeltakerAnnen(
     val id: Int,
