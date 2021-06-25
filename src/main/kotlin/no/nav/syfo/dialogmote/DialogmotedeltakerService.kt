@@ -16,7 +16,6 @@ class DialogmotedeltakerService(
         moteId: Int,
     ): DialogmotedeltakerArbeidstaker {
         val pMotedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(moteId)
-            .first()
         val motedeltakerArbeidstakerVarselList = getDialogmoteDeltakerArbeidstakerVarselList(
             pMotedeltakerArbeidstaker.id
         )
@@ -51,7 +50,6 @@ class DialogmotedeltakerService(
         moteDeltakerArbeidstakerId: Int,
     ): DialogmotedeltakerArbeidstaker {
         val pMotedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(moteDeltakerArbeidstakerId)
-            .first()
         val motedeltakerArbeidstakerVarselList = getDialogmoteDeltakerArbeidstakerVarselList(
             pMotedeltakerArbeidstaker.id
         )
@@ -68,51 +66,29 @@ class DialogmotedeltakerService(
         )
         return pMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(motedeltakerArbeidsgiverVarselList)
     }
-    fun getDialogmotedeltakerArbeidstakerVarselPdf(
-        dialogmotedeltakerArbeidstakerVarselUuid: UUID,
-    ): ByteArray {
-        return database.getMotedeltakerArbeidstakerVarsel(dialogmotedeltakerArbeidstakerVarselUuid).first().pdf
-    }
 
-    fun lesDialogmotedeltakerArbeidstakerVarsel(
+    fun updateArbeidstakerBrevSettSomLest(
         personIdentNumber: PersonIdentNumber,
         dialogmotedeltakerArbeidstakerUuid: UUID,
-        dialogmotedeltakerArbeidstakerVarselUuid: UUID,
+        brevUuid: UUID,
     ) {
+        val brevIsReferat = database.getReferat(brevUuid).isNotEmpty()
+
         database.connection.use { connection ->
-            connection.updateMotedeltakerArbeidstakerVarselLestDato(
-                motedeltakerArbeidstakerVarselUuid = dialogmotedeltakerArbeidstakerVarselUuid
-            )
+            if (brevIsReferat) {
+                connection.updateReferatLestDatoArbeidstaker(
+                    referatUUID = brevUuid
+                )
+            } else {
+                connection.updateMotedeltakerArbeidstakerVarselLestDato(
+                    motedeltakerArbeidstakerVarselUuid = brevUuid
+                )
+            }
 
             arbeidstakerVarselService.lesVarsel(
                 personIdent = personIdentNumber,
                 motedeltakerArbeidstakerUuid = dialogmotedeltakerArbeidstakerUuid,
-                varselUuid = dialogmotedeltakerArbeidstakerVarselUuid,
-            )
-            connection.commit()
-        }
-    }
-
-    fun getReferatPdf(
-        referatUuid: UUID,
-    ): ByteArray {
-        return database.getReferat(referatUuid).first().pdf
-    }
-
-    fun lesReferatArbeidstaker(
-        personIdentNumber: PersonIdentNumber,
-        dialogmotedeltakerArbeidstakerUuid: UUID,
-        referatUuid: UUID,
-    ) {
-        database.connection.use { connection ->
-            connection.updateReferatLestDatoArbeidstaker(
-                referatUUID = referatUuid
-            )
-
-            arbeidstakerVarselService.lesVarsel(
-                personIdent = personIdentNumber,
-                motedeltakerArbeidstakerUuid = dialogmotedeltakerArbeidstakerUuid,
-                varselUuid = referatUuid,
+                varselUuid = brevUuid,
             )
             connection.commit()
         }

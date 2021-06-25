@@ -31,8 +31,7 @@ class PublishDialogmoteStatusEndringService(
                 it.toDialogmoteTidSted()
             },
             pDialogmote = database.getDialogmote(id = moteId).first(),
-            personIdent = database.getMoteDeltakerArbeidstaker(moteId)
-                .first().personIdent,
+            personIdent = database.getMoteDeltakerArbeidstaker(moteId).personIdent,
             virksomhetsnummer = database.getMoteDeltakerArbeidsgiver(moteId)
                 .first().virksomhetsnummer,
         )

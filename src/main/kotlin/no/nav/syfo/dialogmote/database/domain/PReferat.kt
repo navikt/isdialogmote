@@ -36,6 +36,7 @@ data class PMotedeltakerAnnen(
 
 fun PReferat.toReferat(
     andreDeltakere: List<DialogmotedeltakerAnnen>,
+    motedeltakerArbeidstakerId: Int,
 ): Referat =
     Referat(
         id = this.id,
@@ -43,6 +44,7 @@ fun PReferat.toReferat(
         createdAt = this.createdAt,
         updatedAt = this.updatedAt,
         moteId = this.moteId,
+        motedeltakerArbeidstakerId = motedeltakerArbeidstakerId,
         digitalt = this.digitalt,
         situasjon = this.situasjon,
         konklusjon = this.konklusjon,

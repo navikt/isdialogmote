@@ -32,7 +32,7 @@ fun PMotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstaker() =
         digitalt = this.digitalt,
         pdf = this.pdf,
         status = this.status,
-        lestDato = this.lestDato,
+        lestDatoArbeidstaker = this.lestDato,
         fritekst = this.fritekst,
         document = this.document,
     )

@@ -494,7 +494,11 @@ class DialogmoteService(
     ): Referat? {
         return database.getReferat(referatUUID).firstOrNull()?.let { pReferat ->
             val andreDeltakere = getAndreDeltakere(pReferat.id)
-            pReferat.toReferat(andreDeltakere)
+            val motedeltakerArbeidstakerId = database.getMoteDeltakerArbeidstaker(pReferat.moteId).id
+            pReferat.toReferat(
+                andreDeltakere = andreDeltakere,
+                motedeltakerArbeidstakerId = motedeltakerArbeidstakerId,
+            )
         }
     }
 
@@ -503,7 +507,11 @@ class DialogmoteService(
     ): Referat? {
         return database.getReferatForMote(moteUUID).firstOrNull()?.let { pReferat ->
             val andreDeltakere = getAndreDeltakere(pReferat.id)
-            pReferat.toReferat(andreDeltakere)
+            val motedeltakerArbeidstakerId = database.getMoteDeltakerArbeidstaker(pReferat.moteId).id
+            pReferat.toReferat(
+                andreDeltakere = andreDeltakere,
+                motedeltakerArbeidstakerId = motedeltakerArbeidstakerId,
+            )
         }
     }
 
@@ -513,6 +521,23 @@ class DialogmoteService(
         return database.getAndreDeltakereForReferatID(referatId).map { pMotedeltakerAnnen ->
             pMotedeltakerAnnen.toDialogmoteDeltakerAnnen()
         }
+    }
+
+    fun getArbeidstakerBrevFromUuid(
+        brevUuid: UUID
+    ): ArbeidstakerBrev {
+        val motedeltakerArbeidstakerVarsel = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerVarselList(
+            uuid = brevUuid
+        ).firstOrNull()
+
+        val referat = getReferat(
+            referatUUID = brevUuid
+        )
+
+        if (motedeltakerArbeidstakerVarsel == null && referat == null) {
+            throw IllegalArgumentException("No Brev found for arbeidstaker with uuid=$brevUuid")
+        }
+        return motedeltakerArbeidstakerVarsel ?: referat!!
     }
 
     companion object {
