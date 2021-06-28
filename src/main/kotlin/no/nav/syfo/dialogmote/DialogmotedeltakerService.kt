@@ -60,7 +60,6 @@ class DialogmotedeltakerService(
         moteId: Int,
     ): DialogmotedeltakerArbeidsgiver {
         val pMotedeltakerArbeidsgiver = database.getMoteDeltakerArbeidsgiver(moteId)
-            .first()
         val motedeltakerArbeidsgiverVarselList = getDialogmoteDeltakerArbeidsgiverVarselList(
             pMotedeltakerArbeidsgiver.id
         )
