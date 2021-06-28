@@ -29,7 +29,6 @@ fun Connection.createMotedeltakerArbeidstaker(
     personIdentNumber: PersonIdentNumber,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
-
     val motedeltakerUuid = UUID.randomUUID()
     val motedeltakerArbeidstakerIdList = this.prepareStatement(queryCreateMotedeltakerArbeidstaker).use {
         it.setString(1, motedeltakerUuid.toString())
@@ -40,9 +39,10 @@ fun Connection.createMotedeltakerArbeidstaker(
         it.executeQuery().toList { getInt("id") }
     }
 
-    if (motedeltakerArbeidstakerIdList.size != 1) {
-        throw SQLException("Creating MotedeltakerArbeidstaker failed, no rows affected.")
-    }
+    motedeltakerArbeidstakerIdList.assertThatExactlyOneElement(
+        errorMessageIfEmpty = "Creating MotedeltakerArbeidstaker failed, no rows affected.",
+        errorMessageIfMoreThanOne = "Creating MotedeltakerArbeidstaker failed, more than one row affected.",
+    )
 
     if (commit) {
         this.commit()
@@ -65,12 +65,10 @@ fun DatabaseInterface.getMoteDeltakerArbeidstaker(moteId: Int): PMotedeltakerArb
             it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
         }
     }
-    if (pMotedeltakerArbeidstakerList.isEmpty()) {
-        throw RuntimeException("No motedeltakerArbeidstaker found for mote with id $moteId")
-    }
-    if (pMotedeltakerArbeidstakerList.size > 1) {
-        throw RuntimeException("More than one motedeltakerArbeidstaker found for mote with id $moteId")
-    }
+    pMotedeltakerArbeidstakerList.assertThatExactlyOneElement(
+        errorMessageIfEmpty = "No motedeltakerArbeidstaker found for mote with id $moteId",
+        errorMessageIfMoreThanOne = "More than one motedeltakerArbeidstaker found for mote with id $moteId",
+    )
     return pMotedeltakerArbeidstakerList.first()
 }
 
@@ -81,29 +79,18 @@ const val queryGetMotedeltakerArbeidstakerById =
         WHERE id = ?
     """
 
-fun DatabaseInterface.getMotedeltakerArbeidstakerById(motedeltakerId: Int): List<PMotedeltakerArbeidstaker> {
-    return this.connection.use { connection ->
+fun DatabaseInterface.getMotedeltakerArbeidstakerById(motedeltakerId: Int): PMotedeltakerArbeidstaker {
+    val pMotedeltakerArbeidstakerList = this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerArbeidstakerById).use {
             it.setInt(1, motedeltakerId)
             it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
         }
     }
-}
-
-const val queryGetMotedeltakerArbeidstakerForPerson =
-    """
-        SELECT *
-        FROM MOTEDELTAKER_ARBEIDSTAKER
-        WHERE personident = ?
-    """
-
-fun DatabaseInterface.getMoteDeltakerArbeidstaker(personIdentNumber: PersonIdentNumber): List<PMotedeltakerArbeidstaker> {
-    return this.connection.use { connection ->
-        connection.prepareStatement(queryGetMotedeltakerArbeidstakerForPerson).use {
-            it.setString(1, personIdentNumber.value)
-            it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
-        }
-    }
+    pMotedeltakerArbeidstakerList.assertThatExactlyOneElement(
+        errorMessageIfEmpty = "No motedeltakerArbeidstaker found for motedeltakerId with id $motedeltakerId",
+        errorMessageIfMoreThanOne = "More than one motedeltakerArbeidstaker found for motedeltakerId with id $motedeltakerId",
+    )
+    return pMotedeltakerArbeidstakerList.first()
 }
 
 fun ResultSet.toPMotedeltakerArbeidstaker(): PMotedeltakerArbeidstaker =
@@ -148,9 +135,10 @@ fun Connection.createMotedeltakerArbeidsgiver(
         it.executeQuery().toList { getInt("id") }
     }
 
-    if (motedeltakerArbeidsgiverIdList.size != 1) {
-        throw SQLException("Creating MotedeltakerArbeidsgiver failed, no rows affected.")
-    }
+    motedeltakerArbeidsgiverIdList.assertThatExactlyOneElement(
+        errorMessageIfEmpty = "Creating MotedeltakerArbeidsgiver failed, no rows affected.",
+        errorMessageIfMoreThanOne = "Creating MotedeltakerArbeidsgiver failed, more than one row affected.",
+    )
 
     if (commit) {
         this.commit()
@@ -166,13 +154,18 @@ const val queryGetMotedeltakerArbeidsgiverForMote =
         WHERE mote_id = ?
     """
 
-fun DatabaseInterface.getMoteDeltakerArbeidsgiver(moteId: Int): List<PMotedeltakerArbeidsgiver> {
-    return this.connection.use { connection ->
+fun DatabaseInterface.getMoteDeltakerArbeidsgiver(moteId: Int): PMotedeltakerArbeidsgiver {
+    val pMotedeltakerArbeidsgiverList = this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerArbeidsgiverForMote).use {
             it.setInt(1, moteId)
             it.executeQuery().toList { toPMotedeltakerArbeidsgiver() }
         }
     }
+    pMotedeltakerArbeidsgiverList.assertThatExactlyOneElement(
+        errorMessageIfEmpty = "No motedeltakerArbeidsgiver found for moteId with id $moteId",
+        errorMessageIfMoreThanOne = "More than one motedeltakerArbeidsgiver found for motedeltakerId with id $moteId",
+    )
+    return pMotedeltakerArbeidsgiverList.first()
 }
 
 fun ResultSet.toPMotedeltakerArbeidsgiver(): PMotedeltakerArbeidsgiver =
@@ -186,3 +179,15 @@ fun ResultSet.toPMotedeltakerArbeidsgiver(): PMotedeltakerArbeidsgiver =
         lederNavn = getString("leder_navn"),
         lederEpost = getString("leder_epost"),
     )
+
+private fun List<Any>.assertThatExactlyOneElement(
+    errorMessageIfEmpty: String,
+    errorMessageIfMoreThanOne: String,
+) {
+    if (isEmpty()) {
+        throw RuntimeException(errorMessageIfEmpty)
+    }
+    if (this.size > 1) {
+        throw RuntimeException(errorMessageIfMoreThanOne)
+    }
+}

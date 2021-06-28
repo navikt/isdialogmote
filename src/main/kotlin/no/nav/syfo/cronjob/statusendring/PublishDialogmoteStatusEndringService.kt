@@ -32,8 +32,7 @@ class PublishDialogmoteStatusEndringService(
             },
             pDialogmote = database.getDialogmote(id = moteId).first(),
             personIdent = database.getMoteDeltakerArbeidstaker(moteId).personIdent,
-            virksomhetsnummer = database.getMoteDeltakerArbeidsgiver(moteId)
-                .first().virksomhetsnummer,
+            virksomhetsnummer = database.getMoteDeltakerArbeidsgiver(moteId).virksomhetsnummer,
         )
         dialogmoteStatusEndringProducer.sendDialogmoteStatusEndring(kDialogmoteStatusEndring)
 
