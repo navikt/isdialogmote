@@ -6,7 +6,7 @@ import com.ibm.msg.client.jms.JmsConstants.JMS_IBM_ENCODING
 import com.ibm.msg.client.jms.JmsFactoryFactory
 import com.ibm.msg.client.wmq.common.CommonConstants.*
 import no.nav.syfo.application.Environment
-import no.nav.syfo.varsel.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.jms.ConnectionFactory

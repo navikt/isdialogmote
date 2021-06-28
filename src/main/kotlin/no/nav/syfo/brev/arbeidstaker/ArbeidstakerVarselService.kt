@@ -1,10 +1,10 @@
-package no.nav.syfo.varsel.arbeidstaker
+package no.nav.syfo.brev.arbeidstaker
 
 import no.nav.brukernotifikasjon.schemas.*
 import no.nav.brukernotifikasjon.schemas.builders.*
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.varsel.MotedeltakerVarselType
-import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import java.net.URL
 import java.time.LocalDateTime
 import java.util.*

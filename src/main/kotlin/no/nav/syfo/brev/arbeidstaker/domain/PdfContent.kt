@@ -1,4 +1,4 @@
-package no.nav.syfo.varsel.arbeidstaker.domain
+package no.nav.syfo.brev.arbeidstaker.domain
 
 import io.ktor.http.*
 import io.ktor.http.content.*

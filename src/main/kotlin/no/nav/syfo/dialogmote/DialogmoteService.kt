@@ -12,9 +12,8 @@ import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.*
-import no.nav.syfo.varsel.MotedeltakerVarselType
-import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.varsel.narmesteleder.NarmesteLederVarselService
+import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
+import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.LocalDateTime

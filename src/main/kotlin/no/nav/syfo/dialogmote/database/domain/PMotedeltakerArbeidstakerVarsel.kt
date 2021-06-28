@@ -1,8 +1,6 @@
 package no.nav.syfo.dialogmote.database.domain
 
-import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidstakerVarsel
-import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
-import no.nav.syfo.varsel.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.domain.*
 import java.time.LocalDateTime
 import java.util.UUID
 

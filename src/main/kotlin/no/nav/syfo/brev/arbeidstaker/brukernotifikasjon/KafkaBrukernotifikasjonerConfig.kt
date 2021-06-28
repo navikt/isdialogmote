@@ -1,4 +1,4 @@
-package no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon
+package no.nav.syfo.brev.arbeidstaker.brukernotifikasjon
 
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
 import io.confluent.kafka.serializers.KafkaAvroSerializer

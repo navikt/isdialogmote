@@ -22,10 +22,10 @@ import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.api.v1.*
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
-import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.varsel.arbeidstaker.registerArbeidstakerVarselApi
-import no.nav.syfo.varsel.narmesteleder.NarmesteLederVarselService
+import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
+import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
+import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import redis.clients.jedis.*
 
 fun Application.apiModule(
@@ -162,7 +162,7 @@ fun Application.apiModule(
             )
         }
         authenticate(JwtIssuerType.SELVBETJENING.name) {
-            registerArbeidstakerVarselApi(
+            registerArbeidstakerBrevApi(
                 dialogmoteService = dialogmoteService,
                 dialogmotedeltakerService = dialogmotedeltakerService,
             )

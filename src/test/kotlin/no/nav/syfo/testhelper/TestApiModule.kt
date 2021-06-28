@@ -3,7 +3,7 @@ package no.nav.syfo.testhelper
 import io.ktor.application.*
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.mq.MQSenderInterface
-import no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,

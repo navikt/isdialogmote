@@ -1,7 +1,6 @@
 package no.nav.syfo.dialogmote.database.domain
 
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.varsel.MotedeltakerVarselType
 import java.time.LocalDateTime
 import java.util.UUID
 

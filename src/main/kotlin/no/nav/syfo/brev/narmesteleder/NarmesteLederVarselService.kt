@@ -1,10 +1,10 @@
-package no.nav.syfo.varsel.narmesteleder
+package no.nav.syfo.brev.narmesteleder
 
 import no.nav.melding.virksomhet.servicemeldingmedkontaktinformasjon.v1.servicemeldingmedkontaktinformasjon.*
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
-import no.nav.syfo.varsel.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import java.io.StringWriter
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
