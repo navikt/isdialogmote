@@ -5,7 +5,7 @@ import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidstaker
 import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidstakerVarsel
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.varsel.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 
 class DialogmotedeltakerVarselJournalforingService(
     private val database: DatabaseInterface,

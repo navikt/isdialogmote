@@ -5,7 +5,7 @@ import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.varsel.arbeidstaker.ArbeidstakerVarselService
+import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import java.util.*
 
 class DialogmotedeltakerService(

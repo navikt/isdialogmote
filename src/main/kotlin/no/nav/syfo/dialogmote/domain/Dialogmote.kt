@@ -1,7 +1,7 @@
 package no.nav.syfo.dialogmote.domain
 
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.varsel.arbeidstaker.domain.ArbeidstakerVarselDTO
+import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import java.time.LocalDateTime
 import java.util.*
 
@@ -39,28 +39,28 @@ fun Dialogmote.toDialogmoteDTO(): DialogmoteDTO {
     )
 }
 
-fun List<Dialogmote>.toArbeidstakerVarselDTOList(): List<ArbeidstakerVarselDTO> {
+fun List<Dialogmote>.toArbeidstakerBrevDTOList(): List<ArbeidstakerBrevDTO> {
     return this.map { dialogmote ->
-        val varselList = mutableListOf<ArbeidstakerVarselDTO>()
+        val brevList = mutableListOf<ArbeidstakerBrevDTO>()
         dialogmote.referat?.let {
-            varselList.add(
-                it.toArbeidstakerVarselDTO(
+            brevList.add(
+                it.toArbeidstakerBrevDTO(
                     dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
                     deltakerUuid = dialogmote.arbeidstaker.uuid,
                     virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
                 )
             )
         }
-        varselList.addAll(
+        brevList.addAll(
             dialogmote.arbeidstaker.varselList.map {
-                it.toArbeidstakerVarselDTO(
+                it.toArbeidstakerBrevDTO(
                     dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
                     deltakerUuid = dialogmote.arbeidstaker.uuid,
                     virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
                 )
             }
         )
-        varselList
+        brevList
     }.flatten()
 }
 

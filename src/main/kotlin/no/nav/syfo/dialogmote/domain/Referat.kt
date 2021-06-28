@@ -6,8 +6,7 @@ import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerAnnenDTO
 import no.nav.syfo.dialogmote.api.domain.ReferatDTO
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
-import no.nav.syfo.varsel.MotedeltakerVarselType
-import no.nav.syfo.varsel.arbeidstaker.domain.ArbeidstakerVarselDTO
+import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -84,15 +83,15 @@ fun Referat.toJournalforingRequest(
     dokumentPdf = this.pdf
 )
 
-fun Referat.toArbeidstakerVarselDTO(
+fun Referat.toArbeidstakerBrevDTO(
     dialogmoteTidSted: DialogmoteTidSted,
     deltakerUuid: UUID,
     virksomhetsnummer: Virksomhetsnummer,
-) = ArbeidstakerVarselDTO(
+) = ArbeidstakerBrevDTO(
     uuid = this.uuid.toString(),
     deltakerUuid = deltakerUuid.toString(),
     createdAt = this.createdAt,
-    varselType = MotedeltakerVarselType.REFERAT.name,
+    brevType = MotedeltakerVarselType.REFERAT.name,
     digitalt = this.digitalt,
     lestDato = this.lestDatoArbeidstaker,
     fritekst = konklusjon,

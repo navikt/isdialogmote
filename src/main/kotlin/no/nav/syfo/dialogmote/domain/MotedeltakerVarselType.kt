@@ -1,4 +1,4 @@
-package no.nav.syfo.varsel
+package no.nav.syfo.dialogmote.domain
 
 import no.nav.syfo.client.dokarkiv.domain.BrevkodeType
 

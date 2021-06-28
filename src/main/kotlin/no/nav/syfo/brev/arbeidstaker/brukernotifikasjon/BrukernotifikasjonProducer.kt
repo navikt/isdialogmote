@@ -1,4 +1,4 @@
-package no.nav.syfo.varsel.arbeidstaker.brukernotifikasjon
+package no.nav.syfo.brev.arbeidstaker.brukernotifikasjon
 
 import no.nav.brukernotifikasjon.schemas.*
 import org.apache.kafka.clients.producer.KafkaProducer

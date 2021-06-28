@@ -1,4 +1,4 @@
-package no.nav.syfo.varsel.narmesteleder
+package no.nav.syfo.brev.narmesteleder
 
 enum class NarmesteLederVarselType(val id: String) {
     NARMESTE_LEDER_MOTE_INNKALT("syfoDialogmoteInnkalt"),
