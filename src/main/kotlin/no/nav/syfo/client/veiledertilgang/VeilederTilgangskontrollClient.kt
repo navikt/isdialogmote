@@ -123,23 +123,10 @@ class VeilederTilgangskontrollClient(
             token = token
         )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
 
-        return hasAccessToEnhet(
-            enhetNr = enhetNr,
-            token = oboToken,
-            url = getTilgangskontrollUrl(enhetNr, true),
-            callId = callId,
-        )
-    }
-
-    suspend fun hasAccessToEnhet(
-        enhetNr: EnhetNr,
-        token: String,
-        url: String = getTilgangskontrollUrl(enhetNr),
-        callId: String,
-    ): Boolean {
+        val url = getTilgangskontrollUrl(enhetNr)
         return try {
             val response: HttpResponse = httpClient.get(url) {
-                header(HttpHeaders.Authorization, bearerHeader(token))
+                header(HttpHeaders.Authorization, bearerHeader(oboToken))
                 header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
             }
@@ -162,11 +149,7 @@ class VeilederTilgangskontrollClient(
         }
     }
 
-    private fun getTilgangskontrollUrl(enhetNr: EnhetNr, onBehalfOf: Boolean = false): String {
-        return if (onBehalfOf) {
-            "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/enhet/${enhetNr.value}"
-        } else "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/enhet?enhet=${enhetNr.value}"
-    }
+    private fun getTilgangskontrollUrl(enhetNr: EnhetNr) = "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/enhet/${enhetNr.value}"
 
     private fun handleUnexpectedResponseException(
         response: HttpResponse,

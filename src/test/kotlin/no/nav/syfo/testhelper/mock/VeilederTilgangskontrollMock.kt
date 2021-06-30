@@ -70,13 +70,6 @@ class VeilederTilgangskontrollMock {
                         call.respond(tilgangTrue)
                     }
                 }
-                get("/syfo-tilgangskontroll/api/tilgang/enhet") {
-                    if (ENHET_NR_NO_ACCESS.value == call.parameters["enhet"]) {
-                        call.respond(HttpStatusCode.Forbidden, tilgangFalse)
-                    } else {
-                        call.respond(tilgangTrue)
-                    }
-                }
                 post("/syfo-tilgangskontroll/api/tilgang/navident/brukere") {
                     call.respond(
                         listOf(

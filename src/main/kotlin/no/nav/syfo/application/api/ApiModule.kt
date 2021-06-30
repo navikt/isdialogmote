@@ -9,6 +9,10 @@ import no.nav.syfo.application.api.authentication.*
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.mq.MQSenderInterface
+import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
+import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
+import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.client.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
@@ -19,13 +23,10 @@ import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.dialogmote.api.v1.*
+import no.nav.syfo.dialogmote.api.v1.registerDialogmoteActionsApi
+import no.nav.syfo.dialogmote.api.v1.registerDialogmoteApi
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
-import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
-import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import redis.clients.jedis.*
 
 fun Application.apiModule(
@@ -147,11 +148,6 @@ fun Application.apiModule(
             registerDialogmoteActionsApi(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService,
-            )
-            registerDialogmoteEnhetApi(
-                dialogmoteService = dialogmoteService,
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             )
         }
         authenticate(JwtIssuerType.VEILEDER_V2.name) {
