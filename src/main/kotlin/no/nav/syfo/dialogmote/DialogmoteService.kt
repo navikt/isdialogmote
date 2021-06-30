@@ -172,6 +172,7 @@ class DialogmoteService(
                     fritekstArbeidsgiver = newDialogmote.arbeidsgiver.fritekstInnkalling.orEmpty(),
                     documentArbeidstaker = newDialogmoteDTO.arbeidstaker.innkalling,
                     documentArbeidsgiver = newDialogmoteDTO.arbeidsgiver.innkalling,
+                    moteTidspunkt = newDialogmoteDTO.tidSted.tid,
                 )
 
                 connection.commit()
@@ -239,7 +240,8 @@ class DialogmoteService(
                         fritekstArbeidstaker = avlysDialogmote.arbeidstaker.begrunnelse,
                         fritekstArbeidsgiver = avlysDialogmote.arbeidsgiver.begrunnelse,
                         documentArbeidstaker = avlysDialogmote.arbeidstaker.avlysning,
-                        documentArbeidsgiver = avlysDialogmote.arbeidsgiver.avlysning
+                        documentArbeidsgiver = avlysDialogmote.arbeidsgiver.avlysning,
+                        moteTidspunkt = dialogmote.tidStedList.latest()!!.tid
                     )
                 }
                 connection.commit()
@@ -310,6 +312,7 @@ class DialogmoteService(
                     fritekstArbeidsgiver = endreDialogmoteTidSted.arbeidsgiver.begrunnelse,
                     documentArbeidstaker = endreDialogmoteTidSted.arbeidstaker.endringsdokument,
                     documentArbeidsgiver = endreDialogmoteTidSted.arbeidsgiver.endringsdokument,
+                    moteTidspunkt = endreDialogmoteTidSted.tid,
                 )
 
                 connection.commit()
@@ -332,6 +335,7 @@ class DialogmoteService(
         fritekstArbeidsgiver: String = "",
         documentArbeidstaker: List<DocumentComponentDTO> = emptyList(),
         documentArbeidsgiver: List<DocumentComponentDTO> = emptyList(),
+        moteTidspunkt: LocalDateTime,
     ) {
         val (_, varselArbeidstakerId) = connection.createMotedeltakerVarselArbeidstaker(
             commit = false,
@@ -362,6 +366,7 @@ class DialogmoteService(
         )
         narmesteLederVarselService.sendVarsel(
             createdAt = now,
+            moteTidspunkt = moteTidspunkt,
             narmesteLeder = narmesteLeder,
             varseltype = varselType
         )
@@ -432,6 +437,7 @@ class DialogmoteService(
             )
             narmesteLederVarselService.sendVarsel(
                 createdAt = now,
+                moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
                 narmesteLeder = narmesteLeder,
                 varseltype = MotedeltakerVarselType.REFERAT,
             )

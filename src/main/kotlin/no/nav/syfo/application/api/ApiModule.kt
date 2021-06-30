@@ -117,7 +117,6 @@ fun Application.apiModule(
     )
 
     val narmesteLederVarselService = NarmesteLederVarselService(
-        env = environment,
         mqSender = mqSender
     )
 

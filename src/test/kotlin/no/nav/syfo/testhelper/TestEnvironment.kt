@@ -46,7 +46,6 @@ fun testEnvironment(
     isdialogmoteDbPassword = "password",
     loginserviceClientId = "123456789",
     dialogmoteArbeidstakerUrl = "https://www.nav.no/dialogmote",
-    dialogmoteArbeidsgiverUrl = "https://www.nav.no/dialogmote",
     dokarkivUrl = dokarkivUrl,
     isdialogmotepdfgenUrl = isdialogmotepdfgenUrl ?: "http://isdialogmotepdfgen",
     modiasyforestUrl = modiasyforestUrl ?: "modiasyforest",
