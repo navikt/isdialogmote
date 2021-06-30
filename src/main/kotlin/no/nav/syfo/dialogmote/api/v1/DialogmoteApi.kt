@@ -66,7 +66,7 @@ fun Route.registerDialogmoteApi(
 
                 val personidentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
 
-                if (dialogmoteTilgangService.hasAccessToDialogmoteInnkalling(personidentNumber, token, callId)) {
+                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(personidentNumber, token, callId)) {
                     val created = dialogmoteService.createMoteinnkalling(
                         newDialogmoteDTO = newDialogmoteDTO,
                         token = token,
@@ -79,7 +79,6 @@ fun Route.registerDialogmoteApi(
                     }
                 } else {
                     val accessDeniedMessage = "Denied Veileder access to creating new Dialogmote"
-                    log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
                     call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
                 }
             } catch (e: IllegalArgumentException) {

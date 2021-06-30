@@ -12,7 +12,7 @@ import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.UUID
+import java.util.*
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 
@@ -38,7 +38,7 @@ fun Route.registerDialogmoteActionsApi(
 
                 val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-                if (dialogmoteTilgangService.hasAccessToDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
+                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.avlysMoteinnkalling(
                         callId = callId,
                         dialogmote = dialogmote,
@@ -52,7 +52,6 @@ fun Route.registerDialogmoteActionsApi(
                     }
                 } else {
                     val accessDeniedMessage = "Denied Veileder access to Avlys Dialogmote for moteUUID"
-                    log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
                     call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
                 }
             } catch (e: IllegalArgumentException) {
@@ -75,7 +74,7 @@ fun Route.registerDialogmoteActionsApi(
 
                 val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-                if (dialogmoteTilgangService.hasAccessToDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
+                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.nyttMoteinnkallingTidSted(
                         callId = callId,
                         dialogmote = dialogmote,
@@ -89,7 +88,6 @@ fun Route.registerDialogmoteActionsApi(
                     }
                 } else {
                     val accessDeniedMessage = "Denied Veileder access to create NewDialogmoteTidSted for moteUUID"
-                    log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
                     call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
                 }
             } catch (e: IllegalArgumentException) {
@@ -111,7 +109,7 @@ fun Route.registerDialogmoteActionsApi(
 
                 val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-                if (dialogmoteTilgangService.hasAccessToDialogmoteInnkalling(dialogmote.arbeidstaker.personIdent, token, callId)) {
+                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.ferdigstillMote(
                         callId = callId,
                         dialogmote = dialogmote,
