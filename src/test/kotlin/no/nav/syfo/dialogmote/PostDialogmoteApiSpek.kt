@@ -27,10 +27,11 @@ import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class PostDialogmoteApiSpek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -85,7 +86,12 @@ class PostDialogmoteApiSpek : Spek({
                     val urlMoter = "$dialogmoteApiBasepath$dialogmoteApiPersonIdentUrlPath"
 
                     it("should return OK if request is successful") {
-                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+                        val moteTidspunkt = LocalDateTime.now().plusDays(30)
+                        val moteTidspunktString = moteTidspunkt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
+                        val newDialogmoteDTO = generateNewDialogmoteDTO(
+                            personIdentNumber = ARBEIDSTAKER_FNR,
+                            dato = moteTidspunkt,
+                        )
 
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
@@ -95,7 +101,13 @@ class PostDialogmoteApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            val xmlStringSlot = slot<String>()
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, capture(xmlStringSlot)) }
+                            val xml = xmlStringSlot.captured
+                            xml.shouldContain("<kanal>EPOST</kanal><kontaktinformasjon>narmesteLederNavn@gmail.com</kontaktinformasjon>")
+                            xml.shouldContain("<orgnummer>912345678</orgnummer>")
+                            xml.shouldContain("<parameterListe><key>navn</key><value>narmesteLederNavn</value></parameterListe>")
+                            xml.shouldContain("<parameterListe><key>tidspunkt</key><value>$moteTidspunktString</value></parameterListe>")
                             clearMocks(mqSenderMock)
                         }
 

@@ -19,11 +19,12 @@ import no.nav.syfo.util.getPersonIdentHeader
 import java.time.LocalDate
 
 val narmesteLederDTOVirksomhetHasLeader = NarmesteLederDTO(
-    navn = "",
+    navn = "narmesteLederNavn",
     aktoerId = "",
     fomDato = LocalDate.now().minusDays(10),
     orgnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
     organisasjonsnavn = "",
+    epost = "narmesteLederNavn@gmail.com"
 )
 
 class ModiasyforestMock {

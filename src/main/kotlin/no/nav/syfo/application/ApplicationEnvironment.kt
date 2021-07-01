@@ -35,7 +35,6 @@ data class Environment(
     val sidecarInitialDelay: Long = getEnvVar("SIDECAR_INITIAL_DELAY", "30000").toLong(),
     val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENT_ID"),
     val dialogmoteArbeidstakerUrl: String = getEnvVar("DIALOGMOTE_ARBEIDSTAKER_URL"),
-    val dialogmoteArbeidsgiverUrl: String = getEnvVar("DIALOGMOTE_ARBEIDSGIVER_URL"),
     val dokarkivUrl: String = getEnvVar("DOKARKIV_URL"),
     val isdialogmotepdfgenUrl: String = "http://isdialogmotepdfgen",
     val modiasyforestUrl: String = getEnvVar("MODIASYFOREST_URL"),
