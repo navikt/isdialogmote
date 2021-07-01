@@ -40,6 +40,7 @@ fun Application.apiModule(
     wellKnownVeileder: WellKnown,
     wellKnownVeilederV2: WellKnown,
 ) {
+    installMetrics()
     installCallId()
     installContentNegotiation()
     installJwtAuthentication(

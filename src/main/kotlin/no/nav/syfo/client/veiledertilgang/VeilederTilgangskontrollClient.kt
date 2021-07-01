@@ -56,11 +56,11 @@ class VeilederTilgangskontrollClient(
                 contentType(ContentType.Application.Json)
                 body = personIdentStringList
             }
-            COUNT_CALL_TILGANGSKONTROLL_PERSONS_SUCCESS.inc()
+            COUNT_CALL_TILGANGSKONTROLL_PERSONS_SUCCESS.increment()
             response.receive<List<String>>().map { personIdent -> PersonIdentNumber(personIdent) }
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.Forbidden) {
-                COUNT_CALL_TILGANGSKONTROLL_PERSONS_FORBIDDEN.inc()
+                COUNT_CALL_TILGANGSKONTROLL_PERSONS_FORBIDDEN.increment()
             } else {
                 handleUnexpectedResponseException(e.response, resourceEnhet, callId)
             }
@@ -91,11 +91,11 @@ class VeilederTilgangskontrollClient(
                 header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
             }
-            COUNT_CALL_TILGANGSKONTROLL_PERSON_SUCCESS.inc()
+            COUNT_CALL_TILGANGSKONTROLL_PERSON_SUCCESS.increment()
             response.receive<Tilgang>().harTilgang
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.Forbidden) {
-                COUNT_CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN.inc()
+                COUNT_CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN.increment()
             } else {
                 handleUnexpectedResponseException(e.response, resourcePerson, callId)
             }
@@ -130,17 +130,17 @@ class VeilederTilgangskontrollClient(
                 header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
             }
-            COUNT_CALL_TILGANGSKONTROLL_ENHET_SUCCESS.inc()
+            COUNT_CALL_TILGANGSKONTROLL_ENHET_SUCCESS.increment()
             response.receive<Tilgang>().harTilgang
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.Forbidden) {
-                COUNT_CALL_TILGANGSKONTROLL_ENHET_FORBIDDEN.inc()
+                COUNT_CALL_TILGANGSKONTROLL_ENHET_FORBIDDEN.increment()
             } else {
                 handleUnexpectedResponseException(e.response, resourceEnhet, callId)
             }
             false
         } catch (e: ServerResponseException) {
-            COUNT_CALL_TILGANGSKONTROLL_ENHET_FAIL.inc()
+            COUNT_CALL_TILGANGSKONTROLL_ENHET_FAIL.increment()
             handleUnexpectedResponseException(e.response, resourceEnhet, callId)
             false
         } catch (e: ClosedReceiveChannelException) {
@@ -167,13 +167,13 @@ class VeilederTilgangskontrollClient(
     private fun incrementFailCounter(resource: String) {
         when (resource) {
             resourcePerson -> {
-                COUNT_CALL_TILGANGSKONTROLL_PERSON_FAIL.inc()
+                COUNT_CALL_TILGANGSKONTROLL_PERSON_FAIL.increment()
             }
             resourceEnhet -> {
-                COUNT_CALL_TILGANGSKONTROLL_ENHET_FAIL.inc()
+                COUNT_CALL_TILGANGSKONTROLL_ENHET_FAIL.increment()
             }
             resourcePersonList -> {
-                COUNT_CALL_TILGANGSKONTROLL_PERSONS_FAIL.inc()
+                COUNT_CALL_TILGANGSKONTROLL_PERSONS_FAIL.increment()
             }
         }
     }

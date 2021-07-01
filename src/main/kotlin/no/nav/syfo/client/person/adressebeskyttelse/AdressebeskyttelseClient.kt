@@ -14,6 +14,7 @@ import no.nav.syfo.client.person.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
+import java.time.Duration
 
 class AdressebeskyttelseClient(
     private val azureAdV2Client: AzureAdV2Client,
@@ -53,7 +54,7 @@ class AdressebeskyttelseClient(
         val cachedAdressebeskyttelse = cache.get(cacheKey)
         return when (cachedAdressebeskyttelse) {
             null -> {
-                val timer = HISTOGRAM_CALL_PERSON_ADRESSEBESKYTTELSE_TIMER.startTimer()
+                val starttime = System.currentTimeMillis()
                 try {
                     val response: HttpResponse = httpClient.get(url) {
                         header(HttpHeaders.Authorization, bearerHeader(token))
@@ -62,7 +63,7 @@ class AdressebeskyttelseClient(
                         accept(ContentType.Application.Json)
                     }
                     val adressebeskyttelseResponse = response.receive<AdressebeskyttelseResponse>()
-                    COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_SUCCESS.inc()
+                    COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_SUCCESS.increment()
                     cache.set(
                         cacheKey,
                         adressebeskyttelseResponse.beskyttet.toString(),
@@ -76,7 +77,8 @@ class AdressebeskyttelseClient(
                 } catch (e: ClosedReceiveChannelException) {
                     handleClosedReceiveChannelException(e)
                 } finally {
-                    timer.observeDuration()
+                    val duration = Duration.ofMillis(System.currentTimeMillis() - starttime)
+                    HISTOGRAM_CALL_PERSON_ADRESSEBESKYTTELSE_TIMER.record(duration)
                 }
             }
             else -> cachedAdressebeskyttelse.toBoolean()
@@ -92,14 +94,14 @@ class AdressebeskyttelseClient(
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             callIdArgument(callId)
         )
-        COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL.inc()
+        COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL.increment()
         return true
     }
 
     private fun handleClosedReceiveChannelException(
         e: ClosedReceiveChannelException
     ): Boolean {
-        COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL.inc()
+        COUNT_CALL_PERSON_ADRESSEBESKYTTELSE_FAIL.increment()
         throw RuntimeException("Caught ClosedReceiveChannelException in hasAdressebeskyttelse", e)
     }
 

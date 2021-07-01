@@ -39,7 +39,7 @@ class KontaktinformasjonClient(
                         accept(ContentType.Application.Json)
                     }
                     val digitalKontaktinfoBolkResponse = response.receive<DigitalKontaktinfoBolk>()
-                    COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS.inc()
+                    COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS.increment()
                     cache.setObject(cacheKey, digitalKontaktinfoBolkResponse, CACHE_KONTAKTINFORMASJON_EXPIRE_SECONDS)
                     digitalKontaktinfoBolkResponse
                 } catch (e: ClientRequestException) {
@@ -62,7 +62,7 @@ class KontaktinformasjonClient(
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             callIdArgument(callId)
         )
-        COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL.inc()
+        COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL.increment()
     }
 
     companion object {

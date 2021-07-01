@@ -7,9 +7,11 @@ import io.ktor.auth.jwt.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.jackson.*
+import io.ktor.metrics.micrometer.*
 import io.ktor.response.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.metric.METRICS_REGISTRY
 import no.nav.syfo.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -62,6 +64,12 @@ fun hasExpectedAudience(credentials: JWTCredential, expectedAudience: List<Strin
 fun ApplicationCall.personIdent(): PersonIdentNumber? {
     val principal: JWTPrincipal? = this.authentication.principal()
     return principal?.payload?.subject?.let { PersonIdentNumber(it) }
+}
+
+fun Application.installMetrics() {
+    install(MicrometerMetrics) {
+        registry = METRICS_REGISTRY
+    }
 }
 
 fun Application.installCallId() {
