@@ -29,7 +29,7 @@ import org.spekframework.spek2.style.specification.describe
 class GetDialogmoteEnhetApiV2Spek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
 
-    describe("DialogmoteApiSpek") {
+    describe(GetDialogmoteEnhetApiV2Spek::class.java.simpleName) {
 
         with(TestApplicationEngine()) {
             start()

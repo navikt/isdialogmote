@@ -27,6 +27,7 @@ import no.nav.syfo.dialogmote.api.v1.registerDialogmoteActionsApi
 import no.nav.syfo.dialogmote.api.v1.registerDialogmoteApi
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
+import no.nav.syfo.dialogmote.api.v2.registerDialogmoteActionsApiV2
 import redis.clients.jedis.*
 
 fun Application.apiModule(
@@ -154,6 +155,10 @@ fun Application.apiModule(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+            )
+            registerDialogmoteActionsApiV2(
+                dialogmoteService = dialogmoteService,
+                dialogmoteTilgangService = dialogmoteTilgangService
             )
         }
         authenticate(JwtIssuerType.SELVBETJENING.name) {

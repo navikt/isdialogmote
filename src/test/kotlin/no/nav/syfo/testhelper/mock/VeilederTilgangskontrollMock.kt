@@ -13,6 +13,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.client.veiledertilgang.Tilgang
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
@@ -59,6 +60,7 @@ class VeilederTilgangskontrollMock {
                     call.respond(
                         listOf(
                             ARBEIDSTAKER_FNR.value,
+                            ARBEIDSTAKER_ANNEN_FNR.value,
                             ARBEIDSTAKER_ADRESSEBESKYTTET.value,
                         )
                     )
@@ -74,6 +76,7 @@ class VeilederTilgangskontrollMock {
                     call.respond(
                         listOf(
                             ARBEIDSTAKER_FNR.value,
+                            ARBEIDSTAKER_ANNEN_FNR.value,
                             ARBEIDSTAKER_ADRESSEBESKYTTET.value,
                         )
                     )
