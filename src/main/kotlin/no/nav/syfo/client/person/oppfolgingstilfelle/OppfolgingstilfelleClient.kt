@@ -34,7 +34,7 @@ class OppfolgingstilfelleClient(
             }
             val oppfolgingstilfelle = response.receive<OppfolgingstilfellePersonDTO>()
                 .toOppfolgingstilfelle()
-            COUNT_CALL_PERSON_OPPFOLGINGSTILFELLE_SUCCESS.inc()
+            COUNT_CALL_PERSON_OPPFOLGINGSTILFELLE_SUCCESS.increment()
             oppfolgingstilfelle
         } catch (e: ClientRequestException) {
             handleUnexpectedResponseException(e.response, callId)
@@ -54,7 +54,7 @@ class OppfolgingstilfelleClient(
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             callIdArgument(callId),
         )
-        COUNT_CALL_PERSON_OPPFOLGINGSTILFELLE_FAIL.inc()
+        COUNT_CALL_PERSON_OPPFOLGINGSTILFELLE_FAIL.increment()
     }
 
     companion object {

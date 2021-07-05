@@ -24,11 +24,11 @@ object Versions {
     const val nimbusjosejwtVersion = "7.5.1"
     const val postgresEmbeddedVersion = "0.13.3"
     const val postgresVersion = "42.2.20"
-    const val prometheusVersion = "0.9.0"
     const val redisEmbeddedVersion = "0.7.3"
     const val spekVersion = "2.0.15"
     const val mqVersion = "9.2.2.0"
     const val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
+    const val micrometerRegistryVersion = "1.7.1"
 }
 
 plugins {
@@ -70,12 +70,15 @@ dependencies {
     implementation("io.ktor:ktor-jackson:${Versions.ktorVersion}")
     implementation("io.ktor:ktor-server-netty:${Versions.ktorVersion}")
 
+    // Logging
     implementation("ch.qos.logback:logback-classic:${Versions.logbackVersion}")
     implementation("net.logstash.logback:logstash-logback-encoder:${Versions.logstashEncoderVersion}")
 
-    implementation("io.prometheus:simpleclient_hotspot:${Versions.prometheusVersion}")
-    implementation("io.prometheus:simpleclient_common:${Versions.prometheusVersion}")
+    // Metrics and Prometheus
+    implementation("io.ktor:ktor-metrics-micrometer:${Versions.ktorVersion}")
+    implementation("io.micrometer:micrometer-registry-prometheus:${Versions.micrometerRegistryVersion}")
 
+    // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jacksonVersion}")
     implementation("javax.xml.bind:jaxb-api:${Versions.jaxbVersion}")
     implementation("org.glassfish.jaxb:jaxb-runtime:${Versions.jaxbVersion}")
