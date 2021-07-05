@@ -1,12 +1,10 @@
 package no.nav.syfo.client.person.kontaktinfo
 
 import io.ktor.server.testing.*
-import io.mockk.clearMocks
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.client.azuread.v2.AzureAdV2Client
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.mock.SyfopersonMock
 import no.nav.syfo.testhelper.mock.digitalKontaktinfoBolkKanVarslesTrue
@@ -28,9 +26,15 @@ class KontaktinformasjonClientSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
+            val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
             val syfopersonMock = SyfopersonMock()
             val cacheMock = mockk<RedisStore>(relaxed = true)
-            val client = KontaktinformasjonClient(cacheMock, syfopersonMock.url)
+            val client = KontaktinformasjonClient(
+                azureAdV2Client = azureAdV2ClientMock,
+                cache = cacheMock,
+                syfopersonClientId = "syfopersonClientId",
+                syfopersonBaseUrl = syfopersonMock.url,
+            )
 
             beforeGroup {
                 syfopersonMock.server.start()

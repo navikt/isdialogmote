@@ -97,8 +97,12 @@ spec:
       value: "https://tjenester-q1.nav.no/dialogmote"
     - name: DOKARKIV_URL
       value: "https://dokarkiv.dev-fss-pub.nais.io"
+    - name: MODIASYFOREST_CLIENT_ID
+      value: "9214f26e-b991-42a4-80c6-5defeadd9d63"
     - name: MODIASYFOREST_URL
       value: "https://modiasyforest.dev-fss-pub.nais.io"
+    - name: SYFOBEHANDLENDEENHET_CLIENT_ID
+      value: "c3de32aa-370c-4357-b46c-64784217920f"
     - name: SYFOBEHANDLENDEENHET_URL
       value: "https://syfobehandlendeenhet.dev-fss-pub.nais.io"
     - name: SYFOPERSON_CLIENT_ID

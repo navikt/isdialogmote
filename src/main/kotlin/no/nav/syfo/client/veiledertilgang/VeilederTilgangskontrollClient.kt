@@ -80,6 +80,41 @@ class VeilederTilgangskontrollClient(
         } else "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/brukere"
     }
 
+    suspend fun hasAccessWithOBO(
+        personIdentNumber: PersonIdentNumber,
+        token: String,
+        callId: String
+    ): Boolean {
+        val oboToken = azureAdV2Client.getOnBehalfOfToken(
+            scopeClientId = syfotilgangskontrollClientId,
+            token = token
+        )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
+
+        val url = getTilgangskontrollV2Url(personIdentNumber)
+        return try {
+            val response: HttpResponse = httpClient.get(url) {
+                header(HttpHeaders.Authorization, bearerHeader(oboToken))
+                header(NAV_CALL_ID_HEADER, callId)
+                accept(ContentType.Application.Json)
+            }
+            COUNT_CALL_TILGANGSKONTROLL_PERSON_SUCCESS.increment()
+            response.receive<Tilgang>().harTilgang
+        } catch (e: ClientRequestException) {
+            if (e.response.status == HttpStatusCode.Forbidden) {
+                COUNT_CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN.increment()
+            } else {
+                handleUnexpectedResponseException(e.response, resourcePerson, callId)
+            }
+            false
+        } catch (e: ServerResponseException) {
+            handleUnexpectedResponseException(e.response, resourcePerson, callId)
+            false
+        } catch (e: ClosedReceiveChannelException) {
+            handleClosedReceiveChannelException(e, "hasAccess", resourcePerson)
+            false
+        }
+    }
+
     suspend fun hasAccess(
         personIdentNumber: PersonIdentNumber,
         token: String,
@@ -107,6 +142,10 @@ class VeilederTilgangskontrollClient(
             handleClosedReceiveChannelException(e, "hasAccess", resourcePerson)
             false
         }
+    }
+
+    private fun getTilgangskontrollV2Url(personIdentNumber: PersonIdentNumber): String {
+        return "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/bruker/${personIdentNumber.value}"
     }
 
     private fun getTilgangskontrollUrl(personIdentNumber: PersonIdentNumber): String {

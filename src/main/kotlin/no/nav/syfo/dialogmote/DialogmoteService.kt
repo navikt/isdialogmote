@@ -80,6 +80,7 @@ class DialogmoteService(
         newDialogmoteDTO: NewDialogmoteDTO,
         callId: String,
         token: String,
+        onBehalfOf: Boolean = false,
     ): Boolean {
         val personIdentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
 
@@ -93,7 +94,8 @@ class DialogmoteService(
             personIdentNumber = personIdentNumber,
             virksomhetsnummer = virksomhetsnummer,
             token = token,
-            callId = callId
+            callId = callId,
+            onBehalfOf = onBehalfOf,
         )
         return if (narmesteLeder == null) {
             log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
@@ -103,6 +105,7 @@ class DialogmoteService(
                 callId = callId,
                 personIdentNumber = personIdentNumber,
                 token = token,
+                onBehalfOf = onBehalfOf,
             ) ?: throw RuntimeException("Failed to request BehandlendeEnhet of Person")
 
             val newDialogmote = newDialogmoteDTO.toNewDialogmote(
@@ -136,6 +139,7 @@ class DialogmoteService(
                     opprettetAv = newDialogmote.opprettetAv,
                     personIdentNumber = newDialogmote.arbeidstaker.personIdent,
                     token = token,
+                    onBehalfOf = onBehalfOf,
                 )
                 createAndSendVarsel(
                     connection = connection,
@@ -472,11 +476,13 @@ class DialogmoteService(
         opprettetAv: String,
         personIdentNumber: PersonIdentNumber,
         token: String,
+        onBehalfOf: Boolean = false,
     ) {
         val tilfelleStart = oppfolgingstilfelleClient.oppfolgingstilfelle(
             callId = callId,
             personIdentNumber = personIdentNumber,
             token = token,
+            onBehalfOf = onBehalfOf,
         )?.fom ?: throw RuntimeException("Cannot create MoteStatusEndring: No TilfelleStart was found")
         connection.createMoteStatusEndring(
             commit = false,

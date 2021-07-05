@@ -6,6 +6,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.client.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_OPPFOLGINGSTILFELLE_FAIL
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_OPPFOLGINGSTILFELLE_SUCCESS
@@ -14,9 +15,12 @@ import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
 
 class OppfolgingstilfelleClient(
+    private val azureAdV2Client: AzureAdV2Client,
+    private val syfopersonClientId: String,
     syfopersonBaseUrl: String
 ) {
     private val personOppfolgingstilfelleUrl: String = "$syfopersonBaseUrl$PERSON_OPPFOLGINGSTILFELLE_PATH"
+    private val personOppfolgingstilfelleV2Url: String = "$syfopersonBaseUrl$PERSON_V2_OPPFOLGINGSTILFELLE_PATH"
 
     private val httpClient = httpClientDefault()
 
@@ -24,10 +28,23 @@ class OppfolgingstilfelleClient(
         personIdentNumber: PersonIdentNumber,
         token: String,
         callId: String,
+        onBehalfOf: Boolean,
     ): OppfolgingstilfellePerson? {
+        val url: String
+        val oboToken: String?
+        if (onBehalfOf) {
+            oboToken = azureAdV2Client.getOnBehalfOfToken(
+                scopeClientId = syfopersonClientId,
+                token = token
+            )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
+            url = personOppfolgingstilfelleV2Url
+        } else {
+            oboToken = null
+            url = personOppfolgingstilfelleUrl
+        }
         return try {
-            val response: HttpResponse = httpClient.get(personOppfolgingstilfelleUrl) {
-                header(HttpHeaders.Authorization, bearerHeader(token))
+            val response: HttpResponse = httpClient.get(url) {
+                header(HttpHeaders.Authorization, bearerHeader(oboToken ?: token))
                 header(NAV_CALL_ID_HEADER, callId)
                 header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
                 accept(ContentType.Application.Json)
@@ -60,6 +77,9 @@ class OppfolgingstilfelleClient(
     companion object {
         const val PERSON_PATH = "/syfoperson/api/person"
         const val PERSON_OPPFOLGINGSTILFELLE_PATH = "$PERSON_PATH/oppfolgingstilfelle"
+
+        const val PERSON_V2_PATH = "/syfoperson/api/v2/person"
+        const val PERSON_V2_OPPFOLGINGSTILFELLE_PATH = "$PERSON_V2_PATH/oppfolgingstilfelle"
 
         private val log = LoggerFactory.getLogger(OppfolgingstilfelleClient::class.java)
     }

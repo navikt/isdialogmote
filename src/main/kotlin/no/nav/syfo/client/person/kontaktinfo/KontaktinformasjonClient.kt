@@ -7,6 +7,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.client.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS
@@ -15,24 +16,46 @@ import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
 
 class KontaktinformasjonClient(
+    private val azureAdV2Client: AzureAdV2Client,
     private val cache: RedisStore,
+    private val syfopersonClientId: String,
     syfopersonBaseUrl: String
 ) {
     private val personKontaktinfoUrl: String = "$syfopersonBaseUrl$PERSON_KONTAKTINFORMASJON_PATH"
+    private val personKontaktinfoV2Url: String = "$syfopersonBaseUrl$PERSON_V2_KONTAKTINFORMASJON_PATH"
 
     private val httpClient = httpClientDefault()
+
+    suspend fun kontaktinformasjonWithOBO(
+        personIdentNumber: PersonIdentNumber,
+        token: String,
+        callId: String,
+    ): DigitalKontaktinfoBolk? {
+        val oboToken = azureAdV2Client.getOnBehalfOfToken(
+            scopeClientId = syfopersonClientId,
+            token = token
+        )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
+
+        return kontaktinformasjon(
+            personIdentNumber = personIdentNumber,
+            token = oboToken,
+            callId = callId,
+            url = personKontaktinfoV2Url,
+        )
+    }
 
     suspend fun kontaktinformasjon(
         personIdentNumber: PersonIdentNumber,
         token: String,
-        callId: String
+        callId: String,
+        url: String = personKontaktinfoUrl,
     ): DigitalKontaktinfoBolk? {
         val cacheKey = "${CACHE_KONTAKTINFORMASJON_KEY_PREFIX}${personIdentNumber.value}"
         val cachedKontaktinformasjon = cache.getObject<DigitalKontaktinfoBolk>(cacheKey)
         return when (cachedKontaktinformasjon) {
             null ->
                 try {
-                    val response: HttpResponse = httpClient.get(personKontaktinfoUrl) {
+                    val response: HttpResponse = httpClient.get(url) {
                         header(HttpHeaders.Authorization, bearerHeader(token))
                         header(NAV_CALL_ID_HEADER, callId)
                         header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
@@ -68,6 +91,9 @@ class KontaktinformasjonClient(
     companion object {
         const val PERSON_PATH = "/syfoperson/api/person"
         const val PERSON_KONTAKTINFORMASJON_PATH = "$PERSON_PATH/kontaktinformasjon"
+
+        const val PERSON_V2_PATH = "/syfoperson/api/v2/person"
+        const val PERSON_V2_KONTAKTINFORMASJON_PATH = "$PERSON_V2_PATH/kontaktinformasjon"
 
         const val CACHE_KONTAKTINFORMASJON_KEY_PREFIX = "person-kontaktinformasjon-"
         const val CACHE_KONTAKTINFORMASJON_EXPIRE_SECONDS = 600

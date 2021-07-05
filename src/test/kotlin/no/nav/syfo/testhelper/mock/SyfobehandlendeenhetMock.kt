@@ -13,6 +13,7 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient.Companion.PERSON_ENHET_PATH
+import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient.Companion.PERSON_V2_ENHET_PATH
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetDTO
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -52,6 +53,17 @@ class SyfobehandlendeenhetMock {
             }
             routing {
                 get(PERSON_ENHET_PATH) {
+                    if (
+                        getPersonIdentHeader() == ARBEIDSTAKER_FNR.value ||
+                        getPersonIdentHeader() == ARBEIDSTAKER_ANNEN_FNR.value ||
+                        getPersonIdentHeader() == ARBEIDSTAKER_NO_JOURNALFORING.value
+                    ) {
+                        call.respond(behandlendeEnhetDTO)
+                    } else {
+                        call.respond(HttpStatusCode.InternalServerError, "")
+                    }
+                }
+                get(PERSON_V2_ENHET_PATH) {
                     if (
                         getPersonIdentHeader() == ARBEIDSTAKER_FNR.value ||
                         getPersonIdentHeader() == ARBEIDSTAKER_ANNEN_FNR.value ||
