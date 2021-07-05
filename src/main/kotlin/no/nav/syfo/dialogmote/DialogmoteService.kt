@@ -33,29 +33,8 @@ class DialogmoteService(
         moteUUID: UUID
     ): Dialogmote {
         return database.getDialogmote(moteUUID).first().let { pDialogmote ->
-            dialogmote(pDialogmote)
+            extendDialogmoteRelations(pDialogmote)
         }
-    }
-
-    fun getDialogmote(
-        id: Int
-    ): Dialogmote {
-        return database.getDialogmote(id).first().let { pDialogmote ->
-            dialogmote(pDialogmote)
-        }
-    }
-
-    private fun dialogmote(pDialogmote: PDialogmote): Dialogmote {
-        val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
-        val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
-        val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
-        val referat = getReferatForMote(pDialogmote.uuid)
-        return pDialogmote.toDialogmote(
-            dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
-            dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
-            dialogmoteTidStedList = dialogmoteTidStedList,
-            referat = referat,
-        )
     }
 
     fun getDialogmoteList(
@@ -74,7 +53,7 @@ class DialogmoteService(
         }
     }
 
-    fun extendDialogmoteRelations(
+    private fun extendDialogmoteRelations(
         pDialogmote: PDialogmote,
     ): Dialogmote {
         val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
@@ -89,7 +68,7 @@ class DialogmoteService(
         )
     }
 
-    fun getDialogmoteTidStedList(
+    private fun getDialogmoteTidStedList(
         moteId: Int
     ): List<DialogmoteTidSted> {
         return database.getTidSted(moteId).map {
@@ -372,6 +351,20 @@ class DialogmoteService(
         )
     }
 
+    fun overtaMoter(veilederIdent: String, dialogmoter: List<Dialogmote>): Boolean {
+        database.connection.use { connection ->
+            dialogmoter.forEach { dialogmote ->
+                connection.updateMoteTildeltVeileder(
+                    commit = false,
+                    moteId = dialogmote.id,
+                    veilederId = veilederIdent
+                )
+            }
+            connection.commit()
+        }
+        return true
+    }
+
     suspend fun ferdigstillMote(
         callId: String,
         dialogmote: Dialogmote,
@@ -494,7 +487,7 @@ class DialogmoteService(
         )
     }
 
-    fun getReferat(
+    private fun getReferat(
         referatUUID: UUID
     ): Referat? {
         return database.getReferat(referatUUID).firstOrNull()?.let { pReferat ->
@@ -507,7 +500,7 @@ class DialogmoteService(
         }
     }
 
-    fun getReferatForMote(
+    private fun getReferatForMote(
         moteUUID: UUID
     ): Referat? {
         return database.getReferatForMote(moteUUID).firstOrNull()?.let { pReferat ->
