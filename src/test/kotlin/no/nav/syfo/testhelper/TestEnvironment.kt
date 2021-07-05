@@ -59,7 +59,7 @@ fun testEnvironment(
     mqUsername = "mquser",
     mqPassword = "mqpassword",
     mqTredjepartsVarselQueue = "queuename",
-    mqSendingEnabled = false
+    mqSendingEnabled = false,
 )
 
 fun testAppState() = ApplicationState(

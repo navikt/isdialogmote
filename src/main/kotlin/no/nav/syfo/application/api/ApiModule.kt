@@ -61,6 +61,7 @@ fun Application.apiModule(
             ),
         ),
     )
+    installCORS()
     installStatusPages()
 
     val narmesteLederClient = NarmesteLederClient(

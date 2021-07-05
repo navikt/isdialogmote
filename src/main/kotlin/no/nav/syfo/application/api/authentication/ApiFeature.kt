@@ -64,6 +64,21 @@ fun ApplicationCall.personIdent(): PersonIdentNumber? {
     return principal?.payload?.subject?.let { PersonIdentNumber(it) }
 }
 
+fun Application.installCORS() {
+    install(CORS) {
+        method(HttpMethod.Get)
+        method(HttpMethod.Post)
+        method(HttpMethod.Options)
+        anyHost()
+        header("nav_csrf_protection")
+        header(NAV_PERSONIDENT_HEADER)
+        header(NAV_CONSUMER_ID_HEADER)
+        header(NAV_CALL_ID_HEADER)
+        allowCredentials = true
+        allowNonSimpleContentTypes = true
+    }
+}
+
 fun Application.installCallId() {
     install(CallId) {
         retrieve { it.request.headers[NAV_CALL_ID_HEADER] }
