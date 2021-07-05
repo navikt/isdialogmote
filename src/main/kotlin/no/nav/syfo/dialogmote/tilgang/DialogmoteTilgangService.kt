@@ -30,6 +30,27 @@ class DialogmoteTilgangService(
         } else false
     }
 
+    suspend fun hasAccessToDialogmotePersonWithOBO(
+        personIdentNumber: PersonIdentNumber,
+        token: String,
+        callId: String,
+    ): Boolean {
+        val veilederHasAccessToPerson = veilederTilgangskontrollClient.hasAccessWithOBO(
+            personIdentNumber = personIdentNumber,
+            token = token,
+            callId = callId,
+        )
+        return if (veilederHasAccessToPerson) {
+            val personHasAdressebeskyttelse =
+                adressebeskyttelseClient.hasAdressebeskyttelseWithOBO(
+                    personIdentNumber = personIdentNumber,
+                    token = token,
+                    callId = callId,
+                )
+            !personHasAdressebeskyttelse
+        } else false
+    }
+
     suspend fun hasAccessToAllDialogmotePersonsWithObo(
         personIdentNumberList: List<PersonIdentNumber>,
         token: String,
@@ -55,6 +76,26 @@ class DialogmoteTilgangService(
             callId = callId,
         ).filter { personIdentNumber ->
             !adressebeskyttelseClient.hasAdressebeskyttelseWithOBO(personIdentNumber, token, callId)
+        }
+    }
+
+    suspend fun hasAccessToDialogmotePersonWithDigitalVarselEnabledWithOBO(
+        personIdentNumber: PersonIdentNumber,
+        token: String,
+        callId: String,
+    ): Boolean {
+        return if (hasAccessToDialogmotePersonWithOBO(personIdentNumber, token, callId)) {
+            val kontaktinfo = kontaktinformasjonClient.kontaktinformasjonWithOBO(personIdentNumber, token, callId)
+            val isDigitalVarselEnabled = kontaktinfo?.kontaktinfo?.isDigitalVarselEnabled(personIdentNumber)
+            if (isDigitalVarselEnabled == false) {
+                log.error("$DENIED_ACCESS_LOG_MESSAGE DigitalVarsel is not allowed, {}", callIdArgument(callId))
+                false
+            } else {
+                isDigitalVarselEnabled ?: false
+            }
+        } else {
+            log.warn("$DENIED_ACCESS_LOG_MESSAGE No access to person, {}", callIdArgument(callId))
+            false
         }
     }
 

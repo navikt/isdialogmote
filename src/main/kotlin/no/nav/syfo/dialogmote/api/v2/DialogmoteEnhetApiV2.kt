@@ -15,8 +15,6 @@ import org.slf4j.LoggerFactory
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 
-const val dialogmoteApiV2Basepath = "/api/v2/dialogmote"
-
 const val dialogmoteApiEnhetUrlPath = "/enhet"
 const val dialogmoteApienhetNrParam = "enhetNr"
 

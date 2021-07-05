@@ -25,9 +25,8 @@ import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.api.v1.registerDialogmoteActionsApi
 import no.nav.syfo.dialogmote.api.v1.registerDialogmoteApi
-import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
+import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
-import no.nav.syfo.dialogmote.api.v2.registerDialogmoteActionsApiV2
 import redis.clients.jedis.*
 
 fun Application.apiModule(
@@ -64,10 +63,6 @@ fun Application.apiModule(
     )
     installStatusPages()
 
-    val narmesteLederClient = NarmesteLederClient(
-        modiasyforestBaseUrl = environment.modiasyforestUrl
-    )
-
     val cache = RedisStore(
         JedisPool(
             JedisPoolConfig(),
@@ -82,6 +77,11 @@ fun Application.apiModule(
         aadAppSecret = environment.aadAppSecret,
         aadTokenEndpoint = environment.aadTokenEndpoint,
     )
+    val narmesteLederClient = NarmesteLederClient(
+        azureAdV2Client = azureAdV2Client,
+        modiasyforestClientId = environment.modiasyforestClientId,
+        modiasyforestBaseUrl = environment.modiasyforestUrl,
+    )
     val adressebeskyttelseClient = AdressebeskyttelseClient(
         azureAdV2Client = azureAdV2Client,
         syfopersonClientId = environment.syfopersonClientId,
@@ -89,14 +89,20 @@ fun Application.apiModule(
         syfopersonBaseUrl = environment.syfopersonUrl,
     )
     val behandlendeEnhetClient = BehandlendeEnhetClient(
-        syfobehandlendeenhetBaseUrl = environment.syfobehandlendeenhetUrl
+        azureAdV2Client = azureAdV2Client,
+        syfobehandlendeenhetBaseUrl = environment.syfobehandlendeenhetUrl,
+        syfobehandlendeenhetClientId = environment.syfobehandlendeenhetClientId,
     )
     val kontaktinformasjonClient = KontaktinformasjonClient(
+        azureAdV2Client = azureAdV2Client,
         cache = cache,
-        syfopersonBaseUrl = environment.syfopersonUrl
+        syfopersonClientId = environment.syfopersonClientId,
+        syfopersonBaseUrl = environment.syfopersonUrl,
     )
     val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
+        azureAdV2Client = azureAdV2Client,
         syfopersonBaseUrl = environment.syfopersonUrl,
+        syfopersonClientId = environment.syfopersonClientId,
     )
     val pdfGenClient = PdfGenClient(
         pdfGenBaseUrl = environment.isdialogmotepdfgenUrl
@@ -156,6 +162,10 @@ fun Application.apiModule(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+            )
+            registerDialogmoteApiV2(
+                dialogmoteService = dialogmoteService,
+                dialogmoteTilgangService = dialogmoteTilgangService,
             )
             registerDialogmoteActionsApiV2(
                 dialogmoteService = dialogmoteService,

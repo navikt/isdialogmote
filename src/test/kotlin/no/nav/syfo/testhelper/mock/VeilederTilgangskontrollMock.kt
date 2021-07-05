@@ -15,7 +15,10 @@ import no.nav.syfo.client.veiledertilgang.Tilgang
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR_NO_ACCESS
 import no.nav.syfo.testhelper.getRandomPort
@@ -71,6 +74,27 @@ class VeilederTilgangskontrollMock {
                     } else {
                         call.respond(tilgangTrue)
                     }
+                }
+                get("/syfo-tilgangskontroll/api/tilgang/navident/bruker/${ARBEIDSTAKER_VEILEDER_NO_ACCESS.value}") {
+                    call.respond(HttpStatusCode.Forbidden, tilgangFalse)
+                }
+                get("/syfo-tilgangskontroll/api/tilgang/navident/bruker/${ARBEIDSTAKER_FNR.value}") {
+                    call.respond(tilgangTrue)
+                }
+                get("/syfo-tilgangskontroll/api/tilgang/navident/bruker/${ARBEIDSTAKER_ANNEN_FNR.value}") {
+                    call.respond(tilgangTrue)
+                }
+                get("/syfo-tilgangskontroll/api/tilgang/navident/bruker/${ARBEIDSTAKER_ADRESSEBESKYTTET.value}") {
+                    call.respond(tilgangTrue)
+                }
+                get("/syfo-tilgangskontroll/api/tilgang/navident/bruker/${ARBEIDSTAKER_NO_JOURNALFORING.value}") {
+                    call.respond(tilgangTrue)
+                }
+                get("/syfo-tilgangskontroll/api/tilgang/navident/bruker/${ARBEIDSTAKER_IKKE_VARSEL.value}") {
+                    call.respond(tilgangTrue)
+                }
+                get("/syfo-tilgangskontroll/api/tilgang/navident/bruker/${ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value}") {
+                    call.respond(tilgangTrue)
                 }
                 post("/syfo-tilgangskontroll/api/tilgang/navident/brukere") {
                     call.respond(

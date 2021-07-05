@@ -11,6 +11,7 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient.Companion.PERSON_NARMESTELEDER_PATH
+import no.nav.syfo.client.narmesteleder.NarmesteLederClient.Companion.PERSON_V2_NARMESTELEDER_PATH
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
@@ -52,6 +53,17 @@ class ModiasyforestMock {
             }
             routing {
                 get(PERSON_NARMESTELEDER_PATH) {
+                    if (getPersonIdentHeader() == ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value) {
+                        call.respond(emptyList<NarmesteLederDTO>())
+                    } else {
+                        call.respond(
+                            listOf(
+                                narmesteLederDTOVirksomhetHasLeader
+                            )
+                        )
+                    }
+                }
+                get(PERSON_V2_NARMESTELEDER_PATH) {
                     if (getPersonIdentHeader() == ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value) {
                         call.respond(emptyList<NarmesteLederDTO>())
                     } else {

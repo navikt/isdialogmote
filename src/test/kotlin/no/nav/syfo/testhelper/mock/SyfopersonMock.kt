@@ -108,7 +108,17 @@ class SyfopersonMock {
                         call.respond(digitalKontaktinfoBolkKanVarslesTrue(getPersonIdentHeader()!!))
                     }
                 }
+                get(KontaktinformasjonClient.PERSON_V2_KONTAKTINFORMASJON_PATH) {
+                    if (getPersonIdentHeader() == ARBEIDSTAKER_IKKE_VARSEL.value) {
+                        call.respond(digitalKontaktinfoBolkKanVarslesFalse)
+                    } else {
+                        call.respond(digitalKontaktinfoBolkKanVarslesTrue(getPersonIdentHeader()!!))
+                    }
+                }
                 get(OppfolgingstilfelleClient.PERSON_OPPFOLGINGSTILFELLE_PATH) {
+                    call.respond(oppfolgingstilfellePersonDTO)
+                }
+                get(OppfolgingstilfelleClient.PERSON_V2_OPPFOLGINGSTILFELLE_PATH) {
                     call.respond(oppfolgingstilfellePersonDTO)
                 }
             }
