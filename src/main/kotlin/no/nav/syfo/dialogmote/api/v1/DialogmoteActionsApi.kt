@@ -36,7 +36,7 @@ fun Route.registerDialogmoteActionsApi(
                 val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
                 val avlysDialogmoteDto = call.receive<AvlysDialogmoteDTO>()
 
-                val dialogmote = dialogmoteService.getDialogmote(moteUUID, callId)
+                val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
                 if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.avlysMoteinnkalling(
@@ -72,7 +72,7 @@ fun Route.registerDialogmoteActionsApi(
 
                 val endreDialogmoteTidSted = call.receive<EndreTidStedDialogmoteDTO>()
 
-                val dialogmote = dialogmoteService.getDialogmote(moteUUID, callId)
+                val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
                 if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.nyttMoteinnkallingTidSted(
@@ -107,7 +107,7 @@ fun Route.registerDialogmoteActionsApi(
                 val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
                 val newReferat = call.receive<NewReferatDTO>()
 
-                val dialogmote = dialogmoteService.getDialogmote(moteUUID, callId)
+                val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
                 if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.ferdigstillMote(

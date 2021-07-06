@@ -1,7 +1,6 @@
 package no.nav.syfo.brev.narmesteleder
 
 import no.nav.melding.virksomhet.servicemeldingmedkontaktinformasjon.v1.servicemeldingmedkontaktinformasjon.*
-import no.nav.syfo.application.Environment
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
@@ -12,7 +11,6 @@ import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
 
 class NarmesteLederVarselService(
-    private val env: Environment,
     private val mqSender: MQSenderInterface
 ) {
     fun sendVarsel(
@@ -28,7 +26,6 @@ class NarmesteLederVarselService(
                 "tidspunkt", moteTidspunkt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
             )
         )
-        parameterListe.add(createParameter("url", env.dialogmoteArbeidstakerUrl))
         parameterListe.add(createParameter("navn", narmesteLeder.navn ?: ""))
 
         val melding = opprettServiceMelding(narmesteLeder, varseltype, parameterListe)

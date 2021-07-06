@@ -42,7 +42,6 @@ fun Route.registerDialogmoteEnhetApiV2(
                     true -> {
                         val dialogmoteList = dialogmoteService.getDialogmoteList(
                             enhetNr = enhetNr,
-                            callId
                         )
                         val personListWithVeilederAccess = dialogmoteTilgangService.hasAccessToDialogmotePersonListWithObo(
                             personIdentNumberList = dialogmoteList.map { it.arbeidstaker.personIdent },

@@ -29,89 +29,35 @@ class DialogmoteService(
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     private val pdfGenClient: PdfGenClient,
 ) {
-    suspend fun getDialogmote(
-        moteUUID: UUID,
-        callId: String,
+    fun getDialogmote(
+        moteUUID: UUID
     ): Dialogmote {
         return database.getDialogmote(moteUUID).first().let { pDialogmote ->
-            dialogmote(pDialogmote, callId)
-            extendDialogmoteRelations(pDialogmote, callId)
+            extendDialogmoteRelations(pDialogmote)
         }
     }
 
-    suspend fun getDialogmote(
-        id: Int,
-        callId: String,
-    ): Dialogmote {
-        return database.getDialogmote(id).first().let { pDialogmote ->
-            dialogmote(pDialogmote, callId)
-        }
-    }
-
-    suspend fun hentArbeidsgiverWithCurrentNarmesteLeder(
-        pDialogmote: PDialogmote,
-        motedeltakerArbeidstaker: DialogmotedeltakerArbeidstaker,
-        callId: String
-    ): DialogmotedeltakerArbeidsgiver {
-        val pMotedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
-        val narmesteLederDTO = narmesteLederClient.activeLeader(
-            motedeltakerArbeidstaker.personIdent,
-            pMotedeltakerArbeidsgiver.virksomhetsnummer,
-            callId
-        )
-        val motedeltakerArbeidsgiverVarselList = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverVarselList(
-            pMotedeltakerArbeidsgiver.id,
-        )
-        return pMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(
-            motedeltakerArbeidsgiverVarselList,
-            narmesteLederDTO!!
-        )
-    }
-
-    private suspend fun dialogmote(
-        pDialogmote: PDialogmote,
-        callId: String,
-    ): Dialogmote {
-
-        val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
-        val motedeltakerArbeidsgiver =
-            hentArbeidsgiverWithCurrentNarmesteLeder(pDialogmote, motedeltakerArbeidstaker, callId)
-
-        val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
-        val referat = getReferatForMote(pDialogmote.uuid)
-        return pDialogmote.toDialogmote(
-            dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
-            dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
-            dialogmoteTidStedList = dialogmoteTidStedList,
-            referat = referat,
-        )
-    }
-
-    suspend fun getDialogmoteList(
+    fun getDialogmoteList(
         personIdentNumber: PersonIdentNumber,
-        callId: String
     ): List<Dialogmote> {
         return database.getDialogmoteList(personIdentNumber).map { pDialogmote ->
-            extendDialogmoteRelations(pDialogmote, callId)
+            extendDialogmoteRelations(pDialogmote)
         }
     }
 
-    suspend fun getDialogmoteList(
+    fun getDialogmoteList(
         enhetNr: EnhetNr,
-        callId: String
     ): List<Dialogmote> {
         return database.getDialogmoteList(enhetNr).map { pDialogmote ->
-            extendDialogmoteRelations(pDialogmote, callId)
+            extendDialogmoteRelations(pDialogmote)
         }
     }
 
-    suspend fun extendDialogmoteRelations(
+    private fun extendDialogmoteRelations(
         pDialogmote: PDialogmote,
-        callId: String,
     ): Dialogmote {
         val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
-        val motedeltakerArbeidsgiver =
-            hentArbeidsgiverWithCurrentNarmesteLeder(pDialogmote, motedeltakerArbeidstaker, callId)
+        val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
         val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
         val referat = getReferatForMote(pDialogmote.uuid)
         return pDialogmote.toDialogmote(
@@ -138,7 +84,7 @@ class DialogmoteService(
     ): Boolean {
         val personIdentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
 
-        val anyUnfinishedDialogmote = getDialogmoteList(personIdentNumber, callId).anyUnfinished()
+        val anyUnfinishedDialogmote = getDialogmoteList(personIdentNumber).anyUnfinished()
         if (anyUnfinishedDialogmote) {
             throw IllegalStateException("Denied access to create Dialogmote: unfinished Dialogmote exists for PersonIdent")
         }
