@@ -75,7 +75,7 @@ fun Route.registerDialogmoteActionsApiV2(
                     throw IllegalArgumentException("No dialogmoteUuids supplied")
                 }
 
-                val dialogmoter = dialogmoteUuids.map { dialogmoteService.getDialogmote(UUID.fromString(it)) }
+                val dialogmoter = dialogmoteUuids.map { dialogmoteService.getDialogmote(UUID.fromString(it), callId) }
                 if (dialogmoteTilgangService.hasAccessToAllDialogmotePersonsWithObo(
                         personIdentNumberList = dialogmoter.map { it.arbeidstaker.personIdent },
                         token,

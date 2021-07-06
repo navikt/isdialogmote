@@ -58,12 +58,12 @@ class DialogmotedeltakerService(
 
     fun getDialogmoteDeltakerArbeidsgiver(
         moteId: Int,
-    ): DialogmotedeltakerArbeidsgiver {
+    ): PMotedeltakerArbeidsgiver {
         val pMotedeltakerArbeidsgiver = database.getMoteDeltakerArbeidsgiver(moteId)
         val motedeltakerArbeidsgiverVarselList = getDialogmoteDeltakerArbeidsgiverVarselList(
             pMotedeltakerArbeidsgiver.id
         )
-        return pMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(motedeltakerArbeidsgiverVarselList)
+        return pMotedeltakerArbeidsgiver
     }
 
     fun updateArbeidstakerBrevSettSomLest(

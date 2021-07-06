@@ -1,5 +1,6 @@
 package no.nav.syfo.dialogmote.database.domain
 
+import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
@@ -12,12 +13,11 @@ data class PMotedeltakerArbeidsgiver(
     val updatedAt: LocalDateTime,
     val moteId: Int,
     val virksomhetsnummer: Virksomhetsnummer,
-    val lederNavn: String?,
-    val lederEpost: String?,
 )
 
 fun PMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(
-    dialogmotedeltakerArbeidsgiverVarsel: List<DialogmotedeltakerArbeidsgiverVarsel>
+    dialogmotedeltakerArbeidsgiverVarsel: List<DialogmotedeltakerArbeidsgiverVarsel>,
+    narmesteLederDTO: NarmesteLederDTO
 ) =
     DialogmotedeltakerArbeidsgiver(
         id = this.id,
@@ -26,8 +26,8 @@ fun PMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(
         updatedAt = this.updatedAt,
         moteId = this.moteId,
         virksomhetsnummer = this.virksomhetsnummer,
-        lederNavn = this.lederNavn,
-        lederEpost = this.lederEpost,
+        lederNavn = narmesteLederDTO.navn,
+        lederEpost = narmesteLederDTO.narmesteLederEpost,
         type = DialogmotedeltakerType.ARBEIDSGIVER,
         varselList = dialogmotedeltakerArbeidsgiverVarsel,
     )

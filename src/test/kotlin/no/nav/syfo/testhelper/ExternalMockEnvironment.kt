@@ -14,19 +14,19 @@ class ExternalMockEnvironment {
     val azureAdV2Mock = AzureAdV2Mock()
     val dokarkivMock = DokarkivMock()
     val isdialogmotepdfgenMock = IsdialogmotepdfgenMock()
-    val modiasyforestMock = ModiasyforestMock()
     val syfobehandlendeenhetMock = SyfobehandlendeenhetMock()
     val syfopersonMock = SyfopersonMock()
     val tilgangskontrollMock = VeilederTilgangskontrollMock()
+    var narmesteLederMock = NarmesteLederMock()
 
     val externalApplicationMockMap = hashMapOf(
         azureAdV2Mock.name to azureAdV2Mock.server,
         dokarkivMock.name to dokarkivMock.server,
         isdialogmotepdfgenMock.name to isdialogmotepdfgenMock.server,
-        modiasyforestMock.name to modiasyforestMock.server,
         syfobehandlendeenhetMock.name to syfobehandlendeenhetMock.server,
         syfopersonMock.name to syfopersonMock.server,
         tilgangskontrollMock.name to tilgangskontrollMock.server,
+        narmesteLederMock.name to narmesteLederMock.server,
     )
 
     val environment = testEnvironment(
@@ -34,10 +34,10 @@ class ExternalMockEnvironment {
         azureTokenEndpoint = azureAdV2Mock.url,
         dokarkivUrl = dokarkivMock.url,
         isdialogmotepdfgenUrl = isdialogmotepdfgenMock.url,
-        modiasyforestUrl = modiasyforestMock.url,
         syfobehandlendeenhetUrl = syfobehandlendeenhetMock.url,
         syfopersonUrl = syfopersonMock.url,
-        syfotilgangskontrollUrl = tilgangskontrollMock.url
+        syfotilgangskontrollUrl = tilgangskontrollMock.url,
+        narmestelederUrl = narmesteLederMock.url
     )
     val redisServer = testRedis(environment)
 

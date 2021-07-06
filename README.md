@@ -1,7 +1,10 @@
 ![Build status](https://github.com/navikt/isdialogmote/workflows/main/badge.svg?branch=master)
 
 # isdialogmote
-Isdialogmote is a backend service for handling of DialogmoteInnkallinger. Dialogmoteinnkallinger are handled by SYFO-veiledere in Syfomodiaperson(https://github.com/navikt/syfomodiaperson) in Modia.
+Isdialogmote is a backend service for handling of DialogmoteInnkallinger. Dialogmoteinnkallinger are handled by 
+SYFO-veiledere in Syfomodiaperson(https://github.com/navikt/syfomodiaperson) in Modia.
+
+TODO: Info on why nærmesteleder isn't persisted in application
 
 ## Technologies used
 * Docker

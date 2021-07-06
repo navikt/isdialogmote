@@ -111,9 +111,8 @@ const val queryCreateMotedeltakerArbeidsgiver =
         created_at,
         updated_at,
         mote_id,
-        virksomhetsnummer,
-        leder_navn,
-        leder_epost) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+        virksomhetsnummer
+        ) VALUES (DEFAULT, ?, ?, ?, ?, ?) RETURNING id
     """
 
 fun Connection.createMotedeltakerArbeidsgiver(
@@ -130,8 +129,6 @@ fun Connection.createMotedeltakerArbeidsgiver(
         it.setTimestamp(3, now)
         it.setInt(4, moteId)
         it.setString(5, newDialogmotedeltakerArbeidsgiver.virksomhetsnummer.value)
-        it.setString(6, newDialogmotedeltakerArbeidsgiver.lederNavn)
-        it.setString(7, newDialogmotedeltakerArbeidsgiver.lederEpost)
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -176,8 +173,6 @@ fun ResultSet.toPMotedeltakerArbeidsgiver(): PMotedeltakerArbeidsgiver =
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         moteId = getInt("mote_id"),
         virksomhetsnummer = Virksomhetsnummer(getString("virksomhetsnummer")),
-        lederNavn = getString("leder_navn"),
-        lederEpost = getString("leder_epost"),
     )
 
 private fun List<Any>.assertThatExactlyOneElement(

@@ -77,11 +77,6 @@ fun Application.apiModule(
         aadAppSecret = environment.aadAppSecret,
         aadTokenEndpoint = environment.aadTokenEndpoint,
     )
-    val narmesteLederClient = NarmesteLederClient(
-        azureAdV2Client = azureAdV2Client,
-        modiasyforestClientId = environment.modiasyforestClientId,
-        modiasyforestBaseUrl = environment.modiasyforestUrl,
-    )
     val adressebeskyttelseClient = AdressebeskyttelseClient(
         azureAdV2Client = azureAdV2Client,
         syfopersonClientId = environment.syfopersonClientId,
@@ -125,12 +120,19 @@ fun Application.apiModule(
     )
 
     val narmesteLederVarselService = NarmesteLederVarselService(
-        mqSender = mqSender
+        mqSender = mqSender,
+        env = environment
     )
 
     val dialogmotedeltakerService = DialogmotedeltakerService(
         arbeidstakerVarselService = arbeidstakerVarselService,
         database = database,
+    )
+
+    val narmesteLederClient = NarmesteLederClient(
+        narmesteLederBaseUrl = environment.narmestelederUrl,
+        narmestelederClientId = environment.narmestelederClientId,
+        azureAdV2Client = azureAdV2Client
     )
 
     val dialogmoteService = DialogmoteService(
