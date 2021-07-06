@@ -23,10 +23,13 @@ class NarmesteLederVarselService(
     ) {
         val parameterListe: MutableList<WSParameter> = ArrayList()
         parameterListe.add(createParameter("createdAt", createdAt.format(DateTimeFormatter.ISO_DATE_TIME)))
-        parameterListe.add(createParameter(
-            "tidspunkt", moteTidspunkt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))))
+        parameterListe.add(
+            createParameter(
+                "tidspunkt", moteTidspunkt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
+            )
+        )
         parameterListe.add(createParameter("url", env.dialogmoteArbeidstakerUrl))
-        parameterListe.add(createParameter("navn", narmesteLeder.navn?:""))
+        parameterListe.add(createParameter("navn", narmesteLeder.navn ?: ""))
 
         val melding = opprettServiceMelding(narmesteLeder, varseltype, parameterListe)
         val xmlString = marshallServiceMelding(ObjectFactory().createServicemelding(melding))
