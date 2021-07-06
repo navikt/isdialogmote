@@ -39,7 +39,7 @@ fun Route.registerDialogmoteActionsApiV2(
 
                 val endreDialogmoteTidSted = call.receive<EndreTidStedDialogmoteDTO>()
 
-                val dialogmote = dialogmoteService.getDialogmote(moteUUID)
+                val dialogmote = dialogmoteService.getDialogmote(moteUUID, callId)
 
                 if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabledWithOBO(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.nyttMoteinnkallingTidSted(
