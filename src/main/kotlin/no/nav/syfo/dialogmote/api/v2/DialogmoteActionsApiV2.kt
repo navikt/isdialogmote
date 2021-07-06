@@ -39,7 +39,7 @@ fun Route.registerDialogmoteActionsApiV2(
 
                 val endreDialogmoteTidSted = call.receive<EndreTidStedDialogmoteDTO>()
 
-                val dialogmote = dialogmoteService.getDialogmote(moteUUID, callId)
+                val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
                 if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabledWithOBO(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.nyttMoteinnkallingTidSted(
@@ -75,7 +75,7 @@ fun Route.registerDialogmoteActionsApiV2(
                     throw IllegalArgumentException("No dialogmoteUuids supplied")
                 }
 
-                val dialogmoter = dialogmoteUuids.map { dialogmoteService.getDialogmote(UUID.fromString(it), callId) }
+                val dialogmoter = dialogmoteUuids.map { dialogmoteService.getDialogmote(UUID.fromString(it)) }
                 if (dialogmoteTilgangService.hasAccessToAllDialogmotePersonsWithObo(
                         personIdentNumberList = dialogmoter.map { it.arbeidstaker.personIdent },
                         token,

@@ -9,7 +9,7 @@ data class NarmesteLederDTO(
     val orgnummer: String,
     val narmesteLederFnr: String,
     val narmesteLederTelefonnummer: String,
-    val narmesteLederEpost: String? = null,
+    val narmesteLederEpost: String,
     val aktivFom: LocalDate,
     val aktivTom: LocalDate? = null,
     val arbeidsgiverForskutterer: Boolean? = null,
@@ -22,5 +22,5 @@ enum class Tilgang {
     SYKMELDING,
     SYKEPENGESOKNAD,
     MOTE,
-    OPPFOLGINGSPLAN
+    OPPFOLGINGSPLAN,
 }

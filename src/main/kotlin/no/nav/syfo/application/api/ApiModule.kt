@@ -121,7 +121,6 @@ fun Application.apiModule(
 
     val narmesteLederVarselService = NarmesteLederVarselService(
         mqSender = mqSender,
-        env = environment
     )
 
     val dialogmotedeltakerService = DialogmotedeltakerService(
@@ -132,7 +131,7 @@ fun Application.apiModule(
     val narmesteLederClient = NarmesteLederClient(
         narmesteLederBaseUrl = environment.narmestelederUrl,
         narmestelederClientId = environment.narmestelederClientId,
-        azureAdV2Client = azureAdV2Client
+        azureAdV2Client = azureAdV2Client,
     )
 
     val dialogmoteService = DialogmoteService(

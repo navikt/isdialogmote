@@ -3,7 +3,7 @@ package no.nav.syfo.dialogmote.domain
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerArbeidsgiverDTO
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 data class DialogmotedeltakerArbeidsgiver(
     val id: Int,
@@ -12,8 +12,6 @@ data class DialogmotedeltakerArbeidsgiver(
     val updatedAt: LocalDateTime,
     val moteId: Int,
     val virksomhetsnummer: Virksomhetsnummer,
-    val lederNavn: String?,
-    val lederEpost: String?,
     val type: DialogmotedeltakerType,
     val varselList: List<DialogmotedeltakerArbeidsgiverVarsel>,
 )

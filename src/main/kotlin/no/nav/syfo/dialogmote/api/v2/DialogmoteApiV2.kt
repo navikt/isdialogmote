@@ -40,7 +40,6 @@ fun Route.registerDialogmoteApiV2(
                     true -> {
                         val dialogmoteDTOList = dialogmoteService.getDialogmoteList(
                             personIdentNumber = personIdentNumber,
-                            callId = callId
                         ).map { dialogmote ->
                             dialogmote.toDialogmoteDTO()
                         }
