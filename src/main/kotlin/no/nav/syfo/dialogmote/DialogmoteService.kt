@@ -237,7 +237,8 @@ class DialogmoteService(
         callId: String,
         dialogmote: Dialogmote,
         endreDialogmoteTidSted: EndreTidStedDialogmoteDTO,
-        token: String
+        token: String,
+        onBehalfOf: Boolean = false,
     ): Boolean {
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
             throw RuntimeException("Failed to change tid/sted, already Ferdigstilt")
@@ -259,7 +260,8 @@ class DialogmoteService(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
             token = token,
-            callId = callId
+            callId = callId,
+            onBehalfOf = onBehalfOf,
         )
 
         return if (narmesteLeder == null) {
@@ -280,6 +282,7 @@ class DialogmoteService(
                     opprettetAv = getNAVIdentFromToken(token),
                     personIdentNumber = dialogmote.arbeidstaker.personIdent,
                     token = token,
+                    onBehalfOf = onBehalfOf,
                 )
                 createAndSendVarsel(
                     connection = connection,
@@ -451,6 +454,7 @@ class DialogmoteService(
         opprettetAv: String,
         personIdentNumber: PersonIdentNumber,
         token: String,
+        onBehalfOf: Boolean = false,
     ) {
         connection.updateMoteStatus(
             commit = false,
@@ -465,6 +469,7 @@ class DialogmoteService(
             opprettetAv = opprettetAv,
             personIdentNumber = personIdentNumber,
             token = token,
+            onBehalfOf = onBehalfOf,
         )
     }
 

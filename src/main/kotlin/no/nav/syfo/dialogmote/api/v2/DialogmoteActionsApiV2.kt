@@ -7,6 +7,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.dialogmote.DialogmoteService
+import no.nav.syfo.dialogmote.api.domain.EndreTidStedDialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.OvertaDialogmoterDTO
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.util.callIdArgument
@@ -18,6 +19,8 @@ import java.util.*
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 
+const val dialogmoteApiMoteParam = "moteuuid"
+const val dialogmoteApiMoteTidStedPath = "/tidsted"
 const val dialogmoteActionsApiOvertaPath = "/overta"
 
 fun Route.registerDialogmoteActionsApiV2(
@@ -25,6 +28,43 @@ fun Route.registerDialogmoteActionsApiV2(
     dialogmoteTilgangService: DialogmoteTilgangService,
 ) {
     route(dialogmoteApiV2Basepath) {
+        post("/{$dialogmoteApiMoteParam}$dialogmoteApiMoteTidStedPath") {
+            try {
+                val callId = getCallId()
+
+                val token = getBearerHeader()
+                    ?: throw IllegalArgumentException("No Authorization header supplied")
+
+                val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
+
+                val endreDialogmoteTidSted = call.receive<EndreTidStedDialogmoteDTO>()
+
+                val dialogmote = dialogmoteService.getDialogmote(moteUUID)
+
+                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabledWithOBO(dialogmote.arbeidstaker.personIdent, token, callId)) {
+                    val success = dialogmoteService.nyttMoteinnkallingTidSted(
+                        callId = callId,
+                        dialogmote = dialogmote,
+                        endreDialogmoteTidSted = endreDialogmoteTidSted,
+                        token = token,
+                        onBehalfOf = true,
+                    )
+                    if (success) {
+                        call.respond(HttpStatusCode.OK)
+                    } else {
+                        call.respond(HttpStatusCode.InternalServerError, "Failed to create NewDialogmoteTidSted")
+                    }
+                } else {
+                    val accessDeniedMessage = "Denied Veileder access to create NewDialogmoteTidSted for moteUUID"
+                    call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
+                }
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Could not create NewDialogmoteTidSted for moteUUID"
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(getCallId()))
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
+        }
+
         post(dialogmoteActionsApiOvertaPath) {
             val callId = getCallId()
             try {
