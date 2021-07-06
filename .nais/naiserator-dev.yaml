@@ -132,5 +132,9 @@ spec:
       value: Q1_ISDIALOGMOTE
     - name: TREDJEPARTSVARSEL_QUEUENAME
       value: QA.Q1_VARSELPRODUKSJON.BEST_SRVMLD_M_KONTAKT
+    - name: NARMESTELEDER_URL
+      value: "https://narmesteleder.dev.nav.no"
+    - name: NARMESTELEDER_CLIENT_ID
+      value: "faaa3c37-a241-4d04-a0fa-92ceff7c1c94"
 
 

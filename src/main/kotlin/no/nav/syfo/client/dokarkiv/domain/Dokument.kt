@@ -1,6 +1,5 @@
 package no.nav.syfo.client.dokarkiv.domain
 
-// TODO: Find appropriate type
 enum class BrevkodeType(
     val value: String,
 ) {

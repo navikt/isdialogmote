@@ -22,8 +22,6 @@ data class NewDialogmotedeltakerArbeidstaker(
 data class NewDialogmotedeltakerArbeidsgiver(
     val virksomhetsnummer: Virksomhetsnummer,
     val fritekstInnkalling: String? = "",
-    val lederNavn: String?,
-    val lederEpost: String?,
 )
 
 data class NewDialogmoteTidSted(

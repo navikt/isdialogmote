@@ -22,8 +22,6 @@ fun DialogmotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiverDTO() =
     DialogmotedeltakerArbeidsgiverDTO(
         uuid = this.uuid.toString(),
         virksomhetsnummer = this.virksomhetsnummer.value,
-        lederNavn = this.lederNavn,
-        lederEpost = this.lederEpost,
         type = this.type.name,
         varselList = this.varselList.map {
             it.toDialogmotedeltakerArbeidsgiverVarselDTO()

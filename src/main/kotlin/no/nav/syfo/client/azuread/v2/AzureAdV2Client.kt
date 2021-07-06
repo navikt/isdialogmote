@@ -24,11 +24,22 @@ class AzureAdV2Client(
             Parameters.build {
                 append("client_id", aadAppClient)
                 append("client_secret", aadAppSecret)
-                append("client_aqssertion_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
+                append("client_assertion_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
                 append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
                 append("assertion", token)
                 append("scope", "api://$scopeClientId/.default")
                 append("requested_token_use", "on_behalf_of")
+            }
+        )?.toAzureAdV2Token()
+    }
+
+    suspend fun getSystemToken(scopeClientId: String): AzureAdV2Token? {
+        return getAccessToken(
+            Parameters.build {
+                append("client_id", aadAppClient)
+                append("client_secret", aadAppSecret)
+                append("grant_type", "client_credentials")
+                append("scope", "api://$scopeClientId/.default")
             }
         )?.toAzureAdV2Token()
     }

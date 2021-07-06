@@ -34,7 +34,7 @@ fun Route.registerArbeidstakerBrevApi(
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
                 val arbeidstakerBrevDTOList = dialogmoteService.getDialogmoteList(
-                    personIdentNumber = requestPersonIdent,
+                    personIdentNumber = requestPersonIdent, callId
                 ).toArbeidstakerBrevDTOList()
                 call.respond(arbeidstakerBrevDTOList)
             } catch (e: IllegalArgumentException) {
