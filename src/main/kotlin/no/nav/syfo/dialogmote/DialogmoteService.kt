@@ -2,6 +2,8 @@ package no.nav.syfo.dialogmote
 
 import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
+import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
@@ -12,8 +14,6 @@ import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.*
-import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.LocalDateTime
@@ -168,7 +168,8 @@ class DialogmoteService(
         callId: String,
         dialogmote: Dialogmote,
         avlysDialogmote: AvlysDialogmoteDTO,
-        token: String
+        token: String,
+        onBehalfOf: Boolean = false,
     ): Boolean {
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
             throw RuntimeException("Failed to Avlys Dialogmote: already Ferdigstilt")
@@ -193,7 +194,8 @@ class DialogmoteService(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
             token = token,
-            callId = callId
+            callId = callId,
+            onBehalfOf = onBehalfOf,
         )
         return if (narmesteLeder == null) {
             log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
@@ -208,6 +210,7 @@ class DialogmoteService(
                     opprettetAv = getNAVIdentFromToken(token),
                     personIdentNumber = dialogmote.arbeidstaker.personIdent,
                     token = token,
+                    onBehalfOf = onBehalfOf,
                 )
                 if (!isDialogmoteTidPassed) {
                     createAndSendVarsel(
@@ -378,6 +381,7 @@ class DialogmoteService(
         opprettetAv: String,
         referat: NewReferatDTO,
         token: String,
+        onBehalfOf: Boolean = false,
     ): Boolean {
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
             throw RuntimeException("Failed to Ferdigstille Dialogmote, already Ferdigstilt")
@@ -390,7 +394,8 @@ class DialogmoteService(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
             token = token,
-            callId = callId
+            callId = callId,
+            onBehalfOf = onBehalfOf,
         )
         if (narmesteLeder == null) {
             log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
@@ -421,6 +426,7 @@ class DialogmoteService(
                 opprettetAv = opprettetAv,
                 personIdentNumber = dialogmote.arbeidstaker.personIdent,
                 token = token,
+                onBehalfOf = onBehalfOf,
             )
             val (_, referatUuid) = connection.createNewReferat(
                 commit = false,
