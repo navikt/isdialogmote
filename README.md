@@ -4,10 +4,10 @@
 Isdialogmote is a backend service for handling DialogmoteInnkallinger. Dialogmoteinnkallinger are created and edited by
 SYFO-veiledere in Syfomodiaperson(https://github.com/navikt/syfomodiaperson) in Modia.
 
-Note! isdialogmote persist the virksomhet for a dialogmote, but never the nærmeste leder. This is because the
-sykmeldt-nærmeste leder relation can change at any time, also after a dialogmote has been created. This means that to
-get for example a nærmeste leder's email, we always have to get the relation and its accompanying information from the
-application that holds the most current information: narmesteleder.
+Note! isdialogmote persists the virksomhet for a dialogmote, but never the nærmeste leder. This is because the
+sykmeldt-nærmeste leder relation can change at any time, including after a dialogmote has been created. This means that
+to get for example a nærmeste leder's email, we always have to get the relation and its accompanying information from 
+the application that holds the most current information: narmesteleder.
 
 ## Technologies used
 * Docker

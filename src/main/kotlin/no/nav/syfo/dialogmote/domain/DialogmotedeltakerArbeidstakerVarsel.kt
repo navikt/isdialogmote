@@ -4,7 +4,6 @@ import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerArbeidstakerVarselDTO
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
-import no.nav.syfo.brev.*
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import java.time.LocalDateTime
 import java.util.*

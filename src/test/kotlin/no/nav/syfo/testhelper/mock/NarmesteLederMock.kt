@@ -10,6 +10,7 @@ import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.narmesteleder.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
+import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
 import no.nav.syfo.testhelper.UserConstants.PERSON_TLF
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.getRandomPort
@@ -22,7 +23,7 @@ val narmesteLeder =
     NarmesteLederRelasjonDTO(
         NarmesteLederDTO(
             fnr = ARBEIDSTAKER_FNR.value,
-            narmesteLederFnr = ARBEIDSTAKER_FNR.value.reversed(),
+            narmesteLederFnr = NARMESTELEDER_FNR.value,
             orgnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
             narmesteLederEpost = "narmesteLederNavn@gmail.com",
             narmesteLederTelefonnummer = PERSON_TLF,
@@ -53,6 +54,9 @@ class NarmesteLederMock {
                     } else {
                         call.respond(narmesteLeder)
                     }
+                }
+                get(NarmesteLederClient.NARMESTELEDERE_PATH) {
+                    call.respond(listOf(narmesteLeder.narmesteLederRelasjon))
                 }
             }
         }

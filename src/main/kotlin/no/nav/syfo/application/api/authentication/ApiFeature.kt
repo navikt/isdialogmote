@@ -12,7 +12,10 @@ import io.ktor.response.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.metric.METRICS_REGISTRY
-import no.nav.syfo.util.*
+import no.nav.syfo.util.NAV_CALL_ID_HEADER
+import no.nav.syfo.util.configureJacksonMapper
+import no.nav.syfo.util.getCallId
+import no.nav.syfo.util.getConsumerId
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URL
@@ -64,6 +67,10 @@ fun hasExpectedAudience(credentials: JWTCredential, expectedAudience: List<Strin
 fun ApplicationCall.personIdent(): PersonIdentNumber? {
     val principal: JWTPrincipal? = this.authentication.principal()
     return principal?.payload?.subject?.let { PersonIdentNumber(it) }
+}
+
+fun ApplicationCall.personIdentAT(): PersonIdentNumber? {
+    return this.request.headers["personIdentAT"]?.let { PersonIdentNumber(it) }
 }
 
 fun Application.installMetrics() {
