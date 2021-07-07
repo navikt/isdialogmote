@@ -96,7 +96,7 @@ class KontaktinformasjonClient(
         const val PERSON_V2_KONTAKTINFORMASJON_PATH = "$PERSON_V2_PATH/kontaktinformasjon"
 
         const val CACHE_KONTAKTINFORMASJON_KEY_PREFIX = "person-kontaktinformasjon-"
-        const val CACHE_KONTAKTINFORMASJON_EXPIRE_SECONDS = 600
+        const val CACHE_KONTAKTINFORMASJON_EXPIRE_SECONDS = 600L
 
         private val log = LoggerFactory.getLogger(KontaktinformasjonClient::class.java)
     }
