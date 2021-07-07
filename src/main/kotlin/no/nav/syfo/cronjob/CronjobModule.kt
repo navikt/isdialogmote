@@ -1,4 +1,4 @@
-package no.nav.syfo.application.api
+package no.nav.syfo.cronjob
 
 import io.ktor.application.*
 import kotlinx.coroutines.*
