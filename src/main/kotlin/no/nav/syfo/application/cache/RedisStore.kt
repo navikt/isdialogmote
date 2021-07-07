@@ -25,11 +25,11 @@ class RedisStore(private val jedisPool: JedisPool) {
         }
     }
 
-    fun <T> setObject(key: String, value: T, expireSeconds: Int) {
+    fun <T> setObject(key: String, value: T, expireSeconds: Long) {
         set(key, mapper.writeValueAsString(value), expireSeconds)
     }
 
-    fun set(key: String, value: String, expireSeconds: Int) {
+    fun set(key: String, value: String, expireSeconds: Long) {
         try {
             jedisPool.resource.use { jedis ->
                 jedis.setex(
