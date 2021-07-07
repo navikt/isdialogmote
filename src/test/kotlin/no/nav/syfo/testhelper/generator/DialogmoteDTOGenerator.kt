@@ -95,8 +95,10 @@ fun generateMotedeltakerArbeidstakerDTOMissingValues(
     innkalling = emptyList(),
 )
 
-fun generateMotedeltakerArbeidsgiverDTO() = NewDialogmotedeltakerArbeidsgiverDTO(
-    virksomhetsnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
+fun generateMotedeltakerArbeidsgiverDTO(
+    virksomhetsnummer: String = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
+) = NewDialogmotedeltakerArbeidsgiverDTO(
+    virksomhetsnummer = virksomhetsnummer,
     fritekstInnkalling = "Ipsum lorum arbeidsgiver",
     innkalling = emptyList(),
 )
@@ -111,11 +113,12 @@ fun generateNewDialogmoteDTO(
     personIdentNumber: PersonIdentNumber,
     sted: String = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
     dato: LocalDateTime = LocalDateTime.now().plusDays(30),
+    virksomhetsnummer: String = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
 ): NewDialogmoteDTO {
     return NewDialogmoteDTO(
         tildeltEnhet = UserConstants.ENHET_NR.value,
         arbeidstaker = generateMotedeltakerArbeidstakerDTO(personIdentNumber),
-        arbeidsgiver = generateMotedeltakerArbeidsgiverDTO(),
+        arbeidsgiver = generateMotedeltakerArbeidsgiverDTO(virksomhetsnummer = virksomhetsnummer),
         tidSted = generateNewDialogmoteTidStedDTO(sted, dato)
     )
 }

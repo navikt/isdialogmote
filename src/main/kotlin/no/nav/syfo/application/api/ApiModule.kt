@@ -12,7 +12,9 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
+import no.nav.syfo.brev.narmesteleder.NarmesteLederService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
+import no.nav.syfo.brev.narmesteleder.registerNarmestelederBrevApi
 import no.nav.syfo.client.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
@@ -25,9 +27,13 @@ import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.api.v1.registerDialogmoteActionsApi
 import no.nav.syfo.dialogmote.api.v1.registerDialogmoteApi
-import no.nav.syfo.dialogmote.api.v2.*
+import no.nav.syfo.dialogmote.api.v2.registerDialogmoteActionsApiV2
+import no.nav.syfo.dialogmote.api.v2.registerDialogmoteApiV2
+import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
-import redis.clients.jedis.*
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
+import redis.clients.jedis.Protocol
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -145,6 +151,8 @@ fun Application.apiModule(
         pdfGenClient = pdfGenClient,
     )
 
+    val narmesteLederService = NarmesteLederService(narmesteLederClient)
+
     routing {
         registerPodApi(applicationState, database)
         registerPrometheusApi()
@@ -177,6 +185,10 @@ fun Application.apiModule(
             registerArbeidstakerBrevApi(
                 dialogmoteService = dialogmoteService,
                 dialogmotedeltakerService = dialogmotedeltakerService,
+            )
+            registerNarmestelederBrevApi(
+                dialogmoteService,
+                narmesteLederService,
             )
         }
     }

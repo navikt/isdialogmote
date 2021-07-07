@@ -9,15 +9,51 @@ import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.dialogmote.api.domain.*
-import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.database.domain.*
-import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.*
+import no.nav.syfo.dialogmote.api.domain.AvlysDialogmoteDTO
+import no.nav.syfo.dialogmote.api.domain.EndreTidStedDialogmoteDTO
+import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
+import no.nav.syfo.dialogmote.api.domain.NewReferatDTO
+import no.nav.syfo.dialogmote.api.domain.toNewDialogmote
+import no.nav.syfo.dialogmote.api.domain.toNewReferat
+import no.nav.syfo.dialogmote.database.CreatedDialogmoteIdentifiers
+import no.nav.syfo.dialogmote.database.createMoteStatusEndring
+import no.nav.syfo.dialogmote.database.createMotedeltakerVarselArbeidsgiver
+import no.nav.syfo.dialogmote.database.createMotedeltakerVarselArbeidstaker
+import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
+import no.nav.syfo.dialogmote.database.createNewReferat
+import no.nav.syfo.dialogmote.database.domain.PDialogmote
+import no.nav.syfo.dialogmote.database.domain.toDialogmote
+import no.nav.syfo.dialogmote.database.domain.toDialogmoteDeltakerAnnen
+import no.nav.syfo.dialogmote.database.domain.toDialogmoteTidSted
+import no.nav.syfo.dialogmote.database.domain.toReferat
+import no.nav.syfo.dialogmote.database.getAndreDeltakereForReferatID
+import no.nav.syfo.dialogmote.database.getDialogmote
+import no.nav.syfo.dialogmote.database.getDialogmoteList
+import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidstaker
+import no.nav.syfo.dialogmote.database.getReferat
+import no.nav.syfo.dialogmote.database.getReferatForMote
+import no.nav.syfo.dialogmote.database.getTidSted
+import no.nav.syfo.dialogmote.database.updateMoteStatus
+import no.nav.syfo.dialogmote.database.updateMoteTidSted
+import no.nav.syfo.dialogmote.database.updateMoteTildeltVeileder
+import no.nav.syfo.dialogmote.domain.ArbeidstakerBrev
+import no.nav.syfo.dialogmote.domain.Dialogmote
+import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.dialogmote.domain.DialogmoteTidSted
+import no.nav.syfo.dialogmote.domain.DialogmotedeltakerAnnen
+import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.domain.Referat
+import no.nav.syfo.dialogmote.domain.anyUnfinished
+import no.nav.syfo.dialogmote.domain.latest
+import no.nav.syfo.dialogmote.domain.passed
+import no.nav.syfo.domain.EnhetNr
+import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Virksomhetsnummer
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 class DialogmoteService(
     private val database: DatabaseInterface,
@@ -83,14 +119,18 @@ class DialogmoteService(
         onBehalfOf: Boolean = false,
     ): Boolean {
         val personIdentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
+        val virksomhetsnummer = Virksomhetsnummer(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer)
 
-        val anyUnfinishedDialogmote = getDialogmoteList(personIdentNumber).anyUnfinished()
+        val anyUnfinishedDialogmote =
+            getDialogmoteList(personIdentNumber).filter {
+                it.arbeidsgiver.virksomhetsnummer == virksomhetsnummer
+            }.anyUnfinished()
+
         if (anyUnfinishedDialogmote) {
             throw IllegalStateException("Denied access to create Dialogmote: unfinished Dialogmote exists for PersonIdent")
         }
 
-        val virksomhetsnummer = Virksomhetsnummer(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer)
-        val narmesteLeder = narmesteLederClient.activeLeader(
+        val narmesteLeder = narmesteLederClient.activeLeder(
             personIdentNumber = personIdentNumber,
             virksomhetsnummer = virksomhetsnummer,
             callId = callId
@@ -188,7 +228,7 @@ class DialogmoteService(
             documentComponentDTOList = avlysDialogmote.arbeidsgiver.avlysning,
         ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidsgiver")
 
-        val narmesteLeder = narmesteLederClient.activeLeader(
+        val narmesteLeder = narmesteLederClient.activeLeder(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
             callId = callId
@@ -255,7 +295,7 @@ class DialogmoteService(
             documentComponentDTOList = endreDialogmoteTidSted.arbeidsgiver.endringsdokument
         ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidsgiver")
 
-        val narmesteLeder = narmesteLederClient.activeLeader(
+        val narmesteLeder = narmesteLederClient.activeLeder(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
             callId = callId
@@ -384,7 +424,7 @@ class DialogmoteService(
             throw RuntimeException("Failed to Ferdigstille Dialogmote, already Avlyst")
         }
 
-        val narmesteLeder = narmesteLederClient.activeLeader(
+        val narmesteLeder = narmesteLederClient.activeLeder(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
             callId = callId

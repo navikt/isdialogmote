@@ -20,5 +20,7 @@ object UserConstants {
     const val PERSON_TLF = "12345678"
     const val PERSON_EMAIL = "test@nav.no"
 
+    val NARMESTELEDER_FNR = PersonIdentNumber("98765432101")
     val VIRKSOMHETSNUMMER_HAS_NARMESTELEDER = Virksomhetsnummer("912345678")
+    val OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER = Virksomhetsnummer("922222222")
 }
