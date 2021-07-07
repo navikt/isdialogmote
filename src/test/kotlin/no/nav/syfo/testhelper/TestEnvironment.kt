@@ -10,10 +10,10 @@ fun testEnvironment(
     dokarkivUrl: String = "http://dokarkiv",
     azureTokenEndpoint: String = "azureTokenEndpoint",
     isdialogmotepdfgenUrl: String? = null,
-    modiasyforestUrl: String? = null,
     syfobehandlendeenhetUrl: String? = null,
     syfopersonUrl: String? = null,
-    syfotilgangskontrollUrl: String? = null
+    syfotilgangskontrollUrl: String? = null,
+    narmestelederUrl: String? = null
 ) = Environment(
     aadDiscoveryUrl = "",
     aadAppClient = "isdialogmote-client-id",
@@ -48,8 +48,6 @@ fun testEnvironment(
     dialogmoteArbeidstakerUrl = "https://www.nav.no/dialogmote",
     dokarkivUrl = dokarkivUrl,
     isdialogmotepdfgenUrl = isdialogmotepdfgenUrl ?: "http://isdialogmotepdfgen",
-    modiasyforestClientId = "modiasyforestClientId",
-    modiasyforestUrl = modiasyforestUrl ?: "modiasyforest",
     syfobehandlendeenhetClientId = "syfobehandlendeenhetClientId",
     syfobehandlendeenhetUrl = syfobehandlendeenhetUrl ?: "syfobehandlendeenhet",
     syfopersonClientId = "syfopersonClientId",
@@ -61,7 +59,9 @@ fun testEnvironment(
     mqUsername = "mquser",
     mqPassword = "mqpassword",
     mqTredjepartsVarselQueue = "queuename",
-    mqSendingEnabled = false
+    mqSendingEnabled = false,
+    narmestelederClientId = "narmestelederClientId",
+    narmestelederUrl = narmestelederUrl ?: "http://narmesteleder",
 )
 
 fun testAppState() = ApplicationState(

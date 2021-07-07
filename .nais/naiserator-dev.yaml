@@ -59,7 +59,6 @@ spec:
       external:
         - host: kafka-schema-registry.nais-q.adeo.no
         - host: "login.microsoftonline.com"
-        - host: "modiasyforest.dev-fss-pub.nais.io"
         - host: "syfobehandlendeenhet.dev-fss-pub.nais.io"
         - host: "syfoperson.dev-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
@@ -100,10 +99,6 @@ spec:
       value: "https://tjenester-q1.nav.no/dialogmote"
     - name: DOKARKIV_URL
       value: "https://dokarkiv.dev-fss-pub.nais.io"
-    - name: MODIASYFOREST_CLIENT_ID
-      value: "9214f26e-b991-42a4-80c6-5defeadd9d63"
-    - name: MODIASYFOREST_URL
-      value: "https://modiasyforest.dev-fss-pub.nais.io"
     - name: SYFOBEHANDLENDEENHET_CLIENT_ID
       value: "c3de32aa-370c-4357-b46c-64784217920f"
     - name: SYFOBEHANDLENDEENHET_URL
@@ -132,5 +127,9 @@ spec:
       value: Q1_ISDIALOGMOTE
     - name: TREDJEPARTSVARSEL_QUEUENAME
       value: QA.Q1_VARSELPRODUKSJON.BEST_SRVMLD_M_KONTAKT
+    - name: NARMESTELEDER_URL
+      value: "https://narmesteleder.dev.nav.no"
+    - name: NARMESTELEDER_CLIENT_ID
+      value: "faaa3c37-a241-4d04-a0fa-92ceff7c1c94"
 
 

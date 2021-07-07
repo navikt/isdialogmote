@@ -52,7 +52,7 @@ fun Referat.toReferatDTO(): ReferatDTO {
         arbeidstakerOppgave = this.arbeidstakerOppgave,
         arbeidsgiverOppgave = this.arbeidsgiverOppgave,
         veilederOppgave = this.veilederOppgave,
-        narmesteLederNavn = this.narmesteLederNavn,
+        narmesteLederNavn = this.narmesteLederNavn, // Egentlig NL-representant fra virksomhet
         document = this.document,
         pdf = this.pdf,
         lestDatoArbeidstaker = this.lestDatoArbeidstaker,

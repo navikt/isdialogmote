@@ -2,7 +2,9 @@ package no.nav.syfo.dialogmote.api.domain
 
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.*
+import no.nav.syfo.domain.EnhetNr
+import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 
 data class NewDialogmoteDTO(
@@ -47,8 +49,6 @@ fun NewDialogmoteDTO.toNewDialogmote(
         arbeidsgiver = NewDialogmotedeltakerArbeidsgiver(
             virksomhetsnummer = Virksomhetsnummer(this.arbeidsgiver.virksomhetsnummer),
             fritekstInnkalling = this.arbeidsgiver.fritekstInnkalling,
-            lederNavn = narmesteLeder.navn,
-            lederEpost = narmesteLeder.epost,
         ),
         tidSted = NewDialogmoteTidSted(
             sted = tidSted.sted,

@@ -38,7 +38,7 @@ fun Route.registerDialogmoteApi(
                 when (dialogmoteTilgangService.hasAccessToDialogmotePerson(personIdentNumber, token, callId)) {
                     true -> {
                         val dialogmoteDTOList = dialogmoteService.getDialogmoteList(
-                            personIdentNumber = personIdentNumber
+                            personIdentNumber = personIdentNumber,
                         ).map { dialogmote ->
                             dialogmote.toDialogmoteDTO()
                         }

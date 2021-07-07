@@ -93,9 +93,7 @@ class DialogmoteService(
         val narmesteLeder = narmesteLederClient.activeLeader(
             personIdentNumber = personIdentNumber,
             virksomhetsnummer = virksomhetsnummer,
-            token = token,
-            callId = callId,
-            onBehalfOf = onBehalfOf,
+            callId = callId
         )
         return if (narmesteLeder == null) {
             log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
@@ -193,9 +191,7 @@ class DialogmoteService(
         val narmesteLeder = narmesteLederClient.activeLeader(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
-            token = token,
-            callId = callId,
-            onBehalfOf = onBehalfOf,
+            callId = callId
         )
         return if (narmesteLeder == null) {
             log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
@@ -262,9 +258,7 @@ class DialogmoteService(
         val narmesteLeder = narmesteLederClient.activeLeader(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
-            token = token,
-            callId = callId,
-            onBehalfOf = onBehalfOf,
+            callId = callId
         )
 
         return if (narmesteLeder == null) {
@@ -393,9 +387,7 @@ class DialogmoteService(
         val narmesteLeder = narmesteLederClient.activeLeader(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
-            token = token,
-            callId = callId,
-            onBehalfOf = onBehalfOf,
+            callId = callId
         )
         if (narmesteLeder == null) {
             log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")

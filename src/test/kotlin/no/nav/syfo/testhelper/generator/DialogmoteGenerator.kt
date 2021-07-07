@@ -21,8 +21,6 @@ fun generateMotedeltakerArbeidstaker(
 
 fun generateMotedeltakerArbeidsgiver() = NewDialogmotedeltakerArbeidsgiver(
     virksomhetsnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER,
-    lederNavn = null,
-    lederEpost = null,
     fritekstInnkalling = "Ipsum lorum arbeidsgiver"
 )
 

@@ -21,10 +21,12 @@ class NarmesteLederVarselService(
     ) {
         val parameterListe: MutableList<WSParameter> = ArrayList()
         parameterListe.add(createParameter("createdAt", createdAt.format(DateTimeFormatter.ISO_DATE_TIME)))
-        parameterListe.add(createParameter("navn", narmesteLeder.navn))
         parameterListe.add(
-            createParameter("tidspunkt", moteTidspunkt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")))
+            createParameter(
+                "tidspunkt", moteTidspunkt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
+            )
         )
+        parameterListe.add(createParameter("navn", narmesteLeder.navn ?: ""))
 
         val melding = opprettServiceMelding(narmesteLeder, varseltype, parameterListe)
         val xmlString = marshallServiceMelding(ObjectFactory().createServicemelding(melding))
@@ -37,7 +39,7 @@ class NarmesteLederVarselService(
         parametere: List<WSParameter>
     ): WSServicemeldingMedKontaktinformasjon {
         return WSServicemeldingMedKontaktinformasjon().apply {
-            mottaker = aktoer(narmesteLeder.aktoerId)
+            mottaker = personIdent(narmesteLeder.narmesteLederFnr)
             tilhoerendeOrganisasjon = organisasjon(narmesteLeder.orgnummer)
             varseltypeId = getNaermesteLederVarselType(varseltype).id
             parameterListe.addAll(parametere)
@@ -56,8 +58,8 @@ class NarmesteLederVarselService(
 
     private fun kontaktinformasjon(narmesteLeder: NarmesteLederDTO): List<WSKontaktinformasjon> {
         return listOf(
-            opprettKontaktinformasjon(narmesteLeder.epost, "EPOST"),
-            opprettKontaktinformasjon(narmesteLeder.tlf, "SMS")
+            opprettKontaktinformasjon(narmesteLeder.narmesteLederEpost, "EPOST"),
+            opprettKontaktinformasjon(narmesteLeder.narmesteLederTelefonnummer, "SMS")
         )
     }
 
@@ -66,8 +68,8 @@ class NarmesteLederVarselService(
         return WSKontaktinformasjon(kanal, kontaktinfo ?: "")
     }
 
-    private fun aktoer(aktoerId: String): WSAktoer {
-        return WSAktoerId(aktoerId)
+    private fun personIdent(fnr: String): WSPerson {
+        return WSPerson(fnr)
     }
 
     private fun organisasjon(orgnummer: String): WSOrganisasjon {
