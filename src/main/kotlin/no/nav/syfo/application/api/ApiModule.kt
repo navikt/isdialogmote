@@ -45,17 +45,17 @@ fun Application.apiModule(
     installJwtAuthentication(
         jwtIssuerList = listOf(
             JwtIssuer(
-                accectedAudienceList = environment.loginserviceIdportenAudience,
+                acceptedAudienceList = environment.loginserviceIdportenAudience,
                 jwtIssuerType = JwtIssuerType.SELVBETJENING,
                 wellKnown = wellKnownSelvbetjening,
             ),
             JwtIssuer(
-                accectedAudienceList = listOf(environment.loginserviceClientId),
+                acceptedAudienceList = listOf(environment.loginserviceClientId),
                 jwtIssuerType = JwtIssuerType.VEILEDER,
                 wellKnown = wellKnownVeileder,
             ),
             JwtIssuer(
-                accectedAudienceList = listOf(environment.aadAppClient),
+                acceptedAudienceList = listOf(environment.aadAppClient),
                 jwtIssuerType = JwtIssuerType.VEILEDER_V2,
                 wellKnown = wellKnownVeilederV2,
             ),

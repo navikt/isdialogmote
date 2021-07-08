@@ -43,7 +43,7 @@ fun Authentication.Configuration.configureJwt(
     jwt(name = jwtIssuer.jwtIssuerType.name) {
         verifier(jwkProviderSelvbetjening, jwtIssuer.wellKnown.issuer)
         validate { credential ->
-            if (hasExpectedAudience(credential, jwtIssuer.accectedAudienceList)) {
+            if (hasExpectedAudience(credential, jwtIssuer.acceptedAudienceList)) {
                 JWTPrincipal(credential.payload)
             } else {
                 log.warn(
