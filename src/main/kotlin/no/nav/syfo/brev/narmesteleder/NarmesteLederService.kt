@@ -1,4 +1,4 @@
-package no.nav.syfo.brev.narmesteleder.domain
+package no.nav.syfo.brev.narmesteleder
 
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.domain.PersonIdentNumber

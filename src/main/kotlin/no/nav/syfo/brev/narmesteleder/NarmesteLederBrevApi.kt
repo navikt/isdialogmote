@@ -6,7 +6,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import no.nav.syfo.application.api.authentication.personIdent
 import no.nav.syfo.application.api.authentication.personIdentAT
-import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederService
+import no.nav.syfo.brev.narmesteleder.NarmesteLederService
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.domain.toNarmesteLederBrevDTOList
 import no.nav.syfo.util.callIdArgument
