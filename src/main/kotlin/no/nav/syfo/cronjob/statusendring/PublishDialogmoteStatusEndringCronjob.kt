@@ -60,11 +60,11 @@ class PublishDialogmoteStatusEndringCronjob(
                     dialogmoteStatusEndret = dialogmoteStatusEndret,
                 )
                 result.updated++
-                COUNT_CRONJOB_PUBLISH_STATUS_ENDRING_UPDATE.inc()
+                COUNT_CRONJOB_PUBLISH_STATUS_ENDRING_UPDATE.increment()
             } catch (e: Exception) {
                 log.error("Exception caught while attempting to publish DialogmoteStatusEndret", e)
                 result.failed++
-                COUNT_CRONJOB_PUBLISH_STATUS_ENDRING_FAIL.inc()
+                COUNT_CRONJOB_PUBLISH_STATUS_ENDRING_FAIL.increment()
             }
         }
         log.info(

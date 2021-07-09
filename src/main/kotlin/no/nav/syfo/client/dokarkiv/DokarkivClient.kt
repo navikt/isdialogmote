@@ -36,7 +36,7 @@ class DokarkivClient(
                     body = journalpostRequest
                 }
                 val journalpostResponse = response.receive<JournalpostResponse>()
-                COUNT_CALL_DOKARKIV_JOURNALPOST_SUCCESS.inc()
+                COUNT_CALL_DOKARKIV_JOURNALPOST_SUCCESS.increment()
                 journalpostResponse
             } catch (e: ClientRequestException) {
                 handleUnexpectedResponseException(e.response, e.message)
@@ -55,7 +55,7 @@ class DokarkivClient(
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             StructuredArguments.keyValue("message", message),
         )
-        COUNT_CALL_DOKARKIV_JOURNALPOST_FAIL.inc()
+        COUNT_CALL_DOKARKIV_JOURNALPOST_FAIL.increment()
         return null
     }
 

@@ -45,7 +45,7 @@ class NarmesteLederClient(
                     header("Sykmeldt-Fnr", personIdentNumber.value)
                     accept(ContentType.Application.Json)
                 }
-            COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.inc()
+            COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.increment()
             narmesteLederRelasjon.narmesteLederRelasjon
         } catch (e: ClientRequestException) {
             handleUnexpectedResponseException(e.response, callId)
@@ -65,7 +65,7 @@ class NarmesteLederClient(
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             callIdArgument(callId)
         )
-        COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_FAIL.inc()
+        COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_FAIL.increment()
     }
 
     companion object {
