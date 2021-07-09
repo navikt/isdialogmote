@@ -49,7 +49,7 @@ fun createKDialogmoteStatusEndring(
     personIdent: PersonIdentNumber,
     virksomhetsnummer: Virksomhetsnummer,
 ): KDialogmoteStatusEndring {
-    val now = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+    val now = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
     val kDialogmoteStatusEndring = KDialogmoteStatusEndring()
     kDialogmoteStatusEndring.setDialogmoteUuid(pDialogmote.uuid.toString())
     kDialogmoteStatusEndring.setDialogmoteTidspunkt(dialogmoteTidStedList.latest()!!.tid.toInstant(ZoneOffset.UTC).toEpochMilli())
