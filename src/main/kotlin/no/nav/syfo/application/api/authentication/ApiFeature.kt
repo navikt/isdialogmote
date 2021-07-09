@@ -69,10 +69,6 @@ fun ApplicationCall.personIdent(): PersonIdentNumber? {
     return principal?.payload?.subject?.let { PersonIdentNumber(it) }
 }
 
-fun ApplicationCall.personIdentAT(): PersonIdentNumber? {
-    return this.request.headers["personIdentAT"]?.let { PersonIdentNumber(it) }
-}
-
 fun Application.installMetrics() {
     install(MicrometerMetrics) {
         registry = METRICS_REGISTRY
