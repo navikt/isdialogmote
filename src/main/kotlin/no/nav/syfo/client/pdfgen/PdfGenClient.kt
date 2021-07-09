@@ -124,7 +124,7 @@ class PdfGenClient(
                 contentType(ContentType.Application.Json)
                 body = documentComponentDTOList
             }
-            COUNT_CALL_PDFGEN_SUCCESS.inc()
+            COUNT_CALL_PDFGEN_SUCCESS.increment()
             response.receive()
         } catch (e: ClientRequestException) {
             handleUnexpectedResponseException(pdfUrl, e.response, callId)
@@ -144,7 +144,7 @@ class PdfGenClient(
             StructuredArguments.keyValue("url", url),
             callIdArgument(callId)
         )
-        COUNT_CALL_PDFGEN_FAIL.inc()
+        COUNT_CALL_PDFGEN_FAIL.increment()
         return null
     }
 

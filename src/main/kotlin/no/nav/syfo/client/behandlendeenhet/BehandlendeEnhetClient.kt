@@ -52,7 +52,7 @@ class BehandlendeEnhetClient(
                 header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
                 accept(ContentType.Application.Json)
             }
-            COUNT_CALL_BEHANDLENDEENHET_SUCCESS.inc()
+            COUNT_CALL_BEHANDLENDEENHET_SUCCESS.increment()
             response.receive()
         } catch (e: ClientRequestException) {
             handleUnexpectedResponseException(e.response, callId)
@@ -70,7 +70,7 @@ class BehandlendeEnhetClient(
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             callIdArgument(callId)
         )
-        COUNT_CALL_BEHANDLENDEENHET_FAIL.inc()
+        COUNT_CALL_BEHANDLENDEENHET_FAIL.increment()
         return null
     }
 

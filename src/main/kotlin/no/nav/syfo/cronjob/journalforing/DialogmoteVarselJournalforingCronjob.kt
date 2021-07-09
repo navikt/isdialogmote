@@ -76,12 +76,12 @@ class DialogmoteVarselJournalforingCronjob(
                         it,
                     )
                     journalforingResult.updated++
-                    COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE.inc()
+                    COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE.increment()
                 } ?: throw RuntimeException("Failed to Journalfor ArbeidstakerVarsel: response missing JournalpostId")
             } catch (e: Exception) {
                 log.error("Exception caught while attempting Journalforing of ArbeidstakerVarsel", e)
                 journalforingResult.failed++
-                COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL.inc()
+                COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL.increment()
             }
         }
         log.info(
@@ -108,12 +108,12 @@ class DialogmoteVarselJournalforingCronjob(
                         it,
                     )
                     journalforingResult.updated++
-                    COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE.inc()
+                    COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE.increment()
                 } ?: throw RuntimeException("Failed to Journalfor Referat: response missing JournalpostId")
             } catch (e: Exception) {
                 log.error("Exception caught while attempting Journalforing of Referat", e)
                 journalforingResult.failed++
-                COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL.inc()
+                COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL.increment()
             }
         }
         log.info(

@@ -1,30 +1,28 @@
 package no.nav.syfo.cronjob
 
-import io.prometheus.client.Counter
+import io.micrometer.core.instrument.Counter
 import no.nav.syfo.metric.METRICS_NS
+import no.nav.syfo.metric.METRICS_REGISTRY
 
-const val CRONJOB_JOURNALFORING_VARSEL_UPDATE = "cronjob_journalforing_update_count"
-const val CRONJOB_JOURNALFORING_VARSEL_FAIL = "cronjob_journalforing_fail_count"
-val COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE: Counter = Counter.build()
-    .namespace(METRICS_NS)
-    .name(CRONJOB_JOURNALFORING_VARSEL_UPDATE)
-    .help("Counts the number of updates in Cronjob - DialogmoteVarselJournalforing")
-    .register()
-val COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL: Counter = Counter.build()
-    .namespace(METRICS_NS)
-    .name(CRONJOB_JOURNALFORING_VARSEL_FAIL)
-    .help("Counts the number of failures in Cronjob - DialogmoteVarselJournalforingt")
-    .register()
+const val CRONJOB_METRICS_BASE = "${METRICS_NS}_cronjob"
+const val CRONJOB_JOURNALFORING_VARSEL_UPDATE = "${CRONJOB_METRICS_BASE}_journalforing_update_count"
+const val CRONJOB_JOURNALFORING_VARSEL_FAIL = "${CRONJOB_METRICS_BASE}_journalforing_fail_count"
+const val CRONJOB_PUBLISH_STATUS_ENDRING_UPDATE = "${CRONJOB_METRICS_BASE}_publish_status_endring_update_count"
+const val CRONJOB_PUBLISH_STATUS_ENDRING_FAIL = "${CRONJOB_METRICS_BASE}_publish_status_endring_fail_count"
 
-const val CRONJOB_PUBLISH_STATUS_ENDRING_UPDATE = "cronjob_publish_status_endring_update_count"
-const val CRONJOB_PUBLISH_STATUS_ENDRING_FAIL = "cronjob_publish_status_endring_fail_count"
-val COUNT_CRONJOB_PUBLISH_STATUS_ENDRING_UPDATE: Counter = Counter.build()
-    .namespace(METRICS_NS)
-    .name(CRONJOB_PUBLISH_STATUS_ENDRING_UPDATE)
-    .help("Counts the number of updates in Cronjob - KafkaDialogmoteStatusEndring")
-    .register()
-val COUNT_CRONJOB_PUBLISH_STATUS_ENDRING_FAIL: Counter = Counter.build()
-    .namespace(METRICS_NS)
-    .name(CRONJOB_PUBLISH_STATUS_ENDRING_FAIL)
-    .help("Counts the number of failures in Cronjob - KafkaDialogmoteStatusEndring")
-    .register()
+val COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE: Counter = Counter
+    .builder(CRONJOB_JOURNALFORING_VARSEL_UPDATE)
+    .description("Counts the number of updates in Cronjob - DialogmoteVarselJournalforing")
+    .register(METRICS_REGISTRY)
+val COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL: Counter = Counter
+    .builder(CRONJOB_JOURNALFORING_VARSEL_FAIL)
+    .description("Counts the number of failures in Cronjob - DialogmoteVarselJournalforingt")
+    .register(METRICS_REGISTRY)
+val COUNT_CRONJOB_PUBLISH_STATUS_ENDRING_UPDATE: Counter = Counter
+    .builder(CRONJOB_PUBLISH_STATUS_ENDRING_UPDATE)
+    .description("Counts the number of updates in Cronjob - KafkaDialogmoteStatusEndring")
+    .register(METRICS_REGISTRY)
+val COUNT_CRONJOB_PUBLISH_STATUS_ENDRING_FAIL: Counter = Counter
+    .builder(CRONJOB_PUBLISH_STATUS_ENDRING_FAIL)
+    .description("Counts the number of failures in Cronjob - KafkaDialogmoteStatusEndring")
+    .register(METRICS_REGISTRY)
