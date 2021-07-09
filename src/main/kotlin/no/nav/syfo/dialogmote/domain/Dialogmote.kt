@@ -40,9 +40,9 @@ fun Dialogmote.toDialogmoteDTO(): DialogmoteDTO {
     )
 }
 
-fun List<Dialogmote>.toArbeidstakerBrevDTOList(): List<no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO> {
+fun List<Dialogmote>.toArbeidstakerBrevDTOList(): List<ArbeidstakerBrevDTO> {
     return this.map { dialogmote ->
-        val brevList = mutableListOf<no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO>()
+        val brevList = mutableListOf<ArbeidstakerBrevDTO>()
         dialogmote.referat?.let {
             brevList.add(
                 it.toArbeidstakerBrevDTO(
