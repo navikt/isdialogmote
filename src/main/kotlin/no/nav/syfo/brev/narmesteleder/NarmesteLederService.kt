@@ -7,15 +7,16 @@ import no.nav.syfo.domain.Virksomhetsnummer
 class NarmesteLederService(
     private val narmesteLederClient: NarmesteLederClient
 ) {
-
-    suspend fun getVirksomhetsnummer(
+    suspend fun getVirksomhetsnumre(
         arbeidstakerIdent: PersonIdentNumber,
         narmesteLederIdent: PersonIdentNumber,
         callId: String
-    ): Virksomhetsnummer? {
-        val narmesteLedere = narmesteLederClient.narmesteLedere(arbeidstakerIdent, callId)
-        val narmesteLeder = narmesteLedere.find { nl -> nl.narmesteLederFnr == narmesteLederIdent.value }
-
-        return if (narmesteLeder != null) Virksomhetsnummer(narmesteLeder.orgnummer) else null
+    ): List<Virksomhetsnummer> {
+        val aktiveAnsatteRelasjoner = narmesteLederClient.getAktiveAnsatte(narmesteLederIdent, callId)
+        return aktiveAnsatteRelasjoner.filter { nlrelasjon ->
+            nlrelasjon.fnr == arbeidstakerIdent.value
+        }.map { relasjon ->
+            Virksomhetsnummer(relasjon.orgnummer)
+        }
     }
 }

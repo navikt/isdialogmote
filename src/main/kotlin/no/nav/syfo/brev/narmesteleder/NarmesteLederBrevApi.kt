@@ -34,13 +34,12 @@ fun Route.registerNarmestelederBrevApi(
                     ?: throw IllegalArgumentException("No $NAV_PERSONIDENT_HEADER provided in request header")
 
                 val moter = dialogmoteService.getDialogmoteList(personIdentNumber = arbeidstakerIdent)
-                val virksomhetsnummer = narmesteLederService.getVirksomhetsnummer(
+                val virksomhetsnumre = narmesteLederService.getVirksomhetsnumre(
                     arbeidstakerIdent,
                     narmesteLederIdent,
                     callId
                 )
-                val narmesteLederMoter =
-                    moter.filter { it.arbeidsgiver.virksomhetsnummer.value == virksomhetsnummer?.value }
+                val narmesteLederMoter = moter.filter { virksomhetsnumre.contains(it.arbeidsgiver.virksomhetsnummer) }
 
                 call.respond(narmesteLederMoter.toNarmesteLederBrevDTOList())
             } catch (e: IllegalArgumentException) {

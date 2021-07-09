@@ -60,6 +60,10 @@ object NarmesteLederBrevSpek : Spek({
 
             describe("Happy path") {
                 val newDialogmoteDTO = generateNewDialogmoteDTO(UserConstants.ARBEIDSTAKER_FNR)
+                val newDialogmoteDTOOther = generateNewDialogmoteDTO(
+                    UserConstants.ARBEIDSTAKER_FNR,
+                    virksomhetsnummer = UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value
+                )
                 val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
                 val validTokenSelvbetjening = generateJWT(
                     audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
@@ -106,7 +110,7 @@ object NarmesteLederBrevSpek : Spek({
                     }
                 }
 
-                it("Should return OK when no brev exists") {
+                it("Return OK when no brev exists") {
                     with(
                         handleRequest(HttpMethod.Get, narmestelederBrevApiPath) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
@@ -123,10 +127,51 @@ object NarmesteLederBrevSpek : Spek({
                         nlBrevList.size shouldBeEqualTo 0
                     }
                 }
+                it("Return all dialogmoter when a leder is narmesteleder for the same ansatt in multiple virksomheter") {
+                    with(
+                        handleRequest(HttpMethod.Post, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenVeileder))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                        clearMocks(mqSenderMock)
+                    }
+                    with(
+                        handleRequest(HttpMethod.Post, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenVeileder))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newDialogmoteDTOOther))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                        clearMocks(mqSenderMock)
+                    }
+
+                    with(
+                        handleRequest(HttpMethod.Get, narmestelederBrevApiPath) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                            addHeader(
+                                HttpHeaders.ContentType,
+                                ContentType.Application.Json.toString()
+                            )
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val nlBrevList = objectMapper.readValue<List<NarmesteLederBrevDTO>>(response.content!!)
+                        nlBrevList.size shouldBeEqualTo 2
+                    }
+
+                }
             }
 
             describe("Error handling") {
-                it("Should return BAD REQUEST when no $NAV_PERSONIDENT_HEADER is provided") {
+                it("Return BAD REQUEST when $NAV_PERSONIDENT_HEADER is missing") {
                     val validTokenSelvbetjening = generateJWT(
                         audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
                         issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,

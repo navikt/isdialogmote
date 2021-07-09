@@ -90,7 +90,7 @@ class DialogmoteService(
         }
 
         val virksomhetsnummer = Virksomhetsnummer(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer)
-        val narmesteLeder = narmesteLederClient.activeLeader(
+        val narmesteLeder = narmesteLederClient.activeLederrelasjon(
             personIdentNumber = personIdentNumber,
             virksomhetsnummer = virksomhetsnummer,
             callId = callId
@@ -188,7 +188,7 @@ class DialogmoteService(
             documentComponentDTOList = avlysDialogmote.arbeidsgiver.avlysning,
         ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidsgiver")
 
-        val narmesteLeder = narmesteLederClient.activeLeader(
+        val narmesteLeder = narmesteLederClient.activeLederrelasjon(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
             callId = callId
@@ -255,7 +255,7 @@ class DialogmoteService(
             documentComponentDTOList = endreDialogmoteTidSted.arbeidsgiver.endringsdokument
         ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidsgiver")
 
-        val narmesteLeder = narmesteLederClient.activeLeader(
+        val narmesteLeder = narmesteLederClient.activeLederrelasjon(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
             callId = callId
@@ -384,7 +384,7 @@ class DialogmoteService(
             throw RuntimeException("Failed to Ferdigstille Dialogmote, already Avlyst")
         }
 
-        val narmesteLeder = narmesteLederClient.activeLeader(
+        val narmesteLeder = narmesteLederClient.activeLederrelasjon(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
             callId = callId

@@ -3,6 +3,7 @@ package no.nav.syfo.dialogmote.domain
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 import java.util.*
 
