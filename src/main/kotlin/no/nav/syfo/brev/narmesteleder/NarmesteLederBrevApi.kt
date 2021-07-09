@@ -30,7 +30,7 @@ fun Route.registerNarmestelederBrevApi(
                 val narmesteLederIdent = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
-                val arbeidstakerIdent = getPersonIdentHeader()?.let { it -> PersonIdentNumber(it) }
+                val arbeidstakerIdent = getPersonIdentHeader()?.let { PersonIdentNumber(it) }
                     ?: throw IllegalArgumentException("No $NAV_PERSONIDENT_HEADER provided in request header")
 
                 val moter = dialogmoteService.getDialogmoteList(personIdentNumber = arbeidstakerIdent)
