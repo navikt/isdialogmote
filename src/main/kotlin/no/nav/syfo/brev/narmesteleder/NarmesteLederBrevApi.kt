@@ -6,7 +6,6 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import no.nav.syfo.application.api.authentication.personIdent
 import no.nav.syfo.application.api.authentication.personIdentAT
-import no.nav.syfo.brev.narmesteleder.NarmesteLederService
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.domain.toNarmesteLederBrevDTOList
 import no.nav.syfo.util.callIdArgument
@@ -38,7 +37,8 @@ fun Route.registerNarmestelederBrevApi(
                     narmesteLederIdent,
                     callId
                 )
-                val narmesteLederMoter = moter.filter { it.arbeidsgiver.virksomhetsnummer.value == virksomhetsnummer?.value }
+                val narmesteLederMoter =
+                    moter.filter { it.arbeidsgiver.virksomhetsnummer.value == virksomhetsnummer?.value }
 
                 call.respond(narmesteLederMoter.toNarmesteLederBrevDTOList())
             } catch (e: IllegalArgumentException) {
