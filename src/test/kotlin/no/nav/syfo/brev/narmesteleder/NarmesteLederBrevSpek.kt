@@ -16,6 +16,7 @@ import no.nav.syfo.dialogmote.api.v1.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeNull
@@ -91,7 +92,7 @@ object NarmesteLederBrevSpek : Spek({
                                 HttpHeaders.ContentType,
                                 ContentType.Application.Json.toString()
                             )
-                            addHeader("personIdentAT", UserConstants.ARBEIDSTAKER_FNR.value)
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -113,7 +114,7 @@ object NarmesteLederBrevSpek : Spek({
                                 HttpHeaders.ContentType,
                                 ContentType.Application.Json.toString()
                             )
-                            addHeader("personIdentAT", UserConstants.ARBEIDSTAKER_FNR.value)
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -125,7 +126,7 @@ object NarmesteLederBrevSpek : Spek({
             }
 
             describe("Error handling") {
-                it("Should return BAD REQUEST when no personIdentAT is provided") {
+                it("Should return BAD REQUEST when no $NAV_PERSONIDENT_HEADER is provided") {
                     val validTokenSelvbetjening = generateJWT(
                         audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
                         issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,

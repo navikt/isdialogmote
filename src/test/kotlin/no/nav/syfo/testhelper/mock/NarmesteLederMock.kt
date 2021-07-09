@@ -8,6 +8,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.narmesteleder.*
+import no.nav.syfo.client.narmesteleder.NarmesteLederClient.Companion.SYKMELDT_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
@@ -49,7 +50,7 @@ class NarmesteLederMock {
             installContentNegotiation()
             routing {
                 get(NarmesteLederClient.NARMESTELEDER_CURRENT_PATH) {
-                    if (call.request.headers["Sykmeldt-Fnr"] == ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value) {
+                    if (call.request.headers[SYKMELDT_FNR] == ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value) {
                         call.respond(HttpStatusCode.NotFound)
                     } else {
                         call.respond(narmesteLeder)

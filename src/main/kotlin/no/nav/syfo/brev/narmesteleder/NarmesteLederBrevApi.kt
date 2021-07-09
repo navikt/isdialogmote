@@ -8,8 +8,11 @@ import no.nav.syfo.application.api.authentication.personIdent
 import no.nav.syfo.application.api.authentication.personIdentAT
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.domain.toNarmesteLederBrevDTOList
+import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.callIdArgument
 import no.nav.syfo.util.getCallId
+import no.nav.syfo.util.getPersonIdentHeader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -28,8 +31,8 @@ fun Route.registerNarmestelederBrevApi(
                 val narmesteLederIdent = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
-                val arbeidstakerIdent = call.personIdentAT()
-                    ?: throw IllegalArgumentException("No personIdentAT provided in request header")
+                val arbeidstakerIdent = getPersonIdentHeader()?.let { it -> PersonIdentNumber(it) }
+                    ?: throw IllegalArgumentException("No $NAV_PERSONIDENT_HEADER provided in request header")
 
                 val moter = dialogmoteService.getDialogmoteList(personIdentNumber = arbeidstakerIdent)
                 val virksomhetsnummer = narmesteLederService.getVirksomhetsnummer(

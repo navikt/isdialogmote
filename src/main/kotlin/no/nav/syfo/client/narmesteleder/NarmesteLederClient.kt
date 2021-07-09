@@ -43,7 +43,7 @@ class NarmesteLederClient(
             val narmesteLederRelasjon: NarmesteLederRelasjonDTO =
                 httpClient.get(url) {
                     header(HttpHeaders.Authorization, bearerHeader(systemToken))
-                    header("Sykmeldt-Fnr", personIdentNumber.value)
+                    header(SYKMELDT_FNR, personIdentNumber.value)
                     accept(ContentType.Application.Json)
                 }
             COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.inc()
@@ -67,7 +67,7 @@ class NarmesteLederClient(
             val narmesteLedere: List<NarmesteLederDTO> =
                 httpClient.get(sykmeldtNarmesteLederePath) {
                     header(HttpHeaders.Authorization, bearerHeader(systemToken))
-                    header("Sykmeldt-Fnr", personIdentNumber.value)
+                    header(SYKMELDT_FNR, personIdentNumber.value)
                     accept(ContentType.Application.Json)
                 }
             COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.inc()
@@ -97,5 +97,6 @@ class NarmesteLederClient(
         private val log = LoggerFactory.getLogger(NarmesteLederClient::class.java)
         const val NARMESTELEDER_CURRENT_PATH = "/sykmeldt/narmesteleder"
         const val NARMESTELEDERE_PATH = "/sykmeldt/narmesteledere"
+        const val SYKMELDT_FNR = "Sykmeldt-Fnr"
     }
 }
