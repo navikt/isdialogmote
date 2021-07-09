@@ -5,7 +5,6 @@ import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import no.nav.syfo.application.api.authentication.personIdent
-import no.nav.syfo.application.api.authentication.personIdentAT
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.domain.toNarmesteLederBrevDTOList
 import no.nav.syfo.domain.PersonIdentNumber
