@@ -7,8 +7,7 @@ import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
-import java.time.LocalDateTime
-import java.time.ZoneOffset
+import java.time.*
 
 class PublishDialogmoteStatusEndringService(
     private val database: DatabaseInterface,
@@ -49,19 +48,22 @@ fun createKDialogmoteStatusEndring(
     personIdent: PersonIdentNumber,
     virksomhetsnummer: Virksomhetsnummer,
 ): KDialogmoteStatusEndring {
-    val now = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
     val kDialogmoteStatusEndring = KDialogmoteStatusEndring()
     kDialogmoteStatusEndring.setDialogmoteUuid(pDialogmote.uuid.toString())
-    kDialogmoteStatusEndring.setDialogmoteTidspunkt(dialogmoteTidStedList.latest()!!.tid.toInstant(ZoneOffset.UTC).toEpochMilli())
+    kDialogmoteStatusEndring.setDialogmoteTidspunkt(dialogmoteTidStedList.latest()!!.tid.toEpochMillis())
     kDialogmoteStatusEndring.setStatusEndringType(pDialogmote.status)
-    kDialogmoteStatusEndring.setStatusEndringTidspunkt(now)
+    kDialogmoteStatusEndring.setStatusEndringTidspunkt(LocalDateTime.now().toEpochMillis())
     kDialogmoteStatusEndring.setPersonIdent(personIdent.value)
     kDialogmoteStatusEndring.setVirksomhetsnummer(virksomhetsnummer.value)
     kDialogmoteStatusEndring.setEnhetNr(pDialogmote.tildeltEnhet)
     kDialogmoteStatusEndring.setNavIdent(dialogmoteStatusEndret.opprettetAv)
-    kDialogmoteStatusEndring.setTilfelleStartdato(dialogmoteStatusEndret.tilfelleStart.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli())
+    kDialogmoteStatusEndring.setTilfelleStartdato(dialogmoteStatusEndret.tilfelleStart.atStartOfDay().toEpochMillis())
     kDialogmoteStatusEndring.setArbeidstaker(true)
     kDialogmoteStatusEndring.setArbeidsgiver(true)
     kDialogmoteStatusEndring.setSykmelder(false)
     return kDialogmoteStatusEndring
 }
+
+fun LocalDateTime.toEpochMillis() = toInstant(
+    ZoneId.of("Europe/Oslo").rules.getOffset(this)
+).toEpochMilli()
