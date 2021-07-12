@@ -7,18 +7,19 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
+import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v1.*
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
+import no.nav.syfo.testhelper.UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -75,7 +76,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                     val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
                     val urlArbeidstakerMoterList = arbeidstakerBrevApiPath
 
-                    it("should return OK if request is successful") {
+                    it("return OK if request is successful") {
                         val createdArbeidstakerBrevUUID: String
 
                         with(
@@ -97,7 +98,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val arbeidstakerBrevList = objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                            val arbeidstakerBrevList =
+                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
 
                             arbeidstakerBrevList.size shouldBeEqualTo 1
 
@@ -109,10 +111,11 @@ class ArbeidstakerBrevApiSpek : Spek({
                             createdArbeidstakerBrevUUID = arbeidstakerBrevDTO.uuid
                         }
 
-                        val urlArbeidstakerBrevUUIDLes = "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
+                        val urlArbeidstakerBrevUUIDLes =
+                            "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
 
                         with(
-                            handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDLes) {
+                            handleRequest(HttpMethod.Get, urlArbeidstakerBrevUUIDLes) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
                             }
                         ) {
@@ -127,7 +130,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val arbeidstakerBrevList = objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                            val arbeidstakerBrevList =
+                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
                             arbeidstakerBrevList.size shouldBeEqualTo 1
 
                             arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
@@ -168,16 +172,23 @@ class ArbeidstakerBrevApiSpek : Spek({
                     }
                 }
                 describe("Happy path med mer enn et møte for aktuell person") {
-                    val newDialogmoteAvlyst1 = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 1", LocalDateTime.now().plusDays(10))
-                    val newDialogmoteAvlyst2 = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 2", LocalDateTime.now().plusDays(20))
-                    val newDialogmoteInnkalt = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 3", LocalDateTime.now().plusDays(30))
+                    val newDialogmoteAvlyst1 =
+                        generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 1", LocalDateTime.now().plusDays(10))
+                    val newDialogmoteAvlyst2 =
+                        generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 2", LocalDateTime.now().plusDays(20))
+                    val newDialogmoteInnkalt =
+                        generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 3", LocalDateTime.now().plusDays(30))
 
                     val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
                     var createdDialogmoteUUID = ""
                     var createdDialogmoteDeltakerArbeidstakerUUID = ""
 
                     it("should return OK if request is successful") {
-                        for (dialogmoteDTO in listOf(newDialogmoteAvlyst1, newDialogmoteAvlyst2, newDialogmoteInnkalt)) {
+                        for (dialogmoteDTO in listOf(
+                            newDialogmoteAvlyst1,
+                            newDialogmoteAvlyst2,
+                            newDialogmoteInnkalt
+                        )) {
                             with(
                                 handleRequest(HttpMethod.Post, urlMote) {
                                     addHeader(Authorization, bearerHeader(validTokenVeileder))
@@ -203,7 +214,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                                 createdDialogmoteDeltakerArbeidstakerUUID = dto.arbeidstaker.uuid
                             }
                             if (dialogmoteDTO != newDialogmoteInnkalt) {
-                                val urlMoteUUIDAvlys = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                                val urlMoteUUIDAvlys =
+                                    "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
                                 val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
 
                                 with(
@@ -224,7 +236,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val arbeidstakerBrevList = objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                            val arbeidstakerBrevList =
+                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
 
                             arbeidstakerBrevList.size shouldBeEqualTo 5
 
@@ -238,7 +251,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             createdArbeidstakerBrevUUID = arbeidstakerBrevDTO.uuid
                         }
 
-                        val urlArbeidstakerBrevUUIDLes = "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
+                        val urlArbeidstakerBrevUUIDLes =
+                            "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
 
                         with(
                             handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDLes) {
@@ -255,7 +269,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val arbeidstakerBrevList = objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                            val arbeidstakerBrevList =
+                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
                             arbeidstakerBrevList.size shouldBeEqualTo 5
 
                             val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
@@ -267,11 +282,13 @@ class ArbeidstakerBrevApiSpek : Spek({
                             arbeidstakerBrevDTO.deltakerUuid shouldBeEqualTo createdDialogmoteDeltakerArbeidstakerUUID
 
                             arbeidstakerBrevDTO.sted shouldBeEqualTo newDialogmoteInnkalt.tidSted.sted
-                            val isCorrectDialogmotetid = LocalDateTime.now().plusDays(29).isBefore(arbeidstakerBrevDTO.tid)
+                            val isCorrectDialogmotetid =
+                                LocalDateTime.now().plusDays(29).isBefore(arbeidstakerBrevDTO.tid)
                             isCorrectDialogmotetid shouldBeEqualTo true
                         }
 
-                        val urlMoteUUIDReferat = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        val urlMoteUUIDReferat =
+                            "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                         val referatDto = generateNewReferatDTO()
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDReferat) {
@@ -290,7 +307,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val arbeidstakerBrevList = objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                            val arbeidstakerBrevList =
+                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
                             arbeidstakerBrevList.size shouldBeEqualTo 6
 
                             val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
@@ -301,11 +319,13 @@ class ArbeidstakerBrevApiSpek : Spek({
                             arbeidstakerBrevDTO.virksomhetsnummer shouldBeEqualTo newDialogmoteInnkalt.arbeidsgiver.virksomhetsnummer
                             arbeidstakerBrevDTO.deltakerUuid shouldBeEqualTo createdDialogmoteDeltakerArbeidstakerUUID
                             arbeidstakerBrevDTO.sted shouldBeEqualTo newDialogmoteInnkalt.tidSted.sted
-                            val isCorrectDialogmotetid = LocalDateTime.now().plusDays(29).isBefore(arbeidstakerBrevDTO.tid)
+                            val isCorrectDialogmotetid =
+                                LocalDateTime.now().plusDays(29).isBefore(arbeidstakerBrevDTO.tid)
                             isCorrectDialogmotetid shouldBeEqualTo true
                             createdReferatArbeidstakerBrevUUID = arbeidstakerBrevDTO.uuid
                         }
-                        val urlReferatUUIDLes = "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
+                        val urlReferatUUIDLes =
+                            "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
                         with(
                             handleRequest(HttpMethod.Post, urlReferatUUIDLes) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
@@ -320,7 +340,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val arbeidstakerBrevList = objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                            val arbeidstakerBrevList =
+                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
                             arbeidstakerBrevList.size shouldBeEqualTo 6
 
                             arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
@@ -341,7 +362,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val arbeidstakerBrevList = objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                            val arbeidstakerBrevList =
+                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
                             arbeidstakerBrevList.size shouldBeEqualTo 6
 
                             val arbeidstakerBrevUpdatedDTO = arbeidstakerBrevList.firstOrNull()
@@ -349,7 +371,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             arbeidstakerBrevUpdatedDTO.brevType shouldBeEqualTo MotedeltakerVarselType.REFERAT.name
                             arbeidstakerBrevUpdatedDTO.lestDato shouldBeEqualTo arbeidstakerBrevDTO!!.lestDato
                         }
-                        val urlPdfForInnkallingNedlasting = "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
+                        val urlPdfForInnkallingNedlasting =
+                            "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
                         with(
                             handleRequest(HttpMethod.Get, urlPdfForInnkallingNedlasting) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
@@ -359,7 +382,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             val pdfContent = response.byteContent!!
                             pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkallingArbeidstaker
                         }
-                        val urlPdfForReferatNedlasting = "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
+                        val urlPdfForReferatNedlasting =
+                            "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
                         with(
                             handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
@@ -372,7 +396,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                     }
                 }
                 describe("Uautorisert person nektes tilgang") {
-                    val newDialogmoteInnkalt = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted", LocalDateTime.now().plusDays(30))
+                    val newDialogmoteInnkalt =
+                        generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted", LocalDateTime.now().plusDays(30))
 
                     val validTokenSelvbetjeningAnnenPerson = generateJWT(
                         audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
@@ -414,7 +439,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val arbeidstakerBrevList = objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                            val arbeidstakerBrevList =
+                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
 
                             arbeidstakerBrevList.size shouldBeEqualTo 1
 
@@ -423,7 +449,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             createdArbeidstakerBrevUUID = arbeidstakerBrevDTO.uuid
                         }
 
-                        val urlArbeidstakerVarselUUIDLes = "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
+                        val urlArbeidstakerVarselUUIDLes =
+                            "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
                         with(
                             handleRequest(HttpMethod.Post, urlArbeidstakerVarselUUIDLes) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
@@ -439,11 +466,13 @@ class ArbeidstakerBrevApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val arbeidstakerBrevList = objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                            val arbeidstakerBrevList =
+                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
                             arbeidstakerBrevList.size shouldBeEqualTo 0
                         }
 
-                        val urlMoteUUIDReferat = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        val urlMoteUUIDReferat =
+                            "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                         val referatDto = generateNewReferatDTO()
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDReferat) {
@@ -462,7 +491,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val arbeidstakerBrevList = objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                            val arbeidstakerBrevList =
+                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
                             arbeidstakerBrevList.size shouldBeEqualTo 2
 
                             val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
@@ -470,7 +500,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             arbeidstakerBrevDTO.brevType shouldBeEqualTo MotedeltakerVarselType.REFERAT.name
                             createdReferatArbeidstakerBrevUUID = arbeidstakerBrevDTO.uuid
                         }
-                        val urlReferatUUIDLes = "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
+                        val urlReferatUUIDLes =
+                            "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
                         with(
                             handleRequest(HttpMethod.Post, urlReferatUUIDLes) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
@@ -479,7 +510,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
                         }
 
-                        val urlPdfForInnkallingNedlasting = "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
+                        val urlPdfForInnkallingNedlasting =
+                            "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
                         with(
                             handleRequest(HttpMethod.Get, urlPdfForInnkallingNedlasting) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
@@ -497,7 +529,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkallingArbeidstaker
                         }
 
-                        val urlPdfForReferatNedlasting = "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
+                        val urlPdfForReferatNedlasting =
+                            "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
                         with(
                             handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))

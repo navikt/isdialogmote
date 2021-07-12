@@ -22,11 +22,13 @@ class NarmesteLederClient(
     private val narmestelederClientId: String,
     private val azureAdV2Client: AzureAdV2Client
 ) {
-    private val sykmeldtAktivNarmesteLederPath = "$narmesteLederBaseUrl$NARMESTELEDER_CURRENT_PATH?orgnummer="
+    private val sykmeldtAktivNarmesteLederPath = "$narmesteLederBaseUrl$CURRENT_NARMESTELEDER_PATH?orgnummer="
+    private val sykmeldtNarmesteLederePath = "$narmesteLederBaseUrl$NARMESTELEDERE_PATH?utvidet=ja"
+    private val ansatteNarmesteLederPath= "$narmesteLederBaseUrl$CURRENT_ANSATTE_PATH"
 
     private val httpClient = httpClientDefault()
 
-    suspend fun activeLeader(
+    suspend fun activeLederrelasjon(
         personIdentNumber: PersonIdentNumber,
         virksomhetsnummer: Virksomhetsnummer,
         callId: String
@@ -42,7 +44,7 @@ class NarmesteLederClient(
             val narmesteLederRelasjon: NarmesteLederRelasjonDTO =
                 httpClient.get(url) {
                     header(HttpHeaders.Authorization, bearerHeader(systemToken))
-                    header("Sykmeldt-Fnr", personIdentNumber.value)
+                    header(SYKMELDT_FNR_HEADER, personIdentNumber.value)
                     accept(ContentType.Application.Json)
                 }
             COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.increment()
@@ -53,6 +55,54 @@ class NarmesteLederClient(
         } catch (e: ServerResponseException) {
             handleUnexpectedResponseException(e.response, callId)
             null
+        }
+    }
+
+    suspend fun getAktiveAnsatte(narmesteLederIdent: PersonIdentNumber, callId: String): List<NarmesteLederDTO> {
+        val systemToken = azureAdV2Client.getSystemToken(
+            scopeClientId = narmestelederClientId,
+        )?.accessToken
+            ?: throw RuntimeException("Failed to request access to current Narmesteleder: Failed to get System token")
+
+        return try {
+            val narmesteLedere: List<NarmesteLederDTO> =
+                httpClient.get(ansatteNarmesteLederPath) {
+                    header(HttpHeaders.Authorization, bearerHeader(systemToken))
+                    header(NARMESTELEDER_FNR_HEADER, narmesteLederIdent.value)
+                    accept(ContentType.Application.Json)
+                }
+            COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.inc()
+            narmesteLedere
+        } catch (e: ClientRequestException) {
+            handleUnexpectedResponseException(e.response, callId)
+            emptyList()
+        } catch (e: ServerResponseException) {
+            handleUnexpectedResponseException(e.response, callId)
+            emptyList()
+        }
+    }
+
+    suspend fun narmesteLedere(personIdentNumber: PersonIdentNumber, callId: String): List<NarmesteLederDTO> {
+        val systemToken = azureAdV2Client.getSystemToken(
+            scopeClientId = narmestelederClientId,
+        )?.accessToken
+            ?: throw RuntimeException("Failed to request access to current Narmesteleder: Failed to get System token")
+
+        return try {
+            val narmesteLedere: List<NarmesteLederDTO> =
+                httpClient.get(sykmeldtNarmesteLederePath) {
+                    header(HttpHeaders.Authorization, bearerHeader(systemToken))
+                    header(SYKMELDT_FNR_HEADER, personIdentNumber.value)
+                    accept(ContentType.Application.Json)
+                }
+            COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.inc()
+            narmesteLedere
+        } catch (e: ClientRequestException) {
+            handleUnexpectedResponseException(e.response, callId)
+            emptyList()
+        } catch (e: ServerResponseException) {
+            handleUnexpectedResponseException(e.response, callId)
+            emptyList()
         }
     }
 
@@ -70,6 +120,10 @@ class NarmesteLederClient(
 
     companion object {
         private val log = LoggerFactory.getLogger(NarmesteLederClient::class.java)
-        const val NARMESTELEDER_CURRENT_PATH = "/sykmeldt/narmesteleder"
+        const val CURRENT_NARMESTELEDER_PATH = "/sykmeldt/narmesteleder"
+        const val NARMESTELEDERE_PATH = "/sykmeldt/narmesteledere"
+        const val CURRENT_ANSATTE_PATH = "/leder/narmesteleder/aktive"
+        const val SYKMELDT_FNR_HEADER = "Sykmeldt-Fnr"
+        const val NARMESTELEDER_FNR_HEADER = "Narmeste-Leder-Fnr"
     }
 }
