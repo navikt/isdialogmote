@@ -50,20 +50,20 @@ fun createKDialogmoteStatusEndring(
 ): KDialogmoteStatusEndring {
     val kDialogmoteStatusEndring = KDialogmoteStatusEndring()
     kDialogmoteStatusEndring.setDialogmoteUuid(pDialogmote.uuid.toString())
-    kDialogmoteStatusEndring.setDialogmoteTidspunkt(dialogmoteTidStedList.latest()!!.tid.toEpochMillis())
+    kDialogmoteStatusEndring.setDialogmoteTidspunkt(dialogmoteTidStedList.latest()!!.tid.toInstantOslo())
     kDialogmoteStatusEndring.setStatusEndringType(pDialogmote.status)
-    kDialogmoteStatusEndring.setStatusEndringTidspunkt(LocalDateTime.now().toEpochMillis())
+    kDialogmoteStatusEndring.setStatusEndringTidspunkt(LocalDateTime.now().toInstantOslo())
     kDialogmoteStatusEndring.setPersonIdent(personIdent.value)
     kDialogmoteStatusEndring.setVirksomhetsnummer(virksomhetsnummer.value)
     kDialogmoteStatusEndring.setEnhetNr(pDialogmote.tildeltEnhet)
     kDialogmoteStatusEndring.setNavIdent(dialogmoteStatusEndret.opprettetAv)
-    kDialogmoteStatusEndring.setTilfelleStartdato(dialogmoteStatusEndret.tilfelleStart.atStartOfDay().toEpochMillis())
+    kDialogmoteStatusEndring.setTilfelleStartdato(dialogmoteStatusEndret.tilfelleStart.atStartOfDay().toInstantOslo())
     kDialogmoteStatusEndring.setArbeidstaker(true)
     kDialogmoteStatusEndring.setArbeidsgiver(true)
     kDialogmoteStatusEndring.setSykmelder(false)
     return kDialogmoteStatusEndring
 }
 
-fun LocalDateTime.toEpochMillis() = toInstant(
+fun LocalDateTime.toInstantOslo(): Instant = toInstant(
     ZoneId.of("Europe/Oslo").rules.getOffset(this)
-).toEpochMilli()
+)
