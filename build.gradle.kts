@@ -7,7 +7,7 @@ version = "1.0.0"
 object Versions {
     const val avroVersion = "1.10.0"
     const val brukernotifikasjonAvroVersion = "1.2021.01.18-11.12-b9c8c40b98d1"
-    const val isdialogmoteSchemaVersion = "1.0.3"
+    const val isdialogmoteSchemaVersion = "1.0.5"
     const val confluentVersion = "5.5.0"
     const val flywayVersion = "7.5.2"
     const val hikariVersion = "4.0.1"
