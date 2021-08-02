@@ -21,7 +21,7 @@ object Versions {
     const val logbackVersion = "1.2.3"
     const val logstashEncoderVersion = "6.3"
     const val mockkVersion = "1.10.5"
-    const val nimbusjosejwtVersion = "7.5.1"
+    const val nimbusjosejwtVersion = "9.11.3"
     const val postgresEmbeddedVersion = "0.13.4"
     const val postgresVersion = "42.2.23"
     const val redisEmbeddedVersion = "0.7.3"
