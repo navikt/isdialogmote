@@ -50,6 +50,9 @@ spec:
   accessPolicy:
     inbound:
       rules:
+        - application: syfomodiaperson
+          namespace: teamsykefravr
+          cluster: prod-fss
         - application: syfomoteoversikt
           namespace: teamsykefravr
           cluster: prod-fss
