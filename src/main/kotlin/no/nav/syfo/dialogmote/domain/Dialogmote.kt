@@ -1,9 +1,10 @@
 package no.nav.syfo.dialogmote.domain
 
-import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
+import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
+import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class Dialogmote(
     val id: Int,
@@ -54,6 +55,31 @@ fun List<Dialogmote>.toArbeidstakerBrevDTOList(): List<ArbeidstakerBrevDTO> {
         brevList.addAll(
             dialogmote.arbeidstaker.varselList.map {
                 it.toArbeidstakerBrevDTO(
+                    dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
+                    deltakerUuid = dialogmote.arbeidstaker.uuid,
+                    virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+                )
+            }
+        )
+        brevList
+    }.flatten()
+}
+
+fun List<Dialogmote>.toNarmesteLederBrevDTOList(): List<NarmesteLederBrevDTO> {
+    return this.map { dialogmote ->
+        val brevList = mutableListOf<NarmesteLederBrevDTO>()
+        dialogmote.referat?.let {
+            brevList.add(
+                it.toNarmesteLederBrevDTO(
+                    dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
+                    deltakerUuid = dialogmote.arbeidstaker.uuid,
+                    virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+                )
+            )
+        }
+        brevList.addAll(
+            dialogmote.arbeidsgiver.varselList.map {
+                it.toNarmesteLederBrevDTO(
                     dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
                     deltakerUuid = dialogmote.arbeidstaker.uuid,
                     virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,

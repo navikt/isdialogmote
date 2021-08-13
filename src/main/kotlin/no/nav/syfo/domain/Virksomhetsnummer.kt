@@ -8,4 +8,11 @@ data class Virksomhetsnummer(val value: String) {
             throw IllegalArgumentException("$value is not a valid Virksomhetsnummer")
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        return when (other) {
+            is Virksomhetsnummer -> value == other.value
+            else -> false
+        }
+    }
 }

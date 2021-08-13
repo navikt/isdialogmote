@@ -1,14 +1,15 @@
 package no.nav.syfo.dialogmote.domain
 
+import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
+import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
 import no.nav.syfo.client.dokarkiv.domain.BrevkodeType
 import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerAnnenDTO
 import no.nav.syfo.dialogmote.api.domain.ReferatDTO
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
-import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 data class Referat(
     val id: Int,
@@ -88,11 +89,29 @@ fun Referat.toArbeidstakerBrevDTO(
     deltakerUuid: UUID,
     virksomhetsnummer: Virksomhetsnummer,
 ) = ArbeidstakerBrevDTO(
+    uuid = uuid.toString(),
+    deltakerUuid = deltakerUuid.toString(),
+    createdAt = createdAt,
+    brevType = MotedeltakerVarselType.REFERAT.name,
+    digitalt = digitalt,
+    lestDato = lestDatoArbeidstaker,
+    fritekst = konklusjon,
+    sted = dialogmoteTidSted.sted,
+    tid = dialogmoteTidSted.tid,
+    videoLink = dialogmoteTidSted.videoLink,
+    virksomhetsnummer = virksomhetsnummer.value,
+    document = document,
+)
+
+fun Referat.toNarmesteLederBrevDTO(
+    dialogmoteTidSted: DialogmoteTidSted,
+    deltakerUuid: UUID,
+    virksomhetsnummer: Virksomhetsnummer,
+) = NarmesteLederBrevDTO(
     uuid = this.uuid.toString(),
     deltakerUuid = deltakerUuid.toString(),
     createdAt = this.createdAt,
     brevType = MotedeltakerVarselType.REFERAT.name,
-    digitalt = this.digitalt,
     lestDato = this.lestDatoArbeidstaker,
     fritekst = konklusjon,
     sted = dialogmoteTidSted.sted,

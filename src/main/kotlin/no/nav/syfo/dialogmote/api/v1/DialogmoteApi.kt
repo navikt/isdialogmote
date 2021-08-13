@@ -1,16 +1,22 @@
 package no.nav.syfo.dialogmote.api.v1
 
-import io.ktor.application.*
-import io.ktor.http.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
+import io.ktor.request.receive
+import io.ktor.response.respond
+import io.ktor.routing.Route
+import io.ktor.routing.get
+import io.ktor.routing.post
+import io.ktor.routing.route
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
 import no.nav.syfo.dialogmote.domain.toDialogmoteDTO
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.util.*
+import no.nav.syfo.util.callIdArgument
+import no.nav.syfo.util.getBearerHeader
+import no.nav.syfo.util.getCallId
+import no.nav.syfo.util.getPersonIdentHeader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -66,7 +72,12 @@ fun Route.registerDialogmoteApi(
 
                 val personidentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
 
-                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(personidentNumber, token, callId)) {
+                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(
+                        personidentNumber,
+                        token,
+                        callId
+                    )
+                ) {
                     val created = dialogmoteService.createMoteinnkalling(
                         newDialogmoteDTO = newDialogmoteDTO,
                         token = token,
