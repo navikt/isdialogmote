@@ -29,6 +29,7 @@ import no.nav.syfo.dialogmote.database.domain.toReferat
 import no.nav.syfo.dialogmote.database.getAndreDeltakereForReferatID
 import no.nav.syfo.dialogmote.database.getDialogmote
 import no.nav.syfo.dialogmote.database.getDialogmoteList
+import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidsgiver
 import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidstaker
 import no.nav.syfo.dialogmote.database.getReferat
 import no.nav.syfo.dialogmote.database.getReferatForMote
@@ -43,6 +44,7 @@ import no.nav.syfo.dialogmote.domain.DialogmoteTidSted
 import no.nav.syfo.dialogmote.domain.DialogmotedeltakerAnnen
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.domain.NarmesteLederBrev
 import no.nav.syfo.dialogmote.domain.Referat
 import no.nav.syfo.dialogmote.domain.anyUnfinished
 import no.nav.syfo.dialogmote.domain.latest
@@ -542,9 +544,11 @@ class DialogmoteService(
         return database.getReferat(referatUUID).firstOrNull()?.let { pReferat ->
             val andreDeltakere = getAndreDeltakere(pReferat.id)
             val motedeltakerArbeidstakerId = database.getMoteDeltakerArbeidstaker(pReferat.moteId).id
+            val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
             pReferat.toReferat(
                 andreDeltakere = andreDeltakere,
                 motedeltakerArbeidstakerId = motedeltakerArbeidstakerId,
+                motedeltakerArbeidsgiverId = motedeltakerArbeidsgiverId
             )
         }
     }
@@ -555,9 +559,12 @@ class DialogmoteService(
         return database.getReferatForMote(moteUUID).firstOrNull()?.let { pReferat ->
             val andreDeltakere = getAndreDeltakere(pReferat.id)
             val motedeltakerArbeidstakerId = database.getMoteDeltakerArbeidstaker(pReferat.moteId).id
+            val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
+
             pReferat.toReferat(
                 andreDeltakere = andreDeltakere,
                 motedeltakerArbeidstakerId = motedeltakerArbeidstakerId,
+                motedeltakerArbeidsgiverId = motedeltakerArbeidsgiverId
             )
         }
     }
@@ -585,6 +592,19 @@ class DialogmoteService(
             throw IllegalArgumentException("No Brev found for arbeidstaker with uuid=$brevUuid")
         }
         return motedeltakerArbeidstakerVarsel ?: referat!!
+    }
+
+    fun getNarmesteLederBrevFromUuid(brevUuid: UUID): NarmesteLederBrev {
+        val moteDeltagerArbeidsgiverVarsel =
+            dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverVarselList(uuid = brevUuid).firstOrNull()
+
+        val referat = getReferat(referatUUID = brevUuid)
+
+        if (moteDeltagerArbeidsgiverVarsel == null && referat == null) {
+            throw IllegalArgumentException("No Brev found for arbeidsgiver with uuid=$brevUuid")
+        }
+
+        return moteDeltagerArbeidsgiverVarsel ?: referat!!
     }
 
     companion object {

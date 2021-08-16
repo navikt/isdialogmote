@@ -3,11 +3,16 @@ package no.nav.syfo.dialogmote.database
 import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.dialogmote.database.domain.*
-import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.dialogmote.database.domain.PMotedeltakerAnnen
+import no.nav.syfo.dialogmote.database.domain.PReferat
+import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
+import no.nav.syfo.dialogmote.domain.NewReferat
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.configuredJacksonMapper
-import java.sql.*
+import java.sql.Connection
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.UUID
@@ -217,7 +222,7 @@ fun DatabaseInterface.updateReferatJournalpostId(
 const val queryUpdateReferatLestDatoArbeidstaker =
     """
     UPDATE MOTE_REFERAT 
-    SET lest_dato_arbeidstaker=?
+    SET lest_dato_arbeidstaker = ?
     WHERE uuid = ?
     """
 
@@ -226,6 +231,24 @@ fun Connection.updateReferatLestDatoArbeidstaker(
 ) {
     val now = LocalDateTime.now()
     this.prepareStatement(queryUpdateReferatLestDatoArbeidstaker).use {
+        it.setTimestamp(1, Timestamp.valueOf(now))
+        it.setString(2, referatUUID.toString())
+        it.execute()
+    }
+}
+
+const val queryUpdateReferatLestDatoArbeidsgiver =
+    """
+    UPDATE MOTE_REFERAT 
+    SET lest_dato_arbeidsgiver = ?
+    WHERE uuid = ?
+    """
+
+fun Connection.updateReferatLestDatoArbeidsgiver(
+    referatUUID: UUID,
+) {
+    val now = LocalDateTime.now()
+    this.prepareStatement(queryUpdateReferatLestDatoArbeidsgiver).use {
         it.setTimestamp(1, Timestamp.valueOf(now))
         it.setString(2, referatUUID.toString())
         it.execute()

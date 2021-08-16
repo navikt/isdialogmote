@@ -1,11 +1,18 @@
 package no.nav.syfo.application.api
 
-import io.ktor.application.*
-import io.ktor.auth.*
-import io.ktor.routing.*
+import io.ktor.application.Application
+import io.ktor.auth.authenticate
+import io.ktor.routing.routing
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
-import no.nav.syfo.application.api.authentication.*
+import no.nav.syfo.application.api.authentication.JwtIssuer
+import no.nav.syfo.application.api.authentication.JwtIssuerType
+import no.nav.syfo.application.api.authentication.WellKnown
+import no.nav.syfo.application.api.authentication.installCallId
+import no.nav.syfo.application.api.authentication.installContentNegotiation
+import no.nav.syfo.application.api.authentication.installJwtAuthentication
+import no.nav.syfo.application.api.authentication.installMetrics
+import no.nav.syfo.application.api.authentication.installStatusPages
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.mq.MQSenderInterface
@@ -131,6 +138,7 @@ fun Application.apiModule(
 
     val dialogmotedeltakerService = DialogmotedeltakerService(
         arbeidstakerVarselService = arbeidstakerVarselService,
+        narmesteLederVarselService = narmesteLederVarselService,
         database = database,
     )
 
@@ -188,6 +196,7 @@ fun Application.apiModule(
             )
             registerNarmestelederBrevApi(
                 dialogmoteService,
+                dialogmotedeltakerService,
                 narmesteLederService,
             )
         }

@@ -9,7 +9,7 @@ import no.nav.syfo.dialogmote.api.domain.ReferatDTO
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class Referat(
     val id: Int,
@@ -18,6 +18,7 @@ data class Referat(
     val updatedAt: LocalDateTime,
     val moteId: Int,
     override val motedeltakerArbeidstakerId: Int,
+    override val motedeltakerArbeidsgiverId: Int,
     val digitalt: Boolean,
     val situasjon: String,
     val konklusjon: String,
@@ -29,9 +30,9 @@ data class Referat(
     override val pdf: ByteArray,
     val journalpostId: String?,
     override val lestDatoArbeidstaker: LocalDateTime?,
-    val lestDatoArbeidsgiver: LocalDateTime?,
+    override val lestDatoArbeidsgiver: LocalDateTime?,
     val andreDeltakere: List<DialogmotedeltakerAnnen>,
-) : ArbeidstakerBrev
+) : ArbeidstakerBrev, NarmesteLederBrev
 
 data class DialogmotedeltakerAnnen(
     val id: Int,

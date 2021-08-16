@@ -5,9 +5,11 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
+import io.ktor.routing.post
 import io.ktor.routing.route
 import no.nav.syfo.application.api.authentication.personIdent
 import no.nav.syfo.dialogmote.DialogmoteService
+import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.domain.toNarmesteLederBrevDTOList
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
@@ -16,16 +18,21 @@ import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getPersonIdentHeader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 
-const val narmestelederBrevApiPath = "/api/v1/narmesteleder/brev"
+const val narmesteLederBrevApiBasePath = "/api/v1/narmesteleder/brev"
+const val narmesteLederBrevApiLesPath = "/les"
+const val narmesteLederBrevApiPdfPath = "/pdf"
+const val narmesteLederBrevApiBrevParam = "brevuuid"
 
 fun Route.registerNarmestelederBrevApi(
     dialogmoteService: DialogmoteService,
+    dialogmotedeltakerService: DialogmotedeltakerService,
     narmesteLederService: NarmesteLederService,
 ) {
-    route(narmestelederBrevApiPath) {
+    route(narmesteLederBrevApiBasePath) {
         get {
             val callId = getCallId()
             try {
@@ -47,6 +54,33 @@ fun Route.registerNarmestelederBrevApi(
             } catch (e: IllegalArgumentException) {
                 val illegalArgumentMessage = "Could not retrieve BrevList"
                 log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
+        }
+        get("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiPdfPath") {
+            // TODO: Not implemented yet
+        }
+        post("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiLesPath") {
+            val callId = getCallId()
+            try {
+                call.personIdent()
+                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+
+                val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
+
+                val brev = dialogmoteService.getNarmesteLederBrevFromUuid(brevUuid)
+
+                if (brev.lestDatoArbeidsgiver == null) {
+                    dialogmotedeltakerService.updateArbeidsgiverBrevSettSomLest(brevUuid)
+                }
+                call.respond(HttpStatusCode.OK)
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Could not set brev with uuid as lest"
+                log.warn(
+                    "$illegalArgumentMessage: {}, {}",
+                    e.message,
+                    callIdArgument(callId)
+                )
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }
         }

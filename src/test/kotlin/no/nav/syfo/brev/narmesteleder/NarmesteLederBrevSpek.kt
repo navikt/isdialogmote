@@ -89,6 +89,7 @@ object NarmesteLederBrevSpek : Spek({
                 )
 
                 it("Should return OK") {
+                    val uuid: String
                     with( // Create a dialogmote before we can test how to retrieve it
                         handleRequest(HttpMethod.Post, urlMote) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenVeileder))
@@ -102,7 +103,7 @@ object NarmesteLederBrevSpek : Spek({
                     }
 
                     with(
-                        handleRequest(HttpMethod.Get, narmestelederBrevApiPath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(
                                 HttpHeaders.ContentType,
@@ -119,6 +120,38 @@ object NarmesteLederBrevSpek : Spek({
                         val narmesteLederBrevDTO = nlBrevList.first()
                         narmesteLederBrevDTO.shouldNotBeNull()
                         narmesteLederBrevDTO.lestDato.shouldBeNull()
+
+                        uuid = narmesteLederBrevDTO.uuid
+                    }
+
+                    val urlNarmesteLederBrevUUIDLes =
+                        "$narmesteLederBrevApiBasePath/$uuid$narmesteLederBrevApiLesPath"
+                    with(
+                        handleRequest(HttpMethod.Post, urlNarmesteLederBrevUUIDLes) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    with(
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                            addHeader(
+                                HttpHeaders.ContentType,
+                                ContentType.Application.Json.toString()
+                            )
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val nlBrevList = objectMapper.readValue<List<NarmesteLederBrevDTO>>(response.content!!)
+                        nlBrevList.size shouldBeEqualTo 1
+
+                        val narmesteLederBrevDTO = nlBrevList.first()
+                        narmesteLederBrevDTO.shouldNotBeNull()
+                        narmesteLederBrevDTO.lestDato.shouldNotBeNull()
                     }
                 }
                 it("Same narmesteleder and arbeidstaker, different virksomhet") {
@@ -147,7 +180,7 @@ object NarmesteLederBrevSpek : Spek({
                     }
 
                     with(
-                        handleRequest(HttpMethod.Get, narmestelederBrevApiPath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(
                                 HttpHeaders.ContentType,
@@ -168,7 +201,7 @@ object NarmesteLederBrevSpek : Spek({
                 }
                 it("Return OK when no brev exists") {
                     with(
-                        handleRequest(HttpMethod.Get, narmestelederBrevApiPath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(
                                 HttpHeaders.ContentType,
@@ -192,7 +225,7 @@ object NarmesteLederBrevSpek : Spek({
                         subject = UserConstants.NARMESTELEDER_FNR.value,
                     )
                     with(
-                        handleRequest(HttpMethod.Get, narmestelederBrevApiPath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(
                                 HttpHeaders.ContentType,
