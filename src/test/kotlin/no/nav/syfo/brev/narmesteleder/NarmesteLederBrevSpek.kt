@@ -167,6 +167,17 @@ object NarmesteLederBrevSpek : Spek({
                         narmesteLederBrevDTO.shouldNotBeNull()
                         narmesteLederBrevDTO.lestDato.shouldNotBeNull()
                     }
+
+                    val pdfUrl = "$narmesteLederBrevApiBasePath/$uuid$narmesteLederBrevApiPdfPath"
+                    with(
+                        handleRequest(HttpMethod.Get, pdfUrl) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val pdfContent = response.byteContent!!
+                        pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkallingArbeidsgiver
+                    }
                 }
                 it("Same narmesteleder and arbeidstaker, different virksomhet") {
                     with(

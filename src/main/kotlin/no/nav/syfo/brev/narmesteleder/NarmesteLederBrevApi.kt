@@ -8,6 +8,7 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import no.nav.syfo.application.api.authentication.personIdent
+import no.nav.syfo.brev.arbeidstaker.domain.PdfContent
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.domain.toNarmesteLederBrevDTOList
@@ -58,7 +59,36 @@ fun Route.registerNarmestelederBrevApi(
             }
         }
         get("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiPdfPath") {
-            // TODO: Not implemented yet
+            val callId = getCallId()
+
+            try {
+                val personIdent = call.personIdent()
+                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+
+                val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
+
+                val brev = dialogmoteService.getNarmesteLederBrevFromUuid(brevUuid)
+
+                val virksomhetnumre = narmesteLederService.getVirksomhetsnumreNarmesteLeder(personIdent, callId)
+
+                val dialogmoteDeltagerArbeidsgiver =
+                    dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(brev.motedeltakerArbeidsgiverId)
+
+                val hasAccessToBrev =
+                    virksomhetnumre.contains(dialogmoteDeltagerArbeidsgiver.virksomhetsnummer)
+
+                if (hasAccessToBrev) {
+                    call.respond(PdfContent(brev.pdf))
+                } else {
+                    val accessDeniedMessage = "Denied access to pdf for brev with uuid $brevUuid"
+                    log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
+                    call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
+                }
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Could not get pdf for brev with uuid"
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
         }
         post("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiLesPath") {
             val callId = getCallId()
