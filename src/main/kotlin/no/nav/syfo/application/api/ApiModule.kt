@@ -138,7 +138,6 @@ fun Application.apiModule(
 
     val dialogmotedeltakerService = DialogmotedeltakerService(
         arbeidstakerVarselService = arbeidstakerVarselService,
-        narmesteLederVarselService = narmesteLederVarselService,
         database = database,
     )
 

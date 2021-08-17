@@ -2,7 +2,6 @@ package no.nav.syfo.dialogmote
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidsgiver
 import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidstaker
 import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidsgiver
@@ -23,7 +22,6 @@ import java.util.UUID
 
 class DialogmotedeltakerService(
     private val arbeidstakerVarselService: ArbeidstakerVarselService,
-    private val narmesteLederVarselService: NarmesteLederVarselService,
     private val database: DatabaseInterface,
 ) {
     fun getDialogmoteDeltakerArbeidstaker(

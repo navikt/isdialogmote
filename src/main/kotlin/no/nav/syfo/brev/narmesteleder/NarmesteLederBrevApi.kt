@@ -43,7 +43,7 @@ fun Route.registerNarmestelederBrevApi(
                     ?: throw IllegalArgumentException("No $NAV_PERSONIDENT_HEADER provided in request header")
 
                 val moter = dialogmoteService.getDialogmoteList(personIdentNumber = arbeidstakerIdent)
-                val virksomhetsnumre = narmesteLederService.getVirksomhetsnumreOfNarmestelederByArbeidstaker(
+                val virksomhetsnumre = narmesteLederService.getVirksomhetsnumreOfNarmesteLederByArbeidstaker(
                     arbeidstakerIdent,
                     narmesteLederIdent,
                     callId
@@ -63,17 +63,31 @@ fun Route.registerNarmestelederBrevApi(
         post("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiLesPath") {
             val callId = getCallId()
             try {
-                call.personIdent()
+                val personIdent = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
                 val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
 
                 val brev = dialogmoteService.getNarmesteLederBrevFromUuid(brevUuid)
 
-                if (brev.lestDatoArbeidsgiver == null) {
-                    dialogmotedeltakerService.updateArbeidsgiverBrevSettSomLest(brevUuid)
+                val virksomhetnumre = narmesteLederService.getVirksomhetsnumreNarmesteLeder(personIdent, callId)
+
+                val dialogmoteDeltagerArbeidsgiver =
+                    dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(brev.motedeltakerArbeidsgiverId)
+
+                val hasAccessToBrev =
+                    virksomhetnumre.contains(dialogmoteDeltagerArbeidsgiver.virksomhetsnummer)
+
+                if (hasAccessToBrev) {
+                    if (brev.lestDatoArbeidsgiver == null) {
+                        dialogmotedeltakerService.updateArbeidsgiverBrevSettSomLest(brevUuid)
+                    }
+                    call.respond(HttpStatusCode.OK)
+                } else {
+                    val accessDeniedMessage = "Denied access to brev with uuid"
+                    log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
+                    call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
                 }
-                call.respond(HttpStatusCode.OK)
             } catch (e: IllegalArgumentException) {
                 val illegalArgumentMessage = "Could not set brev with uuid as lest"
                 log.warn(
