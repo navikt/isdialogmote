@@ -1,13 +1,16 @@
 package no.nav.syfo.testhelper.mock
 
-import io.ktor.application.*
-import io.ktor.http.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
+import io.ktor.response.respond
+import io.ktor.routing.get
+import io.ktor.routing.routing
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import io.ktor.server.netty.NettyApplicationEngine
 import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.client.narmesteleder.NarmesteLederClient.Companion.NARMESTELEDER_FNR_HEADER
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient.Companion.SYKMELDT_FNR_HEADER
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
@@ -15,6 +18,7 @@ import no.nav.syfo.client.narmesteleder.Tilgang
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
+import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR_2
 import no.nav.syfo.testhelper.UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.PERSON_TLF
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
@@ -61,12 +65,16 @@ class NarmesteLederMock {
                     call.respond(listOf(narmesteLeder))
                 }
                 get(NarmesteLederClient.CURRENT_ANSATTE_PATH) {
-                    call.respond(
-                        listOf(
-                            narmesteLeder,
-                            narmesteLeder.copy(orgnummer = OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value)
+                    if (call.request.headers[NARMESTELEDER_FNR_HEADER] == NARMESTELEDER_FNR_2.value) {
+                        call.respond(emptyList<NarmesteLederDTO>())
+                    } else {
+                        call.respond(
+                            listOf(
+                                narmesteLeder,
+                                narmesteLeder.copy(orgnummer = OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value)
+                            )
                         )
-                    )
+                    }
                 }
             }
         }

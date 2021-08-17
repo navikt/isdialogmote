@@ -87,6 +87,11 @@ object NarmesteLederBrevSpek : Spek({
                     externalMockEnvironment.wellKnownVeileder.issuer,
                     UserConstants.VEILEDER_IDENT,
                 )
+                val incorrectTokenSelvbetjening = generateJWT(
+                    audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
+                    issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
+                    subject = UserConstants.NARMESTELEDER_FNR_2.value,
+                )
 
                 it("Should return OK") {
                     val uuid: String
@@ -126,6 +131,15 @@ object NarmesteLederBrevSpek : Spek({
 
                     val urlNarmesteLederBrevUUIDLes =
                         "$narmesteLederBrevApiBasePath/$uuid$narmesteLederBrevApiLesPath"
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlNarmesteLederBrevUUIDLes) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(incorrectTokenSelvbetjening))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                    }
+
                     with(
                         handleRequest(HttpMethod.Post, urlNarmesteLederBrevUUIDLes) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))

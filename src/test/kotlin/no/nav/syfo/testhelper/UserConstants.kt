@@ -1,6 +1,8 @@
 package no.nav.syfo.testhelper
 
-import no.nav.syfo.domain.*
+import no.nav.syfo.domain.EnhetNr
+import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Virksomhetsnummer
 
 object UserConstants {
     val ARBEIDSTAKER_FNR = PersonIdentNumber("12345678912")
@@ -21,6 +23,7 @@ object UserConstants {
     const val PERSON_EMAIL = "test@nav.no"
 
     val NARMESTELEDER_FNR = PersonIdentNumber("98765432101")
+    val NARMESTELEDER_FNR_2 = PersonIdentNumber("98765432102")
     val VIRKSOMHETSNUMMER_HAS_NARMESTELEDER = Virksomhetsnummer("912345678")
     val OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER = Virksomhetsnummer("922222222")
 }
