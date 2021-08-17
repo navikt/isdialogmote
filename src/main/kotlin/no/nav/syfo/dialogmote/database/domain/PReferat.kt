@@ -1,6 +1,8 @@
 package no.nav.syfo.dialogmote.database.domain
 
-import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.dialogmote.domain.DialogmotedeltakerAnnen
+import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
+import no.nav.syfo.dialogmote.domain.Referat
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -37,6 +39,7 @@ data class PMotedeltakerAnnen(
 fun PReferat.toReferat(
     andreDeltakere: List<DialogmotedeltakerAnnen>,
     motedeltakerArbeidstakerId: Int,
+    motedeltakerArbeidsgiverId: Int,
 ): Referat =
     Referat(
         id = this.id,
@@ -45,6 +48,7 @@ fun PReferat.toReferat(
         updatedAt = this.updatedAt,
         moteId = this.moteId,
         motedeltakerArbeidstakerId = motedeltakerArbeidstakerId,
+        motedeltakerArbeidsgiverId = motedeltakerArbeidsgiverId,
         digitalt = this.digitalt,
         situasjon = this.situasjon,
         konklusjon = this.konklusjon,

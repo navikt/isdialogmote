@@ -1,6 +1,8 @@
 package no.nav.syfo.dialogmote.database.domain
 
-import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidsgiverVarsel
+import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -28,7 +30,7 @@ fun PMotedeltakerArbeidsgiverVarsel.toDialogmotedeltakerArbeidsgiver() =
         varselType = this.varselType,
         pdf = this.pdf,
         status = this.status,
-        lestDato = this.lestDato,
+        lestDatoArbeidsgiver = this.lestDato,
         fritekst = this.fritekst,
         document = this.document,
     )

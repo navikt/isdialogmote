@@ -3,14 +3,17 @@ package no.nav.syfo.dialogmote.database
 import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.util.configuredJacksonMapper
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import java.sql.*
+import no.nav.syfo.util.configuredJacksonMapper
+import java.sql.Connection
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 const val queryCreateMotedeltakerVarselArbeidsgiver =
     """
@@ -79,6 +82,25 @@ fun DatabaseInterface.getMotedeltakerArbeidsgiverVarsel(
     return this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerArbeidsgiverVarselForMotedeltaker).use {
             it.setInt(1, motedeltakerArbeidsgiverId)
+            it.executeQuery().toList { toPMotedeltakerArbeidsgiverVarsel() }
+        }
+    }
+}
+
+const val queryGetMotedeltakerArbeidsgiverVarselForMotedeltakerFromUuid =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_ARBEIDSGIVER_VARSEL
+        WHERE uuid = ?
+        ORDER BY created_at DESC
+    """
+
+fun DatabaseInterface.getMotedeltakerArbeidsgiverVarsel(
+    uuid: UUID
+): List<PMotedeltakerArbeidsgiverVarsel> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerArbeidsgiverVarselForMotedeltakerFromUuid).use {
+            it.setString(1, uuid.toString())
             it.executeQuery().toList { toPMotedeltakerArbeidsgiverVarsel() }
         }
     }

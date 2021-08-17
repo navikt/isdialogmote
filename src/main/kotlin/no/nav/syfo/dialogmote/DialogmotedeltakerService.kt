@@ -1,12 +1,24 @@
 package no.nav.syfo.dialogmote
 
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.database.domain.*
-import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import java.util.*
+import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidsgiver
+import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidstaker
+import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidsgiver
+import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidstaker
+import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidsgiverVarsel
+import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerVarsel
+import no.nav.syfo.dialogmote.database.getReferat
+import no.nav.syfo.dialogmote.database.updateMotedeltakerArbeidsgiverVarselLestDato
+import no.nav.syfo.dialogmote.database.updateMotedeltakerArbeidstakerVarselLestDato
+import no.nav.syfo.dialogmote.database.updateReferatLestDatoArbeidsgiver
+import no.nav.syfo.dialogmote.database.updateReferatLestDatoArbeidstaker
+import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidsgiver
+import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidsgiverVarsel
+import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidstaker
+import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidstakerVarsel
+import no.nav.syfo.domain.PersonIdentNumber
+import java.util.UUID
 
 class DialogmotedeltakerService(
     private val arbeidstakerVarselService: ArbeidstakerVarselService,
@@ -42,6 +54,14 @@ class DialogmotedeltakerService(
         motedeltakerArbeidsgiverId: Int,
     ): List<DialogmotedeltakerArbeidsgiverVarsel> {
         return database.getMotedeltakerArbeidsgiverVarsel(motedeltakerArbeidsgiverId).map {
+            it.toDialogmotedeltakerArbeidsgiver()
+        }
+    }
+
+    fun getDialogmoteDeltakerArbeidsgiverVarselList(
+        uuid: UUID,
+    ): List<DialogmotedeltakerArbeidsgiverVarsel> {
+        return database.getMotedeltakerArbeidsgiverVarsel(uuid).map {
             it.toDialogmotedeltakerArbeidsgiver()
         }
     }
@@ -89,6 +109,20 @@ class DialogmotedeltakerService(
                 motedeltakerArbeidstakerUuid = dialogmotedeltakerArbeidstakerUuid,
                 varselUuid = brevUuid,
             )
+            connection.commit()
+        }
+    }
+
+    fun updateArbeidsgiverBrevSettSomLest(brevUuid: UUID) {
+        val brevIsReferat = database.getReferat(brevUuid).isNotEmpty()
+
+        database.connection.use { connection ->
+            if (brevIsReferat) {
+                connection.updateReferatLestDatoArbeidsgiver(referatUUID = brevUuid)
+            } else {
+                connection.updateMotedeltakerArbeidsgiverVarselLestDato(brevUuid)
+            }
+
             connection.commit()
         }
     }

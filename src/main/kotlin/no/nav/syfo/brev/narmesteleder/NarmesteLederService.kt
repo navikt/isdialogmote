@@ -7,7 +7,7 @@ import no.nav.syfo.domain.Virksomhetsnummer
 class NarmesteLederService(
     private val narmesteLederClient: NarmesteLederClient
 ) {
-    suspend fun getVirksomhetsnumreOfNarmestelederByArbeidstaker(
+    suspend fun getVirksomhetsnumreOfNarmesteLederByArbeidstaker(
         arbeidstakerIdent: PersonIdentNumber,
         narmesteLederIdent: PersonIdentNumber,
         callId: String
@@ -19,4 +19,14 @@ class NarmesteLederService(
             Virksomhetsnummer(relasjon.orgnummer)
         }.distinctBy { it.value }
     }
+
+    suspend fun getVirksomhetsnumreNarmesteLeder(
+        narmesteLederIdent: PersonIdentNumber,
+        callId: String
+    ): List<Virksomhetsnummer> =
+        narmesteLederClient.getAktiveAnsatte(narmesteLederIdent, callId).map { relasjon ->
+            Virksomhetsnummer(
+                relasjon.orgnummer
+            )
+        }.distinctBy { it.value }
 }

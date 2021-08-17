@@ -4,28 +4,28 @@ import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerArbeidsgiverVarselDTO
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class DialogmotedeltakerArbeidsgiverVarsel(
     val id: Int,
-    val uuid: UUID,
+    override val uuid: UUID,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val motedeltakerArbeidsgiverId: Int,
+    override val motedeltakerArbeidsgiverId: Int,
     val varselType: MotedeltakerVarselType,
-    val pdf: ByteArray,
+    override val pdf: ByteArray,
     val status: String,
-    val lestDato: LocalDateTime?,
+    override val lestDatoArbeidsgiver: LocalDateTime?,
     val fritekst: String,
-    val document: List<DocumentComponentDTO>,
-)
+    override val document: List<DocumentComponentDTO>,
+) : NarmesteLederBrev
 
 fun DialogmotedeltakerArbeidsgiverVarsel.toDialogmotedeltakerArbeidsgiverVarselDTO() =
     DialogmotedeltakerArbeidsgiverVarselDTO(
         uuid = this.uuid.toString(),
         createdAt = this.createdAt,
         varselType = this.varselType.name,
-        lestDato = this.lestDato,
+        lestDato = this.lestDatoArbeidsgiver,
         fritekst = this.fritekst,
         document = this.document,
     )
@@ -39,7 +39,7 @@ fun DialogmotedeltakerArbeidsgiverVarsel.toNarmesteLederBrevDTO(
     deltakerUuid = deltakerUuid.toString(),
     createdAt = this.createdAt,
     brevType = this.varselType.name,
-    lestDato = this.lestDato,
+    lestDato = this.lestDatoArbeidsgiver,
     fritekst = this.fritekst,
     sted = dialogmoteTidSted.sted,
     tid = dialogmoteTidSted.tid,

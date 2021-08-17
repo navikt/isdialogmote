@@ -1,9 +1,14 @@
 package no.nav.syfo.dialogmote
 
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.database.domain.*
-import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.dialogmote.database.domain.toDialogmoteDeltakerAnnen
+import no.nav.syfo.dialogmote.database.domain.toReferat
+import no.nav.syfo.dialogmote.database.getAndreDeltakereForReferatID
+import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidsgiver
+import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidstaker
+import no.nav.syfo.dialogmote.database.getReferatWithoutJournalpostList
+import no.nav.syfo.dialogmote.database.updateReferatJournalpostId
+import no.nav.syfo.dialogmote.domain.Referat
 import no.nav.syfo.domain.PersonIdentNumber
 
 class ReferatJournalforingService(
@@ -15,11 +20,14 @@ class ReferatJournalforingService(
                 it.toDialogmoteDeltakerAnnen()
             }
             val motedeltakerArbeidstakerId = database.getMoteDeltakerArbeidstaker(pReferat.moteId).id
+            val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
+
             Pair(
                 first = personIdentNumber,
                 second = pReferat.toReferat(
                     andreDeltakere = andreDeltakere,
                     motedeltakerArbeidstakerId = motedeltakerArbeidstakerId,
+                    motedeltakerArbeidsgiverId = motedeltakerArbeidsgiverId
                 )
             )
         }
