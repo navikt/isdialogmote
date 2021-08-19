@@ -165,6 +165,27 @@ fun DatabaseInterface.getMoteDeltakerArbeidsgiver(moteId: Int): PMotedeltakerArb
     return pMotedeltakerArbeidsgiverList.first()
 }
 
+const val queryGetMotedeltakerArbeidsgiverForMoteById =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_ARBEIDSGIVER
+        WHERE id = ?
+    """
+
+fun DatabaseInterface.getMoteDeltakerArbeidsgiverById(moteDeltakerArbeidsgiverId: Int): PMotedeltakerArbeidsgiver {
+    val pMotedeltakerArbeidsgiverList = this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerArbeidsgiverForMoteById).use {
+            it.setInt(1, moteDeltakerArbeidsgiverId)
+            it.executeQuery().toList { toPMotedeltakerArbeidsgiver() }
+        }
+    }
+    pMotedeltakerArbeidsgiverList.assertThatExactlyOneElement(
+        errorMessageIfEmpty = "No motedeltakerArbeidsgiver found for id  $moteDeltakerArbeidsgiverId",
+        errorMessageIfMoreThanOne = "More than one motedeltakerArbeidsgiver found for motedeltakerId $moteDeltakerArbeidsgiverId",
+    )
+    return pMotedeltakerArbeidsgiverList.first()
+}
+
 fun ResultSet.toPMotedeltakerArbeidsgiver(): PMotedeltakerArbeidsgiver =
     PMotedeltakerArbeidsgiver(
         id = getInt("id"),

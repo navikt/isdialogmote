@@ -44,6 +44,8 @@ class ArbeidstakerBrevApiSpek : Spek({
 
             val externalMockEnvironment = ExternalMockEnvironment()
             val database = externalMockEnvironment.database
+            // Add dummy deltakere so that id for deltaker and mote does not match by accident
+            database.addDummyDeltakere()
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
@@ -59,6 +61,7 @@ class ArbeidstakerBrevApiSpek : Spek({
 
             afterEachTest {
                 database.dropData()
+                database.addDummyDeltakere()
             }
 
             beforeGroup {

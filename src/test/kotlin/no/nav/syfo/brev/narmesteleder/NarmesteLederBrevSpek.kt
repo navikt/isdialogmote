@@ -19,15 +19,8 @@ import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
 import no.nav.syfo.dialogmote.api.v1.dialogmoteApiBasepath
 import no.nav.syfo.dialogmote.api.v1.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.testhelper.ExternalMockEnvironment
-import no.nav.syfo.testhelper.UserConstants
-import no.nav.syfo.testhelper.apiConsumerObjectMapper
-import no.nav.syfo.testhelper.dropData
-import no.nav.syfo.testhelper.generateJWT
+import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
-import no.nav.syfo.testhelper.startExternalMocks
-import no.nav.syfo.testhelper.stopExternalMocks
-import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBeEqualTo
@@ -45,6 +38,8 @@ object NarmesteLederBrevSpek : Spek({
 
             val externalMockEnvironment = ExternalMockEnvironment()
             val database = externalMockEnvironment.database
+            // Add dummy deltakere so that id for deltaker and mote does not match by accident
+            database.addDummyDeltakere()
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
@@ -60,6 +55,8 @@ object NarmesteLederBrevSpek : Spek({
 
             afterEachTest {
                 database.dropData()
+                // Add dummy deltakere so that id for deltaker and mote does not match by accident
+                database.addDummyDeltakere()
             }
 
             beforeGroup {

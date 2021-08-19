@@ -2,17 +2,9 @@ package no.nav.syfo.dialogmote
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
+import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidsgiver
 import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidstaker
-import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidsgiver
-import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidstaker
-import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidsgiverVarsel
-import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerVarsel
-import no.nav.syfo.dialogmote.database.getReferat
-import no.nav.syfo.dialogmote.database.updateMotedeltakerArbeidsgiverVarselLestDato
-import no.nav.syfo.dialogmote.database.updateMotedeltakerArbeidstakerVarselLestDato
-import no.nav.syfo.dialogmote.database.updateReferatLestDatoArbeidsgiver
-import no.nav.syfo.dialogmote.database.updateReferatLestDatoArbeidstaker
 import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidstaker
@@ -66,10 +58,10 @@ class DialogmotedeltakerService(
         }
     }
 
-    fun getDialogmoteDeltakerArbeidstakerFromId(
+    fun getDialogmoteDeltakerArbeidstakerById(
         moteDeltakerArbeidstakerId: Int,
     ): DialogmotedeltakerArbeidstaker {
-        val pMotedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(moteDeltakerArbeidstakerId)
+        val pMotedeltakerArbeidstaker = database.getMotedeltakerArbeidstakerById(moteDeltakerArbeidstakerId)
         val motedeltakerArbeidstakerVarselList = getDialogmoteDeltakerArbeidstakerVarselList(
             pMotedeltakerArbeidstaker.id
         )
@@ -80,6 +72,16 @@ class DialogmotedeltakerService(
         moteId: Int,
     ): DialogmotedeltakerArbeidsgiver {
         val pMotedeltakerArbeidsgiver = database.getMoteDeltakerArbeidsgiver(moteId)
+        val motedeltakerArbeidsgiverVarselList = getDialogmoteDeltakerArbeidsgiverVarselList(
+            pMotedeltakerArbeidsgiver.id
+        )
+        return pMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(motedeltakerArbeidsgiverVarselList)
+    }
+
+    fun getDialogmoteDeltakerArbeidsgiverById(
+        motedeltakerArbeidsgiverId: Int,
+    ): DialogmotedeltakerArbeidsgiver {
+        val pMotedeltakerArbeidsgiver = database.getMoteDeltakerArbeidsgiverById(motedeltakerArbeidsgiverId)
         val motedeltakerArbeidsgiverVarselList = getDialogmoteDeltakerArbeidsgiverVarselList(
             pMotedeltakerArbeidsgiver.id
         )
