@@ -72,7 +72,7 @@ fun Route.registerNarmestelederBrevApi(
                 val virksomhetnumre = narmesteLederService.getVirksomhetsnumreNarmesteLeder(personIdent, callId)
 
                 val dialogmoteDeltagerArbeidsgiver =
-                    dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(brev.motedeltakerArbeidsgiverId)
+                    dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(brev.motedeltakerArbeidsgiverId)
 
                 val hasAccessToBrev =
                     virksomhetnumre.contains(dialogmoteDeltagerArbeidsgiver.virksomhetsnummer)
@@ -103,7 +103,7 @@ fun Route.registerNarmestelederBrevApi(
                 val virksomhetnumre = narmesteLederService.getVirksomhetsnumreNarmesteLeder(personIdent, callId)
 
                 val dialogmoteDeltagerArbeidsgiver =
-                    dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(brev.motedeltakerArbeidsgiverId)
+                    dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(brev.motedeltakerArbeidsgiverId)
 
                 val hasAccessToBrev =
                     virksomhetnumre.contains(dialogmoteDeltagerArbeidsgiver.virksomhetsnummer)

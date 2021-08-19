@@ -68,3 +68,22 @@ fun DatabaseInterface.dropData() {
         connection.commit()
     }
 }
+
+fun DatabaseInterface.addDummyDeltakere() {
+    val queryList = listOf(
+        """
+        INSERT INTO MOTEDELTAKER_ARBEIDSTAKER(uuid,created_at,updated_at,mote_id,personident)
+        VALUES('test-xxxyuz',now(), now(), null, 'xyz');
+        """.trimIndent(),
+        """
+        INSERT INTO MOTEDELTAKER_ARBEIDSGIVER(uuid,created_at,updated_at,mote_id,virksomhetsnummer)
+            VALUES('test-xxxyuzww',now(), now(), null, 'xyz');
+        """.trimIndent(),
+    )
+    this.connection.use { connection ->
+        queryList.forEach { query ->
+            connection.prepareStatement(query).execute()
+        }
+        connection.commit()
+    }
+}

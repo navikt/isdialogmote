@@ -54,7 +54,7 @@ fun Route.registerArbeidstakerBrevApi(
 
                 val brev = dialogmoteService.getArbeidstakerBrevFromUuid(brevUuid)
 
-                val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerFromId(
+                val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerById(
                     moteDeltakerArbeidstakerId = brev.motedeltakerArbeidstakerId
                 )
 
@@ -83,7 +83,7 @@ fun Route.registerArbeidstakerBrevApi(
 
                 val brev = dialogmoteService.getArbeidstakerBrevFromUuid(brevUuid)
 
-                val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerFromId(
+                val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerById(
                     moteDeltakerArbeidstakerId = brev.motedeltakerArbeidstakerId
                 )
 
