@@ -367,7 +367,7 @@ class DialogmoteService(
             motedeltakerArbeidstakerId = arbeidstakerId,
             status = "OK",
             varselType = varselType,
-            digitalt = true,
+            digitalt = true, // TODO: Remove hard coding, and set value
             pdf = pdfArbeidstaker,
             fritekst = fritekstArbeidstaker,
             document = documentArbeidstaker,

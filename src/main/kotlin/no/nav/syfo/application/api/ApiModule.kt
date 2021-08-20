@@ -123,7 +123,8 @@ fun Application.apiModule(
     val dialogmoteTilgangService = DialogmoteTilgangService(
         adressebeskyttelseClient = adressebeskyttelseClient,
         kontaktinformasjonClient = kontaktinformasjonClient,
-        veilederTilgangskontrollClient = veilederTilgangskontrollClient
+        veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+        krrEnabled = environment.krrEnabled,
     )
 
     val arbeidstakerVarselService = ArbeidstakerVarselService(

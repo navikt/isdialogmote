@@ -5,7 +5,9 @@ import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.testhelper.mock.*
 
-class ExternalMockEnvironment {
+class ExternalMockEnvironment(
+    krrEnabled: Boolean = false,
+) {
     val applicationState: ApplicationState = testAppState()
     val database = TestDatabase()
     val embeddedEnvironment: KafkaEnvironment = testKafka()
@@ -37,7 +39,8 @@ class ExternalMockEnvironment {
         syfobehandlendeenhetUrl = syfobehandlendeenhetMock.url,
         syfopersonUrl = syfopersonMock.url,
         syfotilgangskontrollUrl = tilgangskontrollMock.url,
-        narmestelederUrl = narmesteLederMock.url
+        narmestelederUrl = narmesteLederMock.url,
+        krrEnabled = krrEnabled,
     )
     val redisServer = testRedis(environment)
 

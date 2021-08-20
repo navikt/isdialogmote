@@ -13,7 +13,8 @@ fun testEnvironment(
     syfobehandlendeenhetUrl: String? = null,
     syfopersonUrl: String? = null,
     syfotilgangskontrollUrl: String? = null,
-    narmestelederUrl: String? = null
+    narmestelederUrl: String? = null,
+    krrEnabled: Boolean = false,
 ) = Environment(
     aadDiscoveryUrl = "",
     aadAppClient = "isdialogmote-client-id",
@@ -34,6 +35,7 @@ fun testEnvironment(
     KafkaAivenCredstorePassword = "credstorepassord",
     KafkaAivenTruststoreLocation = "truststore",
     KafkaAivenKeystoreLocation = "keystore",
+    krrEnabled = krrEnabled,
     redisHost = "localhost",
     redisPort = 6379,
     redisSecret = "password",
