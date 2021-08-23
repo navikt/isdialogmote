@@ -86,18 +86,7 @@ class DialogmoteTilgangService(
         callId: String,
     ): Boolean {
         return if (hasAccessToDialogmotePersonWithOBO(personIdentNumber, token, callId)) {
-            if (krrEnabled) {
-                true
-            } else {
-                val kontaktinfo = kontaktinformasjonClient.kontaktinformasjonWithOBO(personIdentNumber, token, callId)
-                val isDigitalVarselEnabled = kontaktinfo?.kontaktinfo?.isDigitalVarselEnabled(personIdentNumber)
-                if (isDigitalVarselEnabled == false) {
-                    log.error("$DENIED_ACCESS_LOG_MESSAGE DigitalVarsel is not allowed, {}", callIdArgument(callId))
-                    false
-                } else {
-                    isDigitalVarselEnabled ?: false
-                }
-            }
+            krrEnabled || checkDigitalVarselEnabled(personIdentNumber, token, callId, true)
         } else {
             log.warn("$DENIED_ACCESS_LOG_MESSAGE No access to person, {}", callIdArgument(callId))
             false
@@ -110,22 +99,29 @@ class DialogmoteTilgangService(
         callId: String,
     ): Boolean {
         return if (hasAccessToDialogmotePerson(personIdentNumber, token, callId)) {
-            if (krrEnabled) {
-                true
-            } else {
-                val kontaktinfo = kontaktinformasjonClient.kontaktinformasjon(personIdentNumber, token, callId)
-                val isDigitalVarselEnabled = kontaktinfo?.kontaktinfo?.isDigitalVarselEnabled(personIdentNumber)
-                if (isDigitalVarselEnabled == false) {
-                    log.error("$DENIED_ACCESS_LOG_MESSAGE DigitalVarsel is not allowed, {}", callIdArgument(callId))
-                    false
-                } else {
-                    isDigitalVarselEnabled ?: false
-                }
-            }
+            krrEnabled || checkDigitalVarselEnabled(personIdentNumber, token, callId)
         } else {
             log.warn("$DENIED_ACCESS_LOG_MESSAGE No access to person, {}", callIdArgument(callId))
             false
         }
+    }
+
+    private suspend fun checkDigitalVarselEnabled(
+        personIdentNumber: PersonIdentNumber,
+        token: String,
+        callId: String,
+        oboToken: Boolean = false
+    ): Boolean {
+        val isDigitalVarselEnabled = kontaktinformasjonClient.isDigitalVarselEnabled(
+            personIdentNumber = personIdentNumber,
+            token = token,
+            callId = callId,
+            oboToken = oboToken,
+        )
+        if (!isDigitalVarselEnabled) {
+            log.error("$DENIED_ACCESS_LOG_MESSAGE DigitalVarsel is not allowed, {}", callIdArgument(callId))
+        }
+        return isDigitalVarselEnabled
     }
 
     companion object {
