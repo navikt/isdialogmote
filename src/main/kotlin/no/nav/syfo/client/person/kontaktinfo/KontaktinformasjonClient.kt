@@ -26,6 +26,20 @@ class KontaktinformasjonClient(
 
     private val httpClient = httpClientDefault()
 
+    suspend fun isDigitalVarselEnabled(
+        personIdentNumber: PersonIdentNumber,
+        token: String,
+        callId: String,
+        oboToken: Boolean = false,
+    ): Boolean {
+        val kontaktinfo = if (oboToken) {
+            this.kontaktinformasjonWithOBO(personIdentNumber, token, callId)
+        } else {
+            this.kontaktinformasjon(personIdentNumber, token, callId)
+        }
+        return kontaktinfo?.kontaktinfo?.isDigitalVarselEnabled(personIdentNumber) ?: false
+    }
+
     suspend fun kontaktinformasjonWithOBO(
         personIdentNumber: PersonIdentNumber,
         token: String,
