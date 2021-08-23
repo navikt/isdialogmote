@@ -115,6 +115,8 @@ spec:
       value: "32e36aa5-1d12-452a-9b1e-9f3f557cbb4d"
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.dev-fss-pub.nais.io"
+    - name: TOGGLE_KRR
+      value: "false"
     - name: TOGGLE_PUBLISH_STATUS_ENDRING_CRONJOB_ENABLED
       value: "true"
     - name: TOGGLE_JOURNALFORING_CRONJOB_ENABLED

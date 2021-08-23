@@ -11,7 +11,8 @@ import org.slf4j.LoggerFactory
 class DialogmoteTilgangService(
     private val adressebeskyttelseClient: AdressebeskyttelseClient,
     private val kontaktinformasjonClient: KontaktinformasjonClient,
-    private val veilederTilgangskontrollClient: VeilederTilgangskontrollClient
+    private val veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
+    private val krrEnabled: Boolean,
 ) {
     suspend fun hasAccessToDialogmotePerson(
         personIdentNumber: PersonIdentNumber,
@@ -85,13 +86,17 @@ class DialogmoteTilgangService(
         callId: String,
     ): Boolean {
         return if (hasAccessToDialogmotePersonWithOBO(personIdentNumber, token, callId)) {
-            val kontaktinfo = kontaktinformasjonClient.kontaktinformasjonWithOBO(personIdentNumber, token, callId)
-            val isDigitalVarselEnabled = kontaktinfo?.kontaktinfo?.isDigitalVarselEnabled(personIdentNumber)
-            if (isDigitalVarselEnabled == false) {
-                log.error("$DENIED_ACCESS_LOG_MESSAGE DigitalVarsel is not allowed, {}", callIdArgument(callId))
-                false
+            if (krrEnabled) {
+                true
             } else {
-                isDigitalVarselEnabled ?: false
+                val kontaktinfo = kontaktinformasjonClient.kontaktinformasjonWithOBO(personIdentNumber, token, callId)
+                val isDigitalVarselEnabled = kontaktinfo?.kontaktinfo?.isDigitalVarselEnabled(personIdentNumber)
+                if (isDigitalVarselEnabled == false) {
+                    log.error("$DENIED_ACCESS_LOG_MESSAGE DigitalVarsel is not allowed, {}", callIdArgument(callId))
+                    false
+                } else {
+                    isDigitalVarselEnabled ?: false
+                }
             }
         } else {
             log.warn("$DENIED_ACCESS_LOG_MESSAGE No access to person, {}", callIdArgument(callId))
@@ -105,13 +110,17 @@ class DialogmoteTilgangService(
         callId: String,
     ): Boolean {
         return if (hasAccessToDialogmotePerson(personIdentNumber, token, callId)) {
-            val kontaktinfo = kontaktinformasjonClient.kontaktinformasjon(personIdentNumber, token, callId)
-            val isDigitalVarselEnabled = kontaktinfo?.kontaktinfo?.isDigitalVarselEnabled(personIdentNumber)
-            if (isDigitalVarselEnabled == false) {
-                log.error("$DENIED_ACCESS_LOG_MESSAGE DigitalVarsel is not allowed, {}", callIdArgument(callId))
-                false
+            if (krrEnabled) {
+                true
             } else {
-                isDigitalVarselEnabled ?: false
+                val kontaktinfo = kontaktinformasjonClient.kontaktinformasjon(personIdentNumber, token, callId)
+                val isDigitalVarselEnabled = kontaktinfo?.kontaktinfo?.isDigitalVarselEnabled(personIdentNumber)
+                if (isDigitalVarselEnabled == false) {
+                    log.error("$DENIED_ACCESS_LOG_MESSAGE DigitalVarsel is not allowed, {}", callIdArgument(callId))
+                    false
+                } else {
+                    isDigitalVarselEnabled ?: false
+                }
             }
         } else {
             log.warn("$DENIED_ACCESS_LOG_MESSAGE No access to person, {}", callIdArgument(callId))

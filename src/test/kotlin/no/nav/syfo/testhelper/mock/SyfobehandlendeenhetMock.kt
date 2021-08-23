@@ -12,6 +12,7 @@ import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient.Companion.PERS
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetDTO
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.getRandomPort
@@ -44,7 +45,8 @@ class SyfobehandlendeenhetMock {
                     if (
                         getPersonIdentHeader() == ARBEIDSTAKER_FNR.value ||
                         getPersonIdentHeader() == ARBEIDSTAKER_ANNEN_FNR.value ||
-                        getPersonIdentHeader() == ARBEIDSTAKER_NO_JOURNALFORING.value
+                        getPersonIdentHeader() == ARBEIDSTAKER_NO_JOURNALFORING.value ||
+                        getPersonIdentHeader() == ARBEIDSTAKER_IKKE_VARSEL.value
                     ) {
                         call.respond(behandlendeEnhetDTO)
                     } else {
@@ -55,7 +57,8 @@ class SyfobehandlendeenhetMock {
                     if (
                         getPersonIdentHeader() == ARBEIDSTAKER_FNR.value ||
                         getPersonIdentHeader() == ARBEIDSTAKER_ANNEN_FNR.value ||
-                        getPersonIdentHeader() == ARBEIDSTAKER_NO_JOURNALFORING.value
+                        getPersonIdentHeader() == ARBEIDSTAKER_NO_JOURNALFORING.value ||
+                        getPersonIdentHeader() == ARBEIDSTAKER_IKKE_VARSEL.value
                     ) {
                         call.respond(behandlendeEnhetDTO)
                     } else {
