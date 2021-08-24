@@ -2,7 +2,6 @@ package no.nav.syfo.dialogmote.tilgang
 
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
-import no.nav.syfo.client.person.kontaktinfo.isDigitalVarselEnabled
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.callIdArgument
@@ -12,7 +11,7 @@ class DialogmoteTilgangService(
     private val adressebeskyttelseClient: AdressebeskyttelseClient,
     private val kontaktinformasjonClient: KontaktinformasjonClient,
     private val veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
-    private val krrEnabled: Boolean,
+    private val allowVarselMedFysiskBrev: Boolean,
 ) {
     suspend fun hasAccessToDialogmotePerson(
         personIdentNumber: PersonIdentNumber,
@@ -86,7 +85,7 @@ class DialogmoteTilgangService(
         callId: String,
     ): Boolean {
         return if (hasAccessToDialogmotePersonWithOBO(personIdentNumber, token, callId)) {
-            krrEnabled || checkDigitalVarselEnabled(personIdentNumber, token, callId, true)
+            allowVarselMedFysiskBrev || checkDigitalVarselEnabled(personIdentNumber, token, callId, true)
         } else {
             log.warn("$DENIED_ACCESS_LOG_MESSAGE No access to person, {}", callIdArgument(callId))
             false
@@ -99,7 +98,7 @@ class DialogmoteTilgangService(
         callId: String,
     ): Boolean {
         return if (hasAccessToDialogmotePerson(personIdentNumber, token, callId)) {
-            krrEnabled || checkDigitalVarselEnabled(personIdentNumber, token, callId)
+            allowVarselMedFysiskBrev || checkDigitalVarselEnabled(personIdentNumber, token, callId)
         } else {
             log.warn("$DENIED_ACCESS_LOG_MESSAGE No access to person, {}", callIdArgument(callId))
             false
@@ -116,7 +115,7 @@ class DialogmoteTilgangService(
             personIdentNumber = personIdentNumber,
             token = token,
             callId = callId,
-            oboToken = oboToken,
+            oboTokenFlag = oboToken,
         )
         if (!isDigitalVarselEnabled) {
             log.error("$DENIED_ACCESS_LOG_MESSAGE DigitalVarsel is not allowed, {}", callIdArgument(callId))

@@ -14,7 +14,7 @@ fun testEnvironment(
     syfopersonUrl: String? = null,
     syfotilgangskontrollUrl: String? = null,
     narmestelederUrl: String? = null,
-    krrEnabled: Boolean = false,
+    allowVarselMedFysiskBrev: Boolean = false,
 ) = Environment(
     aadDiscoveryUrl = "",
     aadAppClient = "isdialogmote-client-id",
@@ -35,7 +35,7 @@ fun testEnvironment(
     KafkaAivenCredstorePassword = "credstorepassord",
     KafkaAivenTruststoreLocation = "truststore",
     KafkaAivenKeystoreLocation = "keystore",
-    krrEnabled = krrEnabled,
+    allowVarselMedFysiskBrev = allowVarselMedFysiskBrev,
     redisHost = "localhost",
     redisPort = 6379,
     redisSecret = "password",
