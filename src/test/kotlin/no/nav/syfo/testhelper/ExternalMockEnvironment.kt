@@ -6,7 +6,7 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.testhelper.mock.*
 
 class ExternalMockEnvironment(
-    krrEnabled: Boolean = false,
+    allowVarselMedFysiskBrev: Boolean = false,
 ) {
     val applicationState: ApplicationState = testAppState()
     val database = TestDatabase()
@@ -40,7 +40,7 @@ class ExternalMockEnvironment(
         syfopersonUrl = syfopersonMock.url,
         syfotilgangskontrollUrl = tilgangskontrollMock.url,
         narmestelederUrl = narmesteLederMock.url,
-        krrEnabled = krrEnabled,
+        allowVarselMedFysiskBrev = allowVarselMedFysiskBrev,
     )
     val redisServer = testRedis(environment)
 

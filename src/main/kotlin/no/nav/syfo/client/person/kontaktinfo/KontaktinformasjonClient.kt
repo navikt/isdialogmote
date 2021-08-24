@@ -30,9 +30,9 @@ class KontaktinformasjonClient(
         personIdentNumber: PersonIdentNumber,
         token: String,
         callId: String,
-        oboToken: Boolean = false,
+        oboTokenFlag: Boolean = false,
     ): Boolean {
-        val kontaktinfo = if (oboToken) {
+        val kontaktinfo = if (oboTokenFlag) {
             this.kontaktinformasjonWithOBO(personIdentNumber, token, callId)
         } else {
             this.kontaktinformasjon(personIdentNumber, token, callId)

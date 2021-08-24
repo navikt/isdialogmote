@@ -28,15 +28,15 @@ import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class PostDialogmoteApiV2KRREnabledSpek : Spek({
+class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
 
-    describe(PostDialogmoteApiV2KRREnabledSpek::class.java.simpleName) {
+    describe(PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek::class.java.simpleName) {
 
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment(krrEnabled = true)
+            val externalMockEnvironment = ExternalMockEnvironment(allowVarselMedFysiskBrev = true)
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
@@ -132,7 +132,7 @@ class PostDialogmoteApiV2KRREnabledSpek : Spek({
 
                             val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
                             arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
-                            arbeidstakerVarselDTO.digitalt shouldBeEqualTo true // TODO: Should be false
+                            arbeidstakerVarselDTO.digitalt shouldBeEqualTo false
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
                             arbeidstakerVarselDTO.fritekst shouldBeEqualTo "Ipsum lorum arbeidstaker"
 
@@ -164,7 +164,7 @@ class PostDialogmoteApiV2KRREnabledSpek : Spek({
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
 
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                            verify(exactly = 0) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 1
@@ -211,7 +211,7 @@ class PostDialogmoteApiV2KRREnabledSpek : Spek({
 
                             val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
                             arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
-                            arbeidstakerVarselDTO.digitalt shouldBeEqualTo true // TODO: Should be false
+                            arbeidstakerVarselDTO.digitalt shouldBeEqualTo false
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
                             arbeidstakerVarselDTO.fritekst shouldBeEqualTo ""
 
@@ -220,7 +220,7 @@ class PostDialogmoteApiV2KRREnabledSpek : Spek({
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo ""
 
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                            verify(exactly = 0) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }
                     }
                 }

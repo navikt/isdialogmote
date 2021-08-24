@@ -22,7 +22,7 @@ data class Environment(
     val KafkaAivenCredstorePassword: String = getEnvVar("KAFKA_CREDSTORE_PASSWORD"),
     val KafkaAivenTruststoreLocation: String = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
     val KafkaAivenKeystoreLocation: String = getEnvVar("KAFKA_KEYSTORE_PATH"),
-    val krrEnabled: Boolean = getEnvVar("TOGGLE_KRR").toBoolean(),
+    val allowVarselMedFysiskBrev: Boolean = getEnvVar("TOGGLE_ALLOW_VARSEL_MED_FYSISK_BREV").toBoolean(),
     val redisHost: String = getEnvVar("REDIS_HOST"),
     val redisPort: Int = getEnvVar("REDIS_PORT", "6379").toInt(),
     val redisSecret: String = getEnvVar("REDIS_PASSWORD"),

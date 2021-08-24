@@ -8,6 +8,7 @@ import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.client.pdfgen.PdfGenClient
+import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.dialogmote.api.domain.AvlysDialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.EndreTidStedDialogmoteDTO
@@ -66,6 +67,8 @@ class DialogmoteService(
     private val narmesteLederClient: NarmesteLederClient,
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     private val pdfGenClient: PdfGenClient,
+    private val kontaktinformasjonClient: KontaktinformasjonClient,
+    private val allowVarselMedFysiskBrev: Boolean,
 ) {
     fun getDialogmote(
         moteUUID: UUID
@@ -166,6 +169,13 @@ class DialogmoteService(
 
             val createdDialogmoteIdentifiers: CreatedDialogmoteIdentifiers
 
+            val digitalVarsling = allowVarselMedFysiskBrevDisabledOrCheckDigitalVarsling(
+                personIdentNumber = personIdentNumber,
+                token = token,
+                callId = callId,
+                oboTokenFlag = onBehalfOf,
+            )
+
             database.connection.use { connection ->
                 createdDialogmoteIdentifiers = connection.createNewDialogmoteWithReferences(
                     commit = false,
@@ -196,6 +206,7 @@ class DialogmoteService(
                     documentArbeidstaker = newDialogmoteDTO.arbeidstaker.innkalling,
                     documentArbeidsgiver = newDialogmoteDTO.arbeidsgiver.innkalling,
                     moteTidspunkt = newDialogmoteDTO.tidSted.tid,
+                    digitalArbeidstakerVarsling = digitalVarsling,
                 )
 
                 connection.commit()
@@ -239,6 +250,13 @@ class DialogmoteService(
             log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
             false
         } else {
+            val digitalVarsling = allowVarselMedFysiskBrevDisabledOrCheckDigitalVarsling(
+                personIdentNumber = dialogmote.arbeidstaker.personIdent,
+                token = token,
+                callId = callId,
+                oboTokenFlag = onBehalfOf,
+            )
+
             database.connection.use { connection ->
                 updateMoteStatus(
                     callId = callId,
@@ -265,7 +283,8 @@ class DialogmoteService(
                         fritekstArbeidsgiver = avlysDialogmote.arbeidsgiver.begrunnelse,
                         documentArbeidstaker = avlysDialogmote.arbeidstaker.avlysning,
                         documentArbeidsgiver = avlysDialogmote.arbeidsgiver.avlysning,
-                        moteTidspunkt = dialogmote.tidStedList.latest()!!.tid
+                        moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
+                        digitalArbeidstakerVarsling = digitalVarsling,
                     )
                 }
                 connection.commit()
@@ -307,6 +326,13 @@ class DialogmoteService(
             log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
             false
         } else {
+            val digitalVarsling = allowVarselMedFysiskBrevDisabledOrCheckDigitalVarsling(
+                personIdentNumber = dialogmote.arbeidstaker.personIdent,
+                token = token,
+                callId = callId,
+                oboTokenFlag = onBehalfOf,
+            )
+
             database.connection.use { connection ->
                 connection.updateMoteTidSted(
                     commit = false,
@@ -338,6 +364,7 @@ class DialogmoteService(
                     documentArbeidstaker = endreDialogmoteTidSted.arbeidstaker.endringsdokument,
                     documentArbeidsgiver = endreDialogmoteTidSted.arbeidsgiver.endringsdokument,
                     moteTidspunkt = endreDialogmoteTidSted.tid,
+                    digitalArbeidstakerVarsling = digitalVarsling,
                 )
 
                 connection.commit()
@@ -361,13 +388,14 @@ class DialogmoteService(
         documentArbeidstaker: List<DocumentComponentDTO> = emptyList(),
         documentArbeidsgiver: List<DocumentComponentDTO> = emptyList(),
         moteTidspunkt: LocalDateTime,
+        digitalArbeidstakerVarsling: Boolean,
     ) {
         val (_, varselArbeidstakerId) = connection.createMotedeltakerVarselArbeidstaker(
             commit = false,
             motedeltakerArbeidstakerId = arbeidstakerId,
             status = "OK",
             varselType = varselType,
-            digitalt = true, // TODO: Remove hard coding, and set value
+            digitalt = digitalArbeidstakerVarsling,
             pdf = pdfArbeidstaker,
             fritekst = fritekstArbeidstaker,
             document = documentArbeidstaker,
@@ -381,14 +409,19 @@ class DialogmoteService(
             fritekst = fritekstArbeidsgiver,
             document = documentArbeidsgiver,
         )
+
         val now = LocalDateTime.now()
-        arbeidstakerVarselService.sendVarsel(
-            createdAt = now,
-            personIdent = arbeidstakerPersonIdent,
-            type = varselType,
-            motedeltakerArbeidstakerUuid = arbeidstakerUuid,
-            varselUuid = varselArbeidstakerId,
-        )
+
+        if (digitalArbeidstakerVarsling) {
+            arbeidstakerVarselService.sendVarsel(
+                createdAt = now,
+                personIdent = arbeidstakerPersonIdent,
+                type = varselType,
+                motedeltakerArbeidstakerUuid = arbeidstakerUuid,
+                varselUuid = varselArbeidstakerId,
+            )
+        }
+
         narmesteLederVarselService.sendVarsel(
             createdAt = now,
             moteTidspunkt = moteTidspunkt,
@@ -443,6 +476,13 @@ class DialogmoteService(
 
         val now = LocalDateTime.now()
 
+        val digitalVarsling = allowVarselMedFysiskBrevDisabledOrCheckDigitalVarsling(
+            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            token = token,
+            callId = callId,
+            oboTokenFlag = onBehalfOf,
+        )
+
         database.connection.use { connection ->
 
             if (dialogmote.tildeltVeilederIdent != opprettetAv) {
@@ -466,15 +506,18 @@ class DialogmoteService(
                 commit = false,
                 newReferat = referat.toNewReferat(dialogmote.id),
                 pdf = pdfReferat,
-                digitalt = true,
+                digitalt = digitalVarsling,
             )
-            arbeidstakerVarselService.sendVarsel(
-                createdAt = now,
-                personIdent = dialogmote.arbeidstaker.personIdent,
-                type = MotedeltakerVarselType.REFERAT,
-                motedeltakerArbeidstakerUuid = dialogmote.arbeidstaker.uuid,
-                varselUuid = referatUuid,
-            )
+            if (digitalVarsling) {
+                arbeidstakerVarselService.sendVarsel(
+                    createdAt = now,
+                    personIdent = dialogmote.arbeidstaker.personIdent,
+                    type = MotedeltakerVarselType.REFERAT,
+                    motedeltakerArbeidstakerUuid = dialogmote.arbeidstaker.uuid,
+                    varselUuid = referatUuid,
+                )
+            }
+
             narmesteLederVarselService.sendVarsel(
                 createdAt = now,
                 moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
@@ -605,6 +648,20 @@ class DialogmoteService(
         }
 
         return moteDeltagerArbeidsgiverVarsel ?: referat!!
+    }
+
+    private suspend fun allowVarselMedFysiskBrevDisabledOrCheckDigitalVarsling(
+        personIdentNumber: PersonIdentNumber,
+        token: String,
+        callId: String,
+        oboTokenFlag: Boolean = false,
+    ): Boolean {
+        return !allowVarselMedFysiskBrev || kontaktinformasjonClient.isDigitalVarselEnabled(
+            personIdentNumber = personIdentNumber,
+            token = token,
+            callId = callId,
+            oboTokenFlag = oboTokenFlag,
+        )
     }
 
     companion object {
