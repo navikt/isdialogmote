@@ -32,6 +32,8 @@ data class Referat(
     override val lestDatoArbeidstaker: LocalDateTime?,
     override val lestDatoArbeidsgiver: LocalDateTime?,
     val andreDeltakere: List<DialogmotedeltakerAnnen>,
+    val brevBestillingId: String?,
+    val brevBestiltTidspunkt: LocalDateTime?,
 ) : ArbeidstakerBrev, NarmesteLederBrev
 
 data class DialogmotedeltakerAnnen(
@@ -61,7 +63,8 @@ fun Referat.toReferatDTO(): ReferatDTO {
         lestDatoArbeidsgiver = this.lestDatoArbeidsgiver,
         andreDeltakere = this.andreDeltakere.map {
             it.toDialogmotedeltakerAnnenDTO()
-        }
+        },
+        brevBestiltTidspunkt = this.brevBestiltTidspunkt,
     )
 }
 

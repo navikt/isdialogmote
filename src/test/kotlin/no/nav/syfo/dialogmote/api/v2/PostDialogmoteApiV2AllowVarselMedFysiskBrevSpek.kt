@@ -25,6 +25,7 @@ import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -110,7 +111,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             xml.shouldContain("<parameterListe><key>tidspunkt</key><value>$moteTidspunktString</value></parameterListe>")
                             clearMocks(mqSenderMock)
                         }
-
+                        val varselUuid: String
                         with(
                             handleRequest(HttpMethod.Get, urlMoter) {
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -131,6 +132,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             dialogmoteDTO.arbeidstaker.varselList.size shouldBeEqualTo 1
 
                             val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
+                            varselUuid = arbeidstakerVarselDTO.uuid
                             arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo false
                             arbeidstakerVarselDTO.lestDato.shouldBeNull()
@@ -153,6 +155,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                                 "NAV Staden",
                                 "Kari Saksbehandler"
                             )
+                            arbeidstakerVarselDTO.brevBestiltTidspunkt shouldBeEqualTo null
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
                             dialogmoteDTO.arbeidsgiver.varselList.size shouldBeEqualTo 1
@@ -172,6 +175,24 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             moteStatusEndretList.first().status.name shouldBeEqualTo dialogmoteDTO.status
                             moteStatusEndretList.first().opprettetAv shouldBeEqualTo VEILEDER_IDENT
                             moteStatusEndretList.first().tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO.fom
+                        }
+                        database.setVarselBrevBestilt(varselUuid, "123")
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_IKKE_VARSEL.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
+                            arbeidstakerVarselDTO.brevBestiltTidspunkt shouldNotBe null
+                            arbeidstakerVarselDTO.brevBestiltTidspunkt!!.toLocalDate() shouldBeEqualTo LocalDate.now()
                         }
                     }
 

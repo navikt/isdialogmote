@@ -17,6 +17,8 @@ data class PMotedeltakerArbeidstakerVarsel(
     val lestDato: LocalDateTime?,
     val fritekst: String,
     val document: List<DocumentComponentDTO>,
+    val brevBestillingId: String?,
+    val brevBestiltTidspunkt: LocalDateTime?,
 )
 
 fun PMotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstaker() =
@@ -33,4 +35,6 @@ fun PMotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstaker() =
         lestDatoArbeidstaker = this.lestDato,
         fritekst = this.fritekst,
         document = this.document,
+        brevBestillingId = this.brevBestillingId,
+        brevBestiltTidspunkt = this.brevBestiltTidspunkt,
     )
