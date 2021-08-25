@@ -141,6 +141,23 @@ fun DatabaseInterface.updateMotedeltakerArbeidstakerVarselJournalpostId(
     }
 }
 
+const val queryGetMotedeltakerArbeidstakerVarselForFysiskBrevUtsending =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_ARBEIDSTAKER_VARSEL
+        WHERE digitalt IS FALSE 
+              AND journalpost_id IS NOT NULL
+              AND brev_bestilling_id IS NULL
+    """
+
+fun DatabaseInterface.getMotedeltakerArbeidstakerVarselForFysiskBrevUtsending(): List<PMotedeltakerArbeidstakerVarsel> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerArbeidstakerVarselForFysiskBrevUtsending).use {
+            it.executeQuery().toList { toPMotedeltakerArbeidstakerVarsel() }
+        }
+    }
+}
+
 const val queryUpdateMotedeltakerArbeidstakerBrevBestillingId =
     """
         UPDATE MOTEDELTAKER_ARBEIDSTAKER_VARSEL
@@ -195,6 +212,7 @@ fun ResultSet.toPMotedeltakerArbeidstakerVarsel(): PMotedeltakerArbeidstakerVars
         lestDato = getTimestamp("lest_dato")?.toLocalDateTime(),
         fritekst = getString("fritekst"),
         document = mapper.readValue(getString("document"), object : TypeReference<List<DocumentComponentDTO>>() {}),
+        journalpostId = getString("journalpost_id"),
         brevBestillingId = getString("brev_bestilling_id"),
         brevBestiltTidspunkt = getTimestamp("brev_bestilt_tidspunkt")?.toLocalDateTime(),
     )
