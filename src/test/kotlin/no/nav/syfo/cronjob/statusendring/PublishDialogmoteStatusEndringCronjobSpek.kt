@@ -7,7 +7,6 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.mq.MQSenderInterface
-import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v1.*
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
@@ -52,12 +51,8 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
                 dialogmoteStatusEndringProducer = dialogmoteStatusEndringProducer,
             )
 
-            val leaderPodClient = mockk<LeaderPodClient>()
-
             val publishDialogmoteStatusEndringCronjob = PublishDialogmoteStatusEndringCronjob(
-                applicationState = externalMockEnvironment.applicationState,
                 publishDialogmoteStatusEndringService = publishDialogmoteStatusEndringService,
-                leaderPodClient = leaderPodClient,
             )
 
             afterEachTest {

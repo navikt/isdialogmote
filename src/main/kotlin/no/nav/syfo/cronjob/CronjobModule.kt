@@ -40,11 +40,9 @@ fun Application.cronjobModule(
         environment = environment,
     )
     val journalforDialogmoteVarslerCronjob = DialogmoteVarselJournalforingCronjob(
-        applicationState = applicationState,
         dialogmotedeltakerVarselJournalforingService = dialogmotedeltakerVarselJournalforingService,
         referatJournalforingService = referatJournalforingService,
         dokarkivClient = dokarkivClient,
-        leaderPodClient = leaderPodClient,
     )
 
     val kafkaDialogmoteStatusEndringProducerProperties = kafkaDialogmoteStatusEndringProducerConfig(environment)
@@ -60,16 +58,18 @@ fun Application.cronjobModule(
         dialogmoteStatusEndringProducer = dialogmoteStatusEndringProducer,
     )
     val publishDialogmoteStatusEndringCronjob = PublishDialogmoteStatusEndringCronjob(
-        applicationState = applicationState,
         publishDialogmoteStatusEndringService = publishDialogmoteStatusEndringService,
-        leaderPodClient = leaderPodClient,
+    )
+    val cronjobRunner = DialogmoteCronjobRunner(
+        applicationState = applicationState,
+        leaderPodClient = leaderPodClient
     )
 
     if (environment.journalforingCronjobEnabled) {
         createListenerCronjob(
             applicationState = applicationState,
         ) {
-            journalforDialogmoteVarslerCronjob.start()
+            cronjobRunner.start(cronjob = journalforDialogmoteVarslerCronjob)
         }
     } else {
         log.info("JournalforingCronjob is not enabled")
@@ -78,7 +78,7 @@ fun Application.cronjobModule(
         createListenerCronjob(
             applicationState = applicationState,
         ) {
-            publishDialogmoteStatusEndringCronjob.start()
+            cronjobRunner.start(cronjob = publishDialogmoteStatusEndringCronjob)
         }
     } else {
         log.info("PublishDialogmoteStatusEndringCronjob is not enabled")
