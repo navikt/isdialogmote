@@ -1,12 +1,8 @@
 package no.nav.syfo.cronjob.statusendring
 
-import kotlinx.coroutines.*
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.cronjob.*
-import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
 import org.slf4j.LoggerFactory
-import java.time.Duration
 
 data class PublishDialogmoteStatusEndringResult(
     var updated: Int = 0,
@@ -14,40 +10,14 @@ data class PublishDialogmoteStatusEndringResult(
 )
 
 class PublishDialogmoteStatusEndringCronjob(
-    private val applicationState: ApplicationState,
     private val publishDialogmoteStatusEndringService: PublishDialogmoteStatusEndringService,
-    private val leaderPodClient: LeaderPodClient,
-) {
-    suspend fun start() = coroutineScope {
-        val (initialDelay, intervalDelay) = delays()
-        log.info(
-            "Scheduling start of ${PublishDialogmoteStatusEndringCronjob::class.simpleName}: {} ms, {} ms",
-            StructuredArguments.keyValue("initialDelay", initialDelay),
-            StructuredArguments.keyValue("intervalDelay", intervalDelay),
-        )
-        delay(initialDelay)
+) : DialogmoteCronjob {
 
-        while (applicationState.ready) {
-            val job = launch { run() }
-            delay(intervalDelay)
-            if (job.isActive) {
-                log.warn("Waiting for job to finish")
-                job.join()
-            }
-        }
-        log.info("Ending ${PublishDialogmoteStatusEndringCronjob::class.simpleName} due to failed liveness check ")
-    }
+    override val initialDelayMinutes: Long = 2
+    override val intervalDelayMinutes: Long = 60
 
-    private fun run() {
-        try {
-            if (leaderPodClient.isLeader()) {
-                dialogmoteStatusEndringPublishJob()
-            } else {
-                log.debug("Pod is not leader and will not perform job")
-            }
-        } catch (ex: Exception) {
-            log.error("Exception in ${PublishDialogmoteStatusEndringCronjob::class.simpleName}. Job will run again after delay.", ex)
-        }
+    override suspend fun run() {
+        dialogmoteStatusEndringPublishJob()
     }
 
     fun dialogmoteStatusEndringPublishJob(): PublishDialogmoteStatusEndringResult {
@@ -73,12 +43,6 @@ class PublishDialogmoteStatusEndringCronjob(
             StructuredArguments.keyValue("updated", result.updated),
         )
         return result
-    }
-
-    private fun delays(): Pair<Long, Long> {
-        val initialDelay = Duration.ofMinutes(2).toMillis()
-        val intervalDelay = Duration.ofMinutes(60).toMillis()
-        return Pair(initialDelay, intervalDelay)
     }
 
     companion object {

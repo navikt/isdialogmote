@@ -9,7 +9,6 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.dokarkiv.DokarkivClient
-import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalforingService
 import no.nav.syfo.dialogmote.ReferatJournalforingService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
@@ -63,14 +62,11 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                 dokarkivClientId = externalMockEnvironment.environment.dokarkivClientId,
                 dokarkivBaseUrl = externalMockEnvironment.dokarkivMock.url,
             )
-            val leaderPodClient = mockk<LeaderPodClient>()
 
             val dialogmoteVarselJournalforingCronjob = DialogmoteVarselJournalforingCronjob(
-                applicationState = externalMockEnvironment.applicationState,
                 dialogmotedeltakerVarselJournalforingService = dialogmotedeltakerVarselJournalforingService,
                 referatJournalforingService = referatJournalforingService,
                 dokarkivClient = dokarkivClient,
-                leaderPodClient = leaderPodClient,
             )
 
             afterEachTest {
