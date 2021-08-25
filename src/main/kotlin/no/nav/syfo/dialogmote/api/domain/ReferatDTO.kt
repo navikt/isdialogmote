@@ -19,6 +19,7 @@ data class ReferatDTO(
     val lestDatoArbeidstaker: LocalDateTime?,
     val lestDatoArbeidsgiver: LocalDateTime?,
     val andreDeltakere: List<DialogmotedeltakerAnnenDTO>,
+    val brevBestiltTidspunkt: LocalDateTime?,
 )
 
 data class DialogmotedeltakerAnnenDTO(

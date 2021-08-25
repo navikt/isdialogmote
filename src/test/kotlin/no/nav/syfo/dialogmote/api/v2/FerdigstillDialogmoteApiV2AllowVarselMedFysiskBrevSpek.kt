@@ -6,6 +6,7 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
+import io.netty.handler.codec.http.HttpHeaders.addHeader
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
@@ -18,9 +19,10 @@ import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
-import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 
 class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -115,6 +117,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.REFERAT, any()) }
                         }
 
+                        val referatUuid: String
                         with(
                             handleRequest(HttpMethod.Get, urlMoter) {
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -135,6 +138,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
 
                             val referat = dialogmoteDTO.referat!!
+                            referatUuid = referat.uuid
                             referat.digitalt shouldBeEqualTo false
                             referat.situasjon shouldBeEqualTo "Dette er en beskrivelse av situasjonen"
                             referat.narmesteLederNavn shouldBeEqualTo "Grønn Bamse"
@@ -147,6 +151,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             referat.document[2].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
                             referat.document[2].key shouldBeEqualTo "Standardtekst"
                             referat.document[2].texts shouldBeEqualTo listOf("Dette er en standardtekst")
+                            referat.brevBestiltTidspunkt shouldBeEqualTo null
 
                             referat.andreDeltakere.first().funksjon shouldBeEqualTo "Verneombud"
                             referat.andreDeltakere.first().navn shouldBeEqualTo "Tøff Pyjamas"
@@ -162,6 +167,24 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                                 moteStatusEndret.opprettetAv shouldBeEqualTo VEILEDER_IDENT
                                 moteStatusEndret.tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO.fom
                             }
+                        }
+                        database.setReferatBrevBestilt(referatUuid, "123")
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_IKKE_VARSEL.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            val referat = dialogmoteDTO.referat!!
+                            referat.brevBestiltTidspunkt shouldNotBe null
+                            referat.brevBestiltTidspunkt!!.toLocalDate() shouldBeEqualTo LocalDate.now()
                         }
                     }
                 }

@@ -2,8 +2,10 @@ package no.nav.syfo.testhelper
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.dialogmote.database.*
 import org.flywaydb.core.Flyway
 import java.sql.Connection
+import java.util.UUID
 
 class TestDatabase : DatabaseInterface {
     private val pg: EmbeddedPostgres
@@ -86,4 +88,26 @@ fun DatabaseInterface.addDummyDeltakere() {
         }
         connection.commit()
     }
+}
+
+fun DatabaseInterface.setReferatBrevBestilt(
+    referatUuid: String,
+    bestillingId: String,
+) {
+    val referatId = this.getReferat(UUID.fromString(referatUuid)).first().id
+    this.updateReferatBrevBestillingId(
+        referatId,
+        bestillingId
+    )
+}
+
+fun DatabaseInterface.setVarselBrevBestilt(
+    varselUuid: String,
+    bestillingId: String,
+) {
+    val varselId = this.getMotedeltakerArbeidstakerVarsel(UUID.fromString(varselUuid)).first().id
+    this.updateMotedeltakerArbeidstakerBrevBestillingId(
+        varselId,
+        bestillingId
+    )
 }

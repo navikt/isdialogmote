@@ -70,6 +70,8 @@ fun ResultSet.toPReferat(): PReferat =
         journalpostId = getString("journalpost_id"),
         lestDatoArbeidstaker = getTimestamp("lest_dato_arbeidstaker")?.toLocalDateTime(),
         lestDatoArbeidsgiver = getTimestamp("lest_dato_arbeidsgiver")?.toLocalDateTime(),
+        brevBestillingId = getString("brev_bestilling_id"),
+        brevBestiltTidspunkt = getTimestamp("brev_bestilt_tidspunkt")?.toLocalDateTime(),
     )
 
 const val queryGetDialogmotedeltakerAnnenForReferatID =
@@ -213,6 +215,28 @@ fun DatabaseInterface.updateReferatJournalpostId(
         connection.prepareStatement(queryUpdateReferatJournalpostId).use {
             it.setInt(1, journalpostId)
             it.setInt(2, referatId)
+            it.execute()
+        }
+        connection.commit()
+    }
+}
+
+const val queryUpdateReferatBrevBestillingId =
+    """
+        UPDATE MOTE_REFERAT
+        SET brev_bestilling_id = ?, brev_bestilt_tidspunkt = ?
+        WHERE id = ?
+    """
+
+fun DatabaseInterface.updateReferatBrevBestillingId(
+    referatId: Int,
+    brevBestillingId: String,
+) {
+    this.connection.use { connection ->
+        connection.prepareStatement(queryUpdateReferatBrevBestillingId).use {
+            it.setString(1, brevBestillingId)
+            it.setTimestamp(2, Timestamp.from(Instant.now()))
+            it.setInt(3, referatId)
             it.execute()
         }
         connection.commit()

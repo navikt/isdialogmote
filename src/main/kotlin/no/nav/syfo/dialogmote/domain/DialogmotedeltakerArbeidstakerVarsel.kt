@@ -21,6 +21,8 @@ data class DialogmotedeltakerArbeidstakerVarsel(
     override val lestDatoArbeidstaker: LocalDateTime?,
     val fritekst: String,
     override val document: List<DocumentComponentDTO>,
+    val brevBestillingId: String?,
+    val brevBestiltTidspunkt: LocalDateTime?,
 ) : ArbeidstakerBrev
 
 fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselDTO() =
@@ -32,6 +34,7 @@ fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselD
         lestDato = this.lestDatoArbeidstaker,
         fritekst = this.fritekst,
         document = this.document,
+        brevBestiltTidspunkt = this.brevBestiltTidspunkt,
     )
 
 fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerBrevDTO(
