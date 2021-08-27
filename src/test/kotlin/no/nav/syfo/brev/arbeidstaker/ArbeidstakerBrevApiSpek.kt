@@ -13,10 +13,10 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiBasepath
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiMoteAvlysPath
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiMoteFerdigstillPath
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteAvlysPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteFerdigstillPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
@@ -79,13 +79,13 @@ class ArbeidstakerBrevApiSpek : Spek({
                     subject = ARBEIDSTAKER_FNR.value,
                 )
                 val validTokenVeileder = generateJWT(
-                    externalMockEnvironment.environment.loginserviceClientId,
-                    externalMockEnvironment.wellKnownVeileder.issuer,
+                    externalMockEnvironment.environment.aadAppClient,
+                    externalMockEnvironment.wellKnownVeilederV2.issuer,
                     UserConstants.VEILEDER_IDENT,
                 )
                 describe("Happy path") {
                     val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
-                    val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
+                    val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
                     val urlArbeidstakerMoterList = arbeidstakerBrevApiPath
 
                     it("should return OK if request is successful") {
@@ -192,7 +192,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                     val newDialogmoteInnkalt =
                         generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 3", LocalDateTime.now().plusDays(30))
 
-                    val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
+                    val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
                     var createdDialogmoteUUID = ""
                     var createdDialogmoteDeltakerArbeidstakerUUID = ""
 
@@ -230,7 +230,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                             }
                             if (dialogmoteDTO != newDialogmoteInnkalt) {
                                 val urlMoteUUIDAvlys =
-                                    "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                                    "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
                                 val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
 
                                 with(
@@ -303,7 +303,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
 
                         val urlMoteUUIDReferat =
-                            "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                         val referatDto = generateNewReferatDTO()
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDReferat) {
@@ -420,7 +420,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         subject = ARBEIDSTAKER_ANNEN_FNR.value,
                     )
 
-                    val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
+                    val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
                     var createdDialogmoteUUID: String
 
                     it("should return Forbidden when bearer header contains token for unauthorized person") {
@@ -487,7 +487,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
 
                         val urlMoteUUIDReferat =
-                            "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                         val referatDto = generateNewReferatDTO()
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDReferat) {

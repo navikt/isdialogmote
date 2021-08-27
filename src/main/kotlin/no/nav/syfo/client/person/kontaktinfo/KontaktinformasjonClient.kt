@@ -21,7 +21,6 @@ class KontaktinformasjonClient(
     private val syfopersonClientId: String,
     syfopersonBaseUrl: String
 ) {
-    private val personKontaktinfoUrl: String = "$syfopersonBaseUrl$PERSON_KONTAKTINFORMASJON_PATH"
     private val personKontaktinfoV2Url: String = "$syfopersonBaseUrl$PERSON_V2_KONTAKTINFORMASJON_PATH"
 
     private val httpClient = httpClientDefault()
@@ -30,17 +29,12 @@ class KontaktinformasjonClient(
         personIdentNumber: PersonIdentNumber,
         token: String,
         callId: String,
-        oboTokenFlag: Boolean = false,
     ): Boolean {
-        val kontaktinfo = if (oboTokenFlag) {
-            this.kontaktinformasjonWithOBO(personIdentNumber, token, callId)
-        } else {
-            this.kontaktinformasjon(personIdentNumber, token, callId)
-        }
+        val kontaktinfo = this.kontaktinformasjon(personIdentNumber, token, callId)
         return kontaktinfo?.kontaktinfo?.isDigitalVarselEnabled(personIdentNumber) ?: false
     }
 
-    suspend fun kontaktinformasjonWithOBO(
+    private suspend fun kontaktinformasjon(
         personIdentNumber: PersonIdentNumber,
         token: String,
         callId: String,
@@ -48,29 +42,14 @@ class KontaktinformasjonClient(
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
             scopeClientId = syfopersonClientId,
             token = token
-        )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
-
-        return kontaktinformasjon(
-            personIdentNumber = personIdentNumber,
-            token = oboToken,
-            callId = callId,
-            url = personKontaktinfoV2Url,
-        )
-    }
-
-    suspend fun kontaktinformasjon(
-        personIdentNumber: PersonIdentNumber,
-        token: String,
-        callId: String,
-        url: String = personKontaktinfoUrl,
-    ): DigitalKontaktinfoBolk? {
+        )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
         val cacheKey = "${CACHE_KONTAKTINFORMASJON_KEY_PREFIX}${personIdentNumber.value}"
         val cachedKontaktinformasjon = cache.getObject<DigitalKontaktinfoBolk>(cacheKey)
         return when (cachedKontaktinformasjon) {
             null ->
                 try {
-                    val response: HttpResponse = httpClient.get(url) {
-                        header(HttpHeaders.Authorization, bearerHeader(token))
+                    val response: HttpResponse = httpClient.get(personKontaktinfoV2Url) {
+                        header(HttpHeaders.Authorization, bearerHeader(oboToken))
                         header(NAV_CALL_ID_HEADER, callId)
                         header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
                         accept(ContentType.Application.Json)
@@ -103,9 +82,6 @@ class KontaktinformasjonClient(
     }
 
     companion object {
-        const val PERSON_PATH = "/syfoperson/api/person"
-        const val PERSON_KONTAKTINFORMASJON_PATH = "$PERSON_PATH/kontaktinformasjon"
-
         const val PERSON_V2_PATH = "/syfoperson/api/v2/person"
         const val PERSON_V2_KONTAKTINFORMASJON_PATH = "$PERSON_V2_PATH/kontaktinformasjon"
 

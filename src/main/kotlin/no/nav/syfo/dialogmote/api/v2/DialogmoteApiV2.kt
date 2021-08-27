@@ -36,7 +36,7 @@ fun Route.registerDialogmoteApiV2(
                 val token = getBearerHeader()
                     ?: throw IllegalArgumentException("No Authorization header supplied")
 
-                when (dialogmoteTilgangService.hasAccessToDialogmotePersonWithOBO(personIdentNumber, token, callId)) {
+                when (dialogmoteTilgangService.hasAccessToDialogmotePerson(personIdentNumber, token, callId)) {
                     true -> {
                         val dialogmoteDTOList = dialogmoteService.getDialogmoteList(
                             personIdentNumber = personIdentNumber,
@@ -67,12 +67,11 @@ fun Route.registerDialogmoteApiV2(
 
                 val personidentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
 
-                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabledWithOBO(personidentNumber, token, callId)) {
+                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(personidentNumber, token, callId)) {
                     val created = dialogmoteService.createMoteinnkalling(
                         newDialogmoteDTO = newDialogmoteDTO,
                         token = token,
                         callId = callId,
-                        onBehalfOf = true,
                     )
                     if (created) {
                         call.respond(HttpStatusCode.OK)

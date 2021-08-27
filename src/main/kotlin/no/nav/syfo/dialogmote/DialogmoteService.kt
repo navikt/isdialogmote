@@ -121,7 +121,6 @@ class DialogmoteService(
         newDialogmoteDTO: NewDialogmoteDTO,
         callId: String,
         token: String,
-        onBehalfOf: Boolean = false,
     ): Boolean {
         val personIdentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
         val virksomhetsnummer = Virksomhetsnummer(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer)
@@ -148,7 +147,6 @@ class DialogmoteService(
                 callId = callId,
                 personIdentNumber = personIdentNumber,
                 token = token,
-                onBehalfOf = onBehalfOf,
             ) ?: throw RuntimeException("Failed to request BehandlendeEnhet of Person")
 
             val newDialogmote = newDialogmoteDTO.toNewDialogmote(
@@ -173,7 +171,6 @@ class DialogmoteService(
                 personIdentNumber = personIdentNumber,
                 token = token,
                 callId = callId,
-                oboTokenFlag = onBehalfOf,
             )
 
             database.connection.use { connection ->
@@ -189,7 +186,6 @@ class DialogmoteService(
                     opprettetAv = newDialogmote.opprettetAv,
                     personIdentNumber = newDialogmote.arbeidstaker.personIdent,
                     token = token,
-                    onBehalfOf = onBehalfOf,
                 )
                 createAndSendVarsel(
                     connection = connection,
@@ -220,7 +216,6 @@ class DialogmoteService(
         dialogmote: Dialogmote,
         avlysDialogmote: AvlysDialogmoteDTO,
         token: String,
-        onBehalfOf: Boolean = false,
     ): Boolean {
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
             throw RuntimeException("Failed to Avlys Dialogmote: already Ferdigstilt")
@@ -254,7 +249,6 @@ class DialogmoteService(
                 personIdentNumber = dialogmote.arbeidstaker.personIdent,
                 token = token,
                 callId = callId,
-                oboTokenFlag = onBehalfOf,
             )
 
             database.connection.use { connection ->
@@ -266,7 +260,6 @@ class DialogmoteService(
                     opprettetAv = getNAVIdentFromToken(token),
                     personIdentNumber = dialogmote.arbeidstaker.personIdent,
                     token = token,
-                    onBehalfOf = onBehalfOf,
                 )
                 if (!isDialogmoteTidPassed) {
                     createAndSendVarsel(
@@ -298,7 +291,6 @@ class DialogmoteService(
         dialogmote: Dialogmote,
         endreDialogmoteTidSted: EndreTidStedDialogmoteDTO,
         token: String,
-        onBehalfOf: Boolean = false,
     ): Boolean {
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
             throw RuntimeException("Failed to change tid/sted, already Ferdigstilt")
@@ -330,7 +322,6 @@ class DialogmoteService(
                 personIdentNumber = dialogmote.arbeidstaker.personIdent,
                 token = token,
                 callId = callId,
-                oboTokenFlag = onBehalfOf,
             )
 
             database.connection.use { connection ->
@@ -347,7 +338,6 @@ class DialogmoteService(
                     opprettetAv = getNAVIdentFromToken(token),
                     personIdentNumber = dialogmote.arbeidstaker.personIdent,
                     token = token,
-                    onBehalfOf = onBehalfOf,
                 )
                 createAndSendVarsel(
                     connection = connection,
@@ -450,7 +440,6 @@ class DialogmoteService(
         opprettetAv: String,
         referat: NewReferatDTO,
         token: String,
-        onBehalfOf: Boolean = false,
     ): Boolean {
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
             throw RuntimeException("Failed to Ferdigstille Dialogmote, already Ferdigstilt")
@@ -480,7 +469,6 @@ class DialogmoteService(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             token = token,
             callId = callId,
-            oboTokenFlag = onBehalfOf,
         )
 
         database.connection.use { connection ->
@@ -500,7 +488,6 @@ class DialogmoteService(
                 opprettetAv = opprettetAv,
                 personIdentNumber = dialogmote.arbeidstaker.personIdent,
                 token = token,
-                onBehalfOf = onBehalfOf,
             )
             val (_, referatUuid) = connection.createNewReferat(
                 commit = false,
@@ -537,7 +524,6 @@ class DialogmoteService(
         opprettetAv: String,
         personIdentNumber: PersonIdentNumber,
         token: String,
-        onBehalfOf: Boolean = false,
     ) {
         connection.updateMoteStatus(
             commit = false,
@@ -552,7 +538,6 @@ class DialogmoteService(
             opprettetAv = opprettetAv,
             personIdentNumber = personIdentNumber,
             token = token,
-            onBehalfOf = onBehalfOf,
         )
     }
 
@@ -564,13 +549,11 @@ class DialogmoteService(
         opprettetAv: String,
         personIdentNumber: PersonIdentNumber,
         token: String,
-        onBehalfOf: Boolean = false,
     ) {
         val tilfelleStart = oppfolgingstilfelleClient.oppfolgingstilfelle(
             callId = callId,
             personIdentNumber = personIdentNumber,
             token = token,
-            onBehalfOf = onBehalfOf,
         )?.fom ?: throw RuntimeException("Cannot create MoteStatusEndring: No TilfelleStart was found")
         connection.createMoteStatusEndring(
             commit = false,
@@ -654,13 +637,11 @@ class DialogmoteService(
         personIdentNumber: PersonIdentNumber,
         token: String,
         callId: String,
-        oboTokenFlag: Boolean = false,
     ): Boolean {
         return !allowVarselMedFysiskBrev || kontaktinformasjonClient.isDigitalVarselEnabled(
             personIdentNumber = personIdentNumber,
             token = token,
             callId = callId,
-            oboTokenFlag = oboTokenFlag,
         )
     }
 

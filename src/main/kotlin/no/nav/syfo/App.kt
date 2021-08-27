@@ -60,7 +60,6 @@ fun main() {
                     mqSender = mqSender,
                     environment = environment,
                     wellKnownSelvbetjening = getWellKnown(environment.loginserviceIdportenDiscoveryUrl),
-                    wellKnownVeileder = getWellKnown(environment.aadDiscoveryUrl),
                     wellKnownVeilederV2 = getWellKnown(environment.azureAppWellKnownUrl),
                 )
                 cronjobModule(

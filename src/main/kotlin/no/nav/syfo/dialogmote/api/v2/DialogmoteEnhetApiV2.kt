@@ -33,7 +33,7 @@ fun Route.registerDialogmoteEnhetApiV2(
                 val token = getBearerHeader()
                     ?: throw IllegalArgumentException("No Authorization header supplied")
 
-                val accessToEnhet = veilederTilgangskontrollClient.hasAccessToEnhetWithOBO(
+                val accessToEnhet = veilederTilgangskontrollClient.hasAccessToEnhet(
                     enhetNr = enhetNr,
                     token = token,
                     callId = callId
@@ -43,7 +43,7 @@ fun Route.registerDialogmoteEnhetApiV2(
                         val dialogmoteList = dialogmoteService.getDialogmoteList(
                             enhetNr = enhetNr,
                         )
-                        val personListWithVeilederAccess = dialogmoteTilgangService.hasAccessToDialogmotePersonListWithObo(
+                        val personListWithVeilederAccess = dialogmoteTilgangService.hasAccessToDialogmotePersonList(
                             personIdentNumberList = dialogmoteList.map { it.arbeidstaker.personIdent },
                             token = token,
                             callId = callId,

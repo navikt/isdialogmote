@@ -16,8 +16,8 @@ import io.mockk.verify
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiBasepath
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
@@ -73,15 +73,15 @@ object NarmesteLederBrevSpek : Spek({
                     UserConstants.ARBEIDSTAKER_FNR,
                     virksomhetsnummer = UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value
                 )
-                val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
+                val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
                 val validTokenSelvbetjening = generateJWT(
                     audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
                     issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
                     subject = UserConstants.NARMESTELEDER_FNR.value,
                 )
                 val validTokenVeileder = generateJWT(
-                    externalMockEnvironment.environment.loginserviceClientId,
-                    externalMockEnvironment.wellKnownVeileder.issuer,
+                    externalMockEnvironment.environment.aadAppClient,
+                    externalMockEnvironment.wellKnownVeilederV2.issuer,
                     UserConstants.VEILEDER_IDENT,
                 )
                 val incorrectTokenSelvbetjening = generateJWT(

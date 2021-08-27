@@ -56,7 +56,7 @@ class KontaktinformasjonClientSpek : Spek({
                 } returns digitalKontaktInfo
 
                 runBlocking {
-                    client.kontaktinformasjon(personIdent, anyToken, anyCallId) shouldBeEqualTo digitalKontaktInfo
+                    client.isDigitalVarselEnabled(personIdent, anyToken, anyCallId) shouldBeEqualTo true
                 }
                 verify(exactly = 1) {
                     cacheMock.getObject<DigitalKontaktinfoBolk>(
@@ -74,7 +74,7 @@ class KontaktinformasjonClientSpek : Spek({
                 } returns null
 
                 runBlocking {
-                    client.kontaktinformasjon(personIdent, anyToken, anyCallId) shouldBeEqualTo digitalKontaktInfo
+                    client.isDigitalVarselEnabled(personIdent, anyToken, anyCallId) shouldBeEqualTo true
                 }
 
                 verify(exactly = 1) {

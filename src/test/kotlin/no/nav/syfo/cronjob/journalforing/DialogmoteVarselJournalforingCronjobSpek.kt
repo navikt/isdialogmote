@@ -12,13 +12,13 @@ import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
 import no.nav.syfo.dialogmote.ReferatJournalpostService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.v1.*
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.dialogmote.api.v2.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -83,11 +83,11 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
 
             describe("Journalfor ArbeidstakerVarsel with type Innkalling") {
                 val validToken = generateJWT(
-                    externalMockEnvironment.environment.loginserviceClientId,
-                    externalMockEnvironment.wellKnownVeileder.issuer,
+                    externalMockEnvironment.environment.aadAppClient,
+                    externalMockEnvironment.wellKnownVeilederV2.issuer,
                     UserConstants.VEILEDER_IDENT,
                 )
-                val urlMote = "$dialogmoteApiBasepath$dialogmoteApiPersonIdentUrlPath"
+                val urlMote = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
 
                 it("should update journalpost when ferdigstilt") {
                     val newDialogmoteDTO = generateNewDialogmoteDTO(UserConstants.ARBEIDSTAKER_FNR)
@@ -121,7 +121,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                         createdDialogmoteUUID = dialogmoteDTO.uuid
                     }
 
-                    val urlMoteUUIDPostTidSted = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                    val urlMoteUUIDPostTidSted = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                     val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTO()
                     with(
                         handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
@@ -134,7 +134,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                     }
 
                     val urlMoteUUIDFerdigstill =
-                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                     val ferdigstillDialogMoteDto = generateNewReferatDTO()
 
                     with(
@@ -193,7 +193,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                         createdDialogmoteUUID = dialogmoteDTO.uuid
                     }
 
-                    val urlMoteUUIDPostTidSted = "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                    val urlMoteUUIDPostTidSted = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                     val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTO()
                     with(
                         handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
@@ -206,7 +206,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                     }
 
                     val urlMoteUUIDAvlys =
-                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
                     val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
 
                     with(

@@ -22,7 +22,7 @@ class VeilederTilgangskontrollClient(
 ) {
     private val httpClient = httpClientDefault()
 
-    suspend fun hasAccessToPersonListWithOBO(
+    suspend fun hasAccessToPersonList(
         personIdentNumberList: List<PersonIdentNumber>,
         token: String,
         callId: String,
@@ -32,26 +32,13 @@ class VeilederTilgangskontrollClient(
             token = token
         )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
 
-        return hasAccessToPersonList(
-            personIdentNumberList = personIdentNumberList,
-            token = oboToken,
-            url = getTilgangskontrollUrl(true),
-            callId = callId,
-        )
-    }
-
-    suspend fun hasAccessToPersonList(
-        personIdentNumberList: List<PersonIdentNumber>,
-        token: String,
-        url: String = getTilgangskontrollUrl(),
-        callId: String
-    ): List<PersonIdentNumber> {
         return try {
             val personIdentStringList = personIdentNumberList.map { it.value }
+            val url = getTilgangskontrollUrl()
 
-            val response: HttpResponse = httpClient.post(url) {
-                header(HttpHeaders.Authorization, bearerHeader(token))
-                header(NAV_CALL_ID_HEADER, callId)
+            val response: HttpResponse = httpClient.post(urlString = url) {
+                header(HttpHeaders.Authorization, bearerHeader(token = oboToken))
+                header(NAV_CALL_ID_HEADER, value = callId)
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
                 body = personIdentStringList
@@ -62,11 +49,11 @@ class VeilederTilgangskontrollClient(
             if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_CALL_TILGANGSKONTROLL_PERSONS_FORBIDDEN.increment()
             } else {
-                handleUnexpectedResponseException(e.response, resourceEnhet, callId)
+                handleUnexpectedResponseException(e.response, resourceEnhet, callId = callId)
             }
             emptyList()
         } catch (e: ServerResponseException) {
-            handleUnexpectedResponseException(e.response, resourceEnhet, callId)
+            handleUnexpectedResponseException(e.response, resourceEnhet, callId = callId)
             emptyList()
         } catch (e: ClosedReceiveChannelException) {
             handleClosedReceiveChannelException(e, "hasAccessToPersonList", resourceEnhet)
@@ -74,13 +61,11 @@ class VeilederTilgangskontrollClient(
         }
     }
 
-    private fun getTilgangskontrollUrl(onBehalfOf: Boolean = false): String {
-        return if (onBehalfOf) {
-            "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/brukere"
-        } else "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/brukere"
+    private fun getTilgangskontrollUrl(): String {
+        return "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/brukere"
     }
 
-    suspend fun hasAccessWithOBO(
+    suspend fun hasAccess(
         personIdentNumber: PersonIdentNumber,
         token: String,
         callId: String
@@ -88,7 +73,7 @@ class VeilederTilgangskontrollClient(
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
             scopeClientId = syfotilgangskontrollClientId,
             token = token
-        )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
+        )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
 
         val url = getTilgangskontrollV2Url(personIdentNumber)
         return try {
@@ -115,44 +100,11 @@ class VeilederTilgangskontrollClient(
         }
     }
 
-    suspend fun hasAccess(
-        personIdentNumber: PersonIdentNumber,
-        token: String,
-        callId: String
-    ): Boolean {
-        return try {
-            val response: HttpResponse = httpClient.get(getTilgangskontrollUrl(personIdentNumber)) {
-                header(HttpHeaders.Authorization, bearerHeader(token))
-                header(NAV_CALL_ID_HEADER, callId)
-                accept(ContentType.Application.Json)
-            }
-            COUNT_CALL_TILGANGSKONTROLL_PERSON_SUCCESS.increment()
-            response.receive<Tilgang>().harTilgang
-        } catch (e: ClientRequestException) {
-            if (e.response.status == HttpStatusCode.Forbidden) {
-                COUNT_CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN.increment()
-            } else {
-                handleUnexpectedResponseException(e.response, resourcePerson, callId)
-            }
-            false
-        } catch (e: ServerResponseException) {
-            handleUnexpectedResponseException(e.response, resourcePerson, callId)
-            false
-        } catch (e: ClosedReceiveChannelException) {
-            handleClosedReceiveChannelException(e, "hasAccess", resourcePerson)
-            false
-        }
-    }
-
     private fun getTilgangskontrollV2Url(personIdentNumber: PersonIdentNumber): String {
         return "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/bruker/${personIdentNumber.value}"
     }
 
-    private fun getTilgangskontrollUrl(personIdentNumber: PersonIdentNumber): String {
-        return "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/bruker?fnr=${personIdentNumber.value}"
-    }
-
-    suspend fun hasAccessToEnhetWithOBO(
+    suspend fun hasAccessToEnhet(
         enhetNr: EnhetNr,
         token: String,
         callId: String
@@ -188,7 +140,8 @@ class VeilederTilgangskontrollClient(
         }
     }
 
-    private fun getTilgangskontrollUrl(enhetNr: EnhetNr) = "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/enhet/${enhetNr.value}"
+    private fun getTilgangskontrollUrl(enhetNr: EnhetNr) =
+        "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/enhet/${enhetNr.value}"
 
     private fun handleUnexpectedResponseException(
         response: HttpResponse,

@@ -13,12 +13,17 @@ class DialogmoteTilgangService(
     private val veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
     private val allowVarselMedFysiskBrev: Boolean,
 ) {
+
     suspend fun hasAccessToDialogmotePerson(
         personIdentNumber: PersonIdentNumber,
         token: String,
         callId: String,
     ): Boolean {
-        val veilederHasAccessToPerson = veilederTilgangskontrollClient.hasAccess(personIdentNumber, token, callId)
+        val veilederHasAccessToPerson = veilederTilgangskontrollClient.hasAccess(
+            personIdentNumber = personIdentNumber,
+            token = token,
+            callId = callId,
+        )
         return if (veilederHasAccessToPerson) {
             val personHasAdressebeskyttelse =
                 adressebeskyttelseClient.hasAdressebeskyttelse(
@@ -30,33 +35,12 @@ class DialogmoteTilgangService(
         } else false
     }
 
-    suspend fun hasAccessToDialogmotePersonWithOBO(
-        personIdentNumber: PersonIdentNumber,
-        token: String,
-        callId: String,
-    ): Boolean {
-        val veilederHasAccessToPerson = veilederTilgangskontrollClient.hasAccessWithOBO(
-            personIdentNumber = personIdentNumber,
-            token = token,
-            callId = callId,
-        )
-        return if (veilederHasAccessToPerson) {
-            val personHasAdressebeskyttelse =
-                adressebeskyttelseClient.hasAdressebeskyttelseWithOBO(
-                    personIdentNumber = personIdentNumber,
-                    token = token,
-                    callId = callId,
-                )
-            !personHasAdressebeskyttelse
-        } else false
-    }
-
-    suspend fun hasAccessToAllDialogmotePersonsWithObo(
+    suspend fun hasAccessToAllDialogmotePersons(
         personIdentNumberList: List<PersonIdentNumber>,
         token: String,
         callId: String
     ): Boolean {
-        val personListWithVeilederAccess = hasAccessToDialogmotePersonListWithObo(
+        val personListWithVeilederAccess = hasAccessToDialogmotePersonList(
             personIdentNumberList = personIdentNumberList,
             token = token,
             callId = callId,
@@ -65,30 +49,17 @@ class DialogmoteTilgangService(
         return personListWithVeilederAccess.containsAll(personIdentNumberList)
     }
 
-    suspend fun hasAccessToDialogmotePersonListWithObo(
+    suspend fun hasAccessToDialogmotePersonList(
         personIdentNumberList: List<PersonIdentNumber>,
         token: String,
         callId: String,
     ): List<PersonIdentNumber> {
-        return veilederTilgangskontrollClient.hasAccessToPersonListWithOBO(
+        return veilederTilgangskontrollClient.hasAccessToPersonList(
             personIdentNumberList = personIdentNumberList,
             token = token,
             callId = callId,
         ).filter { personIdentNumber ->
-            !adressebeskyttelseClient.hasAdressebeskyttelseWithOBO(personIdentNumber, token, callId)
-        }
-    }
-
-    suspend fun hasAccessToDialogmotePersonWithDigitalVarselEnabledWithOBO(
-        personIdentNumber: PersonIdentNumber,
-        token: String,
-        callId: String,
-    ): Boolean {
-        return if (hasAccessToDialogmotePersonWithOBO(personIdentNumber, token, callId)) {
-            allowVarselMedFysiskBrev || checkDigitalVarselEnabled(personIdentNumber, token, callId, true)
-        } else {
-            log.warn("$DENIED_ACCESS_LOG_MESSAGE No access to person, {}", callIdArgument(callId))
-            false
+            !adressebeskyttelseClient.hasAdressebeskyttelse(personIdentNumber, token, callId)
         }
     }
 
@@ -109,13 +80,11 @@ class DialogmoteTilgangService(
         personIdentNumber: PersonIdentNumber,
         token: String,
         callId: String,
-        oboToken: Boolean = false
     ): Boolean {
         val isDigitalVarselEnabled = kontaktinformasjonClient.isDigitalVarselEnabled(
             personIdentNumber = personIdentNumber,
             token = token,
             callId = callId,
-            oboTokenFlag = oboToken,
         )
         if (!isDigitalVarselEnabled) {
             log.error("$DENIED_ACCESS_LOG_MESSAGE DigitalVarsel is not allowed, {}", callIdArgument(callId))

@@ -22,11 +22,10 @@ class AdressebeskyttelseClient(
     private val cache: RedisStore,
     syfopersonBaseUrl: String,
 ) {
-    private val personAdressebeskyttelseUrl: String = "$syfopersonBaseUrl$PERSON_ADRESSEBESKYTTELSE_PATH"
     private val personV2AdressebeskyttelseUrl: String = "$syfopersonBaseUrl$PERSON_V2_ADRESSEBESKYTTELSE_PATH"
     private val httpClient = httpClientDefault()
 
-    suspend fun hasAdressebeskyttelseWithOBO(
+    suspend fun hasAdressebeskyttelse(
         personIdentNumber: PersonIdentNumber,
         token: String,
         callId: String,
@@ -34,30 +33,15 @@ class AdressebeskyttelseClient(
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
             scopeClientId = syfopersonClientId,
             token = token
-        )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
-
-        return hasAdressebeskyttelse(
-            personIdentNumber = personIdentNumber,
-            token = oboToken,
-            url = personV2AdressebeskyttelseUrl,
-            callId = callId,
-        )
-    }
-
-    suspend fun hasAdressebeskyttelse(
-        personIdentNumber: PersonIdentNumber,
-        token: String,
-        url: String = personAdressebeskyttelseUrl,
-        callId: String,
-    ): Boolean {
+        )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
         val cacheKey = "$CACHE_ADRESSEBESKYTTELSE_KEY_PREFIX${personIdentNumber.value}"
         val cachedAdressebeskyttelse = cache.get(cacheKey)
         return when (cachedAdressebeskyttelse) {
             null -> {
                 val starttime = System.currentTimeMillis()
                 try {
-                    val response: HttpResponse = httpClient.get(url) {
-                        header(HttpHeaders.Authorization, bearerHeader(token))
+                    val response: HttpResponse = httpClient.get(personV2AdressebeskyttelseUrl) {
+                        header(HttpHeaders.Authorization, bearerHeader(oboToken))
                         header(NAV_CALL_ID_HEADER, callId)
                         header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
                         accept(ContentType.Application.Json)
@@ -106,9 +90,6 @@ class AdressebeskyttelseClient(
     }
 
     companion object {
-        const val PERSON_PATH = "/syfoperson/api/person"
-        const val PERSON_ADRESSEBESKYTTELSE_PATH = "$PERSON_PATH/adressebeskyttelse"
-
         const val PERSON_V2_PATH = "/syfoperson/api/v2/person"
         const val PERSON_V2_ADRESSEBESKYTTELSE_PATH = "$PERSON_V2_PATH/adressebeskyttelse"
 
