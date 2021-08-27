@@ -45,7 +45,6 @@ class ExternalMockEnvironment(
     val redisServer = testRedis(environment)
 
     val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
-    val wellKnownVeileder = wellKnownSelvbetjeningMock()
     val wellKnownVeilederV2 = wellKnownVeilederV2Mock()
 }
 

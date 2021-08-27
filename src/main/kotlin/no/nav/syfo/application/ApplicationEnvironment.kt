@@ -3,7 +3,6 @@ package no.nav.syfo.application
 import io.ktor.application.*
 
 data class Environment(
-    val aadDiscoveryUrl: String = getEnvVar("AADDISCOVERY_URL"),
     val aadAppClient: String = getEnvVar("AZURE_APP_CLIENT_ID"),
     val aadAppSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val aadTokenEndpoint: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
@@ -34,7 +33,6 @@ data class Environment(
     val isdialogmoteDbUsername: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTE_ISDIALOGMOTE_DB_USERNAME"),
     val isdialogmoteDbPassword: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTE_ISDIALOGMOTE_DB_PASSWORD"),
     val sidecarInitialDelay: Long = getEnvVar("SIDECAR_INITIAL_DELAY", "30000").toLong(),
-    val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENT_ID"),
     val dialogmoteArbeidstakerUrl: String = getEnvVar("DIALOGMOTE_ARBEIDSTAKER_URL"),
     val dokarkivUrl: String = getEnvVar("DOKARKIV_URL"),
     val isdialogmotepdfgenUrl: String = "http://isdialogmotepdfgen",

@@ -10,8 +10,6 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.OvertaDialogmoterDTO
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiBasepath
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
@@ -60,22 +58,17 @@ class OvertaDialogmoteApiV2Spek : Spek({
             }
 
             describe("Overta Dialogmoter") {
-                val validTokenV1 = generateJWT(
-                    externalMockEnvironment.environment.loginserviceClientId,
-                    externalMockEnvironment.wellKnownVeileder.issuer,
-                    UserConstants.VEILEDER_IDENT,
-                )
-                val validTokenV1AnnenVeileder = generateJWT(
-                    externalMockEnvironment.environment.loginserviceClientId,
-                    externalMockEnvironment.wellKnownVeileder.issuer,
-                    UserConstants.VEILEDER_IDENT_2,
-                )
                 val validTokenV2 = generateJWT(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     UserConstants.VEILEDER_IDENT,
                 )
-                val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
+                val validTokenV2AnnenVeileder = generateJWT(
+                    externalMockEnvironment.environment.aadAppClient,
+                    externalMockEnvironment.wellKnownVeilederV2.issuer,
+                    UserConstants.VEILEDER_IDENT_2,
+                )
+                val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
                 val urlMoterEnhet = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR.value}"
                 val urlOvertaMoter = "$dialogmoteApiV2Basepath$dialogmoteActionsApiOvertaPath"
                 val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
@@ -88,7 +81,7 @@ class OvertaDialogmoteApiV2Spek : Spek({
 
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV1))
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV2))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
                             }
@@ -97,7 +90,7 @@ class OvertaDialogmoteApiV2Spek : Spek({
                         }
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV1AnnenVeileder))
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV2AnnenVeileder))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(objectMapper.writeValueAsString(newDialogmoteDTOAnnenArbeidstaker))
                             }
@@ -195,7 +188,7 @@ class OvertaDialogmoteApiV2Spek : Spek({
 
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV1AnnenVeileder))
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV2AnnenVeileder))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
                             }

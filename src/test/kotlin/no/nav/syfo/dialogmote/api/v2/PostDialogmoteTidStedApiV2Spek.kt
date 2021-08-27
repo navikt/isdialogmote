@@ -8,7 +8,6 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.dialogmote.api.domain.*
-import no.nav.syfo.dialogmote.api.v1.*
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*

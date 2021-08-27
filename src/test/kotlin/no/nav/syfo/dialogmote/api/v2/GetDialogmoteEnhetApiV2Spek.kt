@@ -8,8 +8,6 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiBasepath
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
@@ -64,11 +62,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
             describe("Get Dialogmoter for EnhetNr") {
                 val urlEnhetAccess = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR.value}"
                 val urlEnhetNoAccess = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR_NO_ACCESS.value}"
-                val validTokenV1 = generateJWT(
-                    externalMockEnvironment.environment.loginserviceClientId,
-                    externalMockEnvironment.wellKnownVeileder.issuer,
-                    VEILEDER_IDENT,
-                )
                 val validTokenV2 = generateJWT(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
@@ -77,12 +70,12 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                 describe("Happy path") {
 
                     val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
-                    val urlMote = "$dialogmoteApiBasepath/$dialogmoteApiPersonIdentUrlPath"
+                    val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
 
                     it("should return DialogmoteList if request is successful") {
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(Authorization, bearerHeader(validTokenV1))
+                                addHeader(Authorization, bearerHeader(validTokenV2))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
                             }

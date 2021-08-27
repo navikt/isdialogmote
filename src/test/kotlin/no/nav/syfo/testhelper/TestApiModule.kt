@@ -17,7 +17,6 @@ fun Application.testApiModule(
         mqSender = mqSenderMock,
         environment = externalMockEnvironment.environment,
         wellKnownSelvbetjening = externalMockEnvironment.wellKnownSelvbetjening,
-        wellKnownVeileder = externalMockEnvironment.wellKnownVeileder,
         wellKnownVeilederV2 = externalMockEnvironment.wellKnownVeilederV2,
     )
 }

@@ -13,10 +13,10 @@ import no.nav.syfo.client.dokdist.DokdistClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
 import no.nav.syfo.dialogmote.ReferatJournalpostService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiBasepath
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiMoteFerdigstillPath
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiMoteTidStedPath
-import no.nav.syfo.dialogmote.api.v1.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteFerdigstillPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteTidStedPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTO
@@ -75,11 +75,11 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             }
 
             val validToken = generateJWT(
-                externalMockEnvironment.environment.loginserviceClientId,
-                externalMockEnvironment.wellKnownVeileder.issuer,
+                externalMockEnvironment.environment.aadAppClient,
+                externalMockEnvironment.wellKnownVeilederV2.issuer,
                 UserConstants.VEILEDER_IDENT,
             )
-            val urlMote = "$dialogmoteApiBasepath$dialogmoteApiPersonIdentUrlPath"
+            val urlMote = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
 
             describe("Arbeidstaker skal ikke varsles digitalt") {
                 val newDialogmoteDTO = generateNewDialogmoteDTO(UserConstants.ARBEIDSTAKER_IKKE_VARSEL)
@@ -110,7 +110,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                     }
 
                     val urlMoteUUIDPostTidSted =
-                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                     val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTO()
                     with(
                         handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
@@ -123,7 +123,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                     }
 
                     val urlMoteUUIDFerdigstill =
-                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                     val ferdigstillDialogMoteDto = generateNewReferatDTO()
 
                     with(
@@ -193,7 +193,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         createdDialogmoteUUID = dialogmoteList.first().uuid
                     }
                     val urlMoteUUIDFerdigstill =
-                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                     val ferdigstillDialogMoteDto = generateNewReferatDTO()
 
                     with(
@@ -243,7 +243,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         createdDialogmoteUUID = dialogmoteList.first().uuid
                     }
                     val urlMoteUUIDFerdigstill =
-                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                     val ferdigstillDialogMoteDto = generateNewReferatDTO()
 
                     with(
@@ -322,7 +322,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                     }
 
                     val urlMoteUUIDPostTidSted =
-                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                     val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTO()
                     with(
                         handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
@@ -335,7 +335,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                     }
 
                     val urlMoteUUIDFerdigstill =
-                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                     val ferdigstillDialogMoteDto = generateNewReferatDTO()
 
                     with(
@@ -405,7 +405,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         createdDialogmoteUUID = dialogmoteList.first().uuid
                     }
                     val urlMoteUUIDFerdigstill =
-                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                     val ferdigstillDialogMoteDto = generateNewReferatDTO()
 
                     with(
@@ -456,7 +456,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                     }
 
                     val urlMoteUUIDPostTidSted =
-                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                     val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTO()
                     with(
                         handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
@@ -469,7 +469,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                     }
 
                     val urlMoteUUIDFerdigstill =
-                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                     val ferdigstillDialogMoteDto = generateNewReferatDTO()
 
                     with(

@@ -17,11 +17,9 @@ class BehandlendeEnhetClient(
     private val syfobehandlendeenhetClientId: String,
     syfobehandlendeenhetBaseUrl: String
 ) {
-    private val personBehandlendeEnhetUrl: String
     private val personBehandlendeEnhetV2Url: String
 
     init {
-        this.personBehandlendeEnhetUrl = "$syfobehandlendeenhetBaseUrl$PERSON_ENHET_PATH"
         this.personBehandlendeEnhetV2Url = "$syfobehandlendeenhetBaseUrl$PERSON_V2_ENHET_PATH"
     }
 
@@ -31,23 +29,15 @@ class BehandlendeEnhetClient(
         callId: String,
         personIdentNumber: PersonIdentNumber,
         token: String,
-        onBehalfOf: Boolean,
     ): BehandlendeEnhetDTO? {
-        val url: String
-        val oboToken: String?
-        if (onBehalfOf) {
-            oboToken = azureAdV2Client.getOnBehalfOfToken(
-                scopeClientId = syfobehandlendeenhetClientId,
-                token = token
-            )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
-            url = personBehandlendeEnhetV2Url
-        } else {
-            oboToken = null
-            url = personBehandlendeEnhetUrl
-        }
+        val url = personBehandlendeEnhetV2Url
+        val oboToken = azureAdV2Client.getOnBehalfOfToken(
+            scopeClientId = syfobehandlendeenhetClientId,
+            token = token
+        )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
         return try {
             val response: HttpResponse = httpClient.get(url) {
-                header(HttpHeaders.Authorization, bearerHeader(oboToken ?: token))
+                header(HttpHeaders.Authorization, bearerHeader(oboToken))
                 header(NAV_CALL_ID_HEADER, callId)
                 header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
                 accept(ContentType.Application.Json)
@@ -75,7 +65,6 @@ class BehandlendeEnhetClient(
     }
 
     companion object {
-        const val PERSON_ENHET_PATH = "/api/internad/personident"
         const val PERSON_V2_ENHET_PATH = "/api/internad/v2/personident"
         private val log = LoggerFactory.getLogger(BehandlendeEnhetClient::class.java)
     }

@@ -32,8 +32,6 @@ import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.dialogmote.api.v1.registerDialogmoteActionsApi
-import no.nav.syfo.dialogmote.api.v1.registerDialogmoteApi
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteActionsApiV2
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteApiV2
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
@@ -49,7 +47,6 @@ fun Application.apiModule(
     mqSender: MQSenderInterface,
     environment: Environment,
     wellKnownSelvbetjening: WellKnown,
-    wellKnownVeileder: WellKnown,
     wellKnownVeilederV2: WellKnown,
 ) {
     installMetrics()
@@ -61,11 +58,6 @@ fun Application.apiModule(
                 acceptedAudienceList = environment.loginserviceIdportenAudience,
                 jwtIssuerType = JwtIssuerType.SELVBETJENING,
                 wellKnown = wellKnownSelvbetjening,
-            ),
-            JwtIssuer(
-                acceptedAudienceList = listOf(environment.loginserviceClientId),
-                jwtIssuerType = JwtIssuerType.VEILEDER,
-                wellKnown = wellKnownVeileder,
             ),
             JwtIssuer(
                 acceptedAudienceList = listOf(environment.aadAppClient),
@@ -166,16 +158,6 @@ fun Application.apiModule(
     routing {
         registerPodApi(applicationState, database)
         registerPrometheusApi()
-        authenticate(JwtIssuerType.VEILEDER.name) {
-            registerDialogmoteApi(
-                dialogmoteService = dialogmoteService,
-                dialogmoteTilgangService = dialogmoteTilgangService,
-            )
-            registerDialogmoteActionsApi(
-                dialogmoteService = dialogmoteService,
-                dialogmoteTilgangService = dialogmoteTilgangService,
-            )
-        }
         authenticate(JwtIssuerType.VEILEDER_V2.name) {
             registerDialogmoteEnhetApiV2(
                 dialogmoteService = dialogmoteService,

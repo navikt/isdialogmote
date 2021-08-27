@@ -41,13 +41,12 @@ fun Route.registerDialogmoteActionsApiV2(
 
                 val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabledWithOBO(dialogmote.arbeidstaker.personIdent, token, callId)) {
+                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.avlysMoteinnkalling(
                         callId = callId,
                         dialogmote = dialogmote,
                         avlysDialogmote = avlysDialogmoteDto,
                         token = token,
-                        onBehalfOf = true,
                     )
                     if (success) {
                         call.respond(HttpStatusCode.OK)
@@ -77,14 +76,13 @@ fun Route.registerDialogmoteActionsApiV2(
 
                 val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabledWithOBO(dialogmote.arbeidstaker.personIdent, token, callId)) {
+                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.ferdigstillMote(
                         callId = callId,
                         dialogmote = dialogmote,
                         opprettetAv = getNAVIdentFromToken(token),
                         referat = newReferat,
                         token = token,
-                        onBehalfOf = true,
                     )
                     if (success) {
                         call.respond(HttpStatusCode.OK)
@@ -116,13 +114,12 @@ fun Route.registerDialogmoteActionsApiV2(
 
                 val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabledWithOBO(dialogmote.arbeidstaker.personIdent, token, callId)) {
+                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(dialogmote.arbeidstaker.personIdent, token, callId)) {
                     val success = dialogmoteService.nyttMoteinnkallingTidSted(
                         callId = callId,
                         dialogmote = dialogmote,
                         endreDialogmoteTidSted = endreDialogmoteTidSted,
                         token = token,
-                        onBehalfOf = true,
                     )
                     if (success) {
                         call.respond(HttpStatusCode.OK)
@@ -151,7 +148,7 @@ fun Route.registerDialogmoteActionsApiV2(
                 }
 
                 val dialogmoter = dialogmoteUuids.map { dialogmoteService.getDialogmote(UUID.fromString(it)) }
-                if (dialogmoteTilgangService.hasAccessToAllDialogmotePersonsWithObo(
+                if (dialogmoteTilgangService.hasAccessToAllDialogmotePersons(
                         personIdentNumberList = dialogmoter.map { it.arbeidstaker.personIdent },
                         token,
                         callId
