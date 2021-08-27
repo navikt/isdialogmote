@@ -1,3 +1,2 @@
-grant all on MOTEDELTAKER_ARBEIDSGIVER_VARSEL to cloudsqliamuser;
-grant all on MOTE_REFERAT to cloudsqliamuser;
-grant all on MOTEDELTAKER_ANNEN to cloudsqliamuser;
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM cloudsqliamuser;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO cloudsqliamuser;
