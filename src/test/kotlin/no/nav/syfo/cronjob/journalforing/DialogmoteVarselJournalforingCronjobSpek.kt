@@ -9,8 +9,8 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.dokarkiv.DokarkivClient
-import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalforingService
-import no.nav.syfo.dialogmote.ReferatJournalforingService
+import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.dialogmote.ReferatJournalpostService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v1.*
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
@@ -47,10 +47,10 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                 mqSenderMock = mqSenderMock,
             )
 
-            val dialogmotedeltakerVarselJournalforingService = DialogmotedeltakerVarselJournalforingService(
+            val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(
                 database = database,
             )
-            val referatJournalforingService = ReferatJournalforingService(
+            val referatJournalpostService = ReferatJournalpostService(
                 database = database,
             )
             val azureAdClient = mockk<AzureAdClient>()
@@ -64,8 +64,8 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             )
 
             val dialogmoteVarselJournalforingCronjob = DialogmoteVarselJournalforingCronjob(
-                dialogmotedeltakerVarselJournalforingService = dialogmotedeltakerVarselJournalforingService,
-                referatJournalforingService = referatJournalforingService,
+                dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
+                referatJournalpostService = referatJournalpostService,
                 dokarkivClient = dokarkivClient,
             )
 

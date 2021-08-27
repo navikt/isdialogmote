@@ -4,11 +4,6 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.cronjob.*
 import org.slf4j.LoggerFactory
 
-data class PublishDialogmoteStatusEndringResult(
-    var updated: Int = 0,
-    var failed: Int = 0,
-)
-
 class PublishDialogmoteStatusEndringCronjob(
     private val publishDialogmoteStatusEndringService: PublishDialogmoteStatusEndringService,
 ) : DialogmoteCronjob {
@@ -20,8 +15,8 @@ class PublishDialogmoteStatusEndringCronjob(
         dialogmoteStatusEndringPublishJob()
     }
 
-    fun dialogmoteStatusEndringPublishJob(): PublishDialogmoteStatusEndringResult {
-        val result = PublishDialogmoteStatusEndringResult()
+    fun dialogmoteStatusEndringPublishJob(): DialogmoteCronjobResult {
+        val result = DialogmoteCronjobResult()
 
         val dialogmoteStatusEndretList = publishDialogmoteStatusEndringService.getDialogmoteStatuEndretToPublishList()
         dialogmoteStatusEndretList.forEach { dialogmoteStatusEndret ->

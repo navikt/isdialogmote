@@ -92,22 +92,44 @@ fun DatabaseInterface.addDummyDeltakere() {
 
 fun DatabaseInterface.setReferatBrevBestilt(
     referatUuid: String,
-    bestillingId: String,
+    bestillingsId: String,
 ) {
     val referatId = this.getReferat(UUID.fromString(referatUuid)).first().id
-    this.updateReferatBrevBestillingId(
+    this.updateReferatBrevBestillingsId(
         referatId,
-        bestillingId
+        bestillingsId
     )
 }
 
-fun DatabaseInterface.setVarselBrevBestilt(
+fun DatabaseInterface.setMotedeltakerArbeidstakerVarselBrevBestilt(
     varselUuid: String,
-    bestillingId: String,
+    bestillingsId: String,
 ) {
     val varselId = this.getMotedeltakerArbeidstakerVarsel(UUID.fromString(varselUuid)).first().id
-    this.updateMotedeltakerArbeidstakerBrevBestillingId(
+    this.updateMotedeltakerArbeidstakerBrevBestillingsId(
         varselId,
-        bestillingId
+        bestillingsId
+    )
+}
+
+fun DatabaseInterface.setReferatJournalfort(
+    referatUuid: String,
+    journalpostId: Int,
+) {
+    val referatId = this.getReferat(UUID.fromString(referatUuid)).first().id
+    this.updateReferatJournalpostId(
+        referatId,
+        journalpostId
+    )
+}
+
+fun DatabaseInterface.setMotedeltakerArbeidstakerVarselJournalfort(
+    varselUuid: String,
+    journalpostId: Int,
+) {
+    val varselId = this.getMotedeltakerArbeidstakerVarsel(UUID.fromString(varselUuid)).first().id
+    this.updateMotedeltakerArbeidstakerVarselJournalpostId(
+        varselId,
+        journalpostId
     )
 }

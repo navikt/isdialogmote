@@ -5,19 +5,15 @@ import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL
 import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE
 import no.nav.syfo.cronjob.DialogmoteCronjob
-import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalforingService
-import no.nav.syfo.dialogmote.ReferatJournalforingService
+import no.nav.syfo.cronjob.DialogmoteCronjobResult
+import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.dialogmote.ReferatJournalpostService
 import no.nav.syfo.dialogmote.domain.*
 import org.slf4j.LoggerFactory
 
-data class JournalforingResult(
-    var updated: Int = 0,
-    var failed: Int = 0,
-)
-
 class DialogmoteVarselJournalforingCronjob(
-    private val dialogmotedeltakerVarselJournalforingService: DialogmotedeltakerVarselJournalforingService,
-    private val referatJournalforingService: ReferatJournalforingService,
+    private val dialogmotedeltakerVarselJournalpostService: DialogmotedeltakerVarselJournalpostService,
+    private val referatJournalpostService: ReferatJournalpostService,
     private val dokarkivClient: DokarkivClient,
 ) : DialogmoteCronjob {
 
@@ -29,11 +25,11 @@ class DialogmoteVarselJournalforingCronjob(
         referatJournalforingJob()
     }
 
-    suspend fun dialogmoteVarselJournalforingJob(): JournalforingResult {
-        val journalforingResult = JournalforingResult()
+    suspend fun dialogmoteVarselJournalforingJob(): DialogmoteCronjobResult {
+        val journalforingResult = DialogmoteCronjobResult()
 
         val arbeidstakerVarselForJournalforingList =
-            dialogmotedeltakerVarselJournalforingService.getDialogmotedeltakerArbeidstakerVarselForJournalforingList()
+            dialogmotedeltakerVarselJournalpostService.getDialogmotedeltakerArbeidstakerVarselForJournalforingList()
         arbeidstakerVarselForJournalforingList.forEach { (personIdent, arbeidstakerVarsel) ->
             try {
                 val journalpostId = dokarkivClient.journalfor(
@@ -43,7 +39,7 @@ class DialogmoteVarselJournalforingCronjob(
                 )?.journalpostId
 
                 journalpostId?.let { it ->
-                    dialogmotedeltakerVarselJournalforingService.updateJournalpostId(
+                    dialogmotedeltakerVarselJournalpostService.updateJournalpostId(
                         arbeidstakerVarsel,
                         it,
                     )
@@ -64,10 +60,10 @@ class DialogmoteVarselJournalforingCronjob(
         return journalforingResult
     }
 
-    suspend fun referatJournalforingJob(): JournalforingResult {
-        val journalforingResult = JournalforingResult()
+    suspend fun referatJournalforingJob(): DialogmoteCronjobResult {
+        val journalforingResult = DialogmoteCronjobResult()
 
-        val referatList = referatJournalforingService.getDialogmoteReferatJournalforingList()
+        val referatList = referatJournalpostService.getDialogmoteReferatJournalforingList()
         referatList.forEach { (personIdentNumber, referat) ->
             try {
                 val journalpostId = dokarkivClient.journalfor(
@@ -75,7 +71,7 @@ class DialogmoteVarselJournalforingCronjob(
                 )?.journalpostId
 
                 journalpostId?.let { it ->
-                    referatJournalforingService.updateJournalpostIdForReferat(
+                    referatJournalpostService.updateJournalpostIdForReferat(
                         referat,
                         it,
                     )

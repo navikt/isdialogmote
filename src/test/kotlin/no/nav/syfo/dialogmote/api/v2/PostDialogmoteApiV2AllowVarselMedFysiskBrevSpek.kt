@@ -176,7 +176,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             moteStatusEndretList.first().opprettetAv shouldBeEqualTo VEILEDER_IDENT
                             moteStatusEndretList.first().tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO.fom
                         }
-                        database.setVarselBrevBestilt(varselUuid, "123")
+                        database.setMotedeltakerArbeidstakerVarselBrevBestilt(varselUuid, "123")
                         with(
                             handleRequest(HttpMethod.Get, urlMoter) {
                                 addHeader(Authorization, bearerHeader(validToken))

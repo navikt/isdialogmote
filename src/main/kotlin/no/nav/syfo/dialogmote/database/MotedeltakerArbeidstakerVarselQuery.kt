@@ -158,20 +158,20 @@ fun DatabaseInterface.getMotedeltakerArbeidstakerVarselForFysiskBrevUtsending():
     }
 }
 
-const val queryUpdateMotedeltakerArbeidstakerBrevBestillingId =
+const val queryUpdateMotedeltakerArbeidstakerBrevBestillingsId =
     """
         UPDATE MOTEDELTAKER_ARBEIDSTAKER_VARSEL
         SET brev_bestilling_id = ?, brev_bestilt_tidspunkt = ?
         WHERE id = ?
     """
 
-fun DatabaseInterface.updateMotedeltakerArbeidstakerBrevBestillingId(
+fun DatabaseInterface.updateMotedeltakerArbeidstakerBrevBestillingsId(
     motedeltakerArbeidstakerVarselId: Int,
-    brevBestillingId: String,
+    brevBestillingsId: String,
 ) {
     this.connection.use { connection ->
-        connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerBrevBestillingId).use {
-            it.setString(1, brevBestillingId)
+        connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerBrevBestillingsId).use {
+            it.setString(1, brevBestillingsId)
             it.setTimestamp(2, Timestamp.from(Instant.now()))
             it.setInt(3, motedeltakerArbeidstakerVarselId)
             it.execute()
@@ -213,6 +213,6 @@ fun ResultSet.toPMotedeltakerArbeidstakerVarsel(): PMotedeltakerArbeidstakerVars
         fritekst = getString("fritekst"),
         document = mapper.readValue(getString("document"), object : TypeReference<List<DocumentComponentDTO>>() {}),
         journalpostId = getString("journalpost_id"),
-        brevBestillingId = getString("brev_bestilling_id"),
+        brevBestillingsId = getString("brev_bestilling_id"),
         brevBestiltTidspunkt = getTimestamp("brev_bestilt_tidspunkt")?.toLocalDateTime(),
     )

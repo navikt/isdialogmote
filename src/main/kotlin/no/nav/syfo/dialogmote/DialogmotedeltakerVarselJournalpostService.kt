@@ -7,28 +7,44 @@ import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidstakerVarsel
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 
-class DialogmotedeltakerVarselJournalforingService(
+class DialogmotedeltakerVarselJournalpostService(
     private val database: DatabaseInterface,
 ) {
     fun getDialogmotedeltakerArbeidstakerVarselForJournalforingList(): List<Pair<PersonIdentNumber, DialogmotedeltakerArbeidstakerVarsel>> {
-        return getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList().filter {
-            val (_, arbeidstakerVarsel) = it
+        return getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList().filter { (_, arbeidstakerVarsel) ->
             journalforingVarselTypeList.contains(arbeidstakerVarsel.varselType)
         }
     }
 
-    fun getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList(): List<Pair<PersonIdentNumber, DialogmotedeltakerArbeidstakerVarsel>> {
+    private fun getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList(): List<Pair<PersonIdentNumber, DialogmotedeltakerArbeidstakerVarsel>> {
         val motedeltakerArbeidtakerVarselList = database.getMotedeltakerArbeidstakerVarselWithoutJournalpost()
         return motedeltakerArbeidtakerVarselList.map {
             it.toDialogmotedeltakerArbeidstaker()
         }.map { motedeltakerArbeidstakerVarsel ->
-            val motedeltakerArbeidstaker = database.getMotedeltakerArbeidstakerById(motedeltakerArbeidstakerVarsel.motedeltakerArbeidstakerId)
-                .toDialogmotedeltakerArbeidstaker(emptyList())
+            val motedeltakerArbeidstaker =
+                database.getMotedeltakerArbeidstakerById(motedeltakerArbeidstakerVarsel.motedeltakerArbeidstakerId)
+                    .toDialogmotedeltakerArbeidstaker(emptyList())
             Pair(
                 motedeltakerArbeidstaker.personIdent,
                 motedeltakerArbeidstakerVarsel,
             )
         }
+    }
+
+    fun getDialogmotedeltakerArbeidstakerVarselForJournalpostDistribusjonList(): List<DialogmotedeltakerArbeidstakerVarsel> {
+        return database.getMotedeltakerArbeidstakerVarselForFysiskBrevUtsending()
+            .map { it.toDialogmotedeltakerArbeidstaker() }
+            .filter { journalforingVarselTypeList.contains(it.varselType) }
+    }
+
+    fun updateBestillingsId(
+        dialogmotedeltakerArbeidstakerVarsel: DialogmotedeltakerArbeidstakerVarsel,
+        bestillingsId: String,
+    ) {
+        database.updateMotedeltakerArbeidstakerBrevBestillingsId(
+            motedeltakerArbeidstakerVarselId = dialogmotedeltakerArbeidstakerVarsel.id,
+            brevBestillingsId = bestillingsId
+        )
     }
 
     fun updateJournalpostId(

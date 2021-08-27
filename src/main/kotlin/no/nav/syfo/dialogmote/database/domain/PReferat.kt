@@ -24,7 +24,7 @@ data class PReferat(
     val journalpostId: String?,
     val lestDatoArbeidstaker: LocalDateTime?,
     val lestDatoArbeidsgiver: LocalDateTime?,
-    val brevBestillingId: String?,
+    val brevBestillingsId: String?,
     val brevBestiltTidspunkt: LocalDateTime?,
 )
 
@@ -64,7 +64,7 @@ fun PReferat.toReferat(
         lestDatoArbeidstaker = this.lestDatoArbeidstaker,
         lestDatoArbeidsgiver = this.lestDatoArbeidsgiver,
         andreDeltakere = andreDeltakere,
-        brevBestillingId = this.brevBestillingId,
+        brevBestillingsId = this.brevBestillingsId,
         brevBestiltTidspunkt = this.brevBestiltTidspunkt,
     )
 
