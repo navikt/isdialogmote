@@ -70,7 +70,7 @@ fun ResultSet.toPReferat(): PReferat =
         journalpostId = getString("journalpost_id"),
         lestDatoArbeidstaker = getTimestamp("lest_dato_arbeidstaker")?.toLocalDateTime(),
         lestDatoArbeidsgiver = getTimestamp("lest_dato_arbeidsgiver")?.toLocalDateTime(),
-        brevBestillingId = getString("brev_bestilling_id"),
+        brevBestillingsId = getString("brev_bestilling_id"),
         brevBestiltTidspunkt = getTimestamp("brev_bestilt_tidspunkt")?.toLocalDateTime(),
     )
 
@@ -238,20 +238,20 @@ fun DatabaseInterface.getReferatForFysiskBrevUtsending(): List<PReferat> {
     }
 }
 
-const val queryUpdateReferatBrevBestillingId =
+const val queryUpdateReferatBrevBestillingsId =
     """
         UPDATE MOTE_REFERAT
         SET brev_bestilling_id = ?, brev_bestilt_tidspunkt = ?
         WHERE id = ?
     """
 
-fun DatabaseInterface.updateReferatBrevBestillingId(
+fun DatabaseInterface.updateReferatBrevBestillingsId(
     referatId: Int,
-    brevBestillingId: String,
+    brevBestillingsId: String,
 ) {
     this.connection.use { connection ->
-        connection.prepareStatement(queryUpdateReferatBrevBestillingId).use {
-            it.setString(1, brevBestillingId)
+        connection.prepareStatement(queryUpdateReferatBrevBestillingsId).use {
+            it.setString(1, brevBestillingsId)
             it.setTimestamp(2, Timestamp.from(Instant.now()))
             it.setInt(3, referatId)
             it.execute()

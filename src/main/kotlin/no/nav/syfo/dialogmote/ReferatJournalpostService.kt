@@ -1,17 +1,13 @@
 package no.nav.syfo.dialogmote
 
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.toDialogmoteDeltakerAnnen
 import no.nav.syfo.dialogmote.database.domain.toReferat
-import no.nav.syfo.dialogmote.database.getAndreDeltakereForReferatID
-import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidsgiver
-import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidstaker
-import no.nav.syfo.dialogmote.database.getReferatWithoutJournalpostList
-import no.nav.syfo.dialogmote.database.updateReferatJournalpostId
 import no.nav.syfo.dialogmote.domain.Referat
 import no.nav.syfo.domain.PersonIdentNumber
 
-class ReferatJournalforingService(
+class ReferatJournalpostService(
     private val database: DatabaseInterface
 ) {
     fun getDialogmoteReferatJournalforingList(): List<Pair<PersonIdentNumber, Referat>> {
@@ -31,6 +27,20 @@ class ReferatJournalforingService(
                 )
             )
         }
+    }
+
+    fun getDialogmoteReferatForJournalpostDistribusjonList(): List<Pair<Int, String?>> {
+        return database.getReferatForFysiskBrevUtsending().map { Pair(it.id, it.journalpostId) }
+    }
+
+    fun updateBestillingsId(
+        referatId: Int,
+        bestillingsId: String,
+    ) {
+        database.updateReferatBrevBestillingsId(
+            referatId = referatId,
+            brevBestillingsId = bestillingsId
+        )
     }
 
     fun updateJournalpostIdForReferat(

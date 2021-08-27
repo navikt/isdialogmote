@@ -32,7 +32,7 @@ data class Referat(
     override val lestDatoArbeidstaker: LocalDateTime?,
     override val lestDatoArbeidsgiver: LocalDateTime?,
     val andreDeltakere: List<DialogmotedeltakerAnnen>,
-    val brevBestillingId: String?,
+    val brevBestillingsId: String?,
     val brevBestiltTidspunkt: LocalDateTime?,
 ) : ArbeidstakerBrev, NarmesteLederBrev
 

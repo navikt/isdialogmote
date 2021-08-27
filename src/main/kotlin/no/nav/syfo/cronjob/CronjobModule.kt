@@ -7,11 +7,13 @@ import no.nav.syfo.application.Environment
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.dokarkiv.DokarkivClient
+import no.nav.syfo.client.dokdist.DokdistClient
 import no.nav.syfo.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
+import no.nav.syfo.cronjob.journalpostdistribusjon.DialogmoteJournalpostDistribusjonCronjob
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
 import no.nav.syfo.cronjob.statusendring.*
-import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalforingService
-import no.nav.syfo.dialogmote.ReferatJournalforingService
+import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.dialogmote.ReferatJournalpostService
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import org.apache.kafka.clients.producer.KafkaProducer
 
@@ -30,18 +32,18 @@ fun Application.cronjobModule(
         dokarkivClientId = environment.dokarkivClientId,
         dokarkivBaseUrl = environment.dokarkivUrl,
     )
-    val dialogmotedeltakerVarselJournalforingService = DialogmotedeltakerVarselJournalforingService(
+    val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(
         database = database,
     )
-    val referatJournalforingService = ReferatJournalforingService(
+    val referatJournalpostService = ReferatJournalpostService(
         database = database,
     )
     val leaderPodClient = LeaderPodClient(
         environment = environment,
     )
     val journalforDialogmoteVarslerCronjob = DialogmoteVarselJournalforingCronjob(
-        dialogmotedeltakerVarselJournalforingService = dialogmotedeltakerVarselJournalforingService,
-        referatJournalforingService = referatJournalforingService,
+        dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
+        referatJournalpostService = referatJournalpostService,
         dokarkivClient = dokarkivClient,
     )
 
@@ -64,6 +66,11 @@ fun Application.cronjobModule(
         applicationState = applicationState,
         leaderPodClient = leaderPodClient
     )
+    val journalpostDistribusjonCronjob = DialogmoteJournalpostDistribusjonCronjob(
+        dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
+        referatJournalpostService = referatJournalpostService,
+        dokdistClient = DokdistClient()
+    )
 
     if (environment.journalforingCronjobEnabled) {
         createListenerCronjob(
@@ -82,6 +89,15 @@ fun Application.cronjobModule(
         }
     } else {
         log.info("PublishDialogmoteStatusEndringCronjob is not enabled")
+    }
+    if (environment.allowVarselMedFysiskBrev) {
+        createListenerCronjob(
+            applicationState = applicationState
+        ) {
+            cronjobRunner.start(cronjob = journalpostDistribusjonCronjob)
+        }
+    } else {
+        log.info("DialogmoteJournalpostDistribusjonCronjob not started due to allowVarselMedFysiskBrev not enabled")
     }
 }
 

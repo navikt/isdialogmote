@@ -22,7 +22,7 @@ data class DialogmotedeltakerArbeidstakerVarsel(
     val fritekst: String,
     override val document: List<DocumentComponentDTO>,
     val journalpostId: String?,
-    val brevBestillingId: String?,
+    val brevBestillingsId: String?,
     val brevBestiltTidspunkt: LocalDateTime?,
 ) : ArbeidstakerBrev
 

@@ -1,0 +1,523 @@
+package no.nav.syfo.cronjob.journalpostdistribusjon
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import io.ktor.http.*
+import io.ktor.server.testing.*
+import io.mockk.justRun
+import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
+import no.nav.syfo.application.mq.MQSenderInterface
+import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.client.dokdist.DokdistClient
+import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.dialogmote.ReferatJournalpostService
+import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.dialogmote.api.v1.dialogmoteApiBasepath
+import no.nav.syfo.dialogmote.api.v1.dialogmoteApiMoteFerdigstillPath
+import no.nav.syfo.dialogmote.api.v1.dialogmoteApiMoteTidStedPath
+import no.nav.syfo.dialogmote.api.v1.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTO
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewReferatDTO
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.bearerHeader
+import org.amshove.kluent.shouldBeEqualTo
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
+
+class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
+
+    val objectMapper: ObjectMapper = apiConsumerObjectMapper()
+
+    describe(DialogmoteJournalpostDistribusjonCronjob::class.java.simpleName) {
+        with(TestApplicationEngine()) {
+            start()
+
+            val externalMockEnvironment = ExternalMockEnvironment(allowVarselMedFysiskBrev = true)
+            val database = externalMockEnvironment.database
+
+            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+
+            val mqSenderMock = mockk<MQSenderInterface>()
+            justRun { mqSenderMock.sendMQMessage(any(), any()) }
+
+            application.testApiModule(
+                externalMockEnvironment = externalMockEnvironment,
+                brukernotifikasjonProducer = brukernotifikasjonProducer,
+                mqSenderMock = mqSenderMock,
+            )
+
+            val dialogmotedeltakerVarselJournalpostService =
+                DialogmotedeltakerVarselJournalpostService(database = database)
+            val referatJournalpostService = ReferatJournalpostService(database = database)
+            val dokdistClient = DokdistClient()
+
+            val journalpostDistribusjonCronjob = DialogmoteJournalpostDistribusjonCronjob(
+                dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
+                referatJournalpostService = referatJournalpostService,
+                dokdistClient = dokdistClient
+            )
+
+            afterEachTest {
+                database.dropData()
+            }
+
+            beforeGroup {
+                externalMockEnvironment.startExternalMocks()
+            }
+
+            afterGroup {
+                externalMockEnvironment.stopExternalMocks()
+            }
+
+            val validToken = generateJWT(
+                externalMockEnvironment.environment.loginserviceClientId,
+                externalMockEnvironment.wellKnownVeileder.issuer,
+                UserConstants.VEILEDER_IDENT,
+            )
+            val urlMote = "$dialogmoteApiBasepath$dialogmoteApiPersonIdentUrlPath"
+
+            describe("Arbeidstaker skal ikke varsles digitalt") {
+                val newDialogmoteDTO = generateNewDialogmoteDTO(UserConstants.ARBEIDSTAKER_IKKE_VARSEL)
+
+                it("Distribuerer journalført innkalling, endring og referat") {
+                    val createdDialogmoteUUID: String
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        createdDialogmoteUUID = dialogmoteList.first().uuid
+                    }
+
+                    val urlMoteUUIDPostTidSted =
+                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                    val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTO()
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(newDialogmoteTidSted))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    val urlMoteUUIDFerdigstill =
+                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                    val ferdigstillDialogMoteDto = generateNewReferatDTO()
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(ferdigstillDialogMoteDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    val referatUuid: String
+                    val varselUuids: List<String>
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dialogmoteDTO = dialogmoteList.first()
+                        referatUuid = dialogmoteDTO.referat!!.uuid
+                        varselUuids =
+                            dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
+                                .map { it.uuid }
+                    }
+
+                    varselUuids.forEach { database.setMotedeltakerArbeidstakerVarselJournalfort(it, 123) }
+                    database.setReferatJournalfort(referatUuid, 123)
+
+                    runBlocking {
+                        val result = journalpostDistribusjonCronjob.dialogmoteVarselJournalpostDistribusjon()
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 2
+                    }
+                    runBlocking {
+                        val result = journalpostDistribusjonCronjob.referatJournalpostDistribusjon()
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 1
+                    }
+                }
+
+                it("Ikke distribuer innkalling og referat som ikke er journalført") {
+                    val createdDialogmoteUUID: String
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        createdDialogmoteUUID = dialogmoteList.first().uuid
+                    }
+                    val urlMoteUUIDFerdigstill =
+                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                    val ferdigstillDialogMoteDto = generateNewReferatDTO()
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(ferdigstillDialogMoteDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    runBlocking {
+                        val result = journalpostDistribusjonCronjob.dialogmoteVarselJournalpostDistribusjon()
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 0
+                    }
+                    runBlocking {
+                        val result = journalpostDistribusjonCronjob.referatJournalpostDistribusjon()
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 0
+                    }
+                }
+
+                it("Ikke distribuer journalført innkalling og referat hvor brev er bestilt") {
+                    val createdDialogmoteUUID: String
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        createdDialogmoteUUID = dialogmoteList.first().uuid
+                    }
+                    val urlMoteUUIDFerdigstill =
+                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                    val ferdigstillDialogMoteDto = generateNewReferatDTO()
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(ferdigstillDialogMoteDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    val referatUuid: String
+                    val varselUuids: List<String>
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dialogmoteDTO = dialogmoteList.first()
+                        referatUuid = dialogmoteDTO.referat!!.uuid
+                        varselUuids =
+                            dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
+                                .map { it.uuid }
+                    }
+
+                    varselUuids.forEach {
+                        database.setMotedeltakerArbeidstakerVarselJournalfort(it, 123)
+                        database.setMotedeltakerArbeidstakerVarselBrevBestilt(it, "123")
+                    }
+                    database.setReferatJournalfort(referatUuid, 123)
+                    database.setReferatBrevBestilt(referatUuid, "123")
+
+                    runBlocking {
+                        val result = journalpostDistribusjonCronjob.dialogmoteVarselJournalpostDistribusjon()
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 0
+                    }
+                    runBlocking {
+                        val result = journalpostDistribusjonCronjob.referatJournalpostDistribusjon()
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 0
+                    }
+                }
+            }
+
+            describe("Arbeidstaker varsles digitalt") {
+                val newDialogmoteDTO = generateNewDialogmoteDTO(UserConstants.ARBEIDSTAKER_FNR)
+
+                it("Ikke distribuer journalført innkalling, endring og referat") {
+                    val createdDialogmoteUUID: String
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        createdDialogmoteUUID = dialogmoteList.first().uuid
+                    }
+
+                    val urlMoteUUIDPostTidSted =
+                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                    val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTO()
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(newDialogmoteTidSted))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    val urlMoteUUIDFerdigstill =
+                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                    val ferdigstillDialogMoteDto = generateNewReferatDTO()
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(ferdigstillDialogMoteDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    val referatUuid: String
+                    val varselUuids: List<String>
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dialogmoteDTO = dialogmoteList.first()
+                        referatUuid = dialogmoteDTO.referat!!.uuid
+                        varselUuids =
+                            dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
+                                .map { it.uuid }
+                    }
+
+                    varselUuids.forEach { database.setMotedeltakerArbeidstakerVarselJournalfort(it, 123) }
+                    database.setReferatJournalfort(referatUuid, 123)
+
+                    runBlocking {
+                        val result = journalpostDistribusjonCronjob.dialogmoteVarselJournalpostDistribusjon()
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 0
+                    }
+                    runBlocking {
+                        val result = journalpostDistribusjonCronjob.referatJournalpostDistribusjon()
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 0
+                    }
+                }
+
+                it("Ikke distribuer innkalling og referat som ikke er journalført") {
+                    val createdDialogmoteUUID: String
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        createdDialogmoteUUID = dialogmoteList.first().uuid
+                    }
+                    val urlMoteUUIDFerdigstill =
+                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                    val ferdigstillDialogMoteDto = generateNewReferatDTO()
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(ferdigstillDialogMoteDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    runBlocking {
+                        val result = journalpostDistribusjonCronjob.dialogmoteVarselJournalpostDistribusjon()
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 0
+                    }
+                    runBlocking {
+                        val result = journalpostDistribusjonCronjob.referatJournalpostDistribusjon()
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 0
+                    }
+                }
+
+                it("Ikke distribuer journalført innkalling og referat hvor brev er bestilt") {
+                    val createdDialogmoteUUID: String
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        createdDialogmoteUUID = dialogmoteList.first().uuid
+                    }
+
+                    val urlMoteUUIDPostTidSted =
+                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                    val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTO()
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(newDialogmoteTidSted))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    val urlMoteUUIDFerdigstill =
+                        "$dialogmoteApiBasepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                    val ferdigstillDialogMoteDto = generateNewReferatDTO()
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(ferdigstillDialogMoteDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    val referatUuid: String
+                    val varselUuids: List<String>
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dialogmoteDTO = dialogmoteList.first()
+                        referatUuid = dialogmoteDTO.referat!!.uuid
+                        varselUuids =
+                            dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
+                                .map { it.uuid }
+                    }
+
+                    varselUuids.forEach {
+                        database.setMotedeltakerArbeidstakerVarselJournalfort(it, 123)
+                        database.setMotedeltakerArbeidstakerVarselBrevBestilt(it, "123")
+                    }
+                    database.setReferatJournalfort(referatUuid, 123)
+                    database.setReferatBrevBestilt(referatUuid, "123")
+
+                    runBlocking {
+                        val result = journalpostDistribusjonCronjob.dialogmoteVarselJournalpostDistribusjon()
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 0
+                    }
+                    runBlocking {
+                        val result = journalpostDistribusjonCronjob.referatJournalpostDistribusjon()
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 0
+                    }
+                }
+            }
+        }
+    }
+})
