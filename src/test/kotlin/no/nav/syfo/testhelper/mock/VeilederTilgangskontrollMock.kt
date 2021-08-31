@@ -59,22 +59,6 @@ class VeilederTilgangskontrollMock {
                 }
             }
             routing {
-                post("/syfo-tilgangskontroll/api/tilgang/brukere") {
-                    call.respond(
-                        listOf(
-                            ARBEIDSTAKER_FNR.value,
-                            ARBEIDSTAKER_ANNEN_FNR.value,
-                            ARBEIDSTAKER_ADRESSEBESKYTTET.value,
-                        )
-                    )
-                }
-                get("/syfo-tilgangskontroll/api/tilgang/bruker") {
-                    if (ARBEIDSTAKER_VEILEDER_NO_ACCESS.value == call.parameters["fnr"]) {
-                        call.respond(HttpStatusCode.Forbidden, tilgangFalse)
-                    } else {
-                        call.respond(tilgangTrue)
-                    }
-                }
                 get("/syfo-tilgangskontroll/api/tilgang/navident/bruker/${ARBEIDSTAKER_VEILEDER_NO_ACCESS.value}") {
                     call.respond(HttpStatusCode.Forbidden, tilgangFalse)
                 }
