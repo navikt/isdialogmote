@@ -108,7 +108,7 @@ spec:
     - name: SYFOPERSON_URL
       value: "https://syfoperson.prod-fss-pub.nais.io"
     - name: SYFOTILGANGSKONTROLL_CLIENT_ID
-      value: "dfaa2699-7390-4459-9cfc-2e8de64dfaf9"
+      value: "prod-fss.teamsykefravr.syfo-tilgangskontroll"
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.prod-fss-pub.nais.io"
     - name: TOGGLE_ALLOW_VARSEL_MED_FYSISK_BREV

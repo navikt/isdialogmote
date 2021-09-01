@@ -22,6 +22,16 @@ class VeilederTilgangskontrollClient(
 ) {
     private val httpClient = httpClientDefault()
 
+    private val tilgangskontrollPersonUrl: String
+    private val tilgangskontrollPersonListUrl: String
+    private val tilgangskontrollEnhetUrl: String
+
+    init {
+        tilgangskontrollPersonUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_PERSON_PATH"
+        tilgangskontrollPersonListUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_PERSON_LIST_PATH"
+        tilgangskontrollEnhetUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_ENHET_PATH"
+    }
+
     suspend fun hasAccessToPersonList(
         personIdentNumberList: List<PersonIdentNumber>,
         token: String,
@@ -34,9 +44,8 @@ class VeilederTilgangskontrollClient(
 
         return try {
             val personIdentStringList = personIdentNumberList.map { it.value }
-            val url = getTilgangskontrollUrl()
 
-            val response: HttpResponse = httpClient.post(urlString = url) {
+            val response: HttpResponse = httpClient.post(urlString = tilgangskontrollPersonListUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(token = oboToken))
                 header(NAV_CALL_ID_HEADER, value = callId)
                 accept(ContentType.Application.Json)
@@ -61,10 +70,6 @@ class VeilederTilgangskontrollClient(
         }
     }
 
-    private fun getTilgangskontrollUrl(): String {
-        return "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/brukere"
-    }
-
     suspend fun hasAccess(
         personIdentNumber: PersonIdentNumber,
         token: String,
@@ -75,10 +80,10 @@ class VeilederTilgangskontrollClient(
             token = token
         )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
 
-        val url = getTilgangskontrollV2Url(personIdentNumber)
         return try {
-            val response: HttpResponse = httpClient.get(url) {
+            val response: HttpResponse = httpClient.get(tilgangskontrollPersonUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(oboToken))
+                header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
                 header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
             }
@@ -100,10 +105,6 @@ class VeilederTilgangskontrollClient(
         }
     }
 
-    private fun getTilgangskontrollV2Url(personIdentNumber: PersonIdentNumber): String {
-        return "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/bruker/${personIdentNumber.value}"
-    }
-
     suspend fun hasAccessToEnhet(
         enhetNr: EnhetNr,
         token: String,
@@ -114,7 +115,7 @@ class VeilederTilgangskontrollClient(
             token = token
         )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
 
-        val url = getTilgangskontrollUrl(enhetNr)
+        val url = "$tilgangskontrollEnhetUrl/${enhetNr.value}"
         return try {
             val response: HttpResponse = httpClient.get(url) {
                 header(HttpHeaders.Authorization, bearerHeader(oboToken))
@@ -139,9 +140,6 @@ class VeilederTilgangskontrollClient(
             false
         }
     }
-
-    private fun getTilgangskontrollUrl(enhetNr: EnhetNr) =
-        "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/enhet/${enhetNr.value}"
 
     private fun handleUnexpectedResponseException(
         response: HttpResponse,
@@ -185,5 +183,10 @@ class VeilederTilgangskontrollClient(
         private const val resourcePerson = "PERSON"
         private const val resourcePersonList = "PERSONLIST"
         private const val resourceEnhet = "ENHET"
+
+        const val TILGANGSKONTROLL_COMMON_PATH = "/syfo-tilgangskontroll/api/tilgang/navident"
+        const val TILGANGSKONTROLL_PERSON_PATH = "$TILGANGSKONTROLL_COMMON_PATH/person"
+        const val TILGANGSKONTROLL_PERSON_LIST_PATH = "$TILGANGSKONTROLL_COMMON_PATH/brukere"
+        const val TILGANGSKONTROLL_ENHET_PATH = "$TILGANGSKONTROLL_COMMON_PATH/enhet"
     }
 }
