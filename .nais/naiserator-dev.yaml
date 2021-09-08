@@ -66,6 +66,7 @@ spec:
         - host: "syfobehandlendeenhet.dev-fss-pub.nais.io"
         - host: "syfoperson.dev-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
+        - host: "isproxy.dev-fss-pub.nais.io"
       rules:
         - application: isdialogmote-redis
         - application: isdialogmotepdfgen
@@ -99,6 +100,10 @@ spec:
       value: "https://tjenester-q1.nav.no/dialogmote"
     - name: DOKARKIV_URL
       value: "https://dokarkiv.dev-fss-pub.nais.io"
+    - name: ISPROXY_CLIENT_ID
+      value: "dev-fss.teamsykefravr.isproxy"
+    - name: ISPROXY_URL
+      value: "https://isproxy.dev-fss-pub.nais.io"
     - name: SYFOBEHANDLENDEENHET_CLIENT_ID
       value: "c3de32aa-370c-4357-b46c-64784217920f"
     - name: SYFOBEHANDLENDEENHET_URL

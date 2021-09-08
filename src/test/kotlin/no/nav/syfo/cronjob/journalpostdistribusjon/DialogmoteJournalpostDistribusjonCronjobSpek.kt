@@ -9,7 +9,8 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.client.dokdist.DokdistClient
+import no.nav.syfo.client.azuread.v2.AzureAdV2Client
+import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
 import no.nav.syfo.dialogmote.ReferatJournalpostService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
@@ -22,9 +23,12 @@ import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewReferatDTO
+import no.nav.syfo.testhelper.mock.IsproxyMock
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -36,6 +40,8 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
+            val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
+            val isproxyMock = IsproxyMock()
             val externalMockEnvironment = ExternalMockEnvironment(allowVarselMedFysiskBrev = true)
             val database = externalMockEnvironment.database
 
@@ -54,12 +60,16 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             val dialogmotedeltakerVarselJournalpostService =
                 DialogmotedeltakerVarselJournalpostService(database = database)
             val referatJournalpostService = ReferatJournalpostService(database = database)
-            val dokdistClient = DokdistClient()
+            val journalpostdistribusjonClient = JournalpostdistribusjonClient(
+                azureAdV2Client = azureAdV2ClientMock,
+                isproxyClientId = "isproxyclientid",
+                isproxyUrl = isproxyMock.url
+            )
 
             val journalpostDistribusjonCronjob = DialogmoteJournalpostDistribusjonCronjob(
                 dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
                 referatJournalpostService = referatJournalpostService,
-                dokdistClient = dokdistClient
+                journalpostdistribusjonClient = journalpostdistribusjonClient
             )
 
             afterEachTest {
@@ -67,11 +77,13 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             }
 
             beforeGroup {
+                isproxyMock.server.start()
                 externalMockEnvironment.startExternalMocks()
             }
 
             afterGroup {
                 externalMockEnvironment.stopExternalMocks()
+                isproxyMock.server.stop(1L, 10L)
             }
 
             val validToken = generateJWT(
@@ -166,6 +178,22 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         result.failed shouldBeEqualTo 0
                         result.updated shouldBeEqualTo 1
                     }
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dialogmoteDTO = dialogmoteList.first()
+                        dialogmoteDTO.referat!!.brevBestiltTidspunkt.shouldNotBeNull()
+                        dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
+                            .forEach {
+                                it.brevBestiltTidspunkt.shouldNotBeNull()
+                            }
+                    }
                 }
 
                 it("Ikke distribuer innkalling og referat som ikke er journalført") {
@@ -215,6 +243,22 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         val result = journalpostDistribusjonCronjob.referatJournalpostDistribusjon()
                         result.failed shouldBeEqualTo 0
                         result.updated shouldBeEqualTo 0
+                    }
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dialogmoteDTO = dialogmoteList.first()
+                        dialogmoteDTO.referat!!.brevBestiltTidspunkt.shouldBeNull()
+                        dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
+                            .forEach {
+                                it.brevBestiltTidspunkt.shouldBeNull()
+                            }
                     }
                 }
 
@@ -378,6 +422,22 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         result.failed shouldBeEqualTo 0
                         result.updated shouldBeEqualTo 0
                     }
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dialogmoteDTO = dialogmoteList.first()
+                        dialogmoteDTO.referat!!.brevBestiltTidspunkt.shouldBeNull()
+                        dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
+                            .forEach {
+                                it.brevBestiltTidspunkt.shouldBeNull()
+                            }
+                    }
                 }
 
                 it("Ikke distribuer innkalling og referat som ikke er journalført") {
@@ -427,6 +487,22 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         val result = journalpostDistribusjonCronjob.referatJournalpostDistribusjon()
                         result.failed shouldBeEqualTo 0
                         result.updated shouldBeEqualTo 0
+                    }
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dialogmoteDTO = dialogmoteList.first()
+                        dialogmoteDTO.referat!!.brevBestiltTidspunkt.shouldBeNull()
+                        dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
+                            .forEach {
+                                it.brevBestiltTidspunkt.shouldBeNull()
+                            }
                     }
                 }
 
