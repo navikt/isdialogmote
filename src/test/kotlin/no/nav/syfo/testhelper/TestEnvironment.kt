@@ -21,6 +21,8 @@ fun testEnvironment(
     aadTokenEndpoint = azureTokenEndpoint,
     azureAppWellKnownUrl = "wellknown",
     dokarkivClientId = "dokarkiv-client-id",
+    isproxyClientId = "isproxy-client-id",
+    isproxyUrl = "isproxy",
     electorPath = "electorPath",
     loginserviceIdportenDiscoveryUrl = "",
     loginserviceIdportenAudience = listOf("idporten"),

@@ -6,8 +6,9 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.azuread.AzureAdClient
+import no.nav.syfo.client.azuread.v2.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.DokarkivClient
-import no.nav.syfo.client.dokdist.DokdistClient
+import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
 import no.nav.syfo.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
 import no.nav.syfo.cronjob.journalpostdistribusjon.DialogmoteJournalpostDistribusjonCronjob
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
@@ -27,10 +28,20 @@ fun Application.cronjobModule(
         aadAppSecret = environment.aadAppSecret,
         aadTokenEndpoint = environment.aadTokenEndpoint,
     )
+    val azureAdV2Client = AzureAdV2Client(
+        aadAppClient = environment.aadAppClient,
+        aadAppSecret = environment.aadAppSecret,
+        aadTokenEndpoint = environment.aadTokenEndpoint,
+    )
     val dokarkivClient = DokarkivClient(
         azureAdClient = azureAdClient,
         dokarkivClientId = environment.dokarkivClientId,
         dokarkivBaseUrl = environment.dokarkivUrl,
+    )
+    val journalpostdistribusjonClient = JournalpostdistribusjonClient(
+        azureAdV2Client = azureAdV2Client,
+        isproxyClientId = environment.isproxyClientId,
+        isproxyUrl = environment.isproxyUrl
     )
     val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(
         database = database,
@@ -69,7 +80,7 @@ fun Application.cronjobModule(
     val journalpostDistribusjonCronjob = DialogmoteJournalpostDistribusjonCronjob(
         dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
         referatJournalpostService = referatJournalpostService,
-        dokdistClient = DokdistClient()
+        journalpostdistribusjonClient = journalpostdistribusjonClient
     )
 
     if (environment.journalforingCronjobEnabled) {

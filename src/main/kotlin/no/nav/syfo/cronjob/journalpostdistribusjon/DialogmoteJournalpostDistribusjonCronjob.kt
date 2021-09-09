@@ -1,7 +1,7 @@
 package no.nav.syfo.cronjob.journalpostdistribusjon
 
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.client.dokdist.DokdistClient
+import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
 import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_FAIL
 import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE
 import no.nav.syfo.cronjob.DialogmoteCronjob
@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
 class DialogmoteJournalpostDistribusjonCronjob(
     private val dialogmotedeltakerVarselJournalpostService: DialogmotedeltakerVarselJournalpostService,
     private val referatJournalpostService: ReferatJournalpostService,
-    private val dokdistClient: DokdistClient
+    private val journalpostdistribusjonClient: JournalpostdistribusjonClient
 ) : DialogmoteCronjob {
 
     override val initialDelayMinutes: Long = 5
@@ -30,7 +30,7 @@ class DialogmoteJournalpostDistribusjonCronjob(
             .forEach { arbeidstakerVarsel ->
                 try {
                     val bestillingsId =
-                        dokdistClient.distribuerJournalpost(arbeidstakerVarsel.journalpostId!!)?.bestillingsId
+                        journalpostdistribusjonClient.distribuerJournalpost(arbeidstakerVarsel.journalpostId!!)?.bestillingsId
                     bestillingsId?.let { it ->
                         dialogmotedeltakerVarselJournalpostService.updateBestillingsId(
                             arbeidstakerVarsel,
@@ -60,7 +60,7 @@ class DialogmoteJournalpostDistribusjonCronjob(
             .forEach { (referatId, referatJournalpostId) ->
                 try {
                     val bestillingsId =
-                        dokdistClient.distribuerJournalpost(referatJournalpostId!!)?.bestillingsId
+                        journalpostdistribusjonClient.distribuerJournalpost(referatJournalpostId!!)?.bestillingsId
                     bestillingsId?.let { it ->
                         referatJournalpostService.updateBestillingsId(
                             referatId,
@@ -68,7 +68,8 @@ class DialogmoteJournalpostDistribusjonCronjob(
                         )
                         result.updated++
                         COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE.increment()
-                    } ?: throw RuntimeException("Failed to bestille journalpost-distribusjon for Referat: response missing bestillingsId")
+                    }
+                        ?: throw RuntimeException("Failed to bestille journalpost-distribusjon for Referat: response missing bestillingsId")
                 } catch (e: Exception) {
                     log.error("Exception caught in Referat-journalpost-distribusjon", e)
                     result.failed++
