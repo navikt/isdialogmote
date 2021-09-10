@@ -5,8 +5,7 @@ import kotlinx.coroutines.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.client.azuread.AzureAdClient
-import no.nav.syfo.client.azuread.v2.AzureAdV2Client
+import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
 import no.nav.syfo.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
@@ -23,18 +22,13 @@ fun Application.cronjobModule(
     database: DatabaseInterface,
     environment: Environment
 ) {
-    val azureAdClient = AzureAdClient(
-        aadAppClient = environment.aadAppClient,
-        aadAppSecret = environment.aadAppSecret,
-        aadTokenEndpoint = environment.aadTokenEndpoint,
-    )
     val azureAdV2Client = AzureAdV2Client(
         aadAppClient = environment.aadAppClient,
         aadAppSecret = environment.aadAppSecret,
         aadTokenEndpoint = environment.aadTokenEndpoint,
     )
     val dokarkivClient = DokarkivClient(
-        azureAdClient = azureAdClient,
+        azureAdV2Client = azureAdV2Client,
         dokarkivClientId = environment.dokarkivClientId,
         dokarkivBaseUrl = environment.dokarkivUrl,
     )

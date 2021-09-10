@@ -12,7 +12,6 @@ class ExternalMockEnvironment(
     val database = TestDatabase()
     val embeddedEnvironment: KafkaEnvironment = testKafka()
 
-    val azureADMock = AzureADMock()
     val azureAdV2Mock = AzureAdV2Mock()
     val dokarkivMock = DokarkivMock()
     val isdialogmotepdfgenMock = IsdialogmotepdfgenMock()

@@ -6,7 +6,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.client.azuread.v2.AzureAdV2Client
+import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*

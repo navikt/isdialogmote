@@ -7,8 +7,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.application.api.authentication.WellKnown
 import no.nav.syfo.application.api.authentication.installContentNegotiation
-import no.nav.syfo.client.azuread.AadAccessToken
-import no.nav.syfo.client.azuread.v2.AzureAdV2TokenResponse
+import no.nav.syfo.client.azuread.AzureAdV2TokenResponse
 import no.nav.syfo.testhelper.getRandomPort
 import java.nio.file.Paths
 
@@ -31,14 +30,6 @@ fun wellKnownSelvbetjeningMock(): WellKnown {
         token_endpoint = "tokenendpoint",
         jwks_uri = uri.toString(),
         issuer = "https://sts.issuer.net/myid"
-    )
-}
-
-class AzureADMock {
-    val aadAccessToken = AadAccessToken(
-        access_token = "token",
-        expires_in = 3600,
-        token_type = "type"
     )
 }
 

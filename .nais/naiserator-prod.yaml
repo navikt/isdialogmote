@@ -46,7 +46,7 @@ spec:
       - type: POSTGRES_12
         databases:
           - name: isdialogmote-db
-            diskAutoresize: true
+        diskAutoresize: true
   accessPolicy:
     inbound:
       rules:
@@ -88,8 +88,6 @@ spec:
   env:
     - name: KTOR_ENV
       value: "production"
-    - name: DOKARKIV_CLIENT_ID
-      value: "162b3255-2f72-4399-8f7a-244add9ffaac"
     - name: KAFKA_BOOTSTRAP_SERVERS_URL
       value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
     - name: KAFKA_SCHEMA_REGISTRY_URL
@@ -98,6 +96,8 @@ spec:
       value: "isdialogmote-redis.teamsykefravr.svc.cluster.local"
     - name: DIALOGMOTE_ARBEIDSTAKER_URL
       value: "https://tjenester.nav.no/dialogmote"
+    - name: DOKARKIV_CLIENT_ID
+      value: "162b3255-2f72-4399-8f7a-244add9ffaac"
     - name: DOKARKIV_URL
       value: "https://dokarkiv.prod-fss-pub.nais.io"
     - name: ISPROXY_CLIENT_ID

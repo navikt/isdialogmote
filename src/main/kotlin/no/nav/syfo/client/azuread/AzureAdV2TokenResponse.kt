@@ -1,4 +1,4 @@
-package no.nav.syfo.client.azuread.v2
+package no.nav.syfo.client.azuread
 
 import java.time.LocalDateTime
 

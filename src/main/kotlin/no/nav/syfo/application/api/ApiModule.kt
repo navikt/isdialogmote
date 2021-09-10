@@ -22,7 +22,7 @@ import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
 import no.nav.syfo.brev.narmesteleder.NarmesteLederService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.brev.narmesteleder.registerNarmestelederBrevApi
-import no.nav.syfo.client.azuread.v2.AzureAdV2Client
+import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.pdfgen.PdfGenClient
