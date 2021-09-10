@@ -7,7 +7,7 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.mq.MQSenderInterface
-import no.nav.syfo.client.azuread.AzureAdClient
+import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
 import no.nav.syfo.dialogmote.ReferatJournalpostService
@@ -53,12 +53,10 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             val referatJournalpostService = ReferatJournalpostService(
                 database = database,
             )
-            val azureAdClient = mockk<AzureAdClient>()
-            coEvery {
-                azureAdClient.getAccessTokenForResource(externalMockEnvironment.environment.dokarkivClientId)
-            } returns externalMockEnvironment.azureADMock.aadAccessToken
+            val azureAdV2Client = mockk<AzureAdV2Client>(relaxed = true)
+
             val dokarkivClient = DokarkivClient(
-                azureAdClient = azureAdClient,
+                azureAdV2Client = azureAdV2Client,
                 dokarkivClientId = externalMockEnvironment.environment.dokarkivClientId,
                 dokarkivBaseUrl = externalMockEnvironment.dokarkivMock.url,
             )

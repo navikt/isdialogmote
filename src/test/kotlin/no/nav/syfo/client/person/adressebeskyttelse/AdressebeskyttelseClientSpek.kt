@@ -4,8 +4,8 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
-import no.nav.syfo.client.azuread.v2.AzureAdV2Client
-import no.nav.syfo.client.azuread.v2.AzureAdV2Token
+import no.nav.syfo.client.azuread.AzureAdV2Client
+import no.nav.syfo.client.azuread.AzureAdV2Token
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.mock.SyfopersonMock
