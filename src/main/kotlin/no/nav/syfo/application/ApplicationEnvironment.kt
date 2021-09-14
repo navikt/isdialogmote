@@ -56,7 +56,9 @@ data class Environment(
     val mqTredjepartsVarselQueue: String = getEnvVar("TREDJEPARTSVARSEL_QUEUENAME"),
     val mqSendingEnabled: Boolean = getEnvVar("TOGGLE_MQ_SENDING_ENABLED").toBoolean(),
     val narmestelederUrl: String = getEnvVar("NARMESTELEDER_URL"),
-    val narmestelederClientId: String = getEnvVar("NARMESTELEDER_CLIENT_ID")
+    val narmestelederClientId: String = getEnvVar("NARMESTELEDER_CLIENT_ID"),
+    val pdlUrl: String = getEnvVar("PDL_URL"),
+    val pdlClientId: String = getEnvVar("PDL_CLIENT_ID"),
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$isdialogmoteDbHost:$isdialogmoteDbPort/$isdialogmoteDbName"

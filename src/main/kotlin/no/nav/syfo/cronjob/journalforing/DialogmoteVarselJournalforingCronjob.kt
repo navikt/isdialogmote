@@ -2,6 +2,7 @@ package no.nav.syfo.cronjob.journalforing
 
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.dokarkiv.DokarkivClient
+import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL
 import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE
 import no.nav.syfo.cronjob.DialogmoteCronjob
@@ -15,6 +16,7 @@ class DialogmoteVarselJournalforingCronjob(
     private val dialogmotedeltakerVarselJournalpostService: DialogmotedeltakerVarselJournalpostService,
     private val referatJournalpostService: ReferatJournalpostService,
     private val dokarkivClient: DokarkivClient,
+    private val pdlClient: PdlClient,
 ) : DialogmoteCronjob {
 
     override val initialDelayMinutes: Long = 2
@@ -32,9 +34,11 @@ class DialogmoteVarselJournalforingCronjob(
             dialogmotedeltakerVarselJournalpostService.getDialogmotedeltakerArbeidstakerVarselForJournalforingList()
         arbeidstakerVarselForJournalforingList.forEach { (personIdent, arbeidstakerVarsel) ->
             try {
+                val navn = pdlClient.navn(personIdent)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = arbeidstakerVarsel.toJournalpostRequest(
                         personIdent = personIdent,
+                        navn = navn,
                     ),
                 )?.journalpostId
 
@@ -66,8 +70,12 @@ class DialogmoteVarselJournalforingCronjob(
         val referatList = referatJournalpostService.getDialogmoteReferatJournalforingList()
         referatList.forEach { (personIdentNumber, referat) ->
             try {
+                val navn = pdlClient.navn(personIdentNumber)
                 val journalpostId = dokarkivClient.journalfor(
-                    journalpostRequest = referat.toJournalforingRequest(personIdentNumber)
+                    journalpostRequest = referat.toJournalforingRequest(
+                        personIdent = personIdentNumber,
+                        navn = navn,
+                    )
                 )?.journalpostId
 
                 journalpostId?.let { it ->

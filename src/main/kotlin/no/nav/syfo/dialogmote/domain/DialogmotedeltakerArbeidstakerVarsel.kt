@@ -59,8 +59,10 @@ fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerBrevDTO(
 
 fun DialogmotedeltakerArbeidstakerVarsel.toJournalpostRequest(
     personIdent: PersonIdentNumber,
+    navn: String,
 ) = createJournalpostRequest(
     personIdent = personIdent,
+    navn = navn,
     digitalt = this.digitalt,
     dokumentName = this.varselType.toJournalpostTittel(),
     brevkodeType = this.varselType.toBrevkodeType(),

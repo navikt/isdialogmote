@@ -14,6 +14,7 @@ class ExternalMockEnvironment(
 
     val azureAdV2Mock = AzureAdV2Mock()
     val dokarkivMock = DokarkivMock()
+    val pdlMock = PdlMock()
     val isdialogmotepdfgenMock = IsdialogmotepdfgenMock()
     val syfobehandlendeenhetMock = SyfobehandlendeenhetMock()
     val syfopersonMock = SyfopersonMock()
@@ -28,6 +29,7 @@ class ExternalMockEnvironment(
         syfopersonMock.name to syfopersonMock.server,
         tilgangskontrollMock.name to tilgangskontrollMock.server,
         narmesteLederMock.name to narmesteLederMock.server,
+        pdlMock.name to pdlMock.server,
     )
 
     val environment = testEnvironment(
@@ -39,6 +41,7 @@ class ExternalMockEnvironment(
         syfopersonUrl = syfopersonMock.url,
         syfotilgangskontrollUrl = tilgangskontrollMock.url,
         narmestelederUrl = narmesteLederMock.url,
+        pdlUrl = pdlMock.url,
         allowVarselMedFysiskBrev = allowVarselMedFysiskBrev,
     )
     val redisServer = testRedis(environment)

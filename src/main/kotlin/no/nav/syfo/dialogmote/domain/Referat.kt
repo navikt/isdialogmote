@@ -80,8 +80,10 @@ fun DialogmotedeltakerAnnen.toDialogmotedeltakerAnnenDTO(): DialogmotedeltakerAn
 
 fun Referat.toJournalforingRequest(
     personIdent: PersonIdentNumber,
+    navn: String,
 ) = createJournalpostRequest(
     personIdent = personIdent,
+    navn = navn,
     digitalt = this.digitalt,
     dokumentName = "Referat fra dialogmøte",
     brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT,
