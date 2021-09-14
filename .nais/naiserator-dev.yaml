@@ -122,7 +122,7 @@ spec:
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.dev-fss-pub.nais.io"
     - name: TOGGLE_ALLOW_VARSEL_MED_FYSISK_BREV
-      value: "false"
+      value: "true"
     - name: TOGGLE_PUBLISH_STATUS_ENDRING_CRONJOB_ENABLED
       value: "true"
     - name: TOGGLE_JOURNALFORING_CRONJOB_ENABLED
