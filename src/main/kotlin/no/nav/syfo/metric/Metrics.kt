@@ -21,6 +21,9 @@ const val CALL_TILGANGSKONTROLL_ENHET_SUCCESS = "${CALL_TILGANGSKONTROLL_ENHET_B
 const val CALL_TILGANGSKONTROLL_ENHET_FAIL = "${CALL_TILGANGSKONTROLL_ENHET_BASE}_fail_count"
 const val CALL_TILGANGSKONTROLL_ENHET_FORBIDDEN = "${CALL_TILGANGSKONTROLL_ENHET_BASE}_forbidden_count"
 
+const val CALL_PDL_SUCCESS = "${METRICS_NS}_call_pdl_success_count"
+const val CALL_PDL_FAIL = "${METRICS_NS}_call_pdl_fail_count"
+
 val METRICS_REGISTRY = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 
 val COUNT_CALL_TILGANGSKONTROLL_PERSONS_SUCCESS: Counter = Counter
@@ -50,4 +53,10 @@ val COUNT_CALL_TILGANGSKONTROLL_ENHET_FAIL: Counter = Counter.builder(CALL_TILGA
     .register(METRICS_REGISTRY)
 val COUNT_CALL_TILGANGSKONTROLL_ENHET_FORBIDDEN: Counter = Counter.builder(CALL_TILGANGSKONTROLL_ENHET_FORBIDDEN)
     .description("Counts the number of forbidden calls to syfo-tilgangskontroll - enhet")
+    .register(METRICS_REGISTRY)
+val COUNT_CALL_PDL_SUCCESS: Counter = Counter.builder(CALL_PDL_SUCCESS)
+    .description("Counts the number of successful calls to pdl")
+    .register(METRICS_REGISTRY)
+val COUNT_CALL_PDL_FAIL: Counter = Counter.builder(CALL_PDL_FAIL)
+    .description("Counts the number of failed calls to pdl")
     .register(METRICS_REGISTRY)

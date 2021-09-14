@@ -8,6 +8,7 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
+import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
 import no.nav.syfo.cronjob.journalpostdistribusjon.DialogmoteJournalpostDistribusjonCronjob
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
@@ -37,6 +38,11 @@ fun Application.cronjobModule(
         isproxyClientId = environment.isproxyClientId,
         isproxyUrl = environment.isproxyUrl
     )
+    val pdlClient = PdlClient(
+        azureAdV2Client = azureAdV2Client,
+        pdlClientId = environment.pdlClientId,
+        pdlUrl = environment.pdlUrl,
+    )
     val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(
         database = database,
     )
@@ -50,6 +56,7 @@ fun Application.cronjobModule(
         dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
         referatJournalpostService = referatJournalpostService,
         dokarkivClient = dokarkivClient,
+        pdlClient = pdlClient,
     )
 
     val kafkaDialogmoteStatusEndringProducerProperties = kafkaDialogmoteStatusEndringProducerConfig(environment)

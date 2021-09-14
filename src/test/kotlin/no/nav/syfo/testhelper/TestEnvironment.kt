@@ -14,6 +14,7 @@ fun testEnvironment(
     syfopersonUrl: String? = null,
     syfotilgangskontrollUrl: String? = null,
     narmestelederUrl: String? = null,
+    pdlUrl: String? = null,
     allowVarselMedFysiskBrev: Boolean = false,
 ) = Environment(
     aadAppClient = "isdialogmote-client-id",
@@ -64,6 +65,8 @@ fun testEnvironment(
     mqSendingEnabled = false,
     narmestelederClientId = "narmestelederClientId",
     narmestelederUrl = narmestelederUrl ?: "http://narmesteleder",
+    pdlClientId = "pdlClientId",
+    pdlUrl = pdlUrl ?: "http://pdl",
 )
 
 fun testAppState() = ApplicationState(

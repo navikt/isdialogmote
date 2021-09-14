@@ -18,6 +18,7 @@ import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.dialogmote.api.v2.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -61,10 +62,17 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                 dokarkivBaseUrl = externalMockEnvironment.dokarkivMock.url,
             )
 
+            val pdlClient = PdlClient(
+                azureAdV2Client = azureAdV2Client,
+                pdlClientId = externalMockEnvironment.environment.pdlClientId,
+                pdlUrl = externalMockEnvironment.pdlMock.url,
+            )
+
             val dialogmoteVarselJournalforingCronjob = DialogmoteVarselJournalforingCronjob(
                 dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
                 referatJournalpostService = referatJournalpostService,
                 dokarkivClient = dokarkivClient,
+                pdlClient = pdlClient,
             )
 
             afterEachTest {

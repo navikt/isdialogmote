@@ -61,6 +61,7 @@ data class JournalpostRequest private constructor(
 
 fun createJournalpostRequest(
     personIdent: PersonIdentNumber,
+    navn: String,
     brevkodeType: BrevkodeType,
     digitalt: Boolean,
     dokumentName: String,
@@ -69,7 +70,7 @@ fun createJournalpostRequest(
     val avsenderMottaker = AvsenderMottaker.create(
         id = personIdent.value,
         idType = BrukerIdType.PERSON_IDENT,
-        navn = null,
+        navn = navn,
     )
     val bruker = Bruker.create(
         id = personIdent.value,

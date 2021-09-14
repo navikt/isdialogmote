@@ -21,6 +21,9 @@ object UserConstants {
 
     const val PERSON_TLF = "12345678"
     const val PERSON_EMAIL = "test@nav.no"
+    const val PERSON_FORNAVN = "ULLEN"
+    const val PERSON_MELLOMNAVN = "Mellomnavn"
+    const val PERSON_ETTERNAVN = "Bamse"
 
     val NARMESTELEDER_FNR = PersonIdentNumber("98765432101")
     val NARMESTELEDER_FNR_2 = PersonIdentNumber("98765432102")

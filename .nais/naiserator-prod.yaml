@@ -67,6 +67,7 @@ spec:
         - host: "syfoperson.prod-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.prod-fss-pub.nais.io"
         - host: "isproxy.prod-fss-pub.nais.io"
+        - host: "pdl-api.prod-fss-pub.nais.io"
       rules:
         - application: isdialogmote-redis
         - application: isdialogmotepdfgen
@@ -104,6 +105,10 @@ spec:
       value: "prod-fss.teamsykefravr.isproxy"
     - name: ISPROXY_URL
       value: "https://isproxy.prod-fss-pub.nais.io"
+    - name: PDL_CLIENT_ID
+      value: "prod-fss.pdl.pdl-api"
+    - name: PDL_URL
+      value: "https://pdl-api.prod-fss-pub.nais.io/graphql"
     - name: SYFOBEHANDLENDEENHET_CLIENT_ID
       value: "97815ed7-ee77-4d6c-ab3b-ea86d93750a7"
     - name: SYFOBEHANDLENDEENHET_URL
