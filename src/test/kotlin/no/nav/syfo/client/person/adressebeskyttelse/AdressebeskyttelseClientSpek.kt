@@ -6,9 +6,12 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.azuread.AzureAdV2Token
+import no.nav.syfo.client.pdl.PdlClient
+import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
-import no.nav.syfo.testhelper.mock.SyfopersonMock
+import no.nav.syfo.testhelper.startExternalMocks
+import no.nav.syfo.testhelper.stopExternalMocks
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -29,24 +32,29 @@ class AdressebeskyttelseClientSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
+            val externalMockEnvironment = ExternalMockEnvironment()
             val azureAdV2ClientMock = mockk<AzureAdV2Client>()
-            val syfopersonMock = SyfopersonMock()
             val cacheMock = mockk<RedisStore>()
-            val client = AdressebeskyttelseClient(azureAdV2ClientMock, "", cacheMock, syfopersonMock.url)
+            val pdlClient = PdlClient(
+                azureAdV2Client = azureAdV2ClientMock,
+                pdlClientId = externalMockEnvironment.environment.pdlClientId,
+                pdlUrl = externalMockEnvironment.pdlMock.url,
+            )
+            val client = AdressebeskyttelseClient(pdlClient, cacheMock)
 
             coEvery {
-                azureAdV2ClientMock.getOnBehalfOfToken("", anyToken)
+                azureAdV2ClientMock.getOnBehalfOfToken("pdlClientId", anyToken)
             } returns AzureAdV2Token(
                 accessToken = anyToken,
                 expires = LocalDateTime.now().plusDays(1)
             )
 
             beforeGroup {
-                syfopersonMock.server.start()
+                externalMockEnvironment.startExternalMocks()
             }
 
             afterGroup {
-                syfopersonMock.server.stop(1L, 10L)
+                externalMockEnvironment.stopExternalMocks()
             }
 
             beforeEachTest {

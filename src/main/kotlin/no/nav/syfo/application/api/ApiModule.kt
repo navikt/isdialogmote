@@ -26,6 +26,7 @@ import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.pdfgen.PdfGenClient
+import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
@@ -82,11 +83,14 @@ fun Application.apiModule(
         aadAppSecret = environment.aadAppSecret,
         aadTokenEndpoint = environment.aadTokenEndpoint,
     )
-    val adressebeskyttelseClient = AdressebeskyttelseClient(
+    val pdlClient = PdlClient(
         azureAdV2Client = azureAdV2Client,
-        syfopersonClientId = environment.syfopersonClientId,
-        cache = cache,
-        syfopersonBaseUrl = environment.syfopersonUrl,
+        pdlClientId = environment.pdlClientId,
+        pdlUrl = environment.pdlUrl,
+    )
+    val adressebeskyttelseClient = AdressebeskyttelseClient(
+        pdlClient = pdlClient,
+        cache = cache
     )
     val behandlendeEnhetClient = BehandlendeEnhetClient(
         azureAdV2Client = azureAdV2Client,

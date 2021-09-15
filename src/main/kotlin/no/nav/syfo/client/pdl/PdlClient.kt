@@ -5,6 +5,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import no.nav.syfo.client.azuread.AzureAdV2Client
+import no.nav.syfo.client.azuread.AzureAdV2Token
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.metric.COUNT_CALL_PDL_FAIL
@@ -22,16 +23,28 @@ class PdlClient(
     suspend fun navn(
         personIdent: PersonIdentNumber,
     ): String {
-        return person(personIdent)?.fullName()
+        val token = azureAdV2Client.getSystemToken(pdlClientId)
+            ?: throw RuntimeException("Failed to send request to PDL: No token was found")
+        return person(personIdent, token)?.fullName()
             ?: throw RuntimeException("PDL returned empty navn for given fnr")
     }
 
-    suspend fun person(
+    suspend fun isKode6Or7(
         personIdent: PersonIdentNumber,
-    ): PdlHentPerson? {
-        val token = azureAdV2Client.getSystemToken(pdlClientId)?.accessToken
-            ?: throw RuntimeException("Failed to send request to PDL: No accessToken was found")
+        token: String,
+        callId: String,
+    ): Boolean {
+        val oboToken = azureAdV2Client.getOnBehalfOfToken(pdlClientId, token)
+            ?: throw RuntimeException("Failed to send request to PDL: No token was found")
+        return person(personIdent, oboToken, callId)?.isKode6Or7()
+            ?: throw RuntimeException("Person not found in PDL for given fnr")
+    }
 
+    private suspend fun person(
+        personIdent: PersonIdentNumber,
+        token: AzureAdV2Token,
+        callId: String? = null,
+    ): PdlHentPerson? {
         val query = this::class.java.getResource("/pdl/hentPerson.graphql")
             .readText()
             .replace("[\n\r]", "")
@@ -41,8 +54,9 @@ class PdlClient(
         val response: HttpResponse = httpClient.post(pdlUrl) {
             body = request
             header(HttpHeaders.ContentType, "application/json")
-            header(HttpHeaders.Authorization, bearerHeader(token))
+            header(HttpHeaders.Authorization, bearerHeader(token.accessToken))
             header(TEMA_HEADER, ALLE_TEMA_HEADERVERDI)
+            header(NAV_CALL_ID_HEADER, callId)
         }
 
         when (response.status) {

@@ -10,25 +10,15 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
-import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseResponse
 import no.nav.syfo.client.person.kontaktinfo.*
 import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfellePersonDTO
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.PERSON_EMAIL
 import no.nav.syfo.testhelper.UserConstants.PERSON_TLF
 import no.nav.syfo.testhelper.getRandomPort
 import no.nav.syfo.util.getPersonIdentHeader
 import java.time.LocalDate
-
-val beskyttetFalse = AdressebeskyttelseResponse(
-    beskyttet = false,
-)
-val beskyttetTrue = AdressebeskyttelseResponse(
-    beskyttet = true,
-)
 
 fun digitalKontaktinfoBolkKanVarslesTrue(personIdentNumber: String) = DigitalKontaktinfoBolk(
     kontaktinfo = mapOf(
@@ -66,14 +56,10 @@ class SyfopersonMock {
     val name = "syfoperson"
     val server = mockPersonServer(
         port,
-        beskyttetFalse,
-        beskyttetTrue
     )
 
     private fun mockPersonServer(
         port: Int,
-        beskyttetFalse: AdressebeskyttelseResponse,
-        beskyttetTrue: AdressebeskyttelseResponse,
     ): NettyApplicationEngine {
         return embeddedServer(
             factory = Netty,
@@ -87,13 +73,6 @@ class SyfopersonMock {
                 }
             }
             routing {
-                get(AdressebeskyttelseClient.PERSON_V2_ADRESSEBESKYTTELSE_PATH) {
-                    if (getPersonIdentHeader() == ARBEIDSTAKER_ADRESSEBESKYTTET.value) {
-                        call.respond(beskyttetTrue)
-                    } else {
-                        call.respond(beskyttetFalse)
-                    }
-                }
                 get(KontaktinformasjonClient.PERSON_V2_KONTAKTINFORMASJON_PATH) {
                     if (getPersonIdentHeader() == ARBEIDSTAKER_IKKE_VARSEL.value) {
                         call.respond(digitalKontaktinfoBolkKanVarslesFalse)

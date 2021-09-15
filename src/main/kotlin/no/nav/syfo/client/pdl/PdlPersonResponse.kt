@@ -68,13 +68,13 @@ fun PdlHentPerson.fullName(): String? {
     }
 }
 
-fun PdlHentPerson?.isKode6(): Boolean {
+fun PdlHentPerson?.isKode6Or7(): Boolean {
     val adressebeskyttelse = this?.hentPerson?.adressebeskyttelse
     return if (adressebeskyttelse.isNullOrEmpty()) {
         false
     } else {
         return adressebeskyttelse.any {
-            it.isKode6()
+            it.isKode6() || it.isKode7()
         }
     }
 }
@@ -86,6 +86,10 @@ fun String.lowerCapitalize(): String {
 
 fun Adressebeskyttelse.isKode6(): Boolean {
     return this.gradering == Gradering.STRENGT_FORTROLIG || this.gradering == Gradering.STRENGT_FORTROLIG_UTLAND
+}
+
+fun Adressebeskyttelse.isKode7(): Boolean {
+    return this.gradering == Gradering.FORTROLIG
 }
 
 fun PdlError.errorMessage(): String {
