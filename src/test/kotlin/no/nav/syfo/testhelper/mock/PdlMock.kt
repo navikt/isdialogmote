@@ -8,8 +8,8 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.pdl.*
-import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
+import no.nav.syfo.testhelper.generator.generatePdlPersonResponse
 import no.nav.syfo.testhelper.getRandomPort
 
 class PdlMock {
@@ -38,44 +38,4 @@ class PdlMock {
             }
         }
     }
-}
-
-fun generatePdlPersonResponse(gradering: Gradering? = null) = PdlPersonResponse(
-    errors = null,
-    data = generatePdlHentPerson(
-        generatePdlPersonNavn(),
-        generateAdressebeskyttelse(gradering = gradering)
-    )
-)
-
-fun generatePdlPersonNavn(): PdlPersonNavn {
-    return PdlPersonNavn(
-        fornavn = UserConstants.PERSON_FORNAVN,
-        mellomnavn = UserConstants.PERSON_MELLOMNAVN,
-        etternavn = UserConstants.PERSON_ETTERNAVN,
-    )
-}
-
-fun generateAdressebeskyttelse(
-    gradering: Gradering? = null
-): Adressebeskyttelse {
-    return Adressebeskyttelse(
-        gradering = gradering ?: Gradering.UGRADERT
-    )
-}
-
-fun generatePdlHentPerson(
-    pdlPersonNavn: PdlPersonNavn?,
-    adressebeskyttelse: Adressebeskyttelse? = null
-): PdlHentPerson {
-    return PdlHentPerson(
-        hentPerson = PdlPerson(
-            navn = listOf(
-                pdlPersonNavn ?: generatePdlPersonNavn()
-            ),
-            adressebeskyttelse = listOf(
-                adressebeskyttelse ?: generateAdressebeskyttelse()
-            )
-        )
-    )
 }
