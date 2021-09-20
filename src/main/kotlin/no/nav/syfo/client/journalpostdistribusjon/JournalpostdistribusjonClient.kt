@@ -61,7 +61,7 @@ class JournalpostdistribusjonClient(
     companion object {
         const val BESTILLENDE_FAGSYSTEM = "MODIA_SYKEFRAVAER"
         const val DOKUMENTPRODUSERENDE_APP = "isdialogmote"
-        const val DISTRIBUER_JOURNALPOST_PATH = "/api/v1/distribuerJournalpost"
+        const val DISTRIBUER_JOURNALPOST_PATH = "/api/v1/dokdist/distribuerjournalpost"
         private val log = LoggerFactory.getLogger(JournalpostdistribusjonClient::class.java)
     }
 }
