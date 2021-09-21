@@ -1,25 +1,19 @@
 package no.nav.syfo.brev.narmesteleder
 
-import io.ktor.application.call
-import io.ktor.http.HttpStatusCode
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.get
-import io.ktor.routing.post
-import io.ktor.routing.route
+import io.ktor.application.*
+import io.ktor.http.*
+import io.ktor.response.*
+import io.ktor.routing.*
 import no.nav.syfo.application.api.authentication.personIdent
 import no.nav.syfo.brev.arbeidstaker.domain.PdfContent
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.domain.toNarmesteLederBrevDTOList
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.util.callIdArgument
-import no.nav.syfo.util.getCallId
-import no.nav.syfo.util.getPersonIdentHeader
+import no.nav.syfo.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.UUID
+import java.util.*
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 
@@ -31,26 +25,26 @@ const val narmesteLederBrevApiBrevParam = "brevuuid"
 fun Route.registerNarmestelederBrevApi(
     dialogmoteService: DialogmoteService,
     dialogmotedeltakerService: DialogmotedeltakerService,
-    narmesteLederService: NarmesteLederService,
+    narmesteLederTilgangService: NarmesteLederTilgangService,
 ) {
     route(narmesteLederBrevApiBasePath) {
         get {
             val callId = getCallId()
             try {
-                val narmesteLederIdent = call.personIdent()
+                val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
-                val arbeidstakerIdent = getPersonIdentHeader()?.let { PersonIdentNumber(it) }
+                val arbeidstakerPersonIdentNumber = getPersonIdentHeader()?.let { PersonIdentNumber(it) }
                     ?: throw IllegalArgumentException("No $NAV_PERSONIDENT_HEADER provided in request header")
 
-                val moter = dialogmoteService.getDialogmoteList(personIdentNumber = arbeidstakerIdent)
-                val virksomhetsnumre = narmesteLederService.getVirksomhetsnumreOfNarmesteLederByArbeidstaker(
-                    arbeidstakerIdent,
-                    narmesteLederIdent,
-                    callId
-                )
-                val narmesteLederMoter = moter.filter { virksomhetsnumre.contains(it.arbeidsgiver.virksomhetsnummer) }
+                val moteList = dialogmoteService.getDialogmoteList(personIdentNumber = arbeidstakerPersonIdentNumber)
 
+                val narmesteLederMoter = narmesteLederTilgangService.filterMoterByNarmesteLederAccess(
+                    arbeidstakerPersonIdentNumber = arbeidstakerPersonIdentNumber,
+                    callId = callId,
+                    moteList = moteList,
+                    narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
+                )
                 call.respond(narmesteLederMoter.toNarmesteLederBrevDTOList())
             } catch (e: IllegalArgumentException) {
                 val illegalArgumentMessage = "Could not retrieve BrevList"
@@ -62,20 +56,18 @@ fun Route.registerNarmestelederBrevApi(
             val callId = getCallId()
 
             try {
-                val personIdent = call.personIdent()
+                val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
                 val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
 
                 val brev = dialogmoteService.getNarmesteLederBrevFromUuid(brevUuid)
 
-                val virksomhetnumre = narmesteLederService.getVirksomhetsnumreNarmesteLeder(personIdent, callId)
-
-                val dialogmoteDeltagerArbeidsgiver =
-                    dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(brev.motedeltakerArbeidsgiverId)
-
-                val hasAccessToBrev =
-                    virksomhetnumre.contains(dialogmoteDeltagerArbeidsgiver.virksomhetsnummer)
+                val hasAccessToBrev = narmesteLederTilgangService.hasAccessToBrev(
+                    brev = brev,
+                    callId = callId,
+                    narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
+                )
 
                 if (hasAccessToBrev) {
                     call.respond(PdfContent(brev.pdf))
@@ -93,20 +85,18 @@ fun Route.registerNarmestelederBrevApi(
         post("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiLesPath") {
             val callId = getCallId()
             try {
-                val personIdent = call.personIdent()
+                val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
                 val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
 
                 val brev = dialogmoteService.getNarmesteLederBrevFromUuid(brevUuid)
 
-                val virksomhetnumre = narmesteLederService.getVirksomhetsnumreNarmesteLeder(personIdent, callId)
-
-                val dialogmoteDeltagerArbeidsgiver =
-                    dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(brev.motedeltakerArbeidsgiverId)
-
-                val hasAccessToBrev =
-                    virksomhetnumre.contains(dialogmoteDeltagerArbeidsgiver.virksomhetsnummer)
+                val hasAccessToBrev = narmesteLederTilgangService.hasAccessToBrev(
+                    brev = brev,
+                    callId = callId,
+                    narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
+                )
 
                 if (hasAccessToBrev) {
                     if (brev.lestDatoArbeidsgiver == null) {
