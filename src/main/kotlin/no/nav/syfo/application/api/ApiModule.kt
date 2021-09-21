@@ -1,25 +1,18 @@
 package no.nav.syfo.application.api
 
-import io.ktor.application.Application
-import io.ktor.auth.authenticate
-import io.ktor.routing.routing
+import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.routing.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
-import no.nav.syfo.application.api.authentication.JwtIssuer
-import no.nav.syfo.application.api.authentication.JwtIssuerType
-import no.nav.syfo.application.api.authentication.WellKnown
-import no.nav.syfo.application.api.authentication.installCallId
-import no.nav.syfo.application.api.authentication.installContentNegotiation
-import no.nav.syfo.application.api.authentication.installJwtAuthentication
-import no.nav.syfo.application.api.authentication.installMetrics
-import no.nav.syfo.application.api.authentication.installStatusPages
+import no.nav.syfo.application.api.authentication.*
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
-import no.nav.syfo.brev.narmesteleder.NarmesteLederService
+import no.nav.syfo.brev.narmesteleder.NarmesteLederTilgangService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.brev.narmesteleder.registerNarmestelederBrevApi
 import no.nav.syfo.client.azuread.AzureAdV2Client
@@ -33,13 +26,9 @@ import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.dialogmote.api.v2.registerDialogmoteActionsApiV2
-import no.nav.syfo.dialogmote.api.v2.registerDialogmoteApiV2
-import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
+import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
-import redis.clients.jedis.JedisPool
-import redis.clients.jedis.JedisPoolConfig
-import redis.clients.jedis.Protocol
+import redis.clients.jedis.*
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -157,7 +146,10 @@ fun Application.apiModule(
         allowVarselMedFysiskBrev = environment.allowVarselMedFysiskBrev,
     )
 
-    val narmesteLederService = NarmesteLederService(narmesteLederClient)
+    val narmesteLederService = NarmesteLederTilgangService(
+        dialogmotedeltakerService = dialogmotedeltakerService,
+        narmesteLederClient = narmesteLederClient,
+    )
 
     routing {
         registerPodApi(applicationState, database)
