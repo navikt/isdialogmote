@@ -5,30 +5,30 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 object Versions {
-    const val avroVersion = "1.10.0"
-    const val brukernotifikasjonAvroVersion = "1.2021.01.18-11.12-b9c8c40b98d1"
-    const val isdialogmoteSchemaVersion = "1.0.5"
-    const val confluentVersion = "5.5.0"
-    const val flywayVersion = "7.12.0"
-    const val hikariVersion = "4.0.3"
-    const val jacksonVersion = "2.11.4"
-    const val jedisVersion = "3.6.3"
-    const val kafkaVersion = "2.7.0"
-    const val kafkaEmbeddedVersion = "2.5.0"
-    const val ktorVersion = "1.6.0"
-    const val jaxbVersion = "2.3.1"
-    const val kluentVersion = "1.68"
-    const val logbackVersion = "1.2.3"
-    const val logstashEncoderVersion = "6.3"
-    const val mockkVersion = "1.12.0"
-    const val nimbusjosejwtVersion = "9.11.3"
-    const val postgresEmbeddedVersion = "0.13.4"
-    const val postgresVersion = "42.2.23"
-    const val redisEmbeddedVersion = "0.7.3"
-    const val spekVersion = "2.0.15"
-    const val mqVersion = "9.2.2.0"
-    const val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
-    const val micrometerRegistryVersion = "1.7.1"
+    const val avro = "1.10.0"
+    const val brukernotifikasjonAvro = "1.2021.01.18-11.12-b9c8c40b98d1"
+    const val isdialogmoteSchema = "1.0.5"
+    const val confluent = "5.5.0"
+    const val flyway = "7.12.0"
+    const val hikari = "4.0.3"
+    const val jackson = "2.11.4"
+    const val jedis = "3.6.3"
+    const val kafka = "2.7.0"
+    const val kafkaEmbedded = "2.5.0"
+    const val ktor = "1.6.0"
+    const val jaxb = "2.3.1"
+    const val kluent = "1.68"
+    const val logback = "1.2.3"
+    const val logstashEncoder = "6.3"
+    const val mockk = "1.12.0"
+    const val nimbusjosejwt = "9.11.3"
+    const val postgresEmbedded = "0.13.4"
+    const val postgres = "42.2.23"
+    const val redisEmbedded = "0.7.3"
+    const val spek = "2.0.15"
+    const val mq = "9.2.2.0"
+    const val tjenesteSpesifikasjonerGithub = "1.2020.06.11-19.53-1cad83414166"
+    const val micrometerRegistry = "1.7.1"
 }
 
 plugins {
@@ -63,57 +63,57 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 
-    implementation("io.ktor:ktor-auth-jwt:${Versions.ktorVersion}")
-    implementation("io.ktor:ktor-client-apache:${Versions.ktorVersion}")
-    implementation("io.ktor:ktor-client-cio:${Versions.ktorVersion}")
-    implementation("io.ktor:ktor-client-jackson:${Versions.ktorVersion}")
-    implementation("io.ktor:ktor-jackson:${Versions.ktorVersion}")
-    implementation("io.ktor:ktor-server-netty:${Versions.ktorVersion}")
+    implementation("io.ktor:ktor-auth-jwt:${Versions.ktor}")
+    implementation("io.ktor:ktor-client-apache:${Versions.ktor}")
+    implementation("io.ktor:ktor-client-cio:${Versions.ktor}")
+    implementation("io.ktor:ktor-client-jackson:${Versions.ktor}")
+    implementation("io.ktor:ktor-jackson:${Versions.ktor}")
+    implementation("io.ktor:ktor-server-netty:${Versions.ktor}")
 
     // Logging
-    implementation("ch.qos.logback:logback-classic:${Versions.logbackVersion}")
-    implementation("net.logstash.logback:logstash-logback-encoder:${Versions.logstashEncoderVersion}")
+    implementation("ch.qos.logback:logback-classic:${Versions.logback}")
+    implementation("net.logstash.logback:logstash-logback-encoder:${Versions.logstashEncoder}")
 
     // Metrics and Prometheus
-    implementation("io.ktor:ktor-metrics-micrometer:${Versions.ktorVersion}")
-    implementation("io.micrometer:micrometer-registry-prometheus:${Versions.micrometerRegistryVersion}")
+    implementation("io.ktor:ktor-metrics-micrometer:${Versions.ktor}")
+    implementation("io.micrometer:micrometer-registry-prometheus:${Versions.micrometerRegistry}")
 
     // (De-)serialization
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jacksonVersion}")
-    implementation("javax.xml.bind:jaxb-api:${Versions.jaxbVersion}")
-    implementation("org.glassfish.jaxb:jaxb-runtime:${Versions.jaxbVersion}")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jackson}")
+    implementation("javax.xml.bind:jaxb-api:${Versions.jaxb}")
+    implementation("org.glassfish.jaxb:jaxb-runtime:${Versions.jaxb}")
 
     // Cache
-    implementation("redis.clients:jedis:${Versions.jedisVersion}")
-    testImplementation("it.ozimov:embedded-redis:${Versions.redisEmbeddedVersion}")
+    implementation("redis.clients:jedis:${Versions.jedis}")
+    testImplementation("it.ozimov:embedded-redis:${Versions.redisEmbedded}")
 
     // Database
-    implementation("org.postgresql:postgresql:${Versions.postgresVersion}")
-    implementation("com.zaxxer:HikariCP:${Versions.hikariVersion}")
-    implementation("org.flywaydb:flyway-core:${Versions.flywayVersion}")
-    testImplementation("com.opentable.components:otj-pg-embedded:${Versions.postgresEmbeddedVersion}")
+    implementation("org.postgresql:postgresql:${Versions.postgres}")
+    implementation("com.zaxxer:HikariCP:${Versions.hikari}")
+    implementation("org.flywaydb:flyway-core:${Versions.flyway}")
+    testImplementation("com.opentable.components:otj-pg-embedded:${Versions.postgresEmbedded}")
 
     // Kafka
-    implementation("org.apache.kafka:kafka_2.12:${Versions.kafkaVersion}")
-    implementation("io.confluent:kafka-avro-serializer:${Versions.confluentVersion}")
-    implementation("io.confluent:kafka-schema-registry:${Versions.confluentVersion}")
-    implementation("com.github.navikt:brukernotifikasjon-schemas:${Versions.brukernotifikasjonAvroVersion}")
-    implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchemaVersion}")
-    testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedVersion}")
+    implementation("org.apache.kafka:kafka_2.12:${Versions.kafka}")
+    implementation("io.confluent:kafka-avro-serializer:${Versions.confluent}")
+    implementation("io.confluent:kafka-schema-registry:${Versions.confluent}")
+    implementation("com.github.navikt:brukernotifikasjon-schemas:${Versions.brukernotifikasjonAvro}")
+    implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
+    testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded}")
 
     // MQ
-    implementation("com.ibm.mq:com.ibm.mq.allclient:${Versions.mqVersion}")
-    implementation("no.nav.tjenestespesifikasjoner:servicemeldingMedKontaktinformasjon-v1-tjenestespesifikasjon:${Versions.tjenesteSpesifikasjonerGithubVersion}")
+    implementation("com.ibm.mq:com.ibm.mq.allclient:${Versions.mq}")
+    implementation("no.nav.tjenestespesifikasjoner:servicemeldingMedKontaktinformasjon-v1-tjenestespesifikasjon:${Versions.tjenesteSpesifikasjonerGithub}")
 
-    testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusjosejwtVersion}")
-    testImplementation("io.ktor:ktor-server-test-host:${Versions.ktorVersion}")
-    testImplementation("io.mockk:mockk:${Versions.mockkVersion}")
-    testImplementation("org.amshove.kluent:kluent:${Versions.kluentVersion}")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:${Versions.ktorVersion}")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:${Versions.spekVersion}") {
+    testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusjosejwt}")
+    testImplementation("io.ktor:ktor-server-test-host:${Versions.ktor}")
+    testImplementation("io.mockk:mockk:${Versions.mockk}")
+    testImplementation("org.amshove.kluent:kluent:${Versions.kluent}")
+    testImplementation("org.spekframework.spek2:spek-dsl-jvm:${Versions.ktor}")
+    testImplementation("org.spekframework.spek2:spek-dsl-jvm:${Versions.spek}") {
         exclude(group = "org.jetbrains.kotlin")
     }
-    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:${Versions.spekVersion}") {
+    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:${Versions.spek}") {
         exclude(group = "org.jetbrains.kotlin")
     }
 }
