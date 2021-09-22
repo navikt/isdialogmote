@@ -7,7 +7,7 @@ import no.nav.syfo.dialogmote.domain.NarmesteLederBrev
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 
-class NarmesteLederTilgangService(
+class NarmesteLederAccessService(
     private val dialogmotedeltakerService: DialogmotedeltakerService,
     private val narmesteLederClient: NarmesteLederClient,
 ) {

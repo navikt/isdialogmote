@@ -25,7 +25,7 @@ const val narmesteLederBrevApiBrevParam = "brevuuid"
 fun Route.registerNarmestelederBrevApi(
     dialogmoteService: DialogmoteService,
     dialogmotedeltakerService: DialogmotedeltakerService,
-    narmesteLederTilgangService: NarmesteLederTilgangService,
+    narmesteLederAccessService: NarmesteLederAccessService,
 ) {
     route(narmesteLederBrevApiBasePath) {
         get {
@@ -39,7 +39,7 @@ fun Route.registerNarmestelederBrevApi(
 
                 val moteList = dialogmoteService.getDialogmoteList(personIdentNumber = arbeidstakerPersonIdentNumber)
 
-                val narmesteLederMoter = narmesteLederTilgangService.filterMoterByNarmesteLederAccess(
+                val narmesteLederMoter = narmesteLederAccessService.filterMoterByNarmesteLederAccess(
                     arbeidstakerPersonIdentNumber = arbeidstakerPersonIdentNumber,
                     callId = callId,
                     moteList = moteList,
@@ -63,7 +63,7 @@ fun Route.registerNarmestelederBrevApi(
 
                 val brev = dialogmoteService.getNarmesteLederBrevFromUuid(brevUuid)
 
-                val hasAccessToBrev = narmesteLederTilgangService.hasAccessToBrev(
+                val hasAccessToBrev = narmesteLederAccessService.hasAccessToBrev(
                     brev = brev,
                     callId = callId,
                     narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
@@ -92,7 +92,7 @@ fun Route.registerNarmestelederBrevApi(
 
                 val brev = dialogmoteService.getNarmesteLederBrevFromUuid(brevUuid)
 
-                val hasAccessToBrev = narmesteLederTilgangService.hasAccessToBrev(
+                val hasAccessToBrev = narmesteLederAccessService.hasAccessToBrev(
                     brev = brev,
                     callId = callId,
                     narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,

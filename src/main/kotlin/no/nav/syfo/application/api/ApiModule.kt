@@ -12,7 +12,7 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
-import no.nav.syfo.brev.narmesteleder.NarmesteLederTilgangService
+import no.nav.syfo.brev.narmesteleder.NarmesteLederAccessService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.brev.narmesteleder.registerNarmestelederBrevApi
 import no.nav.syfo.client.azuread.AzureAdV2Client
@@ -146,7 +146,7 @@ fun Application.apiModule(
         allowVarselMedFysiskBrev = environment.allowVarselMedFysiskBrev,
     )
 
-    val narmesteLederService = NarmesteLederTilgangService(
+    val narmesteLederTilgangService = NarmesteLederAccessService(
         dialogmotedeltakerService = dialogmotedeltakerService,
         narmesteLederClient = narmesteLederClient,
     )
@@ -175,9 +175,9 @@ fun Application.apiModule(
                 dialogmotedeltakerService = dialogmotedeltakerService,
             )
             registerNarmestelederBrevApi(
-                dialogmoteService,
-                dialogmotedeltakerService,
-                narmesteLederService,
+                dialogmoteService = dialogmoteService,
+                dialogmotedeltakerService = dialogmotedeltakerService,
+                narmesteLederAccessService = narmesteLederTilgangService,
             )
         }
     }
