@@ -123,6 +123,8 @@ spec:
       value: "https://syfo-tilgangskontroll.dev-fss-pub.nais.io"
     - name: TOGGLE_ALLOW_VARSEL_MED_FYSISK_BREV
       value: "true"
+    - name: TOGGLE_ALLOW_MOTEDELTAKER_BEHANDLER
+      value: "false"
     - name: TOGGLE_PUBLISH_STATUS_ENDRING_CRONJOB_ENABLED
       value: "true"
     - name: TOGGLE_JOURNALFORING_CRONJOB_ENABLED
