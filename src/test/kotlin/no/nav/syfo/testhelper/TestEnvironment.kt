@@ -16,6 +16,7 @@ fun testEnvironment(
     narmestelederUrl: String? = null,
     pdlUrl: String? = null,
     allowVarselMedFysiskBrev: Boolean = false,
+    allowMotedeltakerBehandler: Boolean = false,
 ) = Environment(
     aadAppClient = "isdialogmote-client-id",
     aadAppSecret = "isdialogmote-secret",
@@ -38,6 +39,7 @@ fun testEnvironment(
     KafkaAivenTruststoreLocation = "truststore",
     KafkaAivenKeystoreLocation = "keystore",
     allowVarselMedFysiskBrev = allowVarselMedFysiskBrev,
+    allowMotedeltakerBehandler = allowMotedeltakerBehandler,
     redisHost = "localhost",
     redisPort = 6599,
     redisSecret = "password",
