@@ -14,11 +14,12 @@ import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.*
-import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -164,7 +165,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
 
                             moteStatusEndretList.forEach { moteStatusEndret ->
                                 moteStatusEndret.opprettetAv shouldBeEqualTo VEILEDER_IDENT
-                                moteStatusEndret.tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO.fom
+                                moteStatusEndret.tilfelleStart shouldBeEqualTo kOppfolgingstilfellePersonDTO().toOppfolgingstilfellePerson().fom
                             }
                         }
 
@@ -294,7 +295,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
 
                             moteStatusEndretList.forEach { moteStatusEndret ->
                                 moteStatusEndret.opprettetAv shouldBeEqualTo VEILEDER_IDENT
-                                moteStatusEndret.tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO.fom
+                                moteStatusEndret.tilfelleStart shouldBeEqualTo kOppfolgingstilfellePersonDTO().toOppfolgingstilfellePerson().fom
                             }
                         }
                     }

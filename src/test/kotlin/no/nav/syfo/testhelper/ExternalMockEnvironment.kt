@@ -16,6 +16,7 @@ class ExternalMockEnvironment(
     val dokarkivMock = DokarkivMock()
     val pdlMock = PdlMock()
     val isdialogmotepdfgenMock = IsdialogmotepdfgenMock()
+    val isproxyMock = IsproxyMock()
     val syfobehandlendeenhetMock = SyfobehandlendeenhetMock()
     val syfopersonMock = SyfopersonMock()
     val tilgangskontrollMock = VeilederTilgangskontrollMock()
@@ -25,6 +26,7 @@ class ExternalMockEnvironment(
         azureAdV2Mock.name to azureAdV2Mock.server,
         dokarkivMock.name to dokarkivMock.server,
         isdialogmotepdfgenMock.name to isdialogmotepdfgenMock.server,
+        isproxyMock.name to isproxyMock.server,
         syfobehandlendeenhetMock.name to syfobehandlendeenhetMock.server,
         syfopersonMock.name to syfopersonMock.server,
         tilgangskontrollMock.name to tilgangskontrollMock.server,
@@ -37,6 +39,7 @@ class ExternalMockEnvironment(
         azureTokenEndpoint = azureAdV2Mock.url,
         dokarkivUrl = dokarkivMock.url,
         isdialogmotepdfgenUrl = isdialogmotepdfgenMock.url,
+        isproxyUrl = isproxyMock.url,
         syfobehandlendeenhetUrl = syfobehandlendeenhetMock.url,
         syfopersonUrl = syfopersonMock.url,
         syfotilgangskontrollUrl = tilgangskontrollMock.url,

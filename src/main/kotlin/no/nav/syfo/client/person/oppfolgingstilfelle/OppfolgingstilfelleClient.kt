@@ -8,6 +8,7 @@ import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
+import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_OPPFOLGINGSTILFELLE_FAIL
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_OPPFOLGINGSTILFELLE_SUCCESS
 import no.nav.syfo.domain.PersonIdentNumber
@@ -16,10 +17,12 @@ import org.slf4j.LoggerFactory
 
 class OppfolgingstilfelleClient(
     private val azureAdV2Client: AzureAdV2Client,
-    private val syfopersonClientId: String,
-    syfopersonBaseUrl: String
+    private val isproxyClientId: String,
+    isproxyBaseUrl: String,
+    private val pdlClient: PdlClient,
 ) {
-    private val personOppfolgingstilfelleV2Url: String = "$syfopersonBaseUrl$PERSON_V2_OPPFOLGINGSTILFELLE_PATH"
+    private val personOppfolgingstilfelleUrl: String =
+        "$isproxyBaseUrl$ISPROXY_SYFOSYKETILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH"
 
     private val httpClient = httpClientDefault()
 
@@ -28,10 +31,14 @@ class OppfolgingstilfelleClient(
         token: String,
         callId: String,
     ): OppfolgingstilfellePerson? {
-        val url = personOppfolgingstilfelleV2Url
+        val aktorId = pdlClient.aktorId(
+            callId = callId,
+            personIdentNumber = personIdentNumber,
+        )
+        val url = "$personOppfolgingstilfelleUrl/${aktorId.value}"
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
-            scopeClientId = syfopersonClientId,
-            token = token
+            scopeClientId = isproxyClientId,
+            token = token,
         )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
         return try {
             val response: HttpResponse = httpClient.get(url) {
@@ -40,8 +47,8 @@ class OppfolgingstilfelleClient(
                 header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
                 accept(ContentType.Application.Json)
             }
-            val oppfolgingstilfelle = response.receive<OppfolgingstilfellePersonDTO>()
-                .toOppfolgingstilfelle()
+            val oppfolgingstilfelle = response.receive<KOppfolgingstilfellePersonDTO>()
+                .toOppfolgingstilfellePerson()
             COUNT_CALL_PERSON_OPPFOLGINGSTILFELLE_SUCCESS.increment()
             oppfolgingstilfelle
         } catch (e: ClientRequestException) {
@@ -58,7 +65,7 @@ class OppfolgingstilfelleClient(
         callId: String,
     ) {
         log.error(
-            "Error while requesting Oppfolgingstilfelle of person from Syfoperson with {}, {}",
+            "Error while requesting Oppfolgingstilfelle of person from Isproxy with {}, {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             callIdArgument(callId),
         )
@@ -66,8 +73,9 @@ class OppfolgingstilfelleClient(
     }
 
     companion object {
-        const val PERSON_V2_PATH = "/syfoperson/api/v2/person"
-        const val PERSON_V2_OPPFOLGINGSTILFELLE_PATH = "$PERSON_V2_PATH/oppfolgingstilfelle"
+        const val ISPROXY_SYFOSYKETILFELLE_PATH = "/api/v1/syfosyketilfelle"
+        const val ISPROXY_SYFOSYKETILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH =
+            "$ISPROXY_SYFOSYKETILFELLE_PATH/oppfolgingstilfelle/person"
 
         private val log = LoggerFactory.getLogger(OppfolgingstilfelleClient::class.java)
     }
