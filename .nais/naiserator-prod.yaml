@@ -13,24 +13,24 @@ spec:
     max: 2
     cpuThresholdPercentage: 70
   startup:
-    path: /is_ready
+    path: /internal/is_ready
     periodSeconds: 5
     timeout: 5
     failureThreshold: 30
   liveness:
-    path: /is_alive
+    path: /internal/is_alive
     periodSeconds: 5
     timeout: 5
     failureThreshold: 3
   readiness:
-    path: /is_ready
+    path: /internal/is_ready
     periodSeconds: 5
     timeout: 5
     failureThreshold: 3
   leaderElection: true
   prometheus:
     enabled: true
-    path: /prometheus
+    path: /metrics
   resources:
     limits:
       cpu: 200m
