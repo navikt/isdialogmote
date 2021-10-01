@@ -11,14 +11,14 @@ fun Routing.registerPodApi(
     applicationState: ApplicationState,
     database: DatabaseInterface,
 ) {
-    get("/is_alive") {
+    get("/internal/is_alive") {
         if (applicationState.alive) {
             call.respondText("I'm alive! :)")
         } else {
             call.respondText("I'm dead x_x", status = HttpStatusCode.InternalServerError)
         }
     }
-    get("/is_ready") {
+    get("/internal/is_ready") {
         if (isReady(applicationState, database)) {
             call.respondText("I'm ready! :)")
         } else {
