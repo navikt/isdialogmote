@@ -49,7 +49,6 @@ import no.nav.syfo.dialogmote.domain.NarmesteLederBrev
 import no.nav.syfo.dialogmote.domain.Referat
 import no.nav.syfo.dialogmote.domain.anyUnfinished
 import no.nav.syfo.dialogmote.domain.latest
-import no.nav.syfo.dialogmote.domain.passed
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
@@ -223,9 +222,6 @@ class DialogmoteService(
         if (dialogmote.status == DialogmoteStatus.AVLYST) {
             throw RuntimeException("Failed to Avlys Dialogmote: already Avlyst")
         }
-        val isDialogmoteTidPassed = dialogmote.tidStedList.latest()?.passed()
-            ?: throw RuntimeException("Failed to Avlys Dialogmote: No TidSted found")
-
         val pdfAvlysningArbeidstaker = pdfGenClient.pdfAvlysningArbeidstaker(
             callId = callId,
             documentComponentDTOList = avlysDialogmote.arbeidstaker.avlysning,
@@ -261,25 +257,23 @@ class DialogmoteService(
                     personIdentNumber = dialogmote.arbeidstaker.personIdent,
                     token = token,
                 )
-                if (!isDialogmoteTidPassed) {
-                    createAndSendVarsel(
-                        connection = connection,
-                        arbeidstakerId = dialogmote.arbeidstaker.id,
-                        arbeidstakerUuid = dialogmote.arbeidstaker.uuid,
-                        arbeidsgiverId = dialogmote.arbeidsgiver.id,
-                        arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
-                        pdfArbeidstaker = pdfAvlysningArbeidstaker,
-                        pdfArbeidsgiver = pdfAvlysningArbeidsgiver,
-                        narmesteLeder = narmesteLeder,
-                        varselType = MotedeltakerVarselType.AVLYST,
-                        fritekstArbeidstaker = avlysDialogmote.arbeidstaker.begrunnelse,
-                        fritekstArbeidsgiver = avlysDialogmote.arbeidsgiver.begrunnelse,
-                        documentArbeidstaker = avlysDialogmote.arbeidstaker.avlysning,
-                        documentArbeidsgiver = avlysDialogmote.arbeidsgiver.avlysning,
-                        moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
-                        digitalArbeidstakerVarsling = digitalVarsling,
-                    )
-                }
+                createAndSendVarsel(
+                    connection = connection,
+                    arbeidstakerId = dialogmote.arbeidstaker.id,
+                    arbeidstakerUuid = dialogmote.arbeidstaker.uuid,
+                    arbeidsgiverId = dialogmote.arbeidsgiver.id,
+                    arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
+                    pdfArbeidstaker = pdfAvlysningArbeidstaker,
+                    pdfArbeidsgiver = pdfAvlysningArbeidsgiver,
+                    narmesteLeder = narmesteLeder,
+                    varselType = MotedeltakerVarselType.AVLYST,
+                    fritekstArbeidstaker = avlysDialogmote.arbeidstaker.begrunnelse,
+                    fritekstArbeidsgiver = avlysDialogmote.arbeidsgiver.begrunnelse,
+                    documentArbeidstaker = avlysDialogmote.arbeidstaker.avlysning,
+                    documentArbeidsgiver = avlysDialogmote.arbeidsgiver.avlysning,
+                    moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
+                    digitalArbeidstakerVarsling = digitalVarsling,
+                )
                 connection.commit()
             }
             true
@@ -401,8 +395,9 @@ class DialogmoteService(
         )
 
         val now = LocalDateTime.now()
+        val isDialogmoteTidPassed = moteTidspunkt.isBefore(now)
 
-        if (digitalArbeidstakerVarsling) {
+        if (!isDialogmoteTidPassed && digitalArbeidstakerVarsling) {
             arbeidstakerVarselService.sendVarsel(
                 createdAt = now,
                 personIdent = arbeidstakerPersonIdent,
@@ -412,12 +407,14 @@ class DialogmoteService(
             )
         }
 
-        narmesteLederVarselService.sendVarsel(
-            createdAt = now,
-            moteTidspunkt = moteTidspunkt,
-            narmesteLeder = narmesteLeder,
-            varseltype = varselType
-        )
+        if (!isDialogmoteTidPassed) {
+            narmesteLederVarselService.sendVarsel(
+                createdAt = now,
+                moteTidspunkt = moteTidspunkt,
+                narmesteLeder = narmesteLeder,
+                varseltype = varselType
+            )
+        }
     }
 
     fun overtaMoter(veilederIdent: String, dialogmoter: List<Dialogmote>): Boolean {
