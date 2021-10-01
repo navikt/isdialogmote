@@ -1,8 +1,6 @@
 package no.nav.syfo.testhelper
 
-import no.nav.syfo.domain.EnhetNr
-import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.domain.Virksomhetsnummer
+import no.nav.syfo.domain.*
 
 object UserConstants {
     val ARBEIDSTAKER_FNR = PersonIdentNumber("12345678912")
@@ -13,7 +11,10 @@ object UserConstants {
     val ARBEIDSTAKER_IKKE_VARSEL = PersonIdentNumber(ARBEIDSTAKER_FNR.value.replace("2", "7"))
     val ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER = PersonIdentNumber(ARBEIDSTAKER_FNR.value.replace("2", "8"))
 
-    val ARBEIDSTAKER_AKTORID = "10" + ARBEIDSTAKER_FNR.value
+    val ARBEIDSTAKER_AKTORID = AktorId("10" + ARBEIDSTAKER_FNR.value)
+    val ARBEIDSTAKER_ANNEN_AKTORID = AktorId("10" + ARBEIDSTAKER_ANNEN_FNR.value)
+    val ARBEIDSTAKER_NO_JOURNALFORING_AKTORID = AktorId("10" + ARBEIDSTAKER_NO_JOURNALFORING.value)
+    val ARBEIDSTAKER_IKKE_VARSEL_AKTORID = AktorId("10" + ARBEIDSTAKER_IKKE_VARSEL.value)
     const val VEILEDER_IDENT = "Z999999"
     const val VEILEDER_IDENT_2 = "Z999998"
     val ENHET_NR = EnhetNr("1000")

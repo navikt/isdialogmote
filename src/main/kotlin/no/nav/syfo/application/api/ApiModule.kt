@@ -94,8 +94,9 @@ fun Application.apiModule(
     )
     val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
         azureAdV2Client = azureAdV2Client,
-        syfopersonBaseUrl = environment.syfopersonUrl,
-        syfopersonClientId = environment.syfopersonClientId,
+        isproxyBaseUrl = environment.isproxyUrl,
+        isproxyClientId = environment.isproxyClientId,
+        pdlClient = pdlClient,
     )
     val pdfGenClient = PdfGenClient(
         pdfGenBaseUrl = environment.isdialogmotepdfgenUrl
