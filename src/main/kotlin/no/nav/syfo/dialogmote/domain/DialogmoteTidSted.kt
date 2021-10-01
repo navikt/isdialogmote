@@ -24,7 +24,5 @@ fun DialogmoteTidSted.toDialogmoteTidStedDTO() =
         videoLink = this.videoLink,
     )
 
-fun DialogmoteTidSted.passed(): Boolean = this.tid.isBefore(LocalDateTime.now())
-
 fun List<DialogmoteTidSted>.latest() =
     this.maxByOrNull { it.createdAt }
