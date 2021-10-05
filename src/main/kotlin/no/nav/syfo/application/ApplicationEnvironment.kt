@@ -41,8 +41,6 @@ data class Environment(
     val isdialogmotepdfgenUrl: String = "http://isdialogmotepdfgen",
     val syfobehandlendeenhetClientId: String = getEnvVar("SYFOBEHANDLENDEENHET_CLIENT_ID"),
     val syfobehandlendeenhetUrl: String = getEnvVar("SYFOBEHANDLENDEENHET_URL"),
-    val syfopersonClientId: String = getEnvVar("SYFOPERSON_CLIENT_ID"),
-    val syfopersonUrl: String = getEnvVar("SYFOPERSON_URL"),
     val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
     val syfotilgangskontrollUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
     val journalforingCronjobEnabled: Boolean = getEnvVar("TOGGLE_JOURNALFORING_CRONJOB_ENABLED").toBoolean(),

@@ -64,7 +64,6 @@ spec:
         - host: kafka-schema-registry.nais-q.adeo.no
         - host: "login.microsoftonline.com"
         - host: "syfobehandlendeenhet.dev-fss-pub.nais.io"
-        - host: "syfoperson.dev-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
         - host: "isproxy.dev-fss-pub.nais.io"
         - host: "pdl-api.dev-fss-pub.nais.io"
@@ -113,10 +112,6 @@ spec:
       value: "c3de32aa-370c-4357-b46c-64784217920f"
     - name: SYFOBEHANDLENDEENHET_URL
       value: "https://syfobehandlendeenhet.dev-fss-pub.nais.io"
-    - name: SYFOPERSON_CLIENT_ID
-      value: "10ce50ea-d922-48d7-888d-3f8b683d8aab"
-    - name: SYFOPERSON_URL
-      value: "https://syfoperson.dev-fss-pub.nais.io"
     - name: SYFOTILGANGSKONTROLL_CLIENT_ID
       value: "dev-fss.teamsykefravr.syfo-tilgangskontroll"
     - name: SYFOTILGANGSKONTROLL_URL

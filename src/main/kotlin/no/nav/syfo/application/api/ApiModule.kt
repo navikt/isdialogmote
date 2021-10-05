@@ -89,8 +89,8 @@ fun Application.apiModule(
     val kontaktinformasjonClient = KontaktinformasjonClient(
         azureAdV2Client = azureAdV2Client,
         cache = cache,
-        syfopersonClientId = environment.syfopersonClientId,
-        syfopersonBaseUrl = environment.syfopersonUrl,
+        isproxyClientId = environment.isproxyClientId,
+        isproxyBaseUrl = environment.isproxyUrl,
     )
     val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
         azureAdV2Client = azureAdV2Client,
