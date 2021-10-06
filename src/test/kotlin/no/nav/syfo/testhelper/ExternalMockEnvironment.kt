@@ -18,7 +18,6 @@ class ExternalMockEnvironment(
     val isdialogmotepdfgenMock = IsdialogmotepdfgenMock()
     val isproxyMock = IsproxyMock()
     val syfobehandlendeenhetMock = SyfobehandlendeenhetMock()
-    val syfopersonMock = SyfopersonMock()
     val tilgangskontrollMock = VeilederTilgangskontrollMock()
     var narmesteLederMock = NarmesteLederMock()
 
@@ -28,7 +27,6 @@ class ExternalMockEnvironment(
         isdialogmotepdfgenMock.name to isdialogmotepdfgenMock.server,
         isproxyMock.name to isproxyMock.server,
         syfobehandlendeenhetMock.name to syfobehandlendeenhetMock.server,
-        syfopersonMock.name to syfopersonMock.server,
         tilgangskontrollMock.name to tilgangskontrollMock.server,
         narmesteLederMock.name to narmesteLederMock.server,
         pdlMock.name to pdlMock.server,
@@ -41,7 +39,6 @@ class ExternalMockEnvironment(
         isdialogmotepdfgenUrl = isdialogmotepdfgenMock.url,
         isproxyUrl = isproxyMock.url,
         syfobehandlendeenhetUrl = syfobehandlendeenhetMock.url,
-        syfopersonUrl = syfopersonMock.url,
         syfotilgangskontrollUrl = tilgangskontrollMock.url,
         narmestelederUrl = narmesteLederMock.url,
         pdlUrl = pdlMock.url,

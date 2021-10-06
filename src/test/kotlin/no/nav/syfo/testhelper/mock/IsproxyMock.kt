@@ -8,15 +8,19 @@ import io.ktor.server.netty.*
 import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient.Companion.DISTRIBUER_JOURNALPOST_PATH
 import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonResponse
+import no.nav.syfo.client.person.kontaktinfo.*
 import no.nav.syfo.client.person.oppfolgingstilfelle.KOppfolgingstilfellePersonDTO
 import no.nav.syfo.client.person.oppfolgingstilfelle.KSyketilfelledagDTO
 import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISPROXY_SYFOSYKETILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH
 import no.nav.syfo.domain.AktorId
+import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_AKTORID
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_AKTORID
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL_AKTORID
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING_AKTORID
 import no.nav.syfo.testhelper.getRandomPort
+import no.nav.syfo.util.NAV_PERSONIDENTER_HEADER
+import no.nav.syfo.util.getHeader
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -42,6 +46,30 @@ fun kOppfolgingstilfellePersonDTO(
     antallBrukteDager = 0,
     oppbruktArbeidsgvierperiode = false,
     utsendelsestidspunkt = LocalDateTime.now(),
+)
+
+fun digitalKontaktinfoBolkKanVarslesTrue(personIdentNumber: String) = DigitalKontaktinfoBolk(
+    kontaktinfo = mapOf(
+        personIdentNumber to DigitalKontaktinfo(
+            epostadresse = UserConstants.PERSON_EMAIL,
+            kanVarsles = true,
+            reservert = false,
+            mobiltelefonnummer = UserConstants.PERSON_TLF,
+            personident = personIdentNumber
+        )
+    )
+)
+
+val digitalKontaktinfoBolkKanVarslesFalse = DigitalKontaktinfoBolk(
+    kontaktinfo = mapOf(
+        UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value to DigitalKontaktinfo(
+            epostadresse = UserConstants.PERSON_EMAIL,
+            kanVarsles = false,
+            reservert = true,
+            mobiltelefonnummer = UserConstants.PERSON_TLF,
+            personident = UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value
+        )
+    )
 )
 
 class IsproxyMock {
@@ -71,6 +99,13 @@ class IsproxyMock {
                 }
                 get("$ISPROXY_SYFOSYKETILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH/${ARBEIDSTAKER_IKKE_VARSEL_AKTORID.value}") {
                     call.respond(kOppfolgingstilfellePersonDTO(ARBEIDSTAKER_IKKE_VARSEL_AKTORID))
+                }
+                get(KontaktinformasjonClient.ISPROXY_DKIF_KONTAKTINFORMASJON_PATH) {
+                    if (getHeader(NAV_PERSONIDENTER_HEADER) == UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value) {
+                        call.respond(digitalKontaktinfoBolkKanVarslesFalse)
+                    } else {
+                        call.respond(digitalKontaktinfoBolkKanVarslesTrue(getHeader(NAV_PERSONIDENTER_HEADER)!!))
+                    }
                 }
             }
         }

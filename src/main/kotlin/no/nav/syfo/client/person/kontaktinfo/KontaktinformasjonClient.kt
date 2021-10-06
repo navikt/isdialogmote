@@ -18,10 +18,10 @@ import org.slf4j.LoggerFactory
 class KontaktinformasjonClient(
     private val azureAdV2Client: AzureAdV2Client,
     private val cache: RedisStore,
-    private val syfopersonClientId: String,
-    syfopersonBaseUrl: String
+    private val isproxyClientId: String,
+    isproxyBaseUrl: String
 ) {
-    private val personKontaktinfoV2Url: String = "$syfopersonBaseUrl$PERSON_V2_KONTAKTINFORMASJON_PATH"
+    private val personKontaktinfoUrl: String = "$isproxyBaseUrl$ISPROXY_DKIF_KONTAKTINFORMASJON_PATH"
 
     private val httpClient = httpClientDefault()
 
@@ -40,50 +40,40 @@ class KontaktinformasjonClient(
         callId: String,
     ): DigitalKontaktinfoBolk? {
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
-            scopeClientId = syfopersonClientId,
+            scopeClientId = isproxyClientId,
             token = token
-        )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
+        )?.accessToken ?: throw RuntimeException("Failed to request access to Isproxy: Failed to get OBO token")
         val cacheKey = "${CACHE_KONTAKTINFORMASJON_KEY_PREFIX}${personIdentNumber.value}"
         val cachedKontaktinformasjon = cache.getObject<DigitalKontaktinfoBolk>(cacheKey)
         return when (cachedKontaktinformasjon) {
             null ->
                 try {
-                    val response: HttpResponse = httpClient.get(personKontaktinfoV2Url) {
+                    val response: HttpResponse = httpClient.get(personKontaktinfoUrl) {
                         header(HttpHeaders.Authorization, bearerHeader(oboToken))
                         header(NAV_CALL_ID_HEADER, callId)
-                        header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
+                        header(NAV_PERSONIDENTER_HEADER, personIdentNumber.value)
                         accept(ContentType.Application.Json)
                     }
                     val digitalKontaktinfoBolkResponse = response.receive<DigitalKontaktinfoBolk>()
                     COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS.increment()
                     cache.setObject(cacheKey, digitalKontaktinfoBolkResponse, CACHE_KONTAKTINFORMASJON_EXPIRE_SECONDS)
                     digitalKontaktinfoBolkResponse
-                } catch (e: ClientRequestException) {
-                    handleUnexpectedResponseException(e.response, callId)
-                    null
-                } catch (e: ServerResponseException) {
-                    handleUnexpectedResponseException(e.response, callId)
+                } catch (responseException: ResponseException) {
+                    log.error(
+                        "Error while requesting Kontaktinformasjon of person from Isproxy with {}, {}",
+                        StructuredArguments.keyValue("statusCode", responseException.response.status.value.toString()),
+                        callIdArgument(callId)
+                    )
+                    COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL.increment()
                     null
                 }
             else -> cachedKontaktinformasjon
         }
     }
 
-    private fun handleUnexpectedResponseException(
-        response: HttpResponse,
-        callId: String,
-    ) {
-        log.error(
-            "Error while requesting Kontaktinformasjon of person from Syfoperson with {}, {}",
-            StructuredArguments.keyValue("statusCode", response.status.value.toString()),
-            callIdArgument(callId)
-        )
-        COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL.increment()
-    }
-
     companion object {
-        const val PERSON_V2_PATH = "/syfoperson/api/v2/person"
-        const val PERSON_V2_KONTAKTINFORMASJON_PATH = "$PERSON_V2_PATH/kontaktinformasjon"
+        private const val ISPROXY_DKIF_PATH = "/api/v1/dkif"
+        const val ISPROXY_DKIF_KONTAKTINFORMASJON_PATH = "$ISPROXY_DKIF_PATH/kontaktinformasjon"
 
         const val CACHE_KONTAKTINFORMASJON_KEY_PREFIX = "person-kontaktinformasjon-"
         const val CACHE_KONTAKTINFORMASJON_EXPIRE_SECONDS = 600L

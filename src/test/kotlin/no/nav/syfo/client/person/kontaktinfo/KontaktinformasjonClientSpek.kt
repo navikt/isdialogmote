@@ -6,7 +6,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.testhelper.UserConstants
-import no.nav.syfo.testhelper.mock.SyfopersonMock
+import no.nav.syfo.testhelper.mock.IsproxyMock
 import no.nav.syfo.testhelper.mock.digitalKontaktinfoBolkKanVarslesTrue
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -27,21 +27,21 @@ class KontaktinformasjonClientSpek : Spek({
             start()
 
             val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
-            val syfopersonMock = SyfopersonMock()
+            val isproxyMock = IsproxyMock()
             val cacheMock = mockk<RedisStore>(relaxed = true)
             val client = KontaktinformasjonClient(
                 azureAdV2Client = azureAdV2ClientMock,
                 cache = cacheMock,
-                syfopersonClientId = "syfopersonClientId",
-                syfopersonBaseUrl = syfopersonMock.url,
+                isproxyClientId = "isproxyClientId",
+                isproxyBaseUrl = isproxyMock.url,
             )
 
             beforeGroup {
-                syfopersonMock.server.start()
+                isproxyMock.server.start()
             }
 
             afterGroup {
-                syfopersonMock.server.stop(1L, 10L)
+                isproxyMock.server.stop(1L, 10L)
             }
 
             beforeEachTest {

@@ -6,6 +6,7 @@ import io.ktor.util.pipeline.*
 import net.logstash.logback.argument.StructuredArguments
 
 const val NAV_PERSONIDENT_HEADER = "nav-personident"
+const val NAV_PERSONIDENTER_HEADER = "Nav-Personidenter"
 const val TEMA_HEADER = "Tema"
 const val ALLE_TEMA_HEADERVERDI = "GEN"
 
@@ -22,6 +23,10 @@ fun PipelineContext<out Unit, ApplicationCall>.getConsumerId(): String {
 
 fun PipelineContext<out Unit, ApplicationCall>.getBearerHeader(): String? {
     return this.call.request.headers[Authorization]?.removePrefix("Bearer ")
+}
+
+fun PipelineContext<out Unit, ApplicationCall>.getHeader(header: String): String? {
+    return this.call.request.headers[header]
 }
 
 fun PipelineContext<out Unit, ApplicationCall>.getPersonIdentHeader(): String? {
