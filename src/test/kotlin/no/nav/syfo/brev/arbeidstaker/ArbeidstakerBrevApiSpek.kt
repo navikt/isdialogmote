@@ -48,6 +48,7 @@ class ArbeidstakerBrevApiSpek : Spek({
             database.addDummyDeltakere()
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 

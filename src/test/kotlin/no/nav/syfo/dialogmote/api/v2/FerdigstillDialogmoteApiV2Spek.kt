@@ -37,6 +37,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
             val mqSenderMock = mockk<MQSenderInterface>()
@@ -155,7 +156,8 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
 
                             referat.pdf shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
 
-                            verify(exactly = 2) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                            verify(exactly = 1) { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
+                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2
