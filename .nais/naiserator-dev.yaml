@@ -59,6 +59,9 @@ spec:
         - application: dialogmote
           namespace: default
           cluster: dev-sbs
+        - application: sykefravaerarbeidsgiver
+          namespace: default
+          cluster: dev-sbs
     outbound:
       external:
         - host: kafka-schema-registry.nais-q.adeo.no
