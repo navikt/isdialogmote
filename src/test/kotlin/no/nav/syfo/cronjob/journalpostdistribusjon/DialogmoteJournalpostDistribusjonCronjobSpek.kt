@@ -46,6 +46,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
             val mqSenderMock = mockk<MQSenderInterface>()

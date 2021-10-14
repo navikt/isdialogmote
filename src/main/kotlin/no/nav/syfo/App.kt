@@ -41,9 +41,11 @@ fun main() {
             }
 
             val kafkaBrukernotifikasjonProducerProperties = kafkaBrukernotifikasjonProducerConfig(environment)
+            val kafkaProducerBeskjed = KafkaProducer<Nokkel, Beskjed>(kafkaBrukernotifikasjonProducerProperties)
             val kafkaProducerOppgave = KafkaProducer<Nokkel, Oppgave>(kafkaBrukernotifikasjonProducerProperties)
             val kafkaProducerDone = KafkaProducer<Nokkel, Done>(kafkaBrukernotifikasjonProducerProperties)
             val brukernotifikasjonProducer = BrukernotifikasjonProducer(
+                kafkaProducerBeskjed = kafkaProducerBeskjed,
                 kafkaProducerOppgave = kafkaProducerOppgave,
                 kafkaProducerDone = kafkaProducerDone,
             )

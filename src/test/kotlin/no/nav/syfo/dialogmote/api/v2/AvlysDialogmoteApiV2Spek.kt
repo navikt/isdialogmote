@@ -48,6 +48,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
 
             beforeEachTest {
                 clearMocks(brukernotifikasjonProducer)
+                justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
                 justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                 clearMocks(mqSenderMock)
                 justRun { mqSenderMock.sendMQMessage(any(), any()) }
@@ -158,7 +159,8 @@ class AvlysDialogmoteApiV2Spek : Spek({
                                 LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo true
 
-                            verify(exactly = 2) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                            verify(exactly = 1) { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
+                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2
@@ -288,6 +290,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                                 LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo false
 
+                            verify(exactly = 0) { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
                             verify(exactly = 0) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()

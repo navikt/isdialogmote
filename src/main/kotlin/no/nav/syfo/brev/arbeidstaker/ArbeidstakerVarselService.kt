@@ -2,9 +2,9 @@ package no.nav.syfo.brev.arbeidstaker
 
 import no.nav.brukernotifikasjon.schemas.*
 import no.nav.brukernotifikasjon.schemas.builders.*
-import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.domain.PersonIdentNumber
 import java.net.URL
 import java.time.LocalDateTime
 import java.util.*
@@ -39,17 +39,31 @@ class ArbeidstakerVarselService(
                 "Du har mottatt et referat fra dialogmøte"
             }
         }
-        val oppgave = createBrukernotifikasjonOppgave(
-            createdAt = createdAt,
-            personIdent = personIdent,
-            tekst = tekst,
-            link = URL(dialogmoteArbeidstakerUrl),
-            grupperingsId = motedeltakerArbeidstakerUuid,
-        )
-        brukernotifikasjonProducer.sendOppgave(
-            nokkel,
-            oppgave,
-        )
+        if (type == MotedeltakerVarselType.INNKALT || type == MotedeltakerVarselType.NYTT_TID_STED) {
+            val oppgave = createBrukernotifikasjonOppgave(
+                createdAt = createdAt,
+                personIdent = personIdent,
+                tekst = tekst,
+                link = URL(dialogmoteArbeidstakerUrl),
+                grupperingsId = motedeltakerArbeidstakerUuid,
+            )
+            brukernotifikasjonProducer.sendOppgave(
+                nokkel,
+                oppgave,
+            )
+        } else {
+            val beskjed = createBrukernotifikasjonBeskjed(
+                createdAt = createdAt,
+                personIdent = personIdent,
+                tekst = tekst,
+                link = URL(dialogmoteArbeidstakerUrl),
+                grupperingsId = motedeltakerArbeidstakerUuid,
+            )
+            brukernotifikasjonProducer.sendBeskjed(
+                nokkel,
+                beskjed,
+            )
+        }
     }
 
     fun lesVarsel(
@@ -78,6 +92,23 @@ fun createBrukernotifikasjonNokkel(
 ): Nokkel = NokkelBuilder()
     .withSystembruker(serviceuser)
     .withEventId(varselUuid.toString())
+    .build()
+
+fun createBrukernotifikasjonBeskjed(
+    createdAt: LocalDateTime,
+    tekst: String,
+    link: URL,
+    personIdent: PersonIdentNumber,
+    grupperingsId: UUID,
+): Beskjed = BeskjedBuilder()
+    .withTidspunkt(createdAt)
+    .withGrupperingsId(grupperingsId.toString())
+    .withFodselsnummer(personIdent.value)
+    .withTekst(tekst)
+    .withLink(link)
+    .withSikkerhetsnivaa(4)
+    .withEksternVarsling(true)
+    .withSynligFremTil(LocalDateTime.now().plusYears(1))
     .build()
 
 fun createBrukernotifikasjonOppgave(
