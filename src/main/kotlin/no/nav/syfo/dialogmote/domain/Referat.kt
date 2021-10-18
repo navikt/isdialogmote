@@ -118,7 +118,7 @@ fun Referat.toNarmesteLederBrevDTO(
     deltakerUuid = deltakerUuid.toString(),
     createdAt = this.createdAt,
     brevType = MotedeltakerVarselType.REFERAT.name,
-    lestDato = this.lestDatoArbeidstaker,
+    lestDato = this.lestDatoArbeidsgiver,
     fritekst = konklusjon,
     sted = dialogmoteTidSted.sted,
     tid = dialogmoteTidSted.tid,

@@ -16,11 +16,14 @@ import io.mockk.verify
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
+import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.dialogmote.api.v2.*
+import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewReferatDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBeEqualTo
@@ -28,6 +31,7 @@ import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDateTime
 
 object NarmesteLederBrevSpek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -42,6 +46,7 @@ object NarmesteLederBrevSpek : Spek({
             database.addDummyDeltakere()
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 
@@ -92,6 +97,9 @@ object NarmesteLederBrevSpek : Spek({
 
                 it("Should return OK") {
                     val uuid: String
+                    val createdDialogmoteUUID: String
+                    val createdDialogmoteDeltakerArbeidsgiverUUID: String
+
                     with( // Create a dialogmote before we can test how to retrieve it
                         handleRequest(HttpMethod.Post, urlMote) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenVeileder))
@@ -102,6 +110,20 @@ object NarmesteLederBrevSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                         clearMocks(mqSenderMock)
+                    }
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenVeileder))
+                            addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dto = dialogmoteList.first()
+                        dto.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+                        createdDialogmoteUUID = dto.uuid
+                        createdDialogmoteDeltakerArbeidsgiverUUID = dto.arbeidsgiver.uuid
                     }
 
                     with(
@@ -174,6 +196,103 @@ object NarmesteLederBrevSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val pdfContent = response.byteContent!!
                         pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkallingArbeidsgiver
+                    }
+                    val urlMoteUUIDReferat =
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                    val referatDto = generateNewReferatDTO()
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDReferat) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenVeileder))
+                            setBody(objectMapper.writeValueAsString(referatDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    val createdReferatArbeidsgiverBrevUUID: String
+                    with(
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                            addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val arbeidsgiverBrevList =
+                            objectMapper.readValue<List<NarmesteLederBrevDTO>>(response.content!!)
+                        arbeidsgiverBrevList.size shouldBeEqualTo 2
+
+                        val arbeidsgiverBrevDTO = arbeidsgiverBrevList.first()
+                        arbeidsgiverBrevDTO.shouldNotBeNull()
+                        arbeidsgiverBrevDTO.brevType shouldBeEqualTo MotedeltakerVarselType.REFERAT.name
+                        arbeidsgiverBrevDTO.lestDato.shouldBeNull()
+                        arbeidsgiverBrevDTO.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                        arbeidsgiverBrevDTO.deltakerUuid shouldBeEqualTo createdDialogmoteDeltakerArbeidsgiverUUID
+                        arbeidsgiverBrevDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                        val isCorrectDialogmotetid =
+                            LocalDateTime.now().plusDays(29).isBefore(arbeidsgiverBrevDTO.tid)
+                        isCorrectDialogmotetid shouldBeEqualTo true
+                        createdReferatArbeidsgiverBrevUUID = arbeidsgiverBrevDTO.uuid
+                    }
+                    val urlReferatUUIDLes =
+                        "$narmesteLederBrevApiBasePath/$createdReferatArbeidsgiverBrevUUID$narmesteLederBrevApiLesPath"
+                    with(
+                        handleRequest(HttpMethod.Post, urlReferatUUIDLes) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+                    val arbeidsgiverBrevDTO: NarmesteLederBrevDTO?
+                    with(
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                            addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val arbeidsgiverBrevList =
+                            objectMapper.readValue<List<NarmesteLederBrevDTO>>(response.content!!)
+                        arbeidsgiverBrevList.size shouldBeEqualTo 2
+
+                        arbeidsgiverBrevDTO = arbeidsgiverBrevList.firstOrNull()
+                        arbeidsgiverBrevDTO.shouldNotBeNull()
+                        arbeidsgiverBrevDTO.brevType shouldBeEqualTo MotedeltakerVarselType.REFERAT.name
+                        arbeidsgiverBrevDTO.lestDato.shouldNotBeNull()
+                    }
+                    with(
+                        handleRequest(HttpMethod.Post, urlReferatUUIDLes) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+                    with(
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                            addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val arbeidsgiverBrevList =
+                            objectMapper.readValue<List<NarmesteLederBrevDTO>>(response.content!!)
+                        arbeidsgiverBrevList.size shouldBeEqualTo 2
+
+                        val arbeidstakerBrevUpdatedDTO = arbeidsgiverBrevList.firstOrNull()
+                        arbeidstakerBrevUpdatedDTO.shouldNotBeNull()
+                        arbeidstakerBrevUpdatedDTO.brevType shouldBeEqualTo MotedeltakerVarselType.REFERAT.name
+                        arbeidstakerBrevUpdatedDTO.lestDato shouldBeEqualTo arbeidsgiverBrevDTO!!.lestDato
+                    }
+                    val urlPdfForReferatNedlasting =
+                        "$narmesteLederBrevApiBasePath/$createdReferatArbeidsgiverBrevUUID$narmesteLederBrevApiPdfPath"
+                    with(
+                        handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val pdfContent = response.byteContent!!
+                        pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
                     }
                 }
                 it("Same narmesteleder and arbeidstaker, different virksomhet") {
