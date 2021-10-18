@@ -72,7 +72,7 @@ fun List<Dialogmote>.toNarmesteLederBrevDTOList(): List<NarmesteLederBrevDTO> {
             brevList.add(
                 it.toNarmesteLederBrevDTO(
                     dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
-                    deltakerUuid = dialogmote.arbeidstaker.uuid,
+                    deltakerUuid = dialogmote.arbeidsgiver.uuid,
                     virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
                 )
             )
@@ -81,7 +81,7 @@ fun List<Dialogmote>.toNarmesteLederBrevDTOList(): List<NarmesteLederBrevDTO> {
             dialogmote.arbeidsgiver.varselList.map {
                 it.toNarmesteLederBrevDTO(
                     dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
-                    deltakerUuid = dialogmote.arbeidstaker.uuid,
+                    deltakerUuid = dialogmote.arbeidsgiver.uuid,
                     virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
                 )
             }
