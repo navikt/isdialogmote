@@ -124,6 +124,13 @@ fun Connection.createNewDialogmoteWithReferences(
         moteId = moteId,
         newDialogmotedeltakerArbeidsgiver = newDialogmote.arbeidsgiver,
     )
+    newDialogmote.behandler?.let {
+        this.createMotedeltakerBehandler(
+            commit = false,
+            moteId = moteId,
+            newDialogmotedeltakerBehandler = it,
+        )
+    }
 
     if (commit) {
         this.commit()

@@ -98,11 +98,13 @@ class DialogmoteService(
     ): Dialogmote {
         val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
         val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
+        val motedeltakerBehandler = dialogmotedeltakerService.getDialogmoteDeltakerBehandler(pDialogmote.id)
         val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
         val referat = getReferatForMote(pDialogmote.uuid)
         return pDialogmote.toDialogmote(
             dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
             dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
+            dialogmotedeltakerBehandler = motedeltakerBehandler,
             dialogmoteTidStedList = dialogmoteTidStedList,
             referat = referat,
         )

@@ -156,39 +156,14 @@ const val queryGetMotedeltakerBehandlerForMote =
         WHERE mote_id = ?
     """
 
-fun DatabaseInterface.getMoteDeltakerBehandler(moteId: Int): PMotedeltakerBehandler {
+fun DatabaseInterface.getMoteDeltakerBehandler(moteId: Int): PMotedeltakerBehandler? {
     val pMotedeltakerBehandlerList = this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerBehandlerForMote).use {
             it.setInt(1, moteId)
             it.executeQuery().toList { toPMotedeltakerBehandler() }
         }
     }
-    pMotedeltakerBehandlerList.assertThatExactlyOneElement(
-        errorMessageIfEmpty = "No motedeltakerBehandler found for moteId with id $moteId",
-        errorMessageIfMoreThanOne = "More than one motedeltakerBehandler found for motedeltakerId with id $moteId",
-    )
-    return pMotedeltakerBehandlerList.first()
-}
-
-const val queryGetMotedeltakerBehandlerForMoteById =
-    """
-        SELECT *
-        FROM MOTEDELTAKER_BEHANDLER
-        WHERE id = ?
-    """
-
-fun DatabaseInterface.getMoteDeltakerBehandlerById(moteDeltakerBehandlerId: Int): PMotedeltakerBehandler {
-    val pMotedeltakerBehandlerList = this.connection.use { connection ->
-        connection.prepareStatement(queryGetMotedeltakerBehandlerForMoteById).use {
-            it.setInt(1, moteDeltakerBehandlerId)
-            it.executeQuery().toList { toPMotedeltakerBehandler() }
-        }
-    }
-    pMotedeltakerBehandlerList.assertThatExactlyOneElement(
-        errorMessageIfEmpty = "No motedeltakerBehandler found for id  $moteDeltakerBehandlerId",
-        errorMessageIfMoreThanOne = "More than one motedeltakerBehandler found for motedeltakerId $moteDeltakerBehandlerId",
-    )
-    return pMotedeltakerBehandlerList.first()
+    return pMotedeltakerBehandlerList.firstOrNull()
 }
 
 fun ResultSet.toPMotedeltakerBehandler(): PMotedeltakerBehandler =

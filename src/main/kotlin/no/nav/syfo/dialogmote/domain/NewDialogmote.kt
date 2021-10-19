@@ -11,6 +11,7 @@ data class NewDialogmote(
     val tildeltEnhet: String,
     val arbeidstaker: NewDialogmotedeltakerArbeidstaker,
     val arbeidsgiver: NewDialogmotedeltakerArbeidsgiver,
+    val behandler: NewDialogmotedeltakerBehandler? = null,
     val tidSted: NewDialogmoteTidSted,
 )
 
