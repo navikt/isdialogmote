@@ -24,6 +24,12 @@ data class NewDialogmotedeltakerArbeidsgiver(
     val fritekstInnkalling: String? = "",
 )
 
+data class NewDialogmotedeltakerBehandler(
+    val behandlerRef: String,
+    val behandlerNavn: String,
+    val behandlerKontor: String,
+)
+
 data class NewDialogmoteTidSted(
     override val sted: String,
     override val tid: LocalDateTime,

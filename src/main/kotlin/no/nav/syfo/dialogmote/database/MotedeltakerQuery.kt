@@ -2,9 +2,8 @@ package no.nav.syfo.dialogmote.database
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.dialogmote.database.domain.PMotedeltakerArbeidsgiver
-import no.nav.syfo.dialogmote.database.domain.PMotedeltakerArbeidstaker
-import no.nav.syfo.dialogmote.domain.NewDialogmotedeltakerArbeidsgiver
+import no.nav.syfo.dialogmote.database.domain.*
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.lang.RuntimeException
@@ -101,6 +100,108 @@ fun ResultSet.toPMotedeltakerArbeidstaker(): PMotedeltakerArbeidstaker =
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         moteId = getInt("mote_id"),
         personIdent = PersonIdentNumber(getString("personident")),
+    )
+
+const val queryCreateMotedeltakerBehandler =
+    """
+    INSERT INTO MOTEDELTAKER_BEHANDLER (
+        id,
+        uuid,
+        created_at,
+        updated_at,
+        mote_id,
+        behandler_ref,
+        behandler_navn,
+        behandler_kontor,
+        behandler_type
+        ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+    """
+
+fun Connection.createMotedeltakerBehandler(
+    commit: Boolean = true,
+    moteId: Int,
+    newDialogmotedeltakerBehandler: NewDialogmotedeltakerBehandler,
+): Pair<Int, UUID> {
+    val now = Timestamp.from(Instant.now())
+
+    val motedeltakerUuid = UUID.randomUUID()
+    val motedeltakerBehandlerIdList = this.prepareStatement(queryCreateMotedeltakerBehandler).use {
+        it.setString(1, motedeltakerUuid.toString())
+        it.setTimestamp(2, now)
+        it.setTimestamp(3, now)
+        it.setInt(4, moteId)
+        it.setString(5, newDialogmotedeltakerBehandler.behandlerRef)
+        it.setString(6, newDialogmotedeltakerBehandler.behandlerNavn)
+        it.setString(7, newDialogmotedeltakerBehandler.behandlerKontor)
+        it.setString(8, BehandlerType.FASTLEGE.name)
+        it.executeQuery().toList { getInt("id") }
+    }
+
+    motedeltakerBehandlerIdList.assertThatExactlyOneElement(
+        errorMessageIfEmpty = "Creating MotedeltakerBehandler failed, no rows affected.",
+        errorMessageIfMoreThanOne = "Creating MotedeltakerBehandler failed, more than one row affected.",
+    )
+
+    if (commit) {
+        this.commit()
+    }
+
+    return Pair(motedeltakerBehandlerIdList.first(), motedeltakerUuid)
+}
+
+const val queryGetMotedeltakerBehandlerForMote =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_BEHANDLER
+        WHERE mote_id = ?
+    """
+
+fun DatabaseInterface.getMoteDeltakerBehandler(moteId: Int): PMotedeltakerBehandler {
+    val pMotedeltakerBehandlerList = this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerBehandlerForMote).use {
+            it.setInt(1, moteId)
+            it.executeQuery().toList { toPMotedeltakerBehandler() }
+        }
+    }
+    pMotedeltakerBehandlerList.assertThatExactlyOneElement(
+        errorMessageIfEmpty = "No motedeltakerBehandler found for moteId with id $moteId",
+        errorMessageIfMoreThanOne = "More than one motedeltakerBehandler found for motedeltakerId with id $moteId",
+    )
+    return pMotedeltakerBehandlerList.first()
+}
+
+const val queryGetMotedeltakerBehandlerForMoteById =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_BEHANDLER
+        WHERE id = ?
+    """
+
+fun DatabaseInterface.getMoteDeltakerBehandlerById(moteDeltakerBehandlerId: Int): PMotedeltakerBehandler {
+    val pMotedeltakerBehandlerList = this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerBehandlerForMoteById).use {
+            it.setInt(1, moteDeltakerBehandlerId)
+            it.executeQuery().toList { toPMotedeltakerBehandler() }
+        }
+    }
+    pMotedeltakerBehandlerList.assertThatExactlyOneElement(
+        errorMessageIfEmpty = "No motedeltakerBehandler found for id  $moteDeltakerBehandlerId",
+        errorMessageIfMoreThanOne = "More than one motedeltakerBehandler found for motedeltakerId $moteDeltakerBehandlerId",
+    )
+    return pMotedeltakerBehandlerList.first()
+}
+
+fun ResultSet.toPMotedeltakerBehandler(): PMotedeltakerBehandler =
+    PMotedeltakerBehandler(
+        id = getInt("id"),
+        uuid = UUID.fromString(getString("uuid")),
+        createdAt = getTimestamp("created_at").toLocalDateTime(),
+        updatedAt = getTimestamp("updated_at").toLocalDateTime(),
+        moteId = getInt("mote_id"),
+        behandlerRef = getString("behandler_ref"),
+        behandlerNavn = getString("behandler_navn"),
+        behandlerKontor = getString("behandler_kontor"),
+        behandlerType = getString("behandler_type"),
     )
 
 const val queryCreateMotedeltakerArbeidsgiver =
