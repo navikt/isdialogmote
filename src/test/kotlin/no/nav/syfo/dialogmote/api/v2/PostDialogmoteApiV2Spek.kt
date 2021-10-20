@@ -21,8 +21,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithMissingValues
+import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -129,6 +128,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
                             dialogmoteDTO.arbeidstaker.varselList.size shouldBeEqualTo 1
 
+                            dialogmoteDTO.behandler shouldBeEqualTo null
+
                             val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
                             arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
@@ -204,6 +205,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
                             dialogmoteDTO.arbeidstaker.varselList.size shouldBeEqualTo 1
 
+                            dialogmoteDTO.behandler shouldBeEqualTo null
+
                             val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
                             arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
                             arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
@@ -211,6 +214,50 @@ class PostDialogmoteApiV2Spek : Spek({
                             arbeidstakerVarselDTO.fritekst shouldBeEqualTo ""
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+
+                            dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            dialogmoteDTO.videoLink shouldBeEqualTo ""
+
+                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                        }
+                    }
+                    it("should return OK if request is successful: with behandler") {
+                        val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMote) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            clearMocks(mqSenderMock)
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.tildeltEnhet shouldBeEqualTo ENHET_NR.value
+                            dialogmoteDTO.tildeltVeilederIdent shouldBeEqualTo VEILEDER_IDENT
+
+                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
+                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                            dialogmoteDTO.behandler shouldNotBeEqualTo null
+                            dialogmoteDTO.behandler!!.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            dialogmoteDTO.behandler!!.behandlerNavn shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerNavn
+                            dialogmoteDTO.behandler!!.behandlerKontor shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerKontor
 
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo ""

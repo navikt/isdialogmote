@@ -18,6 +18,7 @@ data class PDialogmote(
 fun PDialogmote.toDialogmote(
     dialogmotedeltakerArbeidstaker: DialogmotedeltakerArbeidstaker,
     dialogmotedeltakerArbeidsgiver: DialogmotedeltakerArbeidsgiver,
+    dialogmotedeltakerBehandler: DialogmotedeltakerBehandler?,
     dialogmoteTidStedList: List<DialogmoteTidSted>,
     referat: Referat?,
 ): Dialogmote =
@@ -32,6 +33,7 @@ fun PDialogmote.toDialogmote(
         tildeltEnhet = this.tildeltEnhet,
         arbeidstaker = dialogmotedeltakerArbeidstaker,
         arbeidsgiver = dialogmotedeltakerArbeidsgiver,
+        behandler = dialogmotedeltakerBehandler,
         tidStedList = dialogmoteTidStedList,
         referat = referat,
     )

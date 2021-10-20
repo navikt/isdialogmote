@@ -11,6 +11,7 @@ data class NewDialogmoteDTO(
     val tildeltEnhet: String,
     val arbeidstaker: NewDialogmotedeltakerArbeidstakerDTO,
     val arbeidsgiver: NewDialogmotedeltakerArbeidsgiverDTO,
+    val behandler: NewDialogmotedeltakerBehandlerDTO? = null,
     val tidSted: NewDialogmoteTidStedDTO,
 )
 
@@ -23,6 +24,13 @@ data class NewDialogmotedeltakerArbeidstakerDTO(
 data class NewDialogmotedeltakerArbeidsgiverDTO(
     val virksomhetsnummer: String,
     val fritekstInnkalling: String?,
+    val innkalling: List<DocumentComponentDTO>,
+)
+
+data class NewDialogmotedeltakerBehandlerDTO(
+    val behandlerRef: String,
+    val behandlerNavn: String,
+    val behandlerKontor: String,
     val innkalling: List<DocumentComponentDTO>,
 )
 
@@ -50,10 +58,17 @@ fun NewDialogmoteDTO.toNewDialogmote(
             virksomhetsnummer = Virksomhetsnummer(this.arbeidsgiver.virksomhetsnummer),
             fritekstInnkalling = this.arbeidsgiver.fritekstInnkalling,
         ),
+        behandler = this.behandler?.let {
+            NewDialogmotedeltakerBehandler(
+                behandlerRef = it.behandlerRef,
+                behandlerNavn = it.behandlerNavn,
+                behandlerKontor = it.behandlerKontor,
+            )
+        },
         tidSted = NewDialogmoteTidSted(
             sted = tidSted.sted,
             tid = tidSted.tid,
             videoLink = tidSted.videoLink,
-        )
+        ),
     )
 }

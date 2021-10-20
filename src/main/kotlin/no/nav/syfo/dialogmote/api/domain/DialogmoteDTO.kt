@@ -12,6 +12,7 @@ data class DialogmoteDTO(
     val tildeltEnhet: String,
     val arbeidstaker: DialogmotedeltakerArbeidstakerDTO,
     val arbeidsgiver: DialogmotedeltakerArbeidsgiverDTO,
+    val behandler: DialogmotedeltakerBehandlerDTO?,
     val sted: String,
     val tid: LocalDateTime,
     val videoLink: String?,

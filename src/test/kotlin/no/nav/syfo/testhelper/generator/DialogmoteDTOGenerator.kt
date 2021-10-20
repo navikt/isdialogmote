@@ -5,6 +5,9 @@ import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.testhelper.UserConstants
+import no.nav.syfo.testhelper.UserConstants.BEHANDLER_KONTOR
+import no.nav.syfo.testhelper.UserConstants.BEHANDLER_NAVN
+import no.nav.syfo.testhelper.UserConstants.BEHANDLER_REF
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import java.time.LocalDateTime
 
@@ -103,6 +106,13 @@ fun generateMotedeltakerArbeidsgiverDTO(
     innkalling = emptyList(),
 )
 
+fun generateMotedeltakerBehandlerDTO() = NewDialogmotedeltakerBehandlerDTO(
+    behandlerRef = BEHANDLER_REF,
+    behandlerNavn = BEHANDLER_NAVN,
+    behandlerKontor = BEHANDLER_KONTOR,
+    innkalling = emptyList(),
+)
+
 fun generateMotedeltakerArbeidsgiverDTOMissingValues() = NewDialogmotedeltakerArbeidsgiverDTO(
     virksomhetsnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
     fritekstInnkalling = null,
@@ -131,6 +141,18 @@ fun generateNewDialogmoteDTOWithMissingValues(
         arbeidstaker = generateMotedeltakerArbeidstakerDTOMissingValues(personIdentNumber),
         arbeidsgiver = generateMotedeltakerArbeidsgiverDTOMissingValues(),
         tidSted = generateNewDialogmoteTidStedDTONoVideoLink()
+    )
+}
+
+fun generateNewDialogmoteDTOWithBehandler(
+    personIdentNumber: PersonIdentNumber
+): NewDialogmoteDTO {
+    return NewDialogmoteDTO(
+        tildeltEnhet = UserConstants.ENHET_NR.value,
+        arbeidstaker = generateMotedeltakerArbeidstakerDTO(personIdentNumber),
+        arbeidsgiver = generateMotedeltakerArbeidsgiverDTO(),
+        behandler = generateMotedeltakerBehandlerDTO(),
+        tidSted = generateNewDialogmoteTidStedDTONoVideoLink(),
     )
 }
 
