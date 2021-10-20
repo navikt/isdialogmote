@@ -121,11 +121,11 @@ spec:
     - name: TOGGLE_ALLOW_MOTEDELTAKER_BEHANDLER
       value: "false"
     - name: TOGGLE_PUBLISH_STATUS_ENDRING_CRONJOB_ENABLED
-      value: "false"
+      value: "true"
     - name: TOGGLE_JOURNALFORING_CRONJOB_ENABLED
-      value: "false"
+      value: "true"
     - name: TOGGLE_MQ_SENDING_ENABLED
-      value: 'false'
+      value: 'true'
     - name: MQGATEWAY_HOSTNAME
       value: "a01apvl269.adeo.no"
     - name: MQGATEWAY_PORT
