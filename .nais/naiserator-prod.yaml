@@ -6,7 +6,7 @@ metadata:
   labels:
     team: teamsykefravr
 spec:
-  image: {{ image }}
+  image: { { image } }
   port: 8080
   replicas:
     min: 2
@@ -140,3 +140,7 @@ spec:
       value: "https://narmesteleder.nav.no"
     - name: NARMESTELEDER_CLIENT_ID
       value: "046419dd-8baa-4343-b192-a14d7c260b38"
+    - name: DOKDIST_FORDELING_URL
+      value: "https://dokdistfordeling.intern.nav.no"
+    - name: DOKDIST_FORDELING_CLIENT_ID
+      value: "prod-fss.teamdokumenthandtering.saf"

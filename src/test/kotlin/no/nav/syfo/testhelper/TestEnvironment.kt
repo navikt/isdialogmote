@@ -1,9 +1,8 @@
 package no.nav.syfo.testhelper
 
-import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.Environment
+import no.nav.syfo.application.*
 import java.net.ServerSocket
-import java.util.*
+import java.util.Properties
 
 fun testEnvironment(
     kafkaBootstrapServers: String,
@@ -67,6 +66,8 @@ fun testEnvironment(
     narmestelederUrl = narmestelederUrl ?: "http://narmesteleder",
     pdlClientId = "pdlClientId",
     pdlUrl = pdlUrl ?: "http://pdl",
+    dokdistFordelingClientId = "dokdistFordelingClientId",
+    dokdistFordelingUrl = "http://dokdistfordeling"
 )
 
 fun testAppState() = ApplicationState(
