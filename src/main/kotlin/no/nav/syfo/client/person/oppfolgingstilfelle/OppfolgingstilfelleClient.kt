@@ -47,29 +47,28 @@ class OppfolgingstilfelleClient(
                 header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
                 accept(ContentType.Application.Json)
             }
+
+            if (response.status == HttpStatusCode.NoContent) {
+                log.warn(
+                    "No content was found while requesting Oppfolgingstilfelle of person from Isproxy with {}, {}",
+                    StructuredArguments.keyValue("statusCode", response.status.value),
+                    callIdArgument(callId),
+                )
+                return null
+            }
             val oppfolgingstilfelle = response.receive<KOppfolgingstilfellePersonDTO>()
                 .toOppfolgingstilfellePerson()
             COUNT_CALL_PERSON_OPPFOLGINGSTILFELLE_SUCCESS.increment()
             oppfolgingstilfelle
-        } catch (e: ClientRequestException) {
-            handleUnexpectedResponseException(e.response, callId)
-            null
-        } catch (e: ServerResponseException) {
-            handleUnexpectedResponseException(e.response, callId)
+        } catch (responseException: ResponseException) {
+            log.error(
+                "Error while requesting Oppfolgingstilfelle of person from Isproxy with {}, {}",
+                StructuredArguments.keyValue("statusCode", responseException.response.status.value),
+                callIdArgument(callId),
+            )
+            COUNT_CALL_PERSON_OPPFOLGINGSTILFELLE_FAIL.increment()
             null
         }
-    }
-
-    private fun handleUnexpectedResponseException(
-        response: HttpResponse,
-        callId: String,
-    ) {
-        log.error(
-            "Error while requesting Oppfolgingstilfelle of person from Isproxy with {}, {}",
-            StructuredArguments.keyValue("statusCode", response.status.value.toString()),
-            callIdArgument(callId),
-        )
-        COUNT_CALL_PERSON_OPPFOLGINGSTILFELLE_FAIL.increment()
     }
 
     companion object {
