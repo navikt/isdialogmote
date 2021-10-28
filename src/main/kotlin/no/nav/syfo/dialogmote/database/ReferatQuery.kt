@@ -264,7 +264,7 @@ const val queryUpdateReferatLestDatoArbeidstaker =
     """
     UPDATE MOTE_REFERAT 
     SET lest_dato_arbeidstaker = ?
-    WHERE uuid = ?
+    WHERE uuid = ? AND lest_dato_arbeidstaker IS NULL
     """
 
 fun Connection.updateReferatLestDatoArbeidstaker(
@@ -282,7 +282,7 @@ const val queryUpdateReferatLestDatoArbeidsgiver =
     """
     UPDATE MOTE_REFERAT 
     SET lest_dato_arbeidsgiver = ?
-    WHERE uuid = ?
+    WHERE uuid = ? AND lest_dato_arbeidsgiver IS NULL
     """
 
 fun Connection.updateReferatLestDatoArbeidsgiver(
