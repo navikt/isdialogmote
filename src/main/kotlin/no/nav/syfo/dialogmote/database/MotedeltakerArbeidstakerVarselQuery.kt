@@ -184,7 +184,7 @@ const val queryUpdateMotedeltakerArbeidstakerVarselLestDato =
     """
         UPDATE MOTEDELTAKER_ARBEIDSTAKER_VARSEL
         SET lest_dato = ?
-        WHERE uuid = ?
+        WHERE uuid = ? AND lest_dato IS NULL
     """
 
 fun Connection.updateMotedeltakerArbeidstakerVarselLestDato(
