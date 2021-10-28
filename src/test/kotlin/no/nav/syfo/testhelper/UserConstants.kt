@@ -34,4 +34,8 @@ object UserConstants {
     val NARMESTELEDER_FNR_2 = PersonIdentNumber("98765432102")
     val VIRKSOMHETSNUMMER_HAS_NARMESTELEDER = Virksomhetsnummer("912345678")
     val OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER = Virksomhetsnummer("922222222")
+
+    val AZUREAD_TOKEN = "tokenReturnedByAzureAd"
+
+    val JWT_AZP = "syfomodiaperson"
 }
