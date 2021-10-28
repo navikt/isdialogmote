@@ -13,6 +13,7 @@ import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.Duration
 import java.util.*
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
@@ -29,6 +30,7 @@ fun Route.registerNarmestelederBrevApi(
 ) {
     route(narmesteLederBrevApiBasePath) {
         get {
+            val startTime = System.currentTimeMillis()
             val callId = getCallId()
             try {
                 val narmesteLederPersonIdentNumber = call.personIdent()
@@ -50,11 +52,14 @@ fun Route.registerNarmestelederBrevApi(
                 val illegalArgumentMessage = "Could not retrieve BrevList"
                 log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            } finally {
+                val duration = Duration.ofMillis(System.currentTimeMillis() - startTime)
+                HISTOGRAM_CALL_API_NL_BREV_GET_TIMER.record(duration)
             }
         }
         get("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiPdfPath") {
+            val startTime = System.currentTimeMillis()
             val callId = getCallId()
-
             try {
                 val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
@@ -80,9 +85,13 @@ fun Route.registerNarmestelederBrevApi(
                 val illegalArgumentMessage = "Could not get pdf for brev with uuid"
                 log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            } finally {
+                val duration = Duration.ofMillis(System.currentTimeMillis() - startTime)
+                HISTOGRAM_CALL_API_NL_BREV_PDF_TIMER.record(duration)
             }
         }
         post("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiLesPath") {
+            val startTime = System.currentTimeMillis()
             val callId = getCallId()
             try {
                 val narmesteLederPersonIdentNumber = call.personIdent()
@@ -116,6 +125,9 @@ fun Route.registerNarmestelederBrevApi(
                     callIdArgument(callId)
                 )
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            } finally {
+                val duration = Duration.ofMillis(System.currentTimeMillis() - startTime)
+                HISTOGRAM_CALL_API_NL_BREV_LES_BASE_TIMER.record(duration)
             }
         }
     }
