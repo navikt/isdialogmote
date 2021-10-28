@@ -1,6 +1,6 @@
 package no.nav.syfo.testhelper
 
-import io.ktor.server.netty.*
+import io.ktor.server.netty.NettyApplicationEngine
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.testhelper.mock.*
@@ -20,6 +20,7 @@ class ExternalMockEnvironment(
     val syfobehandlendeenhetMock = SyfobehandlendeenhetMock()
     val tilgangskontrollMock = VeilederTilgangskontrollMock()
     var narmesteLederMock = NarmesteLederMock()
+    val dokdistMock = DokdistFordelingMock()
 
     val externalApplicationMockMap = hashMapOf(
         azureAdV2Mock.name to azureAdV2Mock.server,
@@ -30,6 +31,7 @@ class ExternalMockEnvironment(
         tilgangskontrollMock.name to tilgangskontrollMock.server,
         narmesteLederMock.name to narmesteLederMock.server,
         pdlMock.name to pdlMock.server,
+        dokdistMock.name to dokdistMock.server
     )
 
     val environment = testEnvironment(

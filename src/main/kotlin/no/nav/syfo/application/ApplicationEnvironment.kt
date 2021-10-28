@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import io.ktor.application.*
+import io.ktor.application.Application
 
 data class Environment(
     val aadAppClient: String = getEnvVar("AZURE_APP_CLIENT_ID"),
@@ -58,6 +58,8 @@ data class Environment(
     val narmestelederClientId: String = getEnvVar("NARMESTELEDER_CLIENT_ID"),
     val pdlUrl: String = getEnvVar("PDL_URL"),
     val pdlClientId: String = getEnvVar("PDL_CLIENT_ID"),
+    val dokdistFordelingUrl: String = getEnvVar("DOKDIST_FORDELING_URL"),
+    val dokdistFordelingClientId: String = getEnvVar("DOKDIST_FORDELING_CLIENT_ID")
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$isdialogmoteDbHost:$isdialogmoteDbPort/$isdialogmoteDbName"
