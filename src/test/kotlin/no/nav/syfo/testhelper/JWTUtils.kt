@@ -42,7 +42,7 @@ fun generateJWT(
         .withClaim("nbf", now)
         .withClaim("iat", now)
         .withClaim("exp", Date.from(expiry?.atZone(ZoneId.systemDefault())?.toInstant()))
-        .withClaim(JWT_CLAIM_AZP, "syfomodiaperson")
+        .withClaim(JWT_CLAIM_AZP, UserConstants.JWT_AZP)
         .withClaim(JWT_CLAIM_NAVIDENT, navIdent)
         .sign(alg)
 }
