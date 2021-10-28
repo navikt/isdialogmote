@@ -28,7 +28,6 @@ import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
-import redis.clients.jedis.*
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -38,6 +37,7 @@ fun Application.apiModule(
     environment: Environment,
     wellKnownSelvbetjening: WellKnown,
     wellKnownVeilederV2: WellKnown,
+    cache: RedisStore,
 ) {
     installMetrics()
     installCallId()
@@ -58,19 +58,11 @@ fun Application.apiModule(
     )
     installStatusPages()
 
-    val cache = RedisStore(
-        JedisPool(
-            JedisPoolConfig(),
-            environment.redisHost,
-            environment.redisPort,
-            Protocol.DEFAULT_TIMEOUT,
-            environment.redisSecret
-        )
-    )
     val azureAdV2Client = AzureAdV2Client(
         aadAppClient = environment.aadAppClient,
         aadAppSecret = environment.aadAppSecret,
         aadTokenEndpoint = environment.aadTokenEndpoint,
+        redisStore = cache,
     )
     val pdlClient = PdlClient(
         azureAdV2Client = azureAdV2Client,

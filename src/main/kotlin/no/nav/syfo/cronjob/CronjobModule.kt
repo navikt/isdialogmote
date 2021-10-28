@@ -4,6 +4,7 @@ import io.ktor.application.*
 import kotlinx.coroutines.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
+import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.DokarkivClient
@@ -21,12 +22,14 @@ import org.apache.kafka.clients.producer.KafkaProducer
 fun Application.cronjobModule(
     applicationState: ApplicationState,
     database: DatabaseInterface,
-    environment: Environment
+    environment: Environment,
+    cache: RedisStore,
 ) {
     val azureAdV2Client = AzureAdV2Client(
         aadAppClient = environment.aadAppClient,
         aadAppSecret = environment.aadAppSecret,
         aadTokenEndpoint = environment.aadTokenEndpoint,
+        redisStore = cache,
     )
     val dokarkivClient = DokarkivClient(
         azureAdV2Client = azureAdV2Client,

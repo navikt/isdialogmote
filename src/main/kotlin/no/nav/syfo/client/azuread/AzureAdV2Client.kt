@@ -6,13 +6,17 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import no.nav.syfo.application.api.authentication.getConsumerClientId
+import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
+import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.httpClientProxy
 import org.slf4j.LoggerFactory
 
 class AzureAdV2Client(
     private val aadAppClient: String,
     private val aadAppSecret: String,
-    private val aadTokenEndpoint: String
+    private val aadTokenEndpoint: String,
+    private val redisStore: RedisStore,
 ) {
     private val httpClient = httpClientProxy()
 
@@ -20,28 +24,65 @@ class AzureAdV2Client(
         scopeClientId: String,
         token: String
     ): AzureAdV2Token? {
-        return getAccessToken(
-            Parameters.build {
-                append("client_id", aadAppClient)
-                append("client_secret", aadAppSecret)
-                append("client_assertion_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
-                append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
-                append("assertion", token)
-                append("scope", "api://$scopeClientId/.default")
-                append("requested_token_use", "on_behalf_of")
+        val azp = getConsumerClientId(token)
+        val veilederIdent = getNAVIdentFromToken(token)
+
+        val cacheKey = "$veilederIdent-$azp-$scopeClientId"
+        val cachedToken: AzureAdV2Token? = redisStore.getObject(key = cacheKey)
+        return if (cachedToken?.isExpired() == false) {
+            COUNT_CALL_AZUREAD_TOKEN_OBO_CACHE_HIT.increment()
+            cachedToken
+        } else {
+            val azureAdTokenResponse = getAccessToken(
+                Parameters.build {
+                    append("client_id", aadAppClient)
+                    append("client_secret", aadAppSecret)
+                    append("client_assertion_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
+                    append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
+                    append("assertion", token)
+                    append("scope", "api://$scopeClientId/.default")
+                    append("requested_token_use", "on_behalf_of")
+                }
+            )
+            azureAdTokenResponse?.let { tokenResponse ->
+                val azureAdToken = tokenResponse.toAzureAdV2Token()
+                COUNT_CALL_AZUREAD_TOKEN_OBO_CACHE_MISS.increment()
+                redisStore.setObject(
+                    expireSeconds = 3600,
+                    key = cacheKey,
+                    value = azureAdToken,
+                )
+                azureAdToken
             }
-        )?.toAzureAdV2Token()
+        }
     }
 
     suspend fun getSystemToken(scopeClientId: String): AzureAdV2Token? {
-        return getAccessToken(
-            Parameters.build {
-                append("client_id", aadAppClient)
-                append("client_secret", aadAppSecret)
-                append("grant_type", "client_credentials")
-                append("scope", "api://$scopeClientId/.default")
+        val cacheKey = "${CACHE_AZUREAD_TOKEN_SYSTEM_KEY_PREFIX}$scopeClientId"
+        val cachedToken = redisStore.getObject<AzureAdV2Token>(key = cacheKey)
+        return if (cachedToken?.isExpired() == false) {
+            COUNT_CALL_AZUREAD_TOKEN_SYSTEM_CACHE_HIT.increment()
+            cachedToken
+        } else {
+            val azureAdTokenResponse = getAccessToken(
+                Parameters.build {
+                    append("client_id", aadAppClient)
+                    append("client_secret", aadAppSecret)
+                    append("grant_type", "client_credentials")
+                    append("scope", "api://$scopeClientId/.default")
+                }
+            )
+            azureAdTokenResponse?.let { token ->
+                val azureAdToken = token.toAzureAdV2Token()
+                COUNT_CALL_AZUREAD_TOKEN_SYSTEM_CACHE_MISS.increment()
+                redisStore.setObject(
+                    expireSeconds = 3600,
+                    key = cacheKey,
+                    value = azureAdToken,
+                )
+                azureAdToken
             }
-        )?.toAzureAdV2Token()
+        }
     }
 
     private suspend fun getAccessToken(formParameters: Parameters): AzureAdV2TokenResponse? {
@@ -69,6 +110,7 @@ class AzureAdV2Client(
     }
 
     companion object {
+        const val CACHE_AZUREAD_TOKEN_SYSTEM_KEY_PREFIX = "azuread-token-system-"
         private val log = LoggerFactory.getLogger(AzureAdV2Client::class.java)
     }
 }

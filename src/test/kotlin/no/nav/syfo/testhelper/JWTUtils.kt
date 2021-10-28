@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
+import no.nav.syfo.application.api.authentication.JWT_CLAIM_AZP
 import no.nav.syfo.application.api.authentication.JWT_CLAIM_NAVIDENT
 import java.io.IOException
 import java.nio.charset.StandardCharsets
@@ -41,6 +42,7 @@ fun generateJWT(
         .withClaim("nbf", now)
         .withClaim("iat", now)
         .withClaim("exp", Date.from(expiry?.atZone(ZoneId.systemDefault())?.toInstant()))
+        .withClaim(JWT_CLAIM_AZP, "syfomodiaperson")
         .withClaim(JWT_CLAIM_NAVIDENT, navIdent)
         .sign(alg)
 }
