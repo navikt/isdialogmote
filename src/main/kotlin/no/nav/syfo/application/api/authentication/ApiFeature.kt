@@ -9,6 +9,7 @@ import io.ktor.http.*
 import io.ktor.jackson.*
 import io.ktor.metrics.micrometer.*
 import io.ktor.response.*
+import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.metric.METRICS_REGISTRY
@@ -19,6 +20,7 @@ import no.nav.syfo.util.getConsumerId
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URL
+import java.time.Duration
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -72,6 +74,10 @@ fun ApplicationCall.personIdent(): PersonIdentNumber? {
 fun Application.installMetrics() {
     install(MicrometerMetrics) {
         registry = METRICS_REGISTRY
+        distributionStatisticConfig = DistributionStatisticConfig.Builder()
+            .percentilesHistogram(true)
+            .maximumExpectedValue(Duration.ofSeconds(20).toNanos().toDouble())
+            .build()
     }
 }
 
