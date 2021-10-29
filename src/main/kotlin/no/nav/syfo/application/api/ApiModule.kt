@@ -124,6 +124,7 @@ fun Application.apiModule(
         narmesteLederBaseUrl = environment.narmestelederUrl,
         narmestelederClientId = environment.narmestelederClientId,
         azureAdV2Client = azureAdV2Client,
+        cache = cache,
     )
 
     val dialogmoteService = DialogmoteService(
