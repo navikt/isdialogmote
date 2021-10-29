@@ -16,6 +16,13 @@ class RedisStore(private val jedisPool: JedisPool) {
         return if (value != null) mapper.readValue(value, T::class.java) else null
     }
 
+    inline fun <reified T> getListObject(key: String): List<T>? {
+        val value = get(key)
+        return if (value != null) {
+            mapper.readValue(value, mapper.typeFactory.constructCollectionType(ArrayList::class.java, T::class.java))
+        } else null
+    }
+
     fun get(key: String): String? {
         try {
             jedisPool.resource.use { jedis -> return jedis.get(key) }
