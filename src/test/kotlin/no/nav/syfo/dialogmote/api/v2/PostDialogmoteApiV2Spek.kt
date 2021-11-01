@@ -280,9 +280,9 @@ class PostDialogmoteApiV2Spek : Spek({
 
                     it("should return status Forbidden if denied access to person") {
                         val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_VEILEDER_NO_ACCESS)
-                        val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
+                        val urlMotePersonIdent = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
                         with(
-                            handleRequest(HttpMethod.Post, urlMote) {
+                            handleRequest(HttpMethod.Post, urlMotePersonIdent) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
@@ -295,9 +295,9 @@ class PostDialogmoteApiV2Spek : Spek({
 
                     it("should return status Forbidden if denied person has Adressbeskyttese") {
                         val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_ADRESSEBESKYTTET)
-                        val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
+                        val urlMotePersonIdent = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
                         with(
-                            handleRequest(HttpMethod.Post, urlMote) {
+                            handleRequest(HttpMethod.Post, urlMotePersonIdent) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
@@ -310,9 +310,9 @@ class PostDialogmoteApiV2Spek : Spek({
 
                     it("should return status Forbidden if denied person has cannot receive digital documents") {
                         val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_IKKE_VARSEL)
-                        val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
+                        val urlMotePersonIdent = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
                         with(
-                            handleRequest(HttpMethod.Post, urlMote) {
+                            handleRequest(HttpMethod.Post, urlMotePersonIdent) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
@@ -325,9 +325,9 @@ class PostDialogmoteApiV2Spek : Spek({
 
                     it("should return status InternalServerError if denied person with Dialogmote with Virksomhet does not have a leader for that Virksomhet") {
                         val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
-                        val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
+                        val urlMotePersonIdent = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
                         with(
-                            handleRequest(HttpMethod.Post, urlMote) {
+                            handleRequest(HttpMethod.Post, urlMotePersonIdent) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(objectMapper.writeValueAsString(newDialogmoteDTO))

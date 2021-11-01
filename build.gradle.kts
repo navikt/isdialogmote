@@ -11,11 +11,11 @@ object Versions {
     const val confluent = "5.5.0"
     const val flyway = "7.12.0"
     const val hikari = "4.0.3"
-    const val jackson = "2.11.4"
+    const val jackson = "2.12.3"
     const val jedis = "3.6.3"
     const val kafka = "2.7.0"
-    const val kafkaEmbedded = "2.5.0"
-    const val ktor = "1.6.0"
+    const val kafkaEmbedded = "2.7.0"
+    const val ktor = "1.6.4"
     const val jaxb = "2.3.1"
     const val kluent = "1.68"
     const val logback = "1.2.3"
@@ -25,6 +25,7 @@ object Versions {
     const val postgresEmbedded = "0.13.4"
     const val postgres = "42.2.23"
     const val redisEmbedded = "0.7.3"
+    const val scala = "2.12.15"
     const val spek = "2.0.15"
     const val mq = "9.2.2.0"
     const val tjenesteSpesifikasjonerGithub = "1.2020.06.11-19.53-1cad83414166"
@@ -99,6 +100,11 @@ dependencies {
     implementation("io.confluent:kafka-schema-registry:${Versions.confluent}")
     implementation("com.github.navikt:brukernotifikasjon-schemas:${Versions.brukernotifikasjonAvro}")
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
+    implementation("org.scala-lang:scala-library") {
+        version {
+            strictly(Versions.scala)
+        }
+    }
     testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded}")
 
     // MQ

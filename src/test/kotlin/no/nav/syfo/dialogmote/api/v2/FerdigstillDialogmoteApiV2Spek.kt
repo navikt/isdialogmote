@@ -21,9 +21,9 @@ import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBeEqualTo
+import org.junit.Assert.assertThrows
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import kotlin.test.assertFailsWith
 
 class FerdigstillDialogmoteApiV2Spek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -168,7 +168,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             }
                         }
 
-                        assertFailsWith<RuntimeException> {
+                        assertThrows(RuntimeException::class.java) {
                             handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -178,7 +178,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
 
                         val urlMoteUUIDAvlys = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
                         val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
-                        assertFailsWith<RuntimeException> {
+                        assertThrows(RuntimeException::class.java) {
                             handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -188,7 +188,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
 
                         val urlMoteUUIDPostTidSted = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                         val endreTidStedDialogMoteDto = generateEndreDialogmoteTidStedDTO()
-                        assertFailsWith<RuntimeException> {
+                        assertThrows(RuntimeException::class.java) {
                             handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(Authorization, bearerHeader(validToken))

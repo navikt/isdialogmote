@@ -21,10 +21,10 @@ import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import org.amshove.kluent.*
+import org.junit.Assert.assertThrows
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDateTime
-import kotlin.test.assertFailsWith
 
 class AvlysDialogmoteApiV2Spek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -171,7 +171,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         }
 
-                        assertFailsWith<RuntimeException> {
+                        assertThrows(RuntimeException::class.java) {
                             handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -181,7 +181,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
 
                         val urlMoteUUIDFerdigstill = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                         val newReferatDTO = generateNewReferatDTO()
-                        assertFailsWith<RuntimeException> {
+                        assertThrows(RuntimeException::class.java) {
                             handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -191,7 +191,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
 
                         val urlMoteUUIDPostTidSted = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                         val endreTidStedDialogMoteDto = generateEndreDialogmoteTidStedDTO()
-                        assertFailsWith<RuntimeException> {
+                        assertThrows(RuntimeException::class.java) {
                             handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(Authorization, bearerHeader(validToken))
