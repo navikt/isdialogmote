@@ -63,13 +63,13 @@ spec:
       external:
         - host: kafka-schema-registry.nais-q.adeo.no
         - host: "login.microsoftonline.com"
-        - host: "syfobehandlendeenhet.dev-fss-pub.nais.io"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
         - host: "isproxy.dev-fss-pub.nais.io"
         - host: "pdl-api.dev-fss-pub.nais.io"
       rules:
         - application: isdialogmote-redis
         - application: isdialogmotepdfgen
+        - application: syfobehandlendeenhet
   azure:
     application:
       enabled: true
@@ -109,9 +109,9 @@ spec:
     - name: PDL_URL
       value: "https://pdl-api.dev-fss-pub.nais.io/graphql"
     - name: SYFOBEHANDLENDEENHET_CLIENT_ID
-      value: "c3de32aa-370c-4357-b46c-64784217920f"
+      value: "dev-gcp.teamsykefravr.syfobehandlendeenhet"
     - name: SYFOBEHANDLENDEENHET_URL
-      value: "https://syfobehandlendeenhet.dev-fss-pub.nais.io"
+      value: "https://syfobehandlendeenhet.dev.intern.nav.no"
     - name: SYFOTILGANGSKONTROLL_CLIENT_ID
       value: "dev-fss.teamsykefravr.syfo-tilgangskontroll"
     - name: SYFOTILGANGSKONTROLL_URL
