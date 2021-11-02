@@ -8,7 +8,7 @@ object Versions {
     const val avro = "1.10.0"
     const val brukernotifikasjonAvro = "1.2021.01.18-11.12-b9c8c40b98d1"
     const val isdialogmoteSchema = "1.0.5"
-    const val confluent = "5.5.0"
+    const val confluent = "6.1.3"
     const val flyway = "7.12.0"
     const val hikari = "4.0.3"
     const val jackson = "2.12.3"
@@ -25,7 +25,7 @@ object Versions {
     const val postgresEmbedded = "0.13.4"
     const val postgres = "42.2.23"
     const val redisEmbedded = "0.7.3"
-    const val scala = "2.12.15"
+    const val scala = "2.13.7"
     const val spek = "2.0.15"
     const val mq = "9.2.2.0"
     const val tjenesteSpesifikasjonerGithub = "1.2020.06.11-19.53-1cad83414166"
@@ -33,7 +33,7 @@ object Versions {
 }
 
 plugins {
-    kotlin("jvm") version "1.5.10"
+    kotlin("jvm") version "1.5.30"
     id("com.github.johnrengelman.shadow") version "7.0.0"
     id("org.jlleitschuh.gradle.ktlint") version "10.1.0"
 }
@@ -95,7 +95,7 @@ dependencies {
     testImplementation("com.opentable.components:otj-pg-embedded:${Versions.postgresEmbedded}")
 
     // Kafka
-    implementation("org.apache.kafka:kafka_2.12:${Versions.kafka}")
+    implementation("org.apache.kafka:kafka_2.13:${Versions.kafka}")
     implementation("io.confluent:kafka-avro-serializer:${Versions.confluent}")
     implementation("io.confluent:kafka-schema-registry:${Versions.confluent}")
     implementation("com.github.navikt:brukernotifikasjon-schemas:${Versions.brukernotifikasjonAvro}")
