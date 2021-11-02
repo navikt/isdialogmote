@@ -8,13 +8,13 @@ object Versions {
     const val avro = "1.10.0"
     const val brukernotifikasjonAvro = "1.2021.01.18-11.12-b9c8c40b98d1"
     const val isdialogmoteSchema = "1.0.5"
-    const val confluent = "5.5.0"
+    const val confluent = "5.5.6"
     const val flyway = "7.12.0"
     const val hikari = "4.0.3"
     const val jackson = "2.12.3"
     const val jedis = "3.6.3"
     const val kafka = "2.7.0"
-    const val kafkaEmbedded = "2.7.0"
+    const val kafkaEmbedded = "2.5.0"
     const val ktor = "1.6.4"
     const val jaxb = "2.3.1"
     const val kluent = "1.68"
@@ -96,8 +96,12 @@ dependencies {
 
     // Kafka
     implementation("org.apache.kafka:kafka_2.12:${Versions.kafka}")
-    implementation("io.confluent:kafka-avro-serializer:${Versions.confluent}")
-    implementation("io.confluent:kafka-schema-registry:${Versions.confluent}")
+    implementation("io.confluent:kafka-avro-serializer:${Versions.confluent}") {
+        exclude(group = "org.slf4j")
+    }
+    implementation("io.confluent:kafka-schema-registry:${Versions.confluent}") {
+        exclude(group = "org.slf4j")
+    }
     implementation("com.github.navikt:brukernotifikasjon-schemas:${Versions.brukernotifikasjonAvro}")
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
     implementation("org.scala-lang:scala-library") {
