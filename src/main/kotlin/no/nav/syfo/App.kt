@@ -29,71 +29,70 @@ fun main() {
         alive = true,
         ready = false
     )
+    val logger = LoggerFactory.getLogger("ktor.application")
+    val environment = Environment()
+
+    val kafkaBrukernotifikasjonProducerProperties = kafkaBrukernotifikasjonProducerConfig(environment)
+    val brukernotifikasjonProducer = BrukernotifikasjonProducer(
+        kafkaProducerBeskjed = KafkaProducer<Nokkel, Beskjed>(kafkaBrukernotifikasjonProducerProperties),
+        kafkaProducerOppgave = KafkaProducer<Nokkel, Oppgave>(kafkaBrukernotifikasjonProducerProperties),
+        kafkaProducerDone = KafkaProducer<Nokkel, Done>(kafkaBrukernotifikasjonProducerProperties),
+    )
+    val mqSender = MQSender(environment)
+    val cache = RedisStore(
+        JedisPool(
+            JedisPoolConfig(),
+            environment.redisHost,
+            environment.redisPort,
+            Protocol.DEFAULT_TIMEOUT,
+            environment.redisSecret
+        )
+    )
+
+    val applicationEngineEnvironment = applicationEngineEnvironment {
+        log = logger
+        config = HoconApplicationConfig(ConfigFactory.load())
+        connector {
+            port = applicationPort
+        }
+        module {
+            databaseModule(
+                environment = environment
+            )
+            apiModule(
+                applicationState = applicationState,
+                brukernotifikasjonProducer = brukernotifikasjonProducer,
+                database = applicationDatabase,
+                mqSender = mqSender,
+                environment = environment,
+                wellKnownSelvbetjening = getWellKnown(environment.loginserviceIdportenDiscoveryUrl),
+                wellKnownVeilederV2 = getWellKnown(environment.azureAppWellKnownUrl),
+                cache = cache,
+            )
+            cronjobModule(
+                applicationState = applicationState,
+                database = applicationDatabase,
+                environment = environment,
+                cache = cache,
+            )
+        }
+    }
+
+    applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) {
+        applicationState.ready = true
+        logger.info("Application is ready")
+    }
 
     val server = embeddedServer(
-        Netty,
-        applicationEngineEnvironment {
-            log = LoggerFactory.getLogger("ktor.application")
-            config = HoconApplicationConfig(ConfigFactory.load())
-
-            val environment = Environment()
-
-            connector {
-                port = applicationPort
-            }
-
-            val kafkaBrukernotifikasjonProducerProperties = kafkaBrukernotifikasjonProducerConfig(environment)
-            val kafkaProducerBeskjed = KafkaProducer<Nokkel, Beskjed>(kafkaBrukernotifikasjonProducerProperties)
-            val kafkaProducerOppgave = KafkaProducer<Nokkel, Oppgave>(kafkaBrukernotifikasjonProducerProperties)
-            val kafkaProducerDone = KafkaProducer<Nokkel, Done>(kafkaBrukernotifikasjonProducerProperties)
-            val brukernotifikasjonProducer = BrukernotifikasjonProducer(
-                kafkaProducerBeskjed = kafkaProducerBeskjed,
-                kafkaProducerOppgave = kafkaProducerOppgave,
-                kafkaProducerDone = kafkaProducerDone,
-            )
-            val mqSender = MQSender(environment)
-            val cache = RedisStore(
-                JedisPool(
-                    JedisPoolConfig(),
-                    environment.redisHost,
-                    environment.redisPort,
-                    Protocol.DEFAULT_TIMEOUT,
-                    environment.redisSecret
-                )
-            )
-
-            module {
-                databaseModule(
-                    environment = environment
-                )
-                apiModule(
-                    applicationState = applicationState,
-                    brukernotifikasjonProducer = brukernotifikasjonProducer,
-                    database = applicationDatabase,
-                    mqSender = mqSender,
-                    environment = environment,
-                    wellKnownSelvbetjening = getWellKnown(environment.loginserviceIdportenDiscoveryUrl),
-                    wellKnownVeilederV2 = getWellKnown(environment.azureAppWellKnownUrl),
-                    cache = cache,
-                )
-                cronjobModule(
-                    applicationState = applicationState,
-                    database = applicationDatabase,
-                    environment = environment,
-                    cache = cache,
-                )
-            }
-        }
+        factory = Netty,
+        environment = applicationEngineEnvironment,
     )
+
     Runtime.getRuntime().addShutdownHook(
         Thread {
             server.stop(10, 10, TimeUnit.SECONDS)
         }
     )
 
-    server.environment.monitor.subscribe(ApplicationStarted) { application ->
-        applicationState.ready = true
-        application.environment.log.info("Application is ready")
-    }
     server.start(wait = false)
 }
