@@ -37,7 +37,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment(allowVarselMedFysiskBrev = true)
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance(allowVarselMedFysiskBrev = true)
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
@@ -48,14 +48,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 mqSenderMock = mqSenderMock,
             )
-
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
-            afterGroup {
-                externalMockEnvironment.stopExternalMocks()
-            }
 
             val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
 
@@ -74,6 +66,10 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                 }
 
                 afterEachTest {
+                    database.dropData()
+                }
+
+                beforeEachGroup {
                     database.dropData()
                 }
 

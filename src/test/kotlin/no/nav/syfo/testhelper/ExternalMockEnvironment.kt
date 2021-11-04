@@ -34,7 +34,7 @@ class ExternalMockEnvironment(
         dokdistMock.name to dokdistMock.server
     )
 
-    val environment = testEnvironment(
+    var environment = testEnvironment(
         kafkaBootstrapServers = embeddedEnvironment.brokersURL,
         azureTokenEndpoint = azureAdV2Mock.url,
         dokarkivUrl = dokarkivMock.url,
@@ -50,6 +50,20 @@ class ExternalMockEnvironment(
 
     val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
     val wellKnownVeilederV2 = wellKnownVeilederV2Mock()
+
+    companion object {
+        private val instance = ExternalMockEnvironment().also { it.startExternalMocks() }
+
+        fun getInstance(allowVarselMedFysiskBrev: Boolean = false): ExternalMockEnvironment {
+            if (instance.environment.allowVarselMedFysiskBrev != allowVarselMedFysiskBrev) {
+                instance.environment = instance.environment.copy(
+                    allowVarselMedFysiskBrev = allowVarselMedFysiskBrev,
+                )
+            }
+
+            return instance
+        }
+    }
 }
 
 fun ExternalMockEnvironment.startExternalMocks() {

@@ -7,14 +7,13 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.mq.MQSenderInterface
+import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.util.bearerHeader
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.dialogmote.api.v2.*
+import no.nav.syfo.util.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -28,7 +27,7 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment()
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
@@ -58,14 +57,6 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
 
             afterEachTest {
                 database.dropData()
-            }
-
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
-            afterGroup {
-                externalMockEnvironment.stopExternalMocks()
             }
 
             describe("Publish DialogmoteStatusEndring for types of StatusEndret") {
@@ -108,7 +99,8 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
                         createdDialogmoteUUID = dialogmoteDTO.uuid
                     }
 
-                    val urlMoteUUIDPostTidSted = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                    val urlMoteUUIDPostTidSted =
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                     val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTO()
                     with(
                         handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
@@ -173,7 +165,8 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
                         createdDialogmoteUUID = dialogmoteDTO.uuid
                     }
 
-                    val urlMoteUUIDPostTidSted = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                    val urlMoteUUIDPostTidSted =
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                     val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTO()
                     with(
                         handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {

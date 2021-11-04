@@ -1,13 +1,14 @@
 package no.nav.syfo.client.azuread
 
-import io.ktor.server.testing.*
+import io.ktor.server.testing.TestApplicationEngine
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
-import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.AZUREAD_TOKEN
 import no.nav.syfo.testhelper.UserConstants.JWT_AZP
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.testhelper.generateJWT
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -24,7 +25,7 @@ class AzureAdClientSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment()
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val cacheMock = mockk<RedisStore>()
 
             val azureAdClient = AzureAdV2Client(
@@ -33,17 +34,10 @@ class AzureAdClientSpek : Spek({
                 aadTokenEndpoint = externalMockEnvironment.environment.aadTokenEndpoint,
                 redisStore = cacheMock,
             )
-            val systemTokenCacheKey = "${AzureAdV2Client.CACHE_AZUREAD_TOKEN_SYSTEM_KEY_PREFIX}${externalMockEnvironment.environment.pdlClientId}"
+            val systemTokenCacheKey =
+                "${AzureAdV2Client.CACHE_AZUREAD_TOKEN_SYSTEM_KEY_PREFIX}${externalMockEnvironment.environment.pdlClientId}"
             val cachedToken = AzureAdV2Token(anyToken, LocalDateTime.now().plusHours(1))
             val cachedTokenString = mapper.writeValueAsString(cachedToken)
-
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
-            afterGroup {
-                externalMockEnvironment.stopExternalMocks()
-            }
 
             beforeEachTest {
                 clearMocks(cacheMock)

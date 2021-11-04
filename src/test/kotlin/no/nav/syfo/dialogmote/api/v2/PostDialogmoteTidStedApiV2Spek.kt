@@ -7,6 +7,8 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
+import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.*
@@ -14,11 +16,9 @@ import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
-import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -31,7 +31,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment()
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
@@ -48,14 +48,6 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
 
             afterEachTest {
                 database.dropData()
-            }
-
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
-            afterGroup {
-                externalMockEnvironment.stopExternalMocks()
             }
 
             describe("Post DialogmoteTidSted") {
@@ -100,7 +92,8 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             createdDialogmoteUUID = dialogmoteDTO.uuid
                         }
 
-                        val urlMoteUUIDPostTidSted = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                        val urlMoteUUIDPostTidSted =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                         val newDialogmoteTidSted = EndreTidStedDialogmoteDTO(
                             sted = "Et annet sted",
                             tid = newDialogmoteDTO.tidSted.tid.plusDays(1),
@@ -135,7 +128,12 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.NYTT_TID_STED, any()) }
+                            verify(exactly = 1) {
+                                mqSenderMock.sendMQMessage(
+                                    MotedeltakerVarselType.NYTT_TID_STED,
+                                    any()
+                                )
+                            }
                         }
 
                         with(

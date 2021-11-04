@@ -2,17 +2,9 @@ package no.nav.syfo.brev.narmesteleder
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
-import io.mockk.clearMocks
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.verify
+import io.ktor.http.*
+import io.ktor.server.testing.*
+import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
@@ -26,9 +18,7 @@ import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewReferatDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDateTime
@@ -40,9 +30,10 @@ object NarmesteLederBrevSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment()
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
             // Add dummy deltakere so that id for deltaker and mote does not match by accident
+            database.dropData()
             database.addDummyDeltakere()
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
@@ -62,14 +53,6 @@ object NarmesteLederBrevSpek : Spek({
                 database.dropData()
                 // Add dummy deltakere so that id for deltaker and mote does not match by accident
                 database.addDummyDeltakere()
-            }
-
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
-            afterGroup {
-                externalMockEnvironment.stopExternalMocks()
             }
 
             describe("Happy path") {

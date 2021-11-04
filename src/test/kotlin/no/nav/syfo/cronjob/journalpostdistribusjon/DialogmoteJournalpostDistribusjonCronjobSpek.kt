@@ -4,19 +4,22 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.mockk.*
+import io.mockk.justRun
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
-import no.nav.syfo.dialogmote.*
+import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.dialogmote.ReferatJournalpostService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
-import no.nav.syfo.util.*
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -30,7 +33,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             start()
 
             val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
-            val externalMockEnvironment = ExternalMockEnvironment(allowVarselMedFysiskBrev = true)
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance(allowVarselMedFysiskBrev = true)
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
@@ -63,14 +66,6 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
 
             afterEachTest {
                 database.dropData()
-            }
-
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
-            afterGroup {
-                externalMockEnvironment.stopExternalMocks()
             }
 
             val validToken = generateJWT(

@@ -1,6 +1,6 @@
 package no.nav.syfo.client.person.adressebeskyttelse
 
-import io.ktor.server.testing.*
+import io.ktor.server.testing.TestApplicationEngine
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
@@ -10,8 +10,6 @@ import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
-import no.nav.syfo.testhelper.startExternalMocks
-import no.nav.syfo.testhelper.stopExternalMocks
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -32,7 +30,7 @@ class AdressebeskyttelseClientSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment()
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val azureAdV2ClientMock = mockk<AzureAdV2Client>()
             val cacheMock = mockk<RedisStore>()
             val pdlClient = PdlClient(
@@ -48,14 +46,6 @@ class AdressebeskyttelseClientSpek : Spek({
                 accessToken = anyToken,
                 expires = LocalDateTime.now().plusDays(1)
             )
-
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
-            afterGroup {
-                externalMockEnvironment.stopExternalMocks()
-            }
 
             beforeEachTest {
                 clearMocks(cacheMock)

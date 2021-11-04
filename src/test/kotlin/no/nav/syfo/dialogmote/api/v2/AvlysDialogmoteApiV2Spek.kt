@@ -7,19 +7,19 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
+import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.*
+import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import org.amshove.kluent.*
 import org.junit.Assert.assertThrows
 import org.spekframework.spek2.Spek
@@ -34,7 +34,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment()
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
@@ -56,14 +56,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
 
             afterEachTest {
                 database.dropData()
-            }
-
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
-            afterGroup {
-                externalMockEnvironment.stopExternalMocks()
             }
 
             describe("Avlys Dialogmote") {
@@ -179,7 +171,8 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         }.message shouldBeEqualTo "Failed to Avlys Dialogmote: already Avlyst"
 
-                        val urlMoteUUIDFerdigstill = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        val urlMoteUUIDFerdigstill =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                         val newReferatDTO = generateNewReferatDTO()
                         assertThrows(RuntimeException::class.java) {
                             handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
@@ -189,7 +182,8 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         }.message shouldBeEqualTo "Failed to Ferdigstille Dialogmote, already Avlyst"
 
-                        val urlMoteUUIDPostTidSted = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                        val urlMoteUUIDPostTidSted =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                         val endreTidStedDialogMoteDto = generateEndreDialogmoteTidStedDTO()
                         assertThrows(RuntimeException::class.java) {
                             handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {

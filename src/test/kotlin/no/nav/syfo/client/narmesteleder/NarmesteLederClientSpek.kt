@@ -1,12 +1,12 @@
 package no.nav.syfo.client.narmesteleder
 
-import io.ktor.server.testing.*
+import io.ktor.server.testing.TestApplicationEngine
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.azuread.AzureAdV2Token
-import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
@@ -27,7 +27,7 @@ class NarmesteLederClientSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment()
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val azureAdV2ClientMock = mockk<AzureAdV2Client>()
             val cacheMock = mockk<RedisStore>()
             val client = NarmesteLederClient(
@@ -36,7 +36,8 @@ class NarmesteLederClientSpek : Spek({
                 azureAdV2Client = azureAdV2ClientMock,
                 cache = cacheMock,
             )
-            val cacheKey = "${NarmesteLederClient.CACHE_NARMESTE_LEDER_AKTIVE_ANSATTE_KEY_PREFIX}${NARMESTELEDER_FNR.value}"
+            val cacheKey =
+                "${NarmesteLederClient.CACHE_NARMESTE_LEDER_AKTIVE_ANSATTE_KEY_PREFIX}${NARMESTELEDER_FNR.value}"
             val cachedValue = listOf(
                 NarmesteLederDTO(
                     fnr = ARBEIDSTAKER_FNR.value,
@@ -57,14 +58,6 @@ class NarmesteLederClientSpek : Spek({
                 accessToken = anyToken,
                 expires = LocalDateTime.now().plusDays(1)
             )
-
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
-            afterGroup {
-                externalMockEnvironment.stopExternalMocks()
-            }
 
             beforeEachTest {
                 clearMocks(cacheMock)
