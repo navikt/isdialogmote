@@ -178,7 +178,7 @@ object NarmesteLederBrevSpek : Spek({
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val pdfContent = response.byteContent!!
-                        pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkallingArbeidsgiver
+                        pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkalling
                     }
                     val urlMoteUUIDReferat =
                         "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"

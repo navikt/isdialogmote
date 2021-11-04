@@ -378,7 +378,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             val pdfContent = response.byteContent!!
-                            pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkallingArbeidstaker
+                            pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkalling
                         }
                         val urlPdfForReferatNedlasting =
                             "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
@@ -524,7 +524,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             val pdfContent = response.byteContent!!
-                            pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkallingArbeidstaker
+                            pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkalling
                         }
 
                         val urlPdfForReferatNedlasting =
