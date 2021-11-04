@@ -33,7 +33,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment()
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
@@ -51,14 +51,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
 
             afterEachTest {
                 database.dropData()
-            }
-
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
-            afterGroup {
-                externalMockEnvironment.stopExternalMocks()
             }
 
             describe("Ferdigstill Dialogmote") {
@@ -106,7 +98,8 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             createdDialogmoteUUID = dialogmoteDTO.uuid
                         }
 
-                        val urlMoteUUIDFerdigstill = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        val urlMoteUUIDFerdigstill =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                         with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -176,7 +169,8 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             }
                         }.message shouldBeEqualTo "Failed to Ferdigstille Dialogmote, already Ferdigstilt"
 
-                        val urlMoteUUIDAvlys = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                        val urlMoteUUIDAvlys =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
                         val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
                         assertThrows(RuntimeException::class.java) {
                             handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
@@ -186,7 +180,8 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             }
                         }.message shouldBeEqualTo "Failed to Avlys Dialogmote: already Ferdigstilt"
 
-                        val urlMoteUUIDPostTidSted = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                        val urlMoteUUIDPostTidSted =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                         val endreTidStedDialogMoteDto = generateEndreDialogmoteTidStedDTO()
                         assertThrows(RuntimeException::class.java) {
                             handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {

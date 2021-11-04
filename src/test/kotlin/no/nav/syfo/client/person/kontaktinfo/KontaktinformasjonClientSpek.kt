@@ -1,6 +1,6 @@
 package no.nav.syfo.client.person.kontaktinfo
 
-import io.ktor.server.testing.*
+import io.ktor.server.testing.TestApplicationEngine
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore

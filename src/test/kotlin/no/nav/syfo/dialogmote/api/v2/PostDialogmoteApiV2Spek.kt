@@ -39,7 +39,7 @@ class PostDialogmoteApiV2Spek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment()
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
@@ -51,15 +51,11 @@ class PostDialogmoteApiV2Spek : Spek({
                 mqSenderMock = mqSenderMock,
             )
 
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
-            afterGroup {
-                externalMockEnvironment.stopExternalMocks()
-            }
-
             val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
+
+            beforeGroup {
+                database.dropData()
+            }
 
             describe("Create Dialogmote for PersonIdent payload") {
                 val validToken = generateJWT(
@@ -100,7 +96,12 @@ class PostDialogmoteApiV2Spek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             val xmlStringSlot = slot<String>()
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, capture(xmlStringSlot)) }
+                            verify(exactly = 1) {
+                                mqSenderMock.sendMQMessage(
+                                    MotedeltakerVarselType.INNKALT,
+                                    capture(xmlStringSlot)
+                                )
+                            }
                             val xml = xmlStringSlot.captured
                             xml.shouldContain("<kanal>EPOST</kanal><kontaktinformasjon>narmesteLederNavn@gmail.com</kontaktinformasjon>")
                             xml.shouldContain("<orgnummer>912345678</orgnummer>")
@@ -148,7 +149,11 @@ class PostDialogmoteApiV2Spek : Spek({
                             arbeidstakerVarselDTO.document[3].type shouldBeEqualTo DocumentComponentType.LINK
                             arbeidstakerVarselDTO.document[3].texts shouldBeEqualTo listOf("https://nav.no/")
                             arbeidstakerVarselDTO.document[4].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
-                            arbeidstakerVarselDTO.document[4].texts shouldBeEqualTo listOf("Vennlig hilsen", "NAV Staden", "Kari Saksbehandler")
+                            arbeidstakerVarselDTO.document[4].texts shouldBeEqualTo listOf(
+                                "Vennlig hilsen",
+                                "NAV Staden",
+                                "Kari Saksbehandler"
+                            )
 
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
                             dialogmoteDTO.arbeidsgiver.varselList.size shouldBeEqualTo 1

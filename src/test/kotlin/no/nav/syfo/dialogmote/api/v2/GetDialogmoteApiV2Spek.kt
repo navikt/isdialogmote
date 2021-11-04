@@ -31,7 +31,7 @@ class GetDialogmoteApiV2Spek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment()
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
@@ -45,14 +45,6 @@ class GetDialogmoteApiV2Spek : Spek({
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 mqSenderMock = mqSenderMock,
             )
-
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
-            afterGroup {
-                externalMockEnvironment.stopExternalMocks()
-            }
 
             describe("Get Dialogmoter for PersonIdent") {
                 val url = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"

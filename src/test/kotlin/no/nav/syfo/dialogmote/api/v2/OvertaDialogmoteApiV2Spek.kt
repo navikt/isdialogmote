@@ -30,7 +30,7 @@ class OvertaDialogmoteApiV2Spek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment()
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
@@ -45,16 +45,8 @@ class OvertaDialogmoteApiV2Spek : Spek({
                 mqSenderMock = mqSenderMock,
             )
 
-            afterEachTest {
+            beforeEachGroup {
                 database.dropData()
-            }
-
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
-            afterGroup {
-                externalMockEnvironment.stopExternalMocks()
             }
 
             describe("Overta Dialogmoter") {
@@ -68,7 +60,7 @@ class OvertaDialogmoteApiV2Spek : Spek({
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     UserConstants.VEILEDER_IDENT_2,
                 )
-                val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
+                val urlMote = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
                 val urlMoterEnhet = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR.value}"
                 val urlOvertaMoter = "$dialogmoteApiV2Basepath$dialogmoteActionsApiOvertaPath"
                 val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
