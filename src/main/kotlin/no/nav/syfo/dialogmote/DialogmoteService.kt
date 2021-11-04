@@ -156,12 +156,12 @@ class DialogmoteService(
                 navEnhet = EnhetNr(behandlendeEnhet.enhetId),
             )
 
-            val pdfInnkallingArbeidstaker = pdfGenClient.pdfInnkallingArbeidstaker(
+            val pdfInnkallingArbeidstaker = pdfGenClient.pdfInnkalling(
                 callId = callId,
                 documentComponentDTOList = newDialogmoteDTO.arbeidstaker.innkalling,
             ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidstaker")
 
-            val pdfInnkallingArbeidsgiver = pdfGenClient.pdfInnkallingArbeidsgiver(
+            val pdfInnkallingArbeidsgiver = pdfGenClient.pdfInnkalling(
                 callId = callId,
                 documentComponentDTOList = newDialogmoteDTO.arbeidsgiver.innkalling,
             ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidsgiver")
@@ -224,12 +224,12 @@ class DialogmoteService(
         if (dialogmote.status == DialogmoteStatus.AVLYST) {
             throw RuntimeException("Failed to Avlys Dialogmote: already Avlyst")
         }
-        val pdfAvlysningArbeidstaker = pdfGenClient.pdfAvlysningArbeidstaker(
+        val pdfAvlysningArbeidstaker = pdfGenClient.pdfAvlysning(
             callId = callId,
             documentComponentDTOList = avlysDialogmote.arbeidstaker.avlysning,
         ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidstaker")
 
-        val pdfAvlysningArbeidsgiver = pdfGenClient.pdfAvlysningArbeidsgiver(
+        val pdfAvlysningArbeidsgiver = pdfGenClient.pdfAvlysning(
             callId = callId,
             documentComponentDTOList = avlysDialogmote.arbeidsgiver.avlysning,
         ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidsgiver")
@@ -294,12 +294,12 @@ class DialogmoteService(
         if (dialogmote.status == DialogmoteStatus.AVLYST) {
             throw RuntimeException("Failed to change tid/sted, already Avlyst")
         }
-        val pdfEndringArbeidstaker = pdfGenClient.pdfEndringTidStedArbeidstaker(
+        val pdfEndringArbeidstaker = pdfGenClient.pdfEndringTidSted(
             callId = callId,
             documentComponentDTOList = endreDialogmoteTidSted.arbeidstaker.endringsdokument
         ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidstaker")
 
-        val pdfEndringArbeidsgiver = pdfGenClient.pdfEndringTidStedArbeidsgiver(
+        val pdfEndringArbeidsgiver = pdfGenClient.pdfEndringTidSted(
             callId = callId,
             documentComponentDTOList = endreDialogmoteTidSted.arbeidsgiver.endringsdokument
         ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidsgiver")

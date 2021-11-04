@@ -15,89 +15,50 @@ import org.slf4j.LoggerFactory
 class PdfGenClient(
     pdfGenBaseUrl: String
 ) {
-    private val avlysningArbeidstakerUrl: String
-    private val avlysningArbeidsgiverUrl: String
-    private val endringTidStedArbeidstakerUrl: String
-    private val endringTidStedArbeidsgiverUrl: String
-    private val innkallingArbeidstakerUrl: String
-    private val innkallingArbeidsgiverUrl: String
+    private val avlysningUrl: String
+    private val endringTidStedUrl: String
+    private val innkallingUrl: String
     private val referatUrl: String
 
     init {
-        this.avlysningArbeidstakerUrl = "$pdfGenBaseUrl$AVLYSNING_ARBEIDSTAKER_PATH"
-        this.avlysningArbeidsgiverUrl = "$pdfGenBaseUrl$AVLYSNING_ARBEIDSGIVER_PATH"
-        this.endringTidStedArbeidstakerUrl = "$pdfGenBaseUrl$ENDRING_TIDSTED_ARBEIDSTAKER_PATH"
-        this.endringTidStedArbeidsgiverUrl = "$pdfGenBaseUrl$ENDRING_TIDSTED_ARBEIDSGIVER_PATH"
-        this.innkallingArbeidstakerUrl = "$pdfGenBaseUrl$INNKALLING_ARBEIDSTAKER_PATH"
-        this.innkallingArbeidsgiverUrl = "$pdfGenBaseUrl$INNKALLING_ARBEIDSGIVER_PATH"
+        this.avlysningUrl = "$pdfGenBaseUrl$AVLYSNING_PATH"
+        this.endringTidStedUrl = "$pdfGenBaseUrl$ENDRING_TIDSTED_PATH"
+        this.innkallingUrl = "$pdfGenBaseUrl$INNKALLING_PATH"
         this.referatUrl = "$pdfGenBaseUrl$REFERAT_PATH"
     }
 
     private val httpClient = httpClientDefault()
 
-    suspend fun pdfAvlysningArbeidstaker(
+    suspend fun pdfAvlysning(
         callId: String,
         documentComponentDTOList: List<DocumentComponentDTO>,
     ): ByteArray? {
         return getPdf(
             callId = callId,
             documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = avlysningArbeidstakerUrl,
+            pdfUrl = avlysningUrl,
         )
     }
 
-    suspend fun pdfAvlysningArbeidsgiver(
+    suspend fun pdfEndringTidSted(
         callId: String,
         documentComponentDTOList: List<DocumentComponentDTO>,
     ): ByteArray? {
         return getPdf(
             callId = callId,
             documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = avlysningArbeidsgiverUrl,
+            pdfUrl = endringTidStedUrl,
         )
     }
 
-    suspend fun pdfEndringTidStedArbeidstaker(
+    suspend fun pdfInnkalling(
         callId: String,
         documentComponentDTOList: List<DocumentComponentDTO>,
     ): ByteArray? {
         return getPdf(
             callId = callId,
             documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = endringTidStedArbeidstakerUrl,
-        )
-    }
-
-    suspend fun pdfEndringTidStedArbeidsgiver(
-        callId: String,
-        documentComponentDTOList: List<DocumentComponentDTO>,
-    ): ByteArray? {
-        return getPdf(
-            callId = callId,
-            documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = endringTidStedArbeidsgiverUrl,
-        )
-    }
-
-    suspend fun pdfInnkallingArbeidstaker(
-        callId: String,
-        documentComponentDTOList: List<DocumentComponentDTO>,
-    ): ByteArray? {
-        return getPdf(
-            callId = callId,
-            documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = innkallingArbeidstakerUrl,
-        )
-    }
-
-    suspend fun pdfInnkallingArbeidsgiver(
-        callId: String,
-        documentComponentDTOList: List<DocumentComponentDTO>,
-    ): ByteArray? {
-        return getPdf(
-            callId = callId,
-            documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = innkallingArbeidsgiverUrl,
+            pdfUrl = innkallingUrl,
         )
     }
 
@@ -150,12 +111,9 @@ class PdfGenClient(
 
     companion object {
         private const val API_BASE_PATH = "/api/v1/genpdf/isdialogmote"
-        const val AVLYSNING_ARBEIDSTAKER_PATH = "$API_BASE_PATH/avlysning-arbeidstaker"
-        const val AVLYSNING_ARBEIDSGIVER_PATH = "$API_BASE_PATH/avlysning-arbeidsgiver"
-        const val ENDRING_TIDSTED_ARBEIDSTAKER_PATH = "$API_BASE_PATH/endring-tidsted-arbeidstaker"
-        const val ENDRING_TIDSTED_ARBEIDSGIVER_PATH = "$API_BASE_PATH/endring-tidsted-arbeidsgiver"
-        const val INNKALLING_ARBEIDSTAKER_PATH = "$API_BASE_PATH/innkalling-arbeidstaker"
-        const val INNKALLING_ARBEIDSGIVER_PATH = "$API_BASE_PATH/innkalling-arbeidsgiver"
+        const val AVLYSNING_PATH = "$API_BASE_PATH/avlysning"
+        const val ENDRING_TIDSTED_PATH = "$API_BASE_PATH/endring-tidsted"
+        const val INNKALLING_PATH = "$API_BASE_PATH/innkalling"
         const val REFERAT_PATH = "$API_BASE_PATH/referat"
 
         private val log = LoggerFactory.getLogger(PdfGenClient::class.java)
