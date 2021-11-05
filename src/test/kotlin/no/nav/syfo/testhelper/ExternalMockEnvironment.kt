@@ -1,11 +1,11 @@
 package no.nav.syfo.testhelper
 
-import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.server.netty.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.testhelper.mock.*
 
-class ExternalMockEnvironment(
+class ExternalMockEnvironment private constructor(
     allowVarselMedFysiskBrev: Boolean = false,
 ) {
     val applicationState: ApplicationState = testAppState()
@@ -52,7 +52,11 @@ class ExternalMockEnvironment(
     val wellKnownVeilederV2 = wellKnownVeilederV2Mock()
 
     companion object {
-        private val instance = ExternalMockEnvironment().also { it.startExternalMocks() }
+        private val instance: ExternalMockEnvironment by lazy {
+            ExternalMockEnvironment().also {
+                it.startExternalMocks()
+            }
+        }
 
         fun getInstance(allowVarselMedFysiskBrev: Boolean = false): ExternalMockEnvironment {
             if (instance.environment.allowVarselMedFysiskBrev != allowVarselMedFysiskBrev) {
