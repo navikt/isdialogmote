@@ -41,12 +41,6 @@ class IsdialogmotepdfgenMock {
                 post(ENDRING_TIDSTED_PATH) {
                     call.respond(pdfEndringTidSted)
                 }
-                post(ENDRING_TIDSTED_PATH) {
-                    call.respond(pdfEndringTidSted)
-                }
-                post(INNKALLING_PATH) {
-                    call.respond(pdfInnkalling)
-                }
                 post(INNKALLING_PATH) {
                     call.respond(pdfInnkalling)
                 }
