@@ -64,6 +64,7 @@ spec:
         - host: "isproxy.dev-fss-pub.nais.io"
         - host: "pdl-api.dev-fss-pub.nais.io"
       rules:
+        - application: digdir-krr-proxy
         - application: isdialogmote-redis
         - application: isdialogmotepdfgen
         - application: syfobehandlendeenhet
@@ -101,6 +102,10 @@ spec:
       value: "dev-fss.teamsykefravr.isproxy"
     - name: ISPROXY_URL
       value: "https://isproxy.dev-fss-pub.nais.io"
+    - name: KRR_CLIENT_ID
+      value: "dev-gcp.team-rocket.digdir-krr-proxy"
+    - name: KRR_URL
+      value: "https://digdir-krr-proxy.dev.intern.nav.no"
     - name: PDL_CLIENT_ID
       value: "dev-fss.pdl.pdl-api"
     - name: PDL_URL

@@ -18,10 +18,10 @@ import org.slf4j.LoggerFactory
 class KontaktinformasjonClient(
     private val azureAdV2Client: AzureAdV2Client,
     private val cache: RedisStore,
-    private val isproxyClientId: String,
-    isproxyBaseUrl: String
+    private val clientId: String,
+    baseUrl: String
 ) {
-    private val personKontaktinfoUrl: String = "$isproxyBaseUrl$ISPROXY_DKIF_KONTAKTINFORMASJON_PATH"
+    private val personKontaktinfoUrl: String = "$baseUrl$KRR_KONTAKTINFORMASJON_BOLK_PATH"
 
     private val httpClient = httpClientDefault()
 
@@ -31,7 +31,7 @@ class KontaktinformasjonClient(
         callId: String,
     ): Boolean {
         val kontaktinfo = this.kontaktinformasjon(personIdentNumber, token, callId)
-        return kontaktinfo?.kontaktinfo?.isDigitalVarselEnabled(personIdentNumber) ?: false
+        return kontaktinfo?.personer?.isDigitalVarselEnabled(personIdentNumber) ?: false
     }
 
     private suspend fun kontaktinformasjon(
@@ -40,19 +40,23 @@ class KontaktinformasjonClient(
         callId: String,
     ): DigitalKontaktinfoBolk? {
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
-            scopeClientId = isproxyClientId,
+            scopeClientId = clientId,
             token = token
-        )?.accessToken ?: throw RuntimeException("Failed to request access to Isproxy: Failed to get OBO token")
+        )?.accessToken ?: throw RuntimeException("Failed to request access to Digdir-krr-proxy: Failed to get OBO token")
         val cacheKey = "${CACHE_KONTAKTINFORMASJON_KEY_PREFIX}${personIdentNumber.value}"
         val cachedKontaktinformasjon = cache.getObject<DigitalKontaktinfoBolk>(cacheKey)
         return when (cachedKontaktinformasjon) {
             null ->
                 try {
-                    val response: HttpResponse = httpClient.get(personKontaktinfoUrl) {
+                    val request = DigitalKontaktinfoBolkRequestBody(
+                        personidenter = listOf(personIdentNumber.value),
+                    )
+                    val response: HttpResponse = httpClient.post(personKontaktinfoUrl) {
                         header(HttpHeaders.Authorization, bearerHeader(oboToken))
                         header(NAV_CALL_ID_HEADER, callId)
-                        header(NAV_PERSONIDENTER_HEADER, personIdentNumber.value)
                         accept(ContentType.Application.Json)
+                        contentType(ContentType.Application.Json)
+                        body = request
                     }
                     val digitalKontaktinfoBolkResponse = response.receive<DigitalKontaktinfoBolk>()
                     COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS.increment()
@@ -72,8 +76,7 @@ class KontaktinformasjonClient(
     }
 
     companion object {
-        private const val ISPROXY_DKIF_PATH = "/api/v1/dkif"
-        const val ISPROXY_DKIF_KONTAKTINFORMASJON_PATH = "$ISPROXY_DKIF_PATH/kontaktinformasjon"
+        const val KRR_KONTAKTINFORMASJON_BOLK_PATH = "/rest/v1/personer"
 
         const val CACHE_KONTAKTINFORMASJON_KEY_PREFIX = "person-kontaktinformasjon-"
         const val CACHE_KONTAKTINFORMASJON_EXPIRE_SECONDS = 600L

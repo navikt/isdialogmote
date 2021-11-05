@@ -41,6 +41,8 @@ data class Environment(
     val dialogmoteArbeidstakerUrl: String = getEnvVar("DIALOGMOTE_ARBEIDSTAKER_URL"),
     val dokarkivUrl: String = getEnvVar("DOKARKIV_URL"),
     val isdialogmotepdfgenUrl: String = "http://isdialogmotepdfgen",
+    val krrClientId: String = getEnvVar("KRR_CLIENT_ID"),
+    val krrUrl: String = getEnvVar("KRR_URL"),
     val syfobehandlendeenhetClientId: String = getEnvVar("SYFOBEHANDLENDEENHET_CLIENT_ID"),
     val syfobehandlendeenhetUrl: String = getEnvVar("SYFOBEHANDLENDEENHET_URL"),
     val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),

@@ -1,12 +1,13 @@
 package no.nav.syfo.client.person.kontaktinfo
 
-import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
+import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient.Companion.CACHE_KONTAKTINFORMASJON_KEY_PREFIX
 import no.nav.syfo.testhelper.UserConstants
-import no.nav.syfo.testhelper.mock.IsproxyMock
+import no.nav.syfo.testhelper.mock.KrrMock
 import no.nav.syfo.testhelper.mock.digitalKontaktinfoBolkKanVarslesTrue
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -16,7 +17,7 @@ class KontaktinformasjonClientSpek : Spek({
 
     val personIdent = UserConstants.ARBEIDSTAKER_FNR
     val digitalKontaktInfo = digitalKontaktinfoBolkKanVarslesTrue(personIdent.value)
-    val digitalKontaktInfoCacheKey = "person-kontaktinformasjon-${personIdent.value}"
+    val digitalKontaktInfoCacheKey = "$CACHE_KONTAKTINFORMASJON_KEY_PREFIX${personIdent.value}"
 
     val anyToken = "token"
     val anyCallId = "callId"
@@ -27,21 +28,21 @@ class KontaktinformasjonClientSpek : Spek({
             start()
 
             val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
-            val isproxyMock = IsproxyMock()
+            val krrMock = KrrMock()
             val cacheMock = mockk<RedisStore>(relaxed = true)
             val client = KontaktinformasjonClient(
                 azureAdV2Client = azureAdV2ClientMock,
                 cache = cacheMock,
-                isproxyClientId = "isproxyClientId",
-                isproxyBaseUrl = isproxyMock.url,
+                clientId = "krrClientId",
+                baseUrl = krrMock.url,
             )
 
             beforeGroup {
-                isproxyMock.server.start()
+                krrMock.server.start()
             }
 
             afterGroup {
-                isproxyMock.server.stop(1L, 10L)
+                krrMock.server.stop(1L, 10L)
             }
 
             beforeEachTest {
