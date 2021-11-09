@@ -8,6 +8,7 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.behandler.*
 import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
@@ -16,6 +17,7 @@ import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithBehandler
 import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -36,18 +38,26 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-
             val mqSenderMock = mockk<MQSenderInterface>(relaxed = true)
             justRun { mqSenderMock.sendMQMessage(any(), any()) }
+            val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
+            justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
+                behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
                 mqSenderMock = mqSenderMock,
             )
 
             afterEachTest {
                 database.dropData()
+                clearAllMocks()
+            }
+            beforeEachTest {
+                justRun { mqSenderMock.sendMQMessage(any(), any()) }
+                justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
             }
 
             describe("Post DialogmoteTidSted") {
@@ -118,6 +128,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                                     )
                                 )
                             ),
+                            behandler = null,
                         )
 
                         with(
@@ -184,6 +195,127 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                                 moteStatusEndret.opprettetAv shouldBeEqualTo VEILEDER_IDENT
                                 moteStatusEndret.tilfelleStart shouldBeEqualTo kOppfolgingstilfellePersonDTO().toOppfolgingstilfellePerson().fom
                             }
+                        }
+                    }
+                }
+                describe("Happy path: with behandler") {
+                    val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+                    val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
+
+                    it("should return OK if request is successful") {
+                        val createdDialogmoteUUID: String
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                            clearMocks(behandlerDialogmeldingProducer)
+                            justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+
+                            createdDialogmoteUUID = dialogmoteDTO.uuid
+                        }
+
+                        val urlMoteUUIDPostTidSted =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                        val newDialogmoteTidSted = EndreTidStedDialogmoteDTO(
+                            sted = "Et annet sted",
+                            tid = newDialogmoteDTO.tidSted.tid.plusDays(1),
+                            videoLink = "https://meet.google.com/zyx",
+                            arbeidstaker = EndreTidStedBegrunnelseDTO(
+                                begrunnelse = "begrunnelse arbeidstaker",
+                                endringsdokument = listOf(
+                                    DocumentComponentDTO(
+                                        type = DocumentComponentType.PARAGRAPH,
+                                        title = null,
+                                        texts = listOf("dokumenttekst arbeidstaker"),
+                                    )
+                                )
+                            ),
+                            arbeidsgiver = EndreTidStedBegrunnelseDTO(
+                                begrunnelse = "begrunnelse arbeidsgiver",
+                                endringsdokument = listOf(
+                                    DocumentComponentDTO(
+                                        type = DocumentComponentType.PARAGRAPH,
+                                        title = null,
+                                        texts = listOf("dokumenttekst arbeidsgiver"),
+                                    )
+                                )
+                            ),
+                            behandler = EndreTidStedBegrunnelseDTO(
+                                begrunnelse = "begrunnelse behandler",
+                                endringsdokument = listOf(
+                                    DocumentComponentDTO(
+                                        type = DocumentComponentType.PARAGRAPH,
+                                        title = null,
+                                        texts = listOf("dokumenttekst behandler"),
+                                    )
+                                )
+                            ),
+                        )
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(newDialogmoteTidSted))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) {
+                                mqSenderMock.sendMQMessage(
+                                    MotedeltakerVarselType.NYTT_TID_STED,
+                                    any()
+                                )
+                            }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.NYTT_TID_STED.name
+                            verify(exactly = 2) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+
+                            val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(capture(kafkaBehandlerDialogmeldingDTOSlot)) }
+                            val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
+                            kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo newDialogmoteTidSted.behandler!!.endringsdokument.serialize()
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingType shouldBeEqualTo DialogmeldingType.DIALOG_FORESPORSEL.name
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.TIDSTED.value
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldNotBeEqualTo null
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
                         }
                     }
                 }

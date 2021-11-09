@@ -56,6 +56,7 @@ class GetDialogmoteApiV2Spek : Spek({
                 describe("Happy path") {
                     beforeEachTest {
                         justRun { mqSenderMock.sendMQMessage(any(), any()) }
+                        justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                     }
 
                     afterEachTest {

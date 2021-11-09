@@ -48,6 +48,10 @@ class OvertaDialogmoteApiV2Spek : Spek({
             beforeEachGroup {
                 database.dropData()
             }
+            beforeEachTest {
+                justRun { mqSenderMock.sendMQMessage(any(), any()) }
+                justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+            }
 
             describe("Overta Dialogmoter") {
                 val validTokenV2 = generateJWT(
@@ -67,7 +71,6 @@ class OvertaDialogmoteApiV2Spek : Spek({
                 val newDialogmoteDTOAnnenArbeidstaker = generateNewDialogmoteDTO(ARBEIDSTAKER_ANNEN_FNR)
 
                 describe("Happy path") {
-
                     it("should overta Dialogmoter if request is successfull") {
                         val createdDialogmoterUuids = mutableListOf<String>()
 

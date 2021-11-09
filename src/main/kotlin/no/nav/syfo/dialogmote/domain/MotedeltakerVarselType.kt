@@ -42,3 +42,35 @@ fun MotedeltakerVarselType.toBrevkodeType(): BrevkodeType {
         }
     }
 }
+
+fun MotedeltakerVarselType.getDialogMeldingType(): DialogmeldingType {
+    return when (this) {
+        MotedeltakerVarselType.INNKALT -> DialogmeldingType.DIALOG_FORESPORSEL
+        MotedeltakerVarselType.NYTT_TID_STED -> DialogmeldingType.DIALOG_FORESPORSEL
+        MotedeltakerVarselType.AVLYST -> DialogmeldingType.DIALOG_NOTAT
+        MotedeltakerVarselType.REFERAT -> DialogmeldingType.DIALOG_NOTAT
+    }
+}
+
+fun MotedeltakerVarselType.getDialogMeldingKode(): DialogmeldingKode {
+    return when (this) {
+        MotedeltakerVarselType.INNKALT -> DialogmeldingKode.INNKALLING
+        MotedeltakerVarselType.NYTT_TID_STED -> DialogmeldingKode.TIDSTED
+        MotedeltakerVarselType.AVLYST -> DialogmeldingKode.AVLYST
+        MotedeltakerVarselType.REFERAT -> DialogmeldingKode.REFERAT
+    }
+}
+
+enum class DialogmeldingKode(
+    val value: Int
+) {
+    INNKALLING(1),
+    TIDSTED(2),
+    AVLYST(4),
+    REFERAT(9),
+}
+
+enum class DialogmeldingType() {
+    DIALOG_FORESPORSEL,
+    DIALOG_NOTAT,
+}

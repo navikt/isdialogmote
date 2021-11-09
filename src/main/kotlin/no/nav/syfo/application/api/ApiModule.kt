@@ -12,6 +12,8 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
+import no.nav.syfo.brev.behandler.BehandlerDialogmeldingProducer
+import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederAccessService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.brev.narmesteleder.registerNarmestelederBrevApi
@@ -32,6 +34,7 @@ import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 fun Application.apiModule(
     applicationState: ApplicationState,
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
+    behandlerDialogmeldingProducer: BehandlerDialogmeldingProducer,
     database: DatabaseInterface,
     mqSender: MQSenderInterface,
     environment: Environment,
@@ -115,6 +118,10 @@ fun Application.apiModule(
         mqSender = mqSender,
     )
 
+    val behandlerVarselService = BehandlerVarselService(
+        behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
+    )
+
     val dialogmotedeltakerService = DialogmotedeltakerService(
         arbeidstakerVarselService = arbeidstakerVarselService,
         database = database,
@@ -131,6 +138,7 @@ fun Application.apiModule(
         database = database,
         arbeidstakerVarselService = arbeidstakerVarselService,
         narmesteLederVarselService = narmesteLederVarselService,
+        behandlerVarselService = behandlerVarselService,
         dialogmotedeltakerService = dialogmotedeltakerService,
         behandlendeEnhetClient = behandlendeEnhetClient,
         narmesteLederClient = narmesteLederClient,
