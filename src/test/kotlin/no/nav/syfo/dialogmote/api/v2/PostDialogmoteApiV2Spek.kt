@@ -268,6 +268,10 @@ class PostDialogmoteApiV2Spek : Spek({
                             dialogmoteDTO.behandler!!.behandlerNavn shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerNavn
                             dialogmoteDTO.behandler!!.behandlerKontor shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerKontor
 
+                            val behandlerVarselDTO = dialogmoteDTO.behandler!!.varselList.first()
+                            behandlerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
+                            behandlerVarselDTO.fritekst shouldBeEqualTo "Ipsum lorum behandler"
+
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo ""
 

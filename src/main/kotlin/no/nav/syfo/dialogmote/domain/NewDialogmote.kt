@@ -29,6 +29,7 @@ data class NewDialogmotedeltakerBehandler(
     val behandlerRef: String,
     val behandlerNavn: String,
     val behandlerKontor: String,
+    val fritekstInnkalling: String? = "",
 )
 
 data class NewDialogmoteTidSted(

@@ -13,6 +13,7 @@ data class DialogmotedeltakerBehandlerVarsel(
     val varselType: MotedeltakerVarselType,
     val pdf: ByteArray,
     val status: String,
+    val fritekst: String,
     val document: List<DocumentComponentDTO>,
 )
 
@@ -22,4 +23,5 @@ fun DialogmotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandlerVarselDTO() =
         createdAt = this.createdAt,
         varselType = this.varselType.name,
         document = this.document,
+        fritekst = this.fritekst,
     )

@@ -31,6 +31,7 @@ data class NewDialogmotedeltakerBehandlerDTO(
     val behandlerRef: String,
     val behandlerNavn: String,
     val behandlerKontor: String,
+    val fritekstInnkalling: String?,
     val innkalling: List<DocumentComponentDTO>,
 )
 
@@ -63,6 +64,7 @@ fun NewDialogmoteDTO.toNewDialogmote(
                 behandlerRef = it.behandlerRef,
                 behandlerNavn = it.behandlerNavn,
                 behandlerKontor = it.behandlerKontor,
+                fritekstInnkalling = it.fritekstInnkalling,
             )
         },
         tidSted = NewDialogmoteTidSted(
