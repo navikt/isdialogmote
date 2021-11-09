@@ -7,5 +7,6 @@ data class DialogmotedeltakerBehandlerVarselDTO(
     val uuid: String,
     val createdAt: LocalDateTime,
     val varselType: String,
+    val fritekst: String,
     val document: List<DocumentComponentDTO>,
 )

@@ -13,6 +13,7 @@ data class PMotedeltakerBehandlerVarsel(
     val varselType: MotedeltakerVarselType,
     val pdf: ByteArray,
     val status: String,
+    val fritekst: String,
     val document: List<DocumentComponentDTO>,
 )
 
@@ -26,5 +27,6 @@ fun PMotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandler() =
         varselType = this.varselType,
         pdf = this.pdf,
         status = this.status,
+        fritekst = this.fritekst,
         document = this.document,
     )

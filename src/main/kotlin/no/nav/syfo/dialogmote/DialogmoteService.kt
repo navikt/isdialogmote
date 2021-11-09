@@ -188,6 +188,7 @@ class DialogmoteService(
                     varselType = MotedeltakerVarselType.INNKALT,
                     fritekstArbeidstaker = newDialogmote.arbeidstaker.fritekstInnkalling.orEmpty(),
                     fritekstArbeidsgiver = newDialogmote.arbeidsgiver.fritekstInnkalling.orEmpty(),
+                    fritekstBehandler = newDialogmote.behandler?.fritekstInnkalling.orEmpty(),
                     documentArbeidstaker = newDialogmoteDTO.arbeidstaker.innkalling,
                     documentArbeidsgiver = newDialogmoteDTO.arbeidsgiver.innkalling,
                     documentBehandler = newDialogmoteDTO.behandler?.innkalling ?: emptyList(),
@@ -391,6 +392,7 @@ class DialogmoteService(
         varselType: MotedeltakerVarselType,
         fritekstArbeidstaker: String = "",
         fritekstArbeidsgiver: String = "",
+        fritekstBehandler: String = "",
         documentArbeidstaker: List<DocumentComponentDTO> = emptyList(),
         documentArbeidsgiver: List<DocumentComponentDTO> = emptyList(),
         documentBehandler: List<DocumentComponentDTO> = emptyList(),
@@ -423,6 +425,7 @@ class DialogmoteService(
                 status = "OK",
                 varselType = varselType,
                 pdf = pdfBehandler!!,
+                fritekst = fritekstBehandler,
                 document = documentBehandler,
             )
         }

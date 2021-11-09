@@ -130,6 +130,7 @@ fun generateMotedeltakerBehandlerDTO() = NewDialogmotedeltakerBehandlerDTO(
     behandlerRef = BEHANDLER_REF,
     behandlerNavn = BEHANDLER_NAVN,
     behandlerKontor = BEHANDLER_KONTOR,
+    fritekstInnkalling = "Ipsum lorum behandler",
     innkalling = emptyList(),
 )
 
