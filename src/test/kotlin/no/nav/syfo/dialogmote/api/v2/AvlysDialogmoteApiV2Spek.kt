@@ -8,11 +8,11 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.behandler.*
 import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
@@ -38,11 +38,13 @@ class AvlysDialogmoteApiV2Spek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             val mqSenderMock = mockk<MQSenderInterface>()
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
+                behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
                 mqSenderMock = mqSenderMock,
             )
 
@@ -50,6 +52,8 @@ class AvlysDialogmoteApiV2Spek : Spek({
                 clearMocks(brukernotifikasjonProducer)
                 justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
                 justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                clearMocks(behandlerDialogmeldingProducer)
+                justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                 clearMocks(mqSenderMock)
                 justRun { mqSenderMock.sendMQMessage(any(), any()) }
             }
@@ -153,6 +157,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                            verify(exactly = 0) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
 
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2
@@ -194,6 +199,90 @@ class AvlysDialogmoteApiV2Spek : Spek({
                         }.message shouldBeEqualTo "Failed to change tid/sted, already Avlyst"
                     }
                 }
+                describe("Happy path: with behandler") {
+                    val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+                    val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
+
+                    it("should return OK if request is successful") {
+                        val createdDialogmoteUUID: String
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                            clearMocks(behandlerDialogmeldingProducer)
+                            justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+
+                            createdDialogmoteUUID = dialogmoteDTO.uuid
+                        }
+
+                        val urlMoteUUIDAvlys =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                        val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(avlysDialogMoteDto))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.AVLYST, any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.AVLYST.name
+                            verify(exactly = 1) { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
+                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+
+                            val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(capture(kafkaBehandlerDialogmeldingDTOSlot)) }
+                            val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
+                            kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo avlysDialogMoteDto.behandler!!.avlysning.serialize()
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingType shouldBeEqualTo DialogmeldingType.DIALOG_NOTAT.name
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.AVLYST.value
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldNotBeEqualTo null
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
+                        }
+                    }
+                }
+
                 describe("Møtet tilbake i tid") {
                     val newDialogmoteDTO = generateNewDialogmoteDTO(
                         personIdentNumber = ARBEIDSTAKER_FNR,

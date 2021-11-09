@@ -8,11 +8,11 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.behandler.*
 import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
-import no.nav.syfo.dialogmote.domain.DocumentComponentType
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -43,11 +43,13 @@ class PostDialogmoteApiV2Spek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             val mqSenderMock = mockk<MQSenderInterface>()
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
+                behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
                 mqSenderMock = mqSenderMock,
             )
 
@@ -67,6 +69,8 @@ class PostDialogmoteApiV2Spek : Spek({
                 beforeEachTest {
                     clearMocks(brukernotifikasjonProducer)
                     justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                    clearMocks(behandlerDialogmeldingProducer)
+                    justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                     clearMocks(mqSenderMock)
                     justRun { mqSenderMock.sendMQMessage(any(), any()) }
                 }
@@ -268,6 +272,15 @@ class PostDialogmoteApiV2Spek : Spek({
                             dialogmoteDTO.videoLink shouldBeEqualTo ""
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                            val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(capture(kafkaBehandlerDialogmeldingDTOSlot)) }
+                            val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
+                            kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo newDialogmoteDTO.behandler!!.innkalling.serialize()
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingType shouldBeEqualTo DialogmeldingType.DIALOG_FORESPORSEL.name
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.INNKALLING.value
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldBeEqualTo null
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
                         }
                     }
                 }

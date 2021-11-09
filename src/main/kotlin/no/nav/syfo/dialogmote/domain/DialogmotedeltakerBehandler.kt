@@ -30,3 +30,11 @@ fun DialogmotedeltakerBehandler.toDialogmotedeltakerBehandlerDTO() =
             it.toDialogmotedeltakerBehandlerVarselDTO()
         }
     )
+
+fun DialogmotedeltakerBehandler.findInnkallingVarselUuid(): UUID {
+    return varselList.last().uuid
+}
+
+fun DialogmotedeltakerBehandler.findParentVarselUuid(): UUID {
+    return varselList.first().uuid
+}

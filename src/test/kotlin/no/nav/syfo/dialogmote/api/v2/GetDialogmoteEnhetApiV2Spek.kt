@@ -46,6 +46,10 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 mqSenderMock = mqSenderMock,
             )
+            beforeEachTest {
+                justRun { mqSenderMock.sendMQMessage(any(), any()) }
+                justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+            }
 
             describe("Get Dialogmoter for EnhetNr") {
                 val urlEnhetAccess = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR.value}"
@@ -56,7 +60,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                     VEILEDER_IDENT,
                 )
                 describe("Happy path") {
-
                     val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
                     val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
 

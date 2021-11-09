@@ -8,8 +8,9 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.behandler.*
 import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
-import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
@@ -21,6 +22,7 @@ import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldNotBeEqualTo
 import org.junit.Assert.assertThrows
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -43,14 +45,23 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
             val mqSenderMock = mockk<MQSenderInterface>()
             justRun { mqSenderMock.sendMQMessage(any(), any()) }
 
+            val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
+            justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
+                behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
                 mqSenderMock = mqSenderMock,
             )
 
             afterEachTest {
                 database.dropData()
+                clearAllMocks()
+                justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
+                justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                justRun { mqSenderMock.sendMQMessage(any(), any()) }
+                justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
             }
 
             describe("Ferdigstill Dialogmote") {
@@ -190,6 +201,129 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                                 setBody(objectMapper.writeValueAsString(endreTidStedDialogMoteDto))
                             }
                         }.message shouldBeEqualTo "Failed to change tid/sted, already Ferdigstilt"
+                    }
+                }
+                describe("Happy path: with behandler") {
+                    val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+                    val newReferatDTO = generateNewReferatDTO()
+
+                    val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
+
+                    it("should return OK if request is successful") {
+                        val createdDialogmoteUUID: String
+                        val innkallingBehandlerVarselUUID: String?
+                        val endreTidStedBehandlerVarselUUID: String?
+                        val referatBehandlerVarselUUID: String?
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                            clearMocks(behandlerDialogmeldingProducer)
+                            justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+                            dialogmoteDTO.referat shouldBeEqualTo null
+
+                            createdDialogmoteUUID = dialogmoteDTO.uuid
+                            innkallingBehandlerVarselUUID = dialogmoteDTO.behandler?.varselList?.lastOrNull()?.uuid
+                        }
+
+                        val urlMoteUUIDPostTidSted =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                        val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTOWithBehandler()
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(newDialogmoteTidSted))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                            clearMocks(behandlerDialogmeldingProducer)
+                            justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                            val dialogmoteDTO = dialogmoteList.first()
+                            endreTidStedBehandlerVarselUUID = dialogmoteDTO.behandler?.varselList?.firstOrNull()?.uuid
+                        }
+
+                        val urlMoteUUIDFerdigstill =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newReferatDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.REFERAT, any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            referatBehandlerVarselUUID = dialogmoteDTO.referat?.uuid
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.FERDIGSTILT.name
+                            dialogmoteDTO.behandler!!.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+
+                            val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(capture(kafkaBehandlerDialogmeldingDTOSlot)) }
+                            val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
+                            kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingUuid shouldBeEqualTo referatBehandlerVarselUUID
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo newReferatDTO.document.serialize()
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingType shouldBeEqualTo DialogmeldingType.DIALOG_NOTAT.name
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.REFERAT.value
+                            endreTidStedBehandlerVarselUUID shouldNotBeEqualTo innkallingBehandlerVarselUUID
+                            endreTidStedBehandlerVarselUUID shouldNotBeEqualTo referatBehandlerVarselUUID
+                            referatBehandlerVarselUUID shouldNotBeEqualTo innkallingBehandlerVarselUUID
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldBeEqualTo endreTidStedBehandlerVarselUUID
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation shouldBeEqualTo innkallingBehandlerVarselUUID
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
+                        }
                     }
                 }
                 describe("Happy path: ferdigstilling gjøres av annen bruker enn den som gjør innkalling") {

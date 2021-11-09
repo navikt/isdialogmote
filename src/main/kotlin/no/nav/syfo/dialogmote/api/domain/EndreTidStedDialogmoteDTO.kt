@@ -10,6 +10,7 @@ data class EndreTidStedDialogmoteDTO(
     override val videoLink: String?,
     val arbeidstaker: EndreTidStedBegrunnelseDTO,
     val arbeidsgiver: EndreTidStedBegrunnelseDTO,
+    val behandler: EndreTidStedBegrunnelseDTO?,
 ) : TidStedDTO()
 
 data class EndreTidStedBegrunnelseDTO(

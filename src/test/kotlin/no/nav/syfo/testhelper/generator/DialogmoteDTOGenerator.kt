@@ -21,6 +21,7 @@ fun generateAvlysDialogmoteDTO() =
     AvlysDialogmoteDTO(
         arbeidstaker = generateAvlysningDTO(),
         arbeidsgiver = generateAvlysningDTO(),
+        behandler = generateAvlysningDTO(),
     )
 
 fun generateNewDialogmoteTidStedDTO(
@@ -47,6 +48,25 @@ fun generateEndreDialogmoteTidStedDTO() = EndreTidStedDialogmoteDTO(
         endringsdokument = emptyList(),
     ),
     arbeidsgiver = EndreTidStedBegrunnelseDTO(
+        begrunnelse = "",
+        endringsdokument = emptyList(),
+    ),
+    behandler = null,
+)
+
+fun generateEndreDialogmoteTidStedDTOWithBehandler() = EndreTidStedDialogmoteDTO(
+    sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
+    tid = LocalDateTime.now().plusDays(30),
+    videoLink = "https://meet.google.com/xyz",
+    arbeidstaker = EndreTidStedBegrunnelseDTO(
+        begrunnelse = "",
+        endringsdokument = emptyList(),
+    ),
+    arbeidsgiver = EndreTidStedBegrunnelseDTO(
+        begrunnelse = "",
+        endringsdokument = emptyList(),
+    ),
+    behandler = EndreTidStedBegrunnelseDTO(
         begrunnelse = "",
         endringsdokument = emptyList(),
     ),

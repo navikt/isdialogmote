@@ -17,6 +17,7 @@ import no.nav.syfo.application.database.databaseModule
 import no.nav.syfo.application.mq.MQSender
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.kafkaBrukernotifikasjonProducerConfig
+import no.nav.syfo.brev.behandler.*
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.*
@@ -37,6 +38,12 @@ fun main() {
         kafkaProducerBeskjed = KafkaProducer<Nokkel, Beskjed>(kafkaBrukernotifikasjonProducerProperties),
         kafkaProducerOppgave = KafkaProducer<Nokkel, Oppgave>(kafkaBrukernotifikasjonProducerProperties),
         kafkaProducerDone = KafkaProducer<Nokkel, Done>(kafkaBrukernotifikasjonProducerProperties),
+    )
+    val behandlerDialogmeldingProducer = BehandlerDialogmeldingProducer(
+        kafkaProducerBehandlerDialogmeldingBestilling = KafkaProducer<String, KafkaBehandlerDialogmeldingDTO>(
+            kafkaBehandlerDialogmeldingProducerConfig(environment)
+        ),
+        allowVarslingBehandler = environment.allowMotedeltakerBehandler,
     )
     val mqSender = MQSender(environment)
     val cache = RedisStore(
@@ -62,6 +69,7 @@ fun main() {
             apiModule(
                 applicationState = applicationState,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
+                behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
                 database = applicationDatabase,
                 mqSender = mqSender,
                 environment = environment,

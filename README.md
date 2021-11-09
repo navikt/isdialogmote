@@ -111,3 +111,4 @@ or `kubectl apply -f .nais/redisexporter.yaml`.
 This application produces the following topic(s):
 
 * isdialogmote-dialogmote-statusendring
+* isdialogmelding-behandler-dialogmelding-bestilling
