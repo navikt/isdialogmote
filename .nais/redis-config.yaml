@@ -3,6 +3,9 @@ kind: "Application"
 metadata:
   labels:
     team: teamsykefravr
+  annotations:
+    "nais.io/read-only-file-system": "false"
+    "nais.io/run-as-group": "0"
   namespace: teamsykefravr
   name: isdialogmote-redis
 spec:
