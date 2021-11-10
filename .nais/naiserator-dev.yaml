@@ -140,7 +140,5 @@ spec:
       value: "https://narmesteleder.dev.nav.no"
     - name: NARMESTELEDER_CLIENT_ID
       value: "faaa3c37-a241-4d04-a0fa-92ceff7c1c94"
-    - name: DOKDIST_FORDELING_URL
-      value: "https://dokdistfordeling-q2.dev.intern.nav.no"
-    - name: DOKDIST_FORDELING_CLIENT_ID
-      value: "dev-fss.teamdokumenthandtering.saf"
+
+

@@ -2,7 +2,7 @@ package no.nav.syfo.client.journalpostdistribusjon
 
 import io.ktor.client.features.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.azuread.AzureAdV2Client
@@ -12,17 +12,17 @@ import org.slf4j.LoggerFactory
 
 class JournalpostdistribusjonClient(
     private val azureAdV2Client: AzureAdV2Client,
-    private val dokdistFordelingClientId: String,
-    dokdistFordelingBaseUrl: String
+    private val isproxyClientId: String,
+    isproxyUrl: String
 ) {
 
-    private val distribuerJournalpostUrl: String = "$dokdistFordelingBaseUrl$DISTRIBUER_JOURNALPOST_PATH"
+    private val distribuerJournalpostUrl: String = "$isproxyUrl$DISTRIBUER_JOURNALPOST_PATH"
     private val httpClient = httpClientDefault()
 
     suspend fun distribuerJournalpost(
         journalpostId: String
     ): JournalpostdistribusjonResponse? {
-        val accessToken = azureAdV2Client.getSystemToken(dokdistFordelingClientId)?.accessToken
+        val accessToken = azureAdV2Client.getSystemToken(isproxyClientId)?.accessToken
             ?: throw RuntimeException("Failed to request Journalpost distribution: No accessToken was found")
         val request = JournalpostdistribusjonRequest(
             journalpostId = journalpostId,
@@ -51,7 +51,7 @@ class JournalpostdistribusjonClient(
         message: String?
     ) {
         log.error(
-            "Error while requesting Journalpost distribution from dokdistFordeling with {}, {}",
+            "Error while requesting Journalpost distribution from isproxy with {}, {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             StructuredArguments.keyValue("message", message),
         )
@@ -61,7 +61,7 @@ class JournalpostdistribusjonClient(
     companion object {
         const val BESTILLENDE_FAGSYSTEM = "MODIA_SYKEFRAVAER"
         const val DOKUMENTPRODUSERENDE_APP = "isdialogmote"
-        const val DISTRIBUER_JOURNALPOST_PATH = "/rest/v1/distribuerjournalpost"
+        const val DISTRIBUER_JOURNALPOST_PATH = "/api/v1/dokdist/distribuerjournalpost"
         private val log = LoggerFactory.getLogger(JournalpostdistribusjonClient::class.java)
     }
 }

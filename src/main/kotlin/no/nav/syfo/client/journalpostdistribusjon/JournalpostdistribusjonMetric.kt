@@ -1,7 +1,8 @@
 package no.nav.syfo.client.journalpostdistribusjon
 
 import io.micrometer.core.instrument.Counter
-import no.nav.syfo.metric.*
+import no.nav.syfo.metric.METRICS_NS
+import no.nav.syfo.metric.METRICS_REGISTRY
 
 const val CALL_JOURNALPOSTDISTRIBUSJON_BASE = "${METRICS_NS}_call_journalpostdistribusjon"
 
@@ -10,9 +11,9 @@ const val CALL_JOURNALPOSTDISTRIBUSJON_FAIL = "${CALL_JOURNALPOSTDISTRIBUSJON_BA
 
 val COUNT_CALL_JOURNALPOSTDISTRIBUSJON_SUCCESS: Counter = Counter
     .builder(CALL_JOURNALPOSTDISTRIBUSJON_SUCCESS)
-    .description("Counts the number of successful calls to dokdistFordeling - distribuer journalpost")
+    .description("Counts the number of successful calls to isproxy - distribuer journalpost")
     .register(METRICS_REGISTRY)
 val COUNT_CALL_JOURNALPOSTDISTRIBUSJON_FAIL: Counter = Counter
     .builder(CALL_JOURNALPOSTDISTRIBUSJON_FAIL)
-    .description("Counts the number of failed calls to dokdistFordeling - distribuer journalpost")
+    .description("Counts the number of failed calls to isproxy - distribuer journalpost")
     .register(METRICS_REGISTRY)
