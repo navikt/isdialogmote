@@ -8,7 +8,8 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.behandler.*
+import no.nav.syfo.brev.behandler.BehandlerDialogmeldingProducer
+import no.nav.syfo.brev.behandler.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
@@ -20,7 +21,10 @@ import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
-import org.amshove.kluent.*
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.shouldNotBeEqualTo
+import org.amshove.kluent.shouldNotBeNull
 import org.junit.Assert.assertThrows
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -199,7 +203,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                         }.message shouldBeEqualTo "Failed to change tid/sted, already Avlyst"
                     }
                 }
-                describe("Happy path: with behandler") {
+                describe("With behandler") {
                     val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
                     val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
 
@@ -280,6 +284,53 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldNotBeEqualTo null
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
                         }
+                    }
+                    it("should throw exception if mote with behandler and avlysning missing behandler") {
+                        val createdDialogmoteUUID: String
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                            clearMocks(behandlerDialogmeldingProducer)
+                            justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+
+                            createdDialogmoteUUID = dialogmoteDTO.uuid
+                        }
+
+                        val urlMoteUUIDAvlys =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                        val avlysDialogMoteDto = generateAvlysDialogmoteDTONoBehandler()
+
+                        assertThrows(RuntimeException::class.java) {
+                            handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(avlysDialogMoteDto))
+                            }
+                        }.message shouldBeEqualTo "Failed to Avlys Dialogmote: missing behandler"
                     }
                 }
 

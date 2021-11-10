@@ -22,6 +22,7 @@ import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.*
+import org.junit.Assert
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -198,7 +199,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                         }
                     }
                 }
-                describe("Happy path: with behandler") {
+                describe("With behandler") {
                     val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
                     val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
 
@@ -317,6 +318,78 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldNotBeEqualTo null
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
                         }
+                    }
+                    it("should throw exception if mote with behandler and endring missing behandler") {
+                        val createdDialogmoteUUID: String
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                            clearMocks(behandlerDialogmeldingProducer)
+                            justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+
+                            createdDialogmoteUUID = dialogmoteDTO.uuid
+                        }
+
+                        val urlMoteUUIDPostTidSted =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                        val newDialogmoteTidStedNoBehandler = EndreTidStedDialogmoteDTO(
+                            sted = "Et annet sted",
+                            tid = newDialogmoteDTO.tidSted.tid.plusDays(1),
+                            videoLink = "https://meet.google.com/zyx",
+                            arbeidstaker = EndreTidStedBegrunnelseDTO(
+                                begrunnelse = "begrunnelse arbeidstaker",
+                                endringsdokument = listOf(
+                                    DocumentComponentDTO(
+                                        type = DocumentComponentType.PARAGRAPH,
+                                        title = null,
+                                        texts = listOf("dokumenttekst arbeidstaker"),
+                                    )
+                                )
+                            ),
+                            arbeidsgiver = EndreTidStedBegrunnelseDTO(
+                                begrunnelse = "begrunnelse arbeidsgiver",
+                                endringsdokument = listOf(
+                                    DocumentComponentDTO(
+                                        type = DocumentComponentType.PARAGRAPH,
+                                        title = null,
+                                        texts = listOf("dokumenttekst arbeidsgiver"),
+                                    )
+                                )
+                            ),
+                            behandler = null,
+                        )
+
+                        Assert.assertThrows(RuntimeException::class.java) {
+                            handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(newDialogmoteTidStedNoBehandler))
+                            }
+                        }.message shouldBeEqualTo "Failed to change tid/sted: missing behandler"
                     }
                 }
             }
