@@ -214,6 +214,10 @@ class DialogmoteService(
         if (dialogmote.status == DialogmoteStatus.AVLYST) {
             throw RuntimeException("Failed to Avlys Dialogmote: already Avlyst")
         }
+        if (dialogmote.behandler != null && avlysDialogmote.behandler == null) {
+            throw RuntimeException("Failed to Avlys Dialogmote: missing behandler")
+        }
+
         val pdfAvlysningArbeidstaker = pdfGenClient.pdfAvlysning(
             callId = callId,
             documentComponentDTOList = avlysDialogmote.arbeidstaker.avlysning,
@@ -297,6 +301,10 @@ class DialogmoteService(
         if (dialogmote.status == DialogmoteStatus.AVLYST) {
             throw RuntimeException("Failed to change tid/sted, already Avlyst")
         }
+        if (dialogmote.behandler != null && endreDialogmoteTidSted.behandler == null) {
+            throw RuntimeException("Failed to change tid/sted: missing behandler")
+        }
+
         val pdfEndringArbeidstaker = pdfGenClient.pdfEndringTidSted(
             callId = callId,
             documentComponentDTOList = endreDialogmoteTidSted.arbeidstaker.endringsdokument

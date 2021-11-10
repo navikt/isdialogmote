@@ -24,6 +24,13 @@ fun generateAvlysDialogmoteDTO() =
         behandler = generateAvlysningDTO(),
     )
 
+fun generateAvlysDialogmoteDTONoBehandler() =
+    AvlysDialogmoteDTO(
+        arbeidstaker = generateAvlysningDTO(),
+        arbeidsgiver = generateAvlysningDTO(),
+        behandler = null
+    )
+
 fun generateNewDialogmoteTidStedDTO(
     sted: String,
     dato: LocalDateTime,
