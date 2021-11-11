@@ -41,7 +41,7 @@ class AdressebeskyttelseClientSpek : Spek({
             val client = AdressebeskyttelseClient(pdlClient, cacheMock)
 
             coEvery {
-                azureAdV2ClientMock.getOnBehalfOfToken("pdlClientId", anyToken)
+                azureAdV2ClientMock.getSystemToken("pdlClientId")
             } returns AzureAdV2Token(
                 accessToken = anyToken,
                 expires = LocalDateTime.now().plusDays(1)
@@ -57,7 +57,6 @@ class AdressebeskyttelseClientSpek : Spek({
                 runBlocking {
                     client.hasAdressebeskyttelse(
                         personIdentNumber = arbeidstakerAdressebeskyttet,
-                        token = anyToken,
                         callId = anyCallId,
                     ) shouldBeEqualTo true
                 }
@@ -71,7 +70,6 @@ class AdressebeskyttelseClientSpek : Spek({
                 runBlocking {
                     client.hasAdressebeskyttelse(
                         personIdentNumber = arbeidstakerIkkeAdressebeskyttet,
-                        token = anyToken,
                         callId = anyCallId,
                     ) shouldBeEqualTo false
                 }
@@ -86,7 +84,6 @@ class AdressebeskyttelseClientSpek : Spek({
                 runBlocking {
                     client.hasAdressebeskyttelse(
                         personIdentNumber = arbeidstakerIkkeAdressebeskyttet,
-                        token = anyToken,
                         callId = anyCallId,
                     ) shouldBeEqualTo false
                 }
@@ -101,7 +98,6 @@ class AdressebeskyttelseClientSpek : Spek({
                 runBlocking {
                     client.hasAdressebeskyttelse(
                         personIdentNumber = arbeidstakerAdressebeskyttet,
-                        token = anyToken,
                         callId = anyCallId,
                     ) shouldBeEqualTo true
                 }

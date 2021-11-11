@@ -19,7 +19,6 @@ class AdressebeskyttelseClient(
 
     suspend fun hasAdressebeskyttelse(
         personIdentNumber: PersonIdentNumber,
-        token: String,
         callId: String,
     ): Boolean {
         val cacheKey = "$CACHE_ADRESSEBESKYTTELSE_KEY_PREFIX${personIdentNumber.value}"
@@ -28,7 +27,10 @@ class AdressebeskyttelseClient(
             null -> {
                 val starttime = System.currentTimeMillis()
                 try {
-                    val hasAdressebeskyttelse = pdlClient.isKode6Or7(personIdentNumber, token, callId)
+                    val hasAdressebeskyttelse = pdlClient.isKode6Or7(
+                        callId = callId,
+                        personIdent = personIdentNumber,
+                    )
                     cache.set(
                         cacheKey,
                         hasAdressebeskyttelse.toString(),
