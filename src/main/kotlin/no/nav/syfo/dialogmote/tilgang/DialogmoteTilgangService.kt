@@ -28,7 +28,6 @@ class DialogmoteTilgangService(
             val personHasAdressebeskyttelse =
                 adressebeskyttelseClient.hasAdressebeskyttelse(
                     personIdentNumber = personIdentNumber,
-                    token = token,
                     callId = callId,
                 )
             !personHasAdressebeskyttelse
@@ -59,7 +58,7 @@ class DialogmoteTilgangService(
             token = token,
             callId = callId,
         ).filter { personIdentNumber ->
-            !adressebeskyttelseClient.hasAdressebeskyttelse(personIdentNumber, token, callId)
+            !adressebeskyttelseClient.hasAdressebeskyttelse(personIdentNumber, callId)
         }
     }
 
