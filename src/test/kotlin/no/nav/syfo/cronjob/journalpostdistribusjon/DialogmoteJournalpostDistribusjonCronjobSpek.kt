@@ -77,6 +77,14 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                 database.dropData()
             }
 
+            beforeGroup {
+                isproxyMock.server.start()
+            }
+
+            afterGroup {
+                isproxyMock.server.stop(1L, 10L)
+            }
+
             val validToken = generateJWT(
                 externalMockEnvironment.environment.aadAppClient,
                 externalMockEnvironment.wellKnownVeilederV2.issuer,
