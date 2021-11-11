@@ -2,7 +2,8 @@ package no.nav.syfo.cronjob
 
 import io.ktor.application.*
 import kotlinx.coroutines.*
-import no.nav.syfo.application.*
+import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.application.Environment
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.azuread.AzureAdV2Client
@@ -13,7 +14,8 @@ import no.nav.syfo.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
 import no.nav.syfo.cronjob.journalpostdistribusjon.DialogmoteJournalpostDistribusjonCronjob
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
 import no.nav.syfo.cronjob.statusendring.*
-import no.nav.syfo.dialogmote.*
+import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.dialogmote.ReferatJournalpostService
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import org.apache.kafka.clients.producer.KafkaProducer
 
@@ -36,8 +38,8 @@ fun Application.cronjobModule(
     )
     val journalpostdistribusjonClient = JournalpostdistribusjonClient(
         azureAdV2Client = azureAdV2Client,
-        dokdistFordelingClientId = environment.dokdistFordelingClientId,
-        dokdistFordelingBaseUrl = environment.dokdistFordelingUrl
+        isproxyClientId = environment.isproxyClientId,
+        isproxyUrl = environment.isproxyUrl
     )
     val pdlClient = PdlClient(
         azureAdV2Client = azureAdV2Client,

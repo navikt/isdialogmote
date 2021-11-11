@@ -14,13 +14,21 @@ import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
 import no.nav.syfo.dialogmote.ReferatJournalpostService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.v2.*
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteFerdigstillPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteTidStedPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
-import no.nav.syfo.testhelper.generator.*
+import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTO
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewReferatDTO
+import no.nav.syfo.testhelper.mock.IsproxyMock
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
-import org.amshove.kluent.*
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -33,6 +41,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             start()
 
             val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
+            val isproxyMock = IsproxyMock()
             val externalMockEnvironment = ExternalMockEnvironment.getInstance(allowVarselMedFysiskBrev = true)
             val database = externalMockEnvironment.database
 
@@ -54,8 +63,8 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             val referatJournalpostService = ReferatJournalpostService(database = database)
             val journalpostdistribusjonClient = JournalpostdistribusjonClient(
                 azureAdV2Client = azureAdV2ClientMock,
-                dokdistFordelingClientId = externalMockEnvironment.dokdistMock.name,
-                dokdistFordelingBaseUrl = externalMockEnvironment.dokdistMock.url
+                isproxyClientId = "isproxyclientid",
+                isproxyUrl = isproxyMock.url
             )
 
             val journalpostDistribusjonCronjob = DialogmoteJournalpostDistribusjonCronjob(
@@ -66,6 +75,14 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
 
             afterEachTest {
                 database.dropData()
+            }
+
+            beforeGroup {
+                isproxyMock.server.start()
+            }
+
+            afterGroup {
+                isproxyMock.server.stop(1L, 10L)
             }
 
             val validToken = generateJWT(

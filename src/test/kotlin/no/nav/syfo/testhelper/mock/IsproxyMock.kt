@@ -1,22 +1,29 @@
 package no.nav.syfo.testhelper.mock
 
-import io.ktor.application.call
-import io.ktor.response.respond
+import io.ktor.application.*
+import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.server.engine.embeddedServer
+import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.application.api.authentication.installContentNegotiation
+import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient.Companion.DISTRIBUER_JOURNALPOST_PATH
+import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonResponse
 import no.nav.syfo.client.person.kontaktinfo.*
-import no.nav.syfo.client.person.oppfolgingstilfelle.*
+import no.nav.syfo.client.person.oppfolgingstilfelle.KOppfolgingstilfellePersonDTO
+import no.nav.syfo.client.person.oppfolgingstilfelle.KSyketilfelledagDTO
 import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISPROXY_SYFOSYKETILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH
 import no.nav.syfo.domain.AktorId
-import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_AKTORID
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_AKTORID
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL_AKTORID
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING_AKTORID
-import no.nav.syfo.util.*
-import java.time.*
+import no.nav.syfo.testhelper.getRandomPort
+import no.nav.syfo.util.NAV_PERSONIDENTER_HEADER
+import no.nav.syfo.util.getHeader
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.*
 
 fun kOppfolgingstilfellePersonDTO(
     aktorId: AktorId = ARBEIDSTAKER_AKTORID,
@@ -78,6 +85,9 @@ class IsproxyMock {
         ) {
             installContentNegotiation()
             routing {
+                post(DISTRIBUER_JOURNALPOST_PATH) {
+                    call.respond(JournalpostdistribusjonResponse(bestillingsId = UUID.randomUUID().toString()))
+                }
                 get("$ISPROXY_SYFOSYKETILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH/${ARBEIDSTAKER_AKTORID.value}") {
                     call.respond(kOppfolgingstilfellePersonDTO(ARBEIDSTAKER_AKTORID))
                 }
