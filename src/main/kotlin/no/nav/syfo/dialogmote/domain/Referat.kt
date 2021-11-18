@@ -25,6 +25,7 @@ data class Referat(
     val arbeidstakerOppgave: String,
     val arbeidsgiverOppgave: String,
     val veilederOppgave: String?,
+    val behandlerOppgave: String?,
     val narmesteLederNavn: String,
     override val document: List<DocumentComponentDTO>,
     override val pdf: ByteArray,
@@ -56,6 +57,7 @@ fun Referat.toReferatDTO(): ReferatDTO {
         arbeidstakerOppgave = this.arbeidstakerOppgave,
         arbeidsgiverOppgave = this.arbeidsgiverOppgave,
         veilederOppgave = this.veilederOppgave,
+        behandlerOppgave = this.behandlerOppgave,
         narmesteLederNavn = this.narmesteLederNavn, // Egentlig NL-representant fra virksomhet
         document = this.document,
         pdf = this.pdf,

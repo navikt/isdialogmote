@@ -15,7 +15,7 @@ import java.sql.SQLException
 import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 private val mapper = configuredJacksonMapper()
 
@@ -64,6 +64,7 @@ fun ResultSet.toPReferat(): PReferat =
         arbeidstakerOppgave = getString("arbeidstaker_oppgave"),
         arbeidsgiverOppgave = getString("arbeidsgiver_oppgave"),
         veilederOppgave = getString("veileder_oppgave"),
+        behandlerOppgave = getString("behandler_oppgave"),
         narmesteLederNavn = getString("narmeste_leder_navn"),
         document = mapper.readValue(getString("document"), object : TypeReference<List<DocumentComponentDTO>>() {}),
         pdf = getBytes("pdf"),
@@ -115,10 +116,11 @@ const val queryCreateReferat =
         arbeidstaker_oppgave,
         arbeidsgiver_oppgave,
         veileder_oppgave,
+        behandler_oppgave,
         narmeste_leder_navn,
         document,
         pdf
-    ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?) RETURNING id
+    ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?) RETURNING id
     """
 
 const val queryCreateMotedeltakerAnnen =
@@ -154,9 +156,10 @@ fun Connection.createNewReferat(
         it.setString(8, newReferat.arbeidstakerOppgave)
         it.setString(9, newReferat.arbeidsgiverOppgave)
         it.setString(10, newReferat.veilederOppgave)
-        it.setString(11, newReferat.narmesteLederNavn)
-        it.setObject(12, mapper.writeValueAsString(newReferat.document))
-        it.setBytes(13, pdf)
+        it.setString(11, newReferat.behandlerOppgave)
+        it.setString(12, newReferat.narmesteLederNavn)
+        it.setObject(13, mapper.writeValueAsString(newReferat.document))
+        it.setBytes(14, pdf)
         it.executeQuery().toList { getInt("id") }
     }
     if (referatIdList.size != 1) {

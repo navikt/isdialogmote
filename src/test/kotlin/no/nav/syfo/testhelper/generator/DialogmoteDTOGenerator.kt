@@ -184,13 +184,14 @@ fun generateNewDialogmoteDTOWithBehandler(
     )
 }
 
-fun generateNewReferatDTO() =
+fun generateNewReferatDTO(behandlerOppgave: String? = null) =
     NewReferatDTO(
         situasjon = "Dette er en beskrivelse av situasjonen",
         konklusjon = "Dette er en beskrivelse av konklusjon",
         arbeidstakerOppgave = "Dette er en beskrivelse av arbeidstakerOppgave",
         arbeidsgiverOppgave = "Dette er en beskrivelse av arbeidsgiverOppgave",
         veilederOppgave = "Dette er en beskrivelse av veilederOppgave",
+        behandlerOppgave = behandlerOppgave,
         narmesteLederNavn = "Grønn Bamse",
         document = generateReferatComponentList(),
         andreDeltakere = listOf(
