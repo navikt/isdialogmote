@@ -8,9 +8,10 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.behandler.*
+import no.nav.syfo.brev.behandler.BehandlerDialogmeldingProducer
+import no.nav.syfo.brev.behandler.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
-import no.nav.syfo.dialogmote.api.domain.*
+import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
@@ -144,6 +145,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             val referat = dialogmoteDTO.referat!!
                             referat.digitalt shouldBeEqualTo true
                             referat.situasjon shouldBeEqualTo "Dette er en beskrivelse av situasjonen"
+                            referat.behandlerOppgave shouldBeEqualTo null
                             referat.narmesteLederNavn shouldBeEqualTo "Grønn Bamse"
                             referat.document[0].type shouldBeEqualTo DocumentComponentType.HEADER
                             referat.document[0].texts shouldBeEqualTo listOf("Tittel referat")
@@ -204,8 +206,9 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                     }
                 }
                 describe("Happy path: with behandler") {
+                    val behandlerOppgave = "Dette er en beskrivelse av behandlers oppgave"
                     val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
-                    val newReferatDTO = generateNewReferatDTO()
+                    val newReferatDTO = generateNewReferatDTO(behandlerOppgave = behandlerOppgave)
 
                     val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
 
@@ -305,9 +308,11 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
-                            referatBehandlerVarselUUID = dialogmoteDTO.referat?.uuid
+                            val referat = dialogmoteDTO.referat!!
+                            referatBehandlerVarselUUID = referat.uuid
                             dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.FERDIGSTILT.name
                             dialogmoteDTO.behandler!!.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            referat.behandlerOppgave shouldBeEqualTo behandlerOppgave
 
                             val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
                             verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(capture(kafkaBehandlerDialogmeldingDTOSlot)) }
