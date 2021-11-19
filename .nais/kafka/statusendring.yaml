@@ -26,3 +26,6 @@ spec:
     - team: disykefravar
       application: dvh-syfodm2-konsument
       access: read
+    - team: team-dialog
+      application: sf-dialogmote
+      access: read
