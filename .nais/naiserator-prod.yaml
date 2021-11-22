@@ -95,7 +95,7 @@ spec:
     - name: REDIS_HOST
       value: "isdialogmote-redis.teamsykefravr.svc.cluster.local"
     - name: DIALOGMOTE_ARBEIDSTAKER_URL
-      value: "https://tjenester.nav.no/dialogmote"
+      value: "https://www.nav.no/syk/dialogmote"
     - name: DOKARKIV_CLIENT_ID
       value: "162b3255-2f72-4399-8f7a-244add9ffaac"
     - name: DOKARKIV_URL
