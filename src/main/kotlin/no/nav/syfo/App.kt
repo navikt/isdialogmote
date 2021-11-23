@@ -26,10 +26,7 @@ import java.util.concurrent.TimeUnit
 const val applicationPort = 8080
 
 fun main() {
-    val applicationState = ApplicationState(
-        alive = true,
-        ready = false
-    )
+    val applicationState = ApplicationState()
     val logger = LoggerFactory.getLogger("ktor.application")
     val environment = Environment()
 
