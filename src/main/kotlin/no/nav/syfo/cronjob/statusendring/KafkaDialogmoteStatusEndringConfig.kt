@@ -1,19 +1,21 @@
 package no.nav.syfo.cronjob.statusendring
 
-import io.confluent.kafka.serializers.*
-import no.nav.syfo.application.Environment
+import io.confluent.kafka.serializers.KafkaAvroSerializer
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
+import no.nav.syfo.application.ApplicationEnvironmentKafka
 import no.nav.syfo.application.kafka.commonKafkaAivenProducerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import java.util.*
 
 fun kafkaDialogmoteStatusEndringProducerConfig(
-    environment: Environment,
+    applicationEnvironmentKafka: ApplicationEnvironmentKafka,
 ): Properties {
     return Properties().apply {
-        putAll(commonKafkaAivenProducerConfig(environment))
+        putAll(commonKafkaAivenProducerConfig(applicationEnvironmentKafka))
         this[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = KafkaAvroSerializer::class.java.canonicalName
         this[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = KafkaAvroSerializer::class.java.canonicalName
-        this[KafkaAvroSerializerConfig.USER_INFO_CONFIG] = "${environment.kafkaAivenRegistryUser}:${environment.kafkaAivenRegistryPassword}"
+        this[KafkaAvroSerializerConfig.USER_INFO_CONFIG] =
+            "${applicationEnvironmentKafka.aivenRegistryUser}:${applicationEnvironmentKafka.aivenRegistryPassword}"
         this[KafkaAvroSerializerConfig.BASIC_AUTH_CREDENTIALS_SOURCE] = "USER_INFO"
     }
 }

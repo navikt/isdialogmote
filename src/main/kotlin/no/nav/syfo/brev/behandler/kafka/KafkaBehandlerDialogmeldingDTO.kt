@@ -1,4 +1,4 @@
-package no.nav.syfo.brev.behandler
+package no.nav.syfo.brev.behandler.kafka
 
 data class KafkaBehandlerDialogmeldingDTO(
     val behandlerRef: String,

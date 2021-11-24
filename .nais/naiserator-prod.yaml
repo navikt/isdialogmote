@@ -126,6 +126,8 @@ spec:
       value: "true"
     - name: TOGGLE_MQ_SENDING_ENABLED
       value: 'true'
+    - name: TOGGLE_KAFKA_PROCESSING_DIALOGMELDINGER
+      value: "false"
     - name: MQGATEWAY_HOSTNAME
       value: "a01apvl269.adeo.no"
     - name: MQGATEWAY_PORT

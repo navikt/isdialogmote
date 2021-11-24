@@ -1,5 +1,6 @@
 package no.nav.syfo.testhelper
 
+import no.nav.syfo.application.ApplicationEnvironmentKafka
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import java.net.ServerSocket
@@ -28,16 +29,18 @@ fun testEnvironment(
     electorPath = "electorPath",
     loginserviceIdportenDiscoveryUrl = "",
     loginserviceIdportenAudience = listOf("idporten"),
-    kafkaBootstrapServers = kafkaBootstrapServers,
-    kafkaSchemaRegistryUrl = "http://kafka-schema-registry.tpa.svc.nais.local:8081",
-    kafkaAivenBootstrapServers = kafkaBootstrapServers,
-    kafkaAivenSchemaRegistryUrl = "http://kafka-schema-registry.tpa.svc.nais.local:8081",
-    kafkaAivenRegistryUser = "registryuser",
-    kafkaAivenRegistryPassword = "registrypassword",
-    kafkaAivenSecurityProtocol = "SSL",
-    KafkaAivenCredstorePassword = "credstorepassord",
-    KafkaAivenTruststoreLocation = "truststore",
-    KafkaAivenKeystoreLocation = "keystore",
+    kafka = ApplicationEnvironmentKafka(
+        bootstrapServers = kafkaBootstrapServers,
+        schemaRegistryUrl = "http://kafka-schema-registry.tpa.svc.nais.local:8081",
+        aivenBootstrapServers = kafkaBootstrapServers,
+        aivenSchemaRegistryUrl = "http://kafka-schema-registry.tpa.svc.nais.local:8081",
+        aivenRegistryUser = "registryuser",
+        aivenRegistryPassword = "registrypassword",
+        aivenSecurityProtocol = "SSL",
+        aivenCredstorePassword = "credstorepassord",
+        aivenTruststoreLocation = "truststore",
+        aivenKeystoreLocation = "keystore",
+    ),
     allowVarselMedFysiskBrev = allowVarselMedFysiskBrev,
     allowMotedeltakerBehandler = allowMotedeltakerBehandler,
     redisHost = "localhost",
@@ -67,6 +70,7 @@ fun testEnvironment(
     narmestelederUrl = narmestelederUrl ?: "http://narmesteleder",
     pdlClientId = "pdlClientId",
     pdlUrl = pdlUrl ?: "http://pdl",
+    toggleKafkaProcessingDialogmeldinger = true,
 )
 
 fun testAppState() = ApplicationState(

@@ -1,11 +1,11 @@
 package no.nav.syfo.cronjob
 
 import io.ktor.application.*
-import kotlinx.coroutines.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.application.launchBackgroundTask
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
@@ -62,7 +62,7 @@ fun Application.cronjobModule(
         pdlClient = pdlClient,
     )
 
-    val kafkaDialogmoteStatusEndringProducerProperties = kafkaDialogmoteStatusEndringProducerConfig(environment)
+    val kafkaDialogmoteStatusEndringProducerProperties = kafkaDialogmoteStatusEndringProducerConfig(environment.kafka)
     val kafkaDialogmoteStatusEndringProducer = KafkaProducer<String, KDialogmoteStatusEndring>(
         kafkaDialogmoteStatusEndringProducerProperties
     )
@@ -88,7 +88,7 @@ fun Application.cronjobModule(
     )
 
     if (environment.journalforingCronjobEnabled) {
-        createListenerCronjob(
+        launchBackgroundTask(
             applicationState = applicationState,
         ) {
             cronjobRunner.start(cronjob = journalforDialogmoteVarslerCronjob)
@@ -97,7 +97,7 @@ fun Application.cronjobModule(
         log.info("JournalforingCronjob is not enabled")
     }
     if (environment.publishDialogmoteStatusEndringCronjobEnabled) {
-        createListenerCronjob(
+        launchBackgroundTask(
             applicationState = applicationState,
         ) {
             cronjobRunner.start(cronjob = publishDialogmoteStatusEndringCronjob)
@@ -106,26 +106,12 @@ fun Application.cronjobModule(
         log.info("PublishDialogmoteStatusEndringCronjob is not enabled")
     }
     if (environment.allowVarselMedFysiskBrev) {
-        createListenerCronjob(
+        launchBackgroundTask(
             applicationState = applicationState
         ) {
             cronjobRunner.start(cronjob = journalpostDistribusjonCronjob)
         }
     } else {
         log.info("DialogmoteJournalpostDistribusjonCronjob not started due to allowVarselMedFysiskBrev not enabled")
-    }
-}
-
-fun Application.createListenerCronjob(
-    applicationState: ApplicationState,
-    action: suspend CoroutineScope.() -> Unit
-): Job = GlobalScope.launch {
-    try {
-        action()
-    } catch (ex: Exception) {
-        log.error("Something went wrong, terminating application", ex)
-    } finally {
-        applicationState.alive = false
-        applicationState.ready = false
     }
 }

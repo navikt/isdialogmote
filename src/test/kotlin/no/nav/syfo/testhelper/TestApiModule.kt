@@ -6,7 +6,7 @@ import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.behandler.BehandlerDialogmeldingProducer
+import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import redis.clients.jedis.*
 
 fun Application.testApiModule(

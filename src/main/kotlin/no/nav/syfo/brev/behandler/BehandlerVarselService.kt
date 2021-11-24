@@ -1,5 +1,7 @@
 package no.nav.syfo.brev.behandler
 
+import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
+import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import java.util.UUID
