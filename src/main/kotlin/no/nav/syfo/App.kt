@@ -11,13 +11,13 @@ import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.api.authentication.getWellKnown
 import no.nav.syfo.application.cache.RedisStore
-import no.nav.syfo.cronjob.cronjobModule
 import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
 import no.nav.syfo.application.mq.MQSender
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.kafkaBrukernotifikasjonProducerConfig
-import no.nav.syfo.brev.behandler.*
+import no.nav.syfo.brev.behandler.kafka.*
+import no.nav.syfo.cronjob.cronjobModule
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.*
@@ -38,7 +38,7 @@ fun main() {
     )
     val behandlerDialogmeldingProducer = BehandlerDialogmeldingProducer(
         kafkaProducerBehandlerDialogmeldingBestilling = KafkaProducer<String, KafkaBehandlerDialogmeldingDTO>(
-            kafkaBehandlerDialogmeldingProducerConfig(environment)
+            kafkaBehandlerDialogmeldingProducerConfig(environment.kafka)
         ),
         allowVarslingBehandler = environment.allowMotedeltakerBehandler,
     )
@@ -86,6 +86,10 @@ fun main() {
     applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) {
         applicationState.ready = true
         logger.info("Application is ready")
+        kafkaModule(
+            applicationState = applicationState,
+            environment = environment,
+        )
     }
 
     val server = embeddedServer(

@@ -11,16 +11,18 @@ data class Environment(
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
-    val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
-    val kafkaSchemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_URL"),
-    val kafkaAivenBootstrapServers: String = getEnvVar("KAFKA_BROKERS"),
-    val kafkaAivenSchemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
-    val kafkaAivenRegistryUser: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
-    val kafkaAivenRegistryPassword: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
-    val kafkaAivenSecurityProtocol: String = "SSL",
-    val KafkaAivenCredstorePassword: String = getEnvVar("KAFKA_CREDSTORE_PASSWORD"),
-    val KafkaAivenTruststoreLocation: String = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
-    val KafkaAivenKeystoreLocation: String = getEnvVar("KAFKA_KEYSTORE_PATH"),
+    val kafka: ApplicationEnvironmentKafka = ApplicationEnvironmentKafka(
+        bootstrapServers = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
+        schemaRegistryUrl = getEnvVar("KAFKA_SCHEMA_REGISTRY_URL"),
+        aivenBootstrapServers = getEnvVar("KAFKA_BROKERS"),
+        aivenSchemaRegistryUrl = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
+        aivenRegistryUser = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
+        aivenRegistryPassword = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
+        aivenSecurityProtocol = "SSL",
+        aivenCredstorePassword = getEnvVar("KAFKA_CREDSTORE_PASSWORD"),
+        aivenTruststoreLocation = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
+        aivenKeystoreLocation = getEnvVar("KAFKA_KEYSTORE_PATH"),
+    ),
     val allowVarselMedFysiskBrev: Boolean = getEnvVar("TOGGLE_ALLOW_VARSEL_MED_FYSISK_BREV").toBoolean(),
     val allowMotedeltakerBehandler: Boolean = getEnvVar("TOGGLE_ALLOW_MOTEDELTAKER_BEHANDLER").toBoolean(),
     val redisHost: String = getEnvVar("REDIS_HOST"),
@@ -45,6 +47,7 @@ data class Environment(
     val syfotilgangskontrollUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
     val journalforingCronjobEnabled: Boolean = getEnvVar("TOGGLE_JOURNALFORING_CRONJOB_ENABLED").toBoolean(),
     val publishDialogmoteStatusEndringCronjobEnabled: Boolean = getEnvVar("TOGGLE_PUBLISH_STATUS_ENDRING_CRONJOB_ENABLED").toBoolean(),
+    val toggleKafkaProcessingDialogmeldinger: Boolean = getEnvVar("TOGGLE_KAFKA_PROCESSING_DIALOGMELDINGER").toBoolean(),
     val mqChannelName: String = getEnvVar("MQGATEWAY_CHANNEL_NAME", "DEV.APP.SVRCONN"),
     val mqHostname: String = getEnvVar("MQGATEWAY_HOSTNAME", "localhost"),
     val mqQueueManager: String = getEnvVar("MQGATEWAY_NAME", "QM1"),
@@ -63,6 +66,19 @@ data class Environment(
         return "jdbc:postgresql://$isdialogmoteDbHost:$isdialogmoteDbPort/$isdialogmoteDbName"
     }
 }
+
+data class ApplicationEnvironmentKafka(
+    val bootstrapServers: String,
+    val schemaRegistryUrl: String,
+    val aivenBootstrapServers: String,
+    val aivenSchemaRegistryUrl: String,
+    val aivenRegistryUser: String,
+    val aivenRegistryPassword: String,
+    val aivenSecurityProtocol: String,
+    val aivenCredstorePassword: String,
+    val aivenTruststoreLocation: String,
+    val aivenKeystoreLocation: String,
+)
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
     System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
