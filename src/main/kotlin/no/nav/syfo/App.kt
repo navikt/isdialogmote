@@ -46,10 +46,6 @@ fun main() {
         ),
         allowVarslingBehandler = environment.allowMotedeltakerBehandler,
     )
-    val behandlerVarselService = BehandlerVarselService(
-        database = applicationDatabase,
-        behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
-    )
     val mqSender = MQSender(environment)
     val cache = RedisStore(
         JedisPool(
@@ -60,6 +56,7 @@ fun main() {
             environment.redisSecret
         )
     )
+    lateinit var behandlerVarselService: BehandlerVarselService
 
     val applicationEngineEnvironment = applicationEngineEnvironment {
         log = logger
@@ -70,6 +67,10 @@ fun main() {
         module {
             databaseModule(
                 environment = environment
+            )
+            behandlerVarselService = BehandlerVarselService(
+                database = applicationDatabase,
+                behandlerDialogmeldingProducer = behandlerDialogmeldingProducer
             )
             apiModule(
                 applicationState = applicationState,
