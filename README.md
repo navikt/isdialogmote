@@ -112,3 +112,7 @@ This application produces the following topic(s):
 
 * isdialogmote-dialogmote-statusendring
 * isdialogmelding-behandler-dialogmelding-bestilling
+
+This application consumes the following topic(s):
+
+* dialogmelding

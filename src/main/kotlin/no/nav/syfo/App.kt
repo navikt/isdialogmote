@@ -6,8 +6,7 @@ import io.ktor.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.brukernotifikasjon.schemas.*
-import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.Environment
+import no.nav.syfo.application.*
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.api.authentication.getWellKnown
 import no.nav.syfo.application.cache.RedisStore
@@ -16,8 +15,10 @@ import no.nav.syfo.application.database.databaseModule
 import no.nav.syfo.application.mq.MQSender
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.kafkaBrukernotifikasjonProducerConfig
+import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.*
 import no.nav.syfo.cronjob.cronjobModule
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.*
@@ -41,6 +42,17 @@ fun main() {
             kafkaBehandlerDialogmeldingProducerConfig(environment.kafka)
         ),
         allowVarslingBehandler = environment.allowMotedeltakerBehandler,
+    )
+    val behandlerVarselService = BehandlerVarselService(
+        database = applicationDatabase,
+        behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
+    )
+    val dialogmeldingKafkaConsumer =
+        KafkaConsumer<String, KafkaDialogmeldingDTO>(kafkaDialogmeldingConsumerConfig(environment.kafka))
+    val dialogmeldingConsumerService = DialogmeldingConsumerService(
+        kafkaConsumer = dialogmeldingKafkaConsumer,
+        behandlerVarselService = behandlerVarselService,
+        applicationState = applicationState,
     )
     val mqSender = MQSender(environment)
     val cache = RedisStore(
@@ -66,7 +78,7 @@ fun main() {
             apiModule(
                 applicationState = applicationState,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
+                behandlerVarselService = behandlerVarselService,
                 database = applicationDatabase,
                 mqSender = mqSender,
                 environment = environment,
@@ -86,10 +98,14 @@ fun main() {
     applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) {
         applicationState.ready = true
         logger.info("Application is ready")
-        kafkaModule(
-            applicationState = applicationState,
-            environment = environment,
-        )
+        if (environment.toggleKafkaProcessingDialogmeldinger) {
+            launchBackgroundTask(applicationState = applicationState) {
+                logger.info("Starting dialogmelding kafka consumer")
+                dialogmeldingConsumerService.startConsumer()
+            }
+        } else {
+            logger.info("Kafka processing dialogmeldinger is not enabled")
+        }
     }
 
     val server = embeddedServer(

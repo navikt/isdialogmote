@@ -12,7 +12,6 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
-import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederAccessService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
@@ -34,7 +33,7 @@ import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 fun Application.apiModule(
     applicationState: ApplicationState,
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
-    behandlerDialogmeldingProducer: BehandlerDialogmeldingProducer,
+    behandlerVarselService: BehandlerVarselService,
     database: DatabaseInterface,
     mqSender: MQSenderInterface,
     environment: Environment,
@@ -116,10 +115,6 @@ fun Application.apiModule(
 
     val narmesteLederVarselService = NarmesteLederVarselService(
         mqSender = mqSender,
-    )
-
-    val behandlerVarselService = BehandlerVarselService(
-        behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
     )
 
     val dialogmotedeltakerService = DialogmotedeltakerService(
