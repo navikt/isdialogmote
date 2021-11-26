@@ -1,4 +1,4 @@
-package no.nav.syfo.brev.behandler.kafka
+package no.nav.syfo.dialogmelding.kafka
 
 import no.nav.syfo.application.ApplicationEnvironmentKafka
 import no.nav.syfo.application.kafka.commonKafkaAivenConfig

@@ -1,13 +1,17 @@
-package no.nav.syfo.brev.behandler.kafka
+package no.nav.syfo.dialogmelding.kafka
 
+import no.nav.syfo.dialogmelding.domain.*
+import no.nav.syfo.domain.PersonIdentNumber
 import java.time.LocalDateTime
+import java.util.*
 
 data class KafkaDialogmeldingDTO(
     val msgId: String,
+    val msgType: String,
     val navLogId: String,
     val mottattTidspunkt: LocalDateTime,
-    val conversationRef: String,
-    val parentRef: String,
+    val conversationRef: String?,
+    val parentRef: String?,
     val personIdentPasient: String,
     val pasientAktoerId: String,
     val personIdentBehandler: String,
@@ -33,7 +37,7 @@ data class Dialogmelding(
 )
 
 data class HenvendelseFraLegeHenvendelse(
-    val teamakode: TemaKode,
+    val temaKode: TemaKode,
     val tekstNotatInnhold: String,
     val dokIdNotat: String?,
     val foresporsel: Foresporsel?,
@@ -41,7 +45,7 @@ data class HenvendelseFraLegeHenvendelse(
 )
 
 data class InnkallingMoterespons(
-    val teamakode: TemaKode,
+    val temaKode: TemaKode,
     val tekstNotatInnhold: String?,
     val dokIdNotat: String?,
     val foresporsel: Foresporsel?
@@ -57,7 +61,7 @@ data class TemaKode(
 )
 
 data class ForesporselFraSaksbehandlerForesporselSvar(
-    val teamakode: TemaKode,
+    val temaKode: TemaKode,
     val tekstNotatInnhold: String,
     val dokIdNotat: String?,
     val datoNotat: LocalDateTime?
@@ -96,3 +100,49 @@ data class TypeForesp(
     val s: String,
     val v: String
 )
+
+fun KafkaDialogmeldingDTO.toDialogmeldingSvar(): DialogmeldingSvar = DialogmeldingSvar(
+    conversationRef = this.conversationRef?.let { UUID.fromString(it) },
+    parentRef = this.parentRef?.let { UUID.fromString(it) },
+    arbeidstakerPersonIdent = PersonIdentNumber(this.personIdentPasient),
+    innkallingDialogmoteSvar = this.dialogmelding.innkallingMoterespons?.toInnkallingDialogmoteSvar()
+)
+
+private fun InnkallingMoterespons.toInnkallingDialogmoteSvar(): InnkallingDialogmoteSvar? {
+    val foresporselType = this.foresporsel?.typeForesp?.toForesporselType()
+    val svarType = this.temaKode.toSvarType()
+    return if (svarType != null && foresporselType != null) {
+        InnkallingDialogmoteSvar(
+            foresporselType = foresporselType,
+            svarType = svarType,
+            svarTekst = this.tekstNotatInnhold,
+        )
+    } else null
+}
+
+fun TypeForesp.toForesporselType(): ForesporselType? {
+    return when (this.s) {
+        "2.16.578.1.12.4.1.1.8125" -> { // Innkalling dialogmøte forespørsel kodeverk
+            when (this.v) {
+                "1" -> ForesporselType.INNKALLING
+                "2" -> ForesporselType.ENDRING
+                else -> null
+            }
+        }
+        else -> null
+    }
+}
+
+fun TemaKode.toSvarType(): SvarType? {
+    return when (this.kodeverkOID) {
+        "2.16.578.1.12.4.1.1.8126" -> { // Innkalling dialogmøte svar kodeverk
+            when (this.v) {
+                "1" -> SvarType.KOMMER
+                "2" -> SvarType.NYTT_TID_STED
+                "3" -> SvarType.KOMMER_IKKE
+                else -> null
+            }
+        }
+        else -> null
+    }
+}
