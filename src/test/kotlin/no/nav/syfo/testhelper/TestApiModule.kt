@@ -1,18 +1,19 @@
 package no.nav.syfo.testhelper
 
 import io.ktor.application.*
-import io.mockk.*
+import io.mockk.mockk
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import redis.clients.jedis.*
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
-    behandlerDialogmeldingProducer: BehandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>(),
+    behandlerDialogmeldingProducer: BehandlerDialogmeldingProducer = mockk(),
     mqSenderMock: MQSenderInterface,
 ) {
     val cache = RedisStore(
@@ -24,10 +25,14 @@ fun Application.testApiModule(
             externalMockEnvironment.environment.redisSecret
         )
     )
+    val behandlerVarselService = BehandlerVarselService(
+        database = externalMockEnvironment.database,
+        behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
+    )
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,
         brukernotifikasjonProducer = brukernotifikasjonProducer,
-        behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
+        behandlerVarselService = behandlerVarselService,
         database = externalMockEnvironment.database,
         mqSender = mqSenderMock,
         environment = externalMockEnvironment.environment,
