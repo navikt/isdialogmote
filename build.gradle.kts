@@ -9,7 +9,7 @@ object Versions {
     const val brukernotifikasjonAvro = "1.2021.01.18-11.12-b9c8c40b98d1"
     const val isdialogmoteSchema = "1.0.5"
     const val confluent = "6.1.3"
-    const val flyway = "8.0.4"
+    const val flyway = "8.1.0"
     const val hikari = "5.0.0"
     const val jackson = "2.13.0"
     const val jedis = "3.7.0"
@@ -18,10 +18,10 @@ object Versions {
     const val ktor = "1.6.5"
     const val jaxb = "2.3.1"
     const val kluent = "1.68"
-    const val logback = "1.2.6"
-    const val logstashEncoder = "6.6"
-    const val mockk = "1.12.0"
-    const val nimbusjosejwt = "9.11.3"
+    const val logback = "1.2.7"
+    const val logstashEncoder = "7.0.1"
+    const val mockk = "1.12.1"
+    const val nimbusjosejwt = "9.15.2"
     const val postgresEmbedded = "0.13.4"
     const val postgres = "42.3.1"
     const val redisEmbedded = "0.7.3"
@@ -29,11 +29,11 @@ object Versions {
     const val spek = "2.0.17"
     const val mq = "9.2.2.0"
     const val tjenesteSpesifikasjonerGithub = "1.2020.06.11-19.53-1cad83414166"
-    const val micrometerRegistry = "1.7.5"
+    const val micrometerRegistry = "1.8.0"
 }
 
 plugins {
-    kotlin("jvm") version "1.5.31"
+    kotlin("jvm") version "1.6.0"
     id("com.github.johnrengelman.shadow") version "7.1.0"
     id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
 }
