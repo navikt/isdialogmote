@@ -6,7 +6,7 @@ import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
-import java.util.UUID
+import java.util.*
 
 class DialogmotedeltakerService(
     private val arbeidstakerVarselService: ArbeidstakerVarselService,
@@ -22,7 +22,7 @@ class DialogmotedeltakerService(
         return pMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(motedeltakerArbeidstakerVarselList)
     }
 
-    fun getDialogmoteDeltakerArbeidstakerVarselList(
+    private fun getDialogmoteDeltakerArbeidstakerVarselList(
         motedeltakerArbeidstakerId: Int,
     ): List<DialogmotedeltakerArbeidstakerVarsel> {
         return database.getMotedeltakerArbeidstakerVarsel(motedeltakerArbeidstakerId).map {
@@ -38,7 +38,7 @@ class DialogmotedeltakerService(
         }
     }
 
-    fun getDialogmoteDeltakerArbeidsgiverVarselList(
+    private fun getDialogmoteDeltakerArbeidsgiverVarselList(
         motedeltakerArbeidsgiverId: Int,
     ): List<DialogmotedeltakerArbeidsgiverVarsel> {
         return database.getMotedeltakerArbeidsgiverVarsel(motedeltakerArbeidsgiverId).map {
@@ -54,11 +54,20 @@ class DialogmotedeltakerService(
         }
     }
 
-    fun getDialogmoteDeltakerBehandlerVarselList(
+    private fun getDialogmoteDeltakerBehandlerVarselList(
         motedeltakerBehandlerId: Int,
     ): List<DialogmotedeltakerBehandlerVarsel> {
-        return database.getMotedeltakerBehandlerVarsel(motedeltakerBehandlerId).map {
-            it.toDialogmotedeltakerBehandler()
+        return database.getMotedeltakerBehandlerVarselForMotedeltaker(motedeltakerBehandlerId).map {
+            val behandlerVarselSvar = getDialogmoteDeltakerBehandlerVarselSvar(it.id)
+            it.toDialogmotedeltakerBehandlerVarsel(behandlerVarselSvar)
+        }
+    }
+
+    private fun getDialogmoteDeltakerBehandlerVarselSvar(
+        motedeltakerBehandlerVarselId: Int,
+    ): List<DialogmotedeltakerBehandlerVarselSvar> {
+        return database.getMotedeltakerBehandlerVarselSvar(motedeltakerBehandlerVarselId).map {
+            it.toDialogmoteDeltakerVarselSvar()
         }
     }
 

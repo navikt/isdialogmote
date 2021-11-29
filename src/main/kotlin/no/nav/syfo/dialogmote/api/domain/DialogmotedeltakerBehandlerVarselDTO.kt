@@ -9,4 +9,5 @@ data class DialogmotedeltakerBehandlerVarselDTO(
     val varselType: String,
     val fritekst: String,
     val document: List<DocumentComponentDTO>,
+    val svar: List<DialogmotedeltakerBehandlerVarselSvarDTO>,
 )

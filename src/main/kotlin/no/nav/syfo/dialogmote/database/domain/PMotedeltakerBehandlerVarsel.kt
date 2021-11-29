@@ -2,7 +2,7 @@ package no.nav.syfo.dialogmote.database.domain
 
 import no.nav.syfo.dialogmote.domain.*
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 data class PMotedeltakerBehandlerVarsel(
     val id: Int,
@@ -17,7 +17,9 @@ data class PMotedeltakerBehandlerVarsel(
     val document: List<DocumentComponentDTO>,
 )
 
-fun PMotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandler() =
+fun PMotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandlerVarsel(
+    dialogmotedeltakerBehandlerVarselSvar: List<DialogmotedeltakerBehandlerVarselSvar>
+) =
     DialogmotedeltakerBehandlerVarsel(
         id = this.id,
         uuid = this.uuid,
@@ -29,4 +31,5 @@ fun PMotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandler() =
         status = this.status,
         fritekst = this.fritekst,
         document = this.document,
+        svar = dialogmotedeltakerBehandlerVarselSvar,
     )

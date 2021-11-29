@@ -1,6 +1,8 @@
 package no.nav.syfo.dialogmelding
 
 import no.nav.syfo.brev.behandler.BehandlerVarselService
+import no.nav.syfo.dialogmelding.domain.getDialogmoteSvarType
+import no.nav.syfo.dialogmelding.domain.getVarselType
 import no.nav.syfo.dialogmelding.kafka.KafkaDialogmeldingDTO
 import no.nav.syfo.dialogmelding.kafka.toDialogmeldingSvar
 import org.slf4j.Logger
@@ -14,9 +16,11 @@ class DialogmeldingService(private val behandlerVarselService: BehandlerVarselSe
             dialogmeldingSvar.innkallingDialogmoteSvar?.let { innkallingSvar ->
                 log.info("Received innkalling dialogmote svar with msgId: ${dialogmeldingDTO.msgId}")
                 behandlerVarselService.opprettVarselSvar(
-                    innkallingDialogmoteSvar = innkallingSvar,
+                    varseltype = innkallingSvar.foresporselType.getVarselType(),
+                    svarType = innkallingSvar.svarType.getDialogmoteSvarType(),
+                    svarTekst = innkallingSvar.svarTekst,
                     conversationRef = dialogmeldingSvar.conversationRef,
-                    parentRef = dialogmeldingSvar.parentRef
+                    parentRef = dialogmeldingSvar.parentRef,
                 )
             }
         }

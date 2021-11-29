@@ -122,10 +122,10 @@ private fun InnkallingMoterespons.toInnkallingDialogmoteSvar(): InnkallingDialog
 
 fun TypeForesp.toForesporselType(): ForesporselType? {
     return when (this.s) {
-        "2.16.578.1.12.4.1.1.8125" -> { // Innkalling dialogmøte forespørsel kodeverk
+        Kodeverk.ForesporselInnkallingDialogmote.KODE -> {
             when (this.v) {
-                "1" -> ForesporselType.INNKALLING
-                "2" -> ForesporselType.ENDRING
+                Kodeverk.ForesporselInnkallingDialogmote.INNKALLING -> ForesporselType.INNKALLING
+                Kodeverk.ForesporselInnkallingDialogmote.ENDRING -> ForesporselType.ENDRING
                 else -> null
             }
         }
@@ -135,11 +135,11 @@ fun TypeForesp.toForesporselType(): ForesporselType? {
 
 fun TemaKode.toSvarType(): SvarType? {
     return when (this.kodeverkOID) {
-        "2.16.578.1.12.4.1.1.8126" -> { // Innkalling dialogmøte svar kodeverk
+        Kodeverk.SvarInnkallingDialogmote.KODE -> {
             when (this.v) {
-                "1" -> SvarType.KOMMER
-                "2" -> SvarType.NYTT_TID_STED
-                "3" -> SvarType.KOMMER_IKKE
+                Kodeverk.SvarInnkallingDialogmote.KOMMER -> SvarType.KOMMER
+                Kodeverk.SvarInnkallingDialogmote.NYTT_TIDSPUNKT -> SvarType.NYTT_TIDSPUNKT
+                Kodeverk.SvarInnkallingDialogmote.KAN_IKKE_KOMME -> SvarType.KAN_IKKE_KOMME
                 else -> null
             }
         }

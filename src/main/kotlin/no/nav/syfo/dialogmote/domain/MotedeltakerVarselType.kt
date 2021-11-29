@@ -28,18 +28,10 @@ fun MotedeltakerVarselType.toJournalpostTittel(): String {
 
 fun MotedeltakerVarselType.toBrevkodeType(): BrevkodeType {
     return when (this) {
-        MotedeltakerVarselType.AVLYST -> {
-            BrevkodeType.DIALOGMOTE_AVLYSNING
-        }
-        MotedeltakerVarselType.INNKALT -> {
-            BrevkodeType.DIALOGMOTE_INNKALLING
-        }
-        MotedeltakerVarselType.NYTT_TID_STED -> {
-            BrevkodeType.DIALOGMOTE_ENDRING_TID_STED
-        }
-        MotedeltakerVarselType.REFERAT -> {
-            BrevkodeType.DIALOGMOTE_REFERAT
-        }
+        MotedeltakerVarselType.AVLYST -> BrevkodeType.DIALOGMOTE_AVLYSNING
+        MotedeltakerVarselType.INNKALT -> BrevkodeType.DIALOGMOTE_INNKALLING
+        MotedeltakerVarselType.NYTT_TID_STED -> BrevkodeType.DIALOGMOTE_ENDRING_TID_STED
+        MotedeltakerVarselType.REFERAT -> BrevkodeType.DIALOGMOTE_REFERAT
     }
 }
 
@@ -70,7 +62,7 @@ enum class DialogmeldingKode(
     REFERAT(9),
 }
 
-enum class DialogmeldingType() {
+enum class DialogmeldingType {
     DIALOG_FORESPORSEL,
     DIALOG_NOTAT,
 }
