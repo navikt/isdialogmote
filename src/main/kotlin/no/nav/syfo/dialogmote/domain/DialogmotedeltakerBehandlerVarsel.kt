@@ -15,6 +15,7 @@ data class DialogmotedeltakerBehandlerVarsel(
     val status: String,
     val fritekst: String,
     val document: List<DocumentComponentDTO>,
+    val svar: List<DialogmotedeltakerBehandlerVarselSvar>,
 )
 
 fun DialogmotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandlerVarselDTO() =
@@ -24,4 +25,7 @@ fun DialogmotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandlerVarselDTO() =
         varselType = this.varselType.name,
         document = this.document,
         fritekst = this.fritekst,
+        svar = this.svar.map {
+            it.toDialogmotedeltakerBehandlerVarselSvarDTO()
+        }
     )

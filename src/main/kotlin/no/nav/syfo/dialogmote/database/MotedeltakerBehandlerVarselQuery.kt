@@ -7,12 +7,9 @@ import no.nav.syfo.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.util.configuredJacksonMapper
-import java.sql.Connection
-import java.sql.ResultSet
-import java.sql.SQLException
-import java.sql.Timestamp
+import java.sql.*
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 const val queryCreateMotedeltakerVarselBehandler =
     """
@@ -75,7 +72,7 @@ const val queryGetMotedeltakerBehandlerVarselForMotedeltaker =
         ORDER BY created_at DESC
     """
 
-fun DatabaseInterface.getMotedeltakerBehandlerVarsel(
+fun DatabaseInterface.getMotedeltakerBehandlerVarselForMotedeltaker(
     motedeltakerBehandlerId: Int
 ): List<PMotedeltakerBehandlerVarsel> {
     return this.connection.use { connection ->
@@ -84,6 +81,24 @@ fun DatabaseInterface.getMotedeltakerBehandlerVarsel(
             it.executeQuery().toList { toPMotedeltakerBehandlerVarsel() }
         }
     }
+}
+
+const val queryGetMotedeltakerBehandlerVarselByUUID =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_BEHANDLER_VARSEL
+        WHERE uuid = ?
+    """
+
+fun DatabaseInterface.getMotedeltakerBehandlerVarselForUuid(
+    uuid: UUID
+): PMotedeltakerBehandlerVarsel? {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerBehandlerVarselByUUID).use {
+            it.setString(1, uuid.toString())
+            it.executeQuery().toList { toPMotedeltakerBehandlerVarsel() }
+        }
+    }.firstOrNull()
 }
 
 fun ResultSet.toPMotedeltakerBehandlerVarsel(): PMotedeltakerBehandlerVarsel =

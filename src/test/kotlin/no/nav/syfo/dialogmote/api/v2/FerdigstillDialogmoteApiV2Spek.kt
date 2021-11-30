@@ -8,6 +8,7 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
@@ -48,11 +49,15 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
 
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+            val behandlerVarselService = BehandlerVarselService(
+                database = database,
+                behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
+            )
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
+                behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
                 mqSenderMock = mqSenderMock,
             )
 

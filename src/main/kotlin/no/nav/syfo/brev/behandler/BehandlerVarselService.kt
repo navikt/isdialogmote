@@ -1,10 +1,10 @@
 package no.nav.syfo.brev.behandler
 
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.dialogmelding.domain.ForesporselType
-import no.nav.syfo.dialogmelding.domain.InnkallingDialogmoteSvar
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
+import no.nav.syfo.dialogmote.database.createMotedeltakerBehandlerVarselSvar
+import no.nav.syfo.dialogmote.database.getMotedeltakerBehandlerVarselForUuid
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import org.slf4j.Logger
@@ -43,20 +43,54 @@ class BehandlerVarselService(
     }
 
     fun opprettVarselSvar(
-        innkallingDialogmoteSvar: InnkallingDialogmoteSvar,
+        varseltype: MotedeltakerVarselType,
+        svarType: DialogmoteSvarType,
+        svarTekst: String?,
         conversationRef: UUID?,
-        parentRef: UUID?,
+        parentRef: UUID?
     ) {
-        when (innkallingDialogmoteSvar.foresporselType) {
-            ForesporselType.INNKALLING -> {
-                log.info("Received dialogmote-svar på INNKALLING with conversationRef $conversationRef and parentRef $parentRef")
-                // TODO: Finn innkalling-varsel til behandler i databasen og lagre svar på varselet
-            }
-            ForesporselType.ENDRING -> {
-                log.info("Received dialogmote svar på ENDRING with conversationRef $conversationRef and parentRef $parentRef")
-                // TODO: Finn endring-varsel til behandler i databasen og lagre svar på varselet
-            }
+        log.info("Received svar $svarType på varsel $varseltype with conversationRef $conversationRef and parentRef $parentRef")
+        when (varseltype) {
+            MotedeltakerVarselType.INNKALT -> opprettInnkallingVarselSvar(
+                type = svarType,
+                tekst = svarTekst,
+                conversationRef = conversationRef
+            )
+            MotedeltakerVarselType.NYTT_TID_STED -> opprettEndringVarselSvar(
+                type = svarType,
+                tekst = svarTekst,
+                conversationRef = conversationRef,
+                parentRef = parentRef
+            )
+            else -> throw IllegalArgumentException("Could not create svar for varsel $varseltype")
         }
+    }
+
+    private fun opprettInnkallingVarselSvar(
+        type: DialogmoteSvarType,
+        tekst: String?,
+        conversationRef: UUID?
+    ) {
+        val pMotedeltakerBehandlerVarsel =
+            conversationRef?.let { database.getMotedeltakerBehandlerVarselForUuid(it) }
+        if (pMotedeltakerBehandlerVarsel?.varselType == MotedeltakerVarselType.INNKALT) {
+            database.createMotedeltakerBehandlerVarselSvar(
+                motedeltakerBehandlerVarselId = pMotedeltakerBehandlerVarsel.id,
+                type = type,
+                tekst = tekst,
+            )
+        } else {
+            log.warn("Could not find MotedeltakerBehandlerVarsel of type ${MotedeltakerVarselType.INNKALT.name} for dialogmote-svar på INNKALLING")
+        }
+    }
+
+    private fun opprettEndringVarselSvar(
+        type: DialogmoteSvarType,
+        tekst: String?,
+        conversationRef: UUID?,
+        parentRef: UUID?
+    ) {
+        // TODO: Finn endring-varsel til behandler i databasen og lagre svar på varselet
     }
 
     private fun getConversationUuid(varselUuid: UUID, varselInnkallingUuid: UUID?): UUID {

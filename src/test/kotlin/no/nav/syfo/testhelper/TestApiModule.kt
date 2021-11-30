@@ -7,13 +7,12 @@ import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
-import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import redis.clients.jedis.*
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
+    behandlerVarselService: BehandlerVarselService = mockk(),
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
-    behandlerDialogmeldingProducer: BehandlerDialogmeldingProducer = mockk(),
     mqSenderMock: MQSenderInterface,
 ) {
     val cache = RedisStore(
@@ -24,10 +23,6 @@ fun Application.testApiModule(
             Protocol.DEFAULT_TIMEOUT,
             externalMockEnvironment.environment.redisSecret
         )
-    )
-    val behandlerVarselService = BehandlerVarselService(
-        database = externalMockEnvironment.database,
-        behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
     )
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,
