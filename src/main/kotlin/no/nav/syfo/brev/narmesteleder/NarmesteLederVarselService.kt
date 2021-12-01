@@ -26,7 +26,7 @@ class NarmesteLederVarselService(
                 "tidspunkt", moteTidspunkt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
             )
         )
-        parameterListe.add(createParameter("navn", narmesteLeder.navn ?: ""))
+        parameterListe.add(createParameter("navn", narmesteLeder.navn ?: "nærmeste leder"))
 
         val melding = opprettServiceMelding(narmesteLeder, varseltype, parameterListe)
         val xmlString = marshallServiceMelding(ObjectFactory().createServicemelding(melding))
@@ -63,9 +63,9 @@ class NarmesteLederVarselService(
         )
     }
 
-    private fun opprettKontaktinformasjon(kontaktinfo: String?, type: String): WSKontaktinformasjon {
+    private fun opprettKontaktinformasjon(kontaktinfo: String, type: String): WSKontaktinformasjon {
         val kanal = WSKommunikasjonskanaler().apply { value = type }
-        return WSKontaktinformasjon(kanal, kontaktinfo ?: "")
+        return WSKontaktinformasjon(kanal, kontaktinfo)
     }
 
     private fun personIdent(fnr: String): WSPerson {
