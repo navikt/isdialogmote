@@ -56,9 +56,6 @@ spec:
         - application: syfomoteoversikt
           namespace: teamsykefravr
           cluster: prod-fss
-        - application: dialogmote
-          namespace: default
-          cluster: prod-sbs
     outbound:
       external:
         - host: "kafka-schema-registry.nais.adeo.no"
