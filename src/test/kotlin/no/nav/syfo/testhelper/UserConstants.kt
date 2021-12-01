@@ -20,6 +20,7 @@ object UserConstants {
     val ENHET_NR = EnhetNr("1000")
     val ENHET_NR_NO_ACCESS = EnhetNr(ENHET_NR.value.replace("1", "2"))
 
+    val BEHANDLER_FNR = PersonIdentNumber("19122002920")
     val BEHANDLER_REF = "behref"
     val BEHANDLER_NAVN = "Navn Lege"
     val BEHANDLER_KONTOR = "Legekontoret"

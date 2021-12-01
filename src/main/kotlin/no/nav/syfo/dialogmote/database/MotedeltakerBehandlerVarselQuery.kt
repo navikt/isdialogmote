@@ -6,6 +6,7 @@ import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.configuredJacksonMapper
 import java.sql.*
 import java.time.Instant
@@ -85,17 +86,71 @@ fun DatabaseInterface.getMotedeltakerBehandlerVarselForMotedeltaker(
 
 const val queryGetMotedeltakerBehandlerVarselByUUID =
     """
-        SELECT *
-        FROM MOTEDELTAKER_BEHANDLER_VARSEL
-        WHERE uuid = ?
+        SELECT MOTEDELTAKER_BEHANDLER.mote_id, MOTEDELTAKER_BEHANDLER_VARSEL.*
+        FROM MOTEDELTAKER_BEHANDLER_VARSEL INNER JOIN MOTEDELTAKER_BEHANDLER ON (MOTEDELTAKER_BEHANDLER.id = MOTEDELTAKER_BEHANDLER_VARSEL.motedeltaker_behandler_id)
+        WHERE MOTEDELTAKER_BEHANDLER_VARSEL.uuid = ?
+        AND MOTEDELTAKER_BEHANDLER_VARSEL.varseltype = ?
     """
 
-fun DatabaseInterface.getMotedeltakerBehandlerVarselForUuid(
+fun DatabaseInterface.getMotedeltakerBehandlerVarselOfTypeForUuid(
+    varselType: MotedeltakerVarselType,
     uuid: UUID
-): PMotedeltakerBehandlerVarsel? {
+): Pair<Int, PMotedeltakerBehandlerVarsel>? {
     return this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerBehandlerVarselByUUID).use {
             it.setString(1, uuid.toString())
+            it.setString(2, varselType.name)
+            it.executeQuery().toList { Pair(getInt(1), toPMotedeltakerBehandlerVarsel()) }
+        }
+    }.firstOrNull()
+}
+
+const val queryGetMotedeltakerBehandlerVarselOfTypeForArbeidstaker =
+    """
+        SELECT MOTEDELTAKER_BEHANDLER_VARSEL.*
+        FROM MOTEDELTAKER_BEHANDLER_VARSEL INNER JOIN MOTEDELTAKER_BEHANDLER ON (MOTEDELTAKER_BEHANDLER.id = MOTEDELTAKER_BEHANDLER_VARSEL.motedeltaker_behandler_id)
+                                           INNER JOIN MOTE ON (MOTE.id = MOTEDELTAKER_BEHANDLER.mote_id)        
+                                           INNER JOIN MOTEDELTAKER_ARBEIDSTAKER ON (MOTE.id = MOTEDELTAKER_ARBEIDSTAKER.mote_id)
+        WHERE MOTEDELTAKER_BEHANDLER_VARSEL.varseltype = ?
+        AND MOTEDELTAKER_ARBEIDSTAKER.personident = ?
+        ORDER BY MOTEDELTAKER_BEHANDLER_VARSEL.created_at DESC
+    """
+
+fun DatabaseInterface.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstaker(
+    varselType: MotedeltakerVarselType,
+    arbeidstakerPersonIdent: PersonIdentNumber,
+): PMotedeltakerBehandlerVarsel? {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerBehandlerVarselOfTypeForArbeidstaker).use {
+            it.setString(1, varselType.name)
+            it.setString(2, arbeidstakerPersonIdent.value)
+            it.executeQuery().toList { toPMotedeltakerBehandlerVarsel() }
+        }
+    }.firstOrNull()
+}
+
+const val queryGetMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId =
+    """
+        SELECT MOTEDELTAKER_BEHANDLER_VARSEL.*
+        FROM MOTEDELTAKER_BEHANDLER_VARSEL INNER JOIN MOTEDELTAKER_BEHANDLER ON (MOTEDELTAKER_BEHANDLER.id = MOTEDELTAKER_BEHANDLER_VARSEL.motedeltaker_behandler_id)
+                                           INNER JOIN MOTE ON (MOTE.id = MOTEDELTAKER_BEHANDLER.mote_id)        
+                                           INNER JOIN MOTEDELTAKER_ARBEIDSTAKER ON (MOTE.id = MOTEDELTAKER_ARBEIDSTAKER.mote_id)
+        WHERE MOTEDELTAKER_BEHANDLER_VARSEL.varseltype = ?
+        AND MOTEDELTAKER_ARBEIDSTAKER.personident = ?
+        AND MOTE.id = ?
+        ORDER BY MOTEDELTAKER_BEHANDLER_VARSEL.created_at DESC
+    """
+
+fun DatabaseInterface.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId(
+    varselType: MotedeltakerVarselType,
+    arbeidstakerPersonIdent: PersonIdentNumber,
+    moteId: Int
+): PMotedeltakerBehandlerVarsel? {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId).use {
+            it.setString(1, varselType.name)
+            it.setString(2, arbeidstakerPersonIdent.value)
+            it.setInt(3, moteId)
             it.executeQuery().toList { toPMotedeltakerBehandlerVarsel() }
         }
     }.firstOrNull()
