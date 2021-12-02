@@ -3,8 +3,8 @@ package no.nav.syfo.brev.behandler
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
-import no.nav.syfo.dialogmote.database.createMotedeltakerBehandlerVarselSvar
-import no.nav.syfo.dialogmote.database.getMotedeltakerBehandlerVarselForUuid
+import no.nav.syfo.dialogmote.database.*
+import no.nav.syfo.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import org.slf4j.Logger
@@ -43,54 +43,123 @@ class BehandlerVarselService(
     }
 
     fun opprettVarselSvar(
+        arbeidstakerPersonIdent: PersonIdentNumber,
         varseltype: MotedeltakerVarselType,
         svarType: DialogmoteSvarType,
         svarTekst: String?,
         conversationRef: UUID?,
         parentRef: UUID?
-    ) {
+    ): Boolean {
         log.info("Received svar $svarType på varsel $varseltype with conversationRef $conversationRef and parentRef $parentRef")
-        when (varseltype) {
-            MotedeltakerVarselType.INNKALT -> opprettInnkallingVarselSvar(
-                type = svarType,
-                tekst = svarTekst,
-                conversationRef = conversationRef
-            )
-            MotedeltakerVarselType.NYTT_TID_STED -> opprettEndringVarselSvar(
-                type = svarType,
-                tekst = svarTekst,
-                conversationRef = conversationRef,
-                parentRef = parentRef
-            )
-            else -> throw IllegalArgumentException("Could not create svar for varsel $varseltype")
-        }
-    }
-
-    private fun opprettInnkallingVarselSvar(
-        type: DialogmoteSvarType,
-        tekst: String?,
-        conversationRef: UUID?
-    ) {
-        val pMotedeltakerBehandlerVarsel =
-            conversationRef?.let { database.getMotedeltakerBehandlerVarselForUuid(it) }
-        if (pMotedeltakerBehandlerVarsel?.varselType == MotedeltakerVarselType.INNKALT) {
+        val pMotedeltakerBehandlerVarsel = getBehandlerVarselForSvar(
+            varseltype = varseltype,
+            arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+            conversationRef = conversationRef,
+            parentRef = parentRef,
+        )
+        pMotedeltakerBehandlerVarsel?.let {
             database.createMotedeltakerBehandlerVarselSvar(
                 motedeltakerBehandlerVarselId = pMotedeltakerBehandlerVarsel.id,
-                type = type,
-                tekst = tekst,
+                type = svarType,
+                tekst = svarTekst,
             )
-        } else {
-            log.warn("Could not find MotedeltakerBehandlerVarsel of type ${MotedeltakerVarselType.INNKALT.name} for dialogmote-svar på INNKALLING")
+            log.info("Created svar $svarType på varsel $varseltype with uuid ${pMotedeltakerBehandlerVarsel.uuid}")
+            return true
+        }
+
+        log.error("Could not find varsel of type $varseltype for conversationRef $conversationRef and parentRef $parentRef - Could not create svar")
+        return false
+    }
+
+    private fun getBehandlerVarselForSvar(
+        varseltype: MotedeltakerVarselType,
+        arbeidstakerPersonIdent: PersonIdentNumber,
+        conversationRef: UUID?,
+        parentRef: UUID?,
+    ): PMotedeltakerBehandlerVarsel? {
+        return when (varseltype) {
+            MotedeltakerVarselType.INNKALT -> getBehandlerVarselInnkalling(
+                arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                conversationRef = conversationRef,
+            )
+            MotedeltakerVarselType.NYTT_TID_STED -> getBehandlerVarselNyttTidSted(
+                arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                conversationRef = conversationRef,
+                parentRef = parentRef,
+            )
+            else -> throw IllegalArgumentException("Cannot create svar for varsel $varseltype")
         }
     }
 
-    private fun opprettEndringVarselSvar(
-        type: DialogmoteSvarType,
-        tekst: String?,
+    private fun getBehandlerVarselInnkalling(
+        arbeidstakerPersonIdent: PersonIdentNumber,
         conversationRef: UUID?,
-        parentRef: UUID?
-    ) {
-        // TODO: Finn endring-varsel til behandler i databasen og lagre svar på varselet
+    ): PMotedeltakerBehandlerVarsel? {
+        val varselInnkallingForConversationRef =
+            conversationRef?.let {
+                database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
+                    varselType = MotedeltakerVarselType.INNKALT,
+                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                    uuid = it
+                )
+            }
+
+        return varselInnkallingForConversationRef?.second
+            ?: database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstaker(
+                varselType = MotedeltakerVarselType.INNKALT,
+                arbeidstakerPersonIdent = arbeidstakerPersonIdent
+            )
+    }
+
+    private fun getBehandlerVarselNyttTidSted(
+        arbeidstakerPersonIdent: PersonIdentNumber,
+        conversationRef: UUID?,
+        parentRef: UUID?,
+    ): PMotedeltakerBehandlerVarsel? {
+        val varselNyttTidStedForParentRef =
+            parentRef?.let {
+                database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
+                    varselType = MotedeltakerVarselType.NYTT_TID_STED,
+                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                    uuid = it
+                )
+            }
+
+        if (varselNyttTidStedForParentRef != null) {
+            return varselNyttTidStedForParentRef.second
+        }
+
+        val varselNyttTidStedForConversationRef = getBehandlerVarselNyttTidStedFromConversationRef(
+            arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+            conversationRef = conversationRef
+        )
+        return varselNyttTidStedForConversationRef
+            ?: database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstaker(
+                varselType = MotedeltakerVarselType.NYTT_TID_STED,
+                arbeidstakerPersonIdent = arbeidstakerPersonIdent
+            )
+    }
+
+    private fun getBehandlerVarselNyttTidStedFromConversationRef(
+        arbeidstakerPersonIdent: PersonIdentNumber,
+        conversationRef: UUID?,
+    ): PMotedeltakerBehandlerVarsel? {
+        val varselInnkallingForConversationRef =
+            conversationRef?.let {
+                database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
+                    varselType = MotedeltakerVarselType.INNKALT,
+                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                    uuid = it
+                )
+            }
+
+        return varselInnkallingForConversationRef?.first?.let {
+            database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId(
+                varselType = MotedeltakerVarselType.NYTT_TID_STED,
+                arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                moteId = it
+            )
+        }
     }
 
     private fun getConversationUuid(varselUuid: UUID, varselInnkallingUuid: UUID?): UUID {

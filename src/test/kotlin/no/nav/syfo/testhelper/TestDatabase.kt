@@ -62,6 +62,21 @@ fun DatabaseInterface.dropData() {
         """
         DELETE FROM MOTE_STATUS_ENDRET
         """.trimIndent(),
+        """
+        DELETE FROM MOTE_REFERAT
+        """.trimIndent(),
+        """
+        DELETE FROM MOTEDELTAKER_ANNEN
+        """.trimIndent(),
+        """
+        DELETE FROM MOTEDELTAKER_BEHANDLER
+        """.trimIndent(),
+        """
+        DELETE FROM MOTEDELTAKER_BEHANDLER_VARSEL
+        """.trimIndent(),
+        """
+        DELETE FROM MOTEDELTAKER_BEHANDLER_VARSEL_SVAR
+        """.trimIndent(),
     )
     this.connection.use { connection ->
         queryList.forEach { query ->
