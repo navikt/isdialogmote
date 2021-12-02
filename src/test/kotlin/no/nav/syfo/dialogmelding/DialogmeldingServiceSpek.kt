@@ -98,7 +98,7 @@ class DialogmeldingServiceSpek : Spek({
                     database.dropData()
                 }
 
-                it("Oppretter varsel-svar når dialogmelding inneholder conversationRef som refererer til innkalling-varsel") {
+                it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker og conversationRef refererer til innkalling-varsel") {
                     val svarTekst = "Fastlegen kommer i møtet"
                     val innkallingMoterespons = generateInnkallingMoterespons(
                         foresporselType = ForesporselType.INNKALLING,
@@ -201,6 +201,35 @@ class DialogmeldingServiceSpek : Spek({
                         varselSvarDTO.createdAt shouldNotBe null
                         varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER_IKKE.name
                         varselSvarDTO.tekst shouldBeEqualTo svarTekst
+                    }
+                }
+                it("Oppretter ikke varsel-svar når dialogmelding inneholder annen arbeidstaker og conversationRef refererer til innkalling-varsel") {
+                    val svarTekst = "Fastlegen kommer ei"
+                    val innkallingMoterespons = generateInnkallingMoterespons(
+                        foresporselType = ForesporselType.INNKALLING,
+                        svarType = SvarType.KAN_IKKE_KOMME,
+                        svarTekst = svarTekst,
+                    )
+                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                        msgType = "DIALOG_SVAR",
+                        personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
+                        conversationRef = createdBehandlerVarselInnkallingUuid,
+                        parentRef = createdBehandlerVarselInnkallingUuid,
+                        innkallingMoterespons = innkallingMoterespons,
+                    )
+                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMoter) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
+                        svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
                     }
                 }
                 it("Oppretter ikke varsel-svar når dialogmelding inneholder annen arbeidstaker og mangler conversationRef") {
@@ -437,6 +466,35 @@ class DialogmeldingServiceSpek : Spek({
                         varselSvarDTO.tekst shouldBeEqualTo svarTekst
                     }
                 }
+                it("Oppretter ikke varsel-svar når dialogmelding inneholder annen arbeidstaker og parentRef refererer til endring-varsel") {
+                    val svarTekst = "Fastlegen kan ikke møte på dette tidspunktet"
+                    val innkallingMoterespons = generateInnkallingMoterespons(
+                        foresporselType = ForesporselType.ENDRING,
+                        svarType = SvarType.NYTT_TIDSPUNKT,
+                        svarTekst = svarTekst,
+                    )
+                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                        msgType = "DIALOG_SVAR",
+                        personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
+                        conversationRef = createdBehandlerVarselInnkallingUuid,
+                        parentRef = createdBehandlerVarselEndringUuid,
+                        innkallingMoterespons = innkallingMoterespons,
+                    )
+                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMoter) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
+                        svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
+                    }
+                }
                 it("Oppretter ikke varsel-svar når dialogmelding inneholder annen arbeidstaker og parentRef og conversationRef mangler") {
                     val svarTekst = "Fastlegens svar her"
                     val innkallingMoterespons = generateInnkallingMoterespons(
@@ -469,7 +527,6 @@ class DialogmeldingServiceSpek : Spek({
             }
             describe("Unhappy paths") {
                 val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
-                lateinit var createdBehandlerVarselInnkallingUuid: String
 
                 beforeGroup {
                     with(
@@ -488,11 +545,6 @@ class DialogmeldingServiceSpek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-
-                        val behandlerVarselDTO = dialogmoteList.first().behandler!!.varselList.first()
-                        createdBehandlerVarselInnkallingUuid = behandlerVarselDTO.uuid
                     }
                 }
 

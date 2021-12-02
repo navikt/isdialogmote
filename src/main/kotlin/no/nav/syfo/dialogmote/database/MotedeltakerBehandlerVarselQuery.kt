@@ -84,22 +84,28 @@ fun DatabaseInterface.getMotedeltakerBehandlerVarselForMotedeltaker(
     }
 }
 
-const val queryGetMotedeltakerBehandlerVarselByUUID =
+const val queryGetMotedeltakerBehandlerVarselOfTypeByArbeidstakerAndUuid =
     """
         SELECT MOTEDELTAKER_BEHANDLER.mote_id, MOTEDELTAKER_BEHANDLER_VARSEL.*
-        FROM MOTEDELTAKER_BEHANDLER_VARSEL INNER JOIN MOTEDELTAKER_BEHANDLER ON (MOTEDELTAKER_BEHANDLER.id = MOTEDELTAKER_BEHANDLER_VARSEL.motedeltaker_behandler_id)
+        FROM MOTEDELTAKER_BEHANDLER_VARSEL 
+        INNER JOIN MOTEDELTAKER_BEHANDLER ON (MOTEDELTAKER_BEHANDLER.id = MOTEDELTAKER_BEHANDLER_VARSEL.motedeltaker_behandler_id)
+        INNER JOIN MOTE ON (MOTE.id = MOTEDELTAKER_BEHANDLER.mote_id)
+        INNER JOIN MOTEDELTAKER_ARBEIDSTAKER ON (MOTE.id = MOTEDELTAKER_ARBEIDSTAKER.mote_id)
         WHERE MOTEDELTAKER_BEHANDLER_VARSEL.uuid = ?
+        AND MOTEDELTAKER_ARBEIDSTAKER.personident = ?
         AND MOTEDELTAKER_BEHANDLER_VARSEL.varseltype = ?
     """
 
-fun DatabaseInterface.getMotedeltakerBehandlerVarselOfTypeForUuid(
+fun DatabaseInterface.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
     varselType: MotedeltakerVarselType,
+    arbeidstakerPersonIdent: PersonIdentNumber,
     uuid: UUID
 ): Pair<Int, PMotedeltakerBehandlerVarsel>? {
     return this.connection.use { connection ->
-        connection.prepareStatement(queryGetMotedeltakerBehandlerVarselByUUID).use {
+        connection.prepareStatement(queryGetMotedeltakerBehandlerVarselOfTypeByArbeidstakerAndUuid).use {
             it.setString(1, uuid.toString())
-            it.setString(2, varselType.name)
+            it.setString(2, arbeidstakerPersonIdent.value)
+            it.setString(3, varselType.name)
             it.executeQuery().toList { Pair(getInt(1), toPMotedeltakerBehandlerVarsel()) }
         }
     }.firstOrNull()

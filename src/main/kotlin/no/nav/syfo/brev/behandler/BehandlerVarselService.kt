@@ -97,8 +97,9 @@ class BehandlerVarselService(
     ): PMotedeltakerBehandlerVarsel? {
         val varselInnkallingForConversationRef =
             conversationRef?.let {
-                database.getMotedeltakerBehandlerVarselOfTypeForUuid(
+                database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
                     varselType = MotedeltakerVarselType.INNKALT,
+                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
                     uuid = it
                 )
             }
@@ -117,8 +118,9 @@ class BehandlerVarselService(
     ): PMotedeltakerBehandlerVarsel? {
         val varselNyttTidStedForParentRef =
             parentRef?.let {
-                database.getMotedeltakerBehandlerVarselOfTypeForUuid(
+                database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
                     varselType = MotedeltakerVarselType.NYTT_TID_STED,
+                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
                     uuid = it
                 )
             }
@@ -144,8 +146,9 @@ class BehandlerVarselService(
     ): PMotedeltakerBehandlerVarsel? {
         val varselInnkallingForConversationRef =
             conversationRef?.let {
-                database.getMotedeltakerBehandlerVarselOfTypeForUuid(
+                database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
                     varselType = MotedeltakerVarselType.INNKALT,
+                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
                     uuid = it
                 )
             }
