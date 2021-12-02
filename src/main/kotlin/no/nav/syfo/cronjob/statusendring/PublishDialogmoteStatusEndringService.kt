@@ -51,7 +51,7 @@ fun createKDialogmoteStatusEndring(
     val kDialogmoteStatusEndring = KDialogmoteStatusEndring()
     kDialogmoteStatusEndring.setDialogmoteUuid(pDialogmote.uuid.toString())
     kDialogmoteStatusEndring.setDialogmoteTidspunkt(dialogmoteTidStedList.latest()!!.tid.toInstantOslo())
-    kDialogmoteStatusEndring.setStatusEndringType(pDialogmote.status)
+    kDialogmoteStatusEndring.setStatusEndringType(dialogmoteStatusEndret.status.name)
     kDialogmoteStatusEndring.setStatusEndringTidspunkt(LocalDateTime.now().toInstantOslo())
     kDialogmoteStatusEndring.setPersonIdent(personIdent.value)
     kDialogmoteStatusEndring.setVirksomhetsnummer(virksomhetsnummer.value)
