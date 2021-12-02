@@ -56,6 +56,25 @@ fun Connection.createMoteStatusEndring(
     return Pair(moteStatusEndringIdList.first(), moteStatusEndringUuid)
 }
 
+const val queryMoteStatusEndretForMote =
+    """
+        SELECT *
+        FROM MOTE_STATUS_ENDRET
+        WHERE mote_id = ?
+        ORDER BY created_at DESC
+    """
+
+fun DatabaseInterface.getMoteStatusEndretForMote(
+    moteId: Int,
+): List<PMoteStatusEndret> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryMoteStatusEndretForMote).use {
+            it.setInt(1, moteId)
+            it.executeQuery().toList { toPMoteStatusEndret() }
+        }
+    }
+}
+
 const val queryMoteStatusEndretWihtoutPublished =
     """
         SELECT *
