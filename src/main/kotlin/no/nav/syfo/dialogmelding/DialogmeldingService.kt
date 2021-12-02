@@ -23,11 +23,12 @@ class DialogmeldingService(private val behandlerVarselService: BehandlerVarselSe
                     conversationRef = dialogmeldingSvar.conversationRef,
                     parentRef = dialogmeldingSvar.parentRef,
                 )
-                // TODO: Metrics ?
                 if (varselSvarCreated) {
                     log.info("Created varsel-svar for innkalling dialogmote svar with msgId: ${dialogmeldingDTO.msgId}")
+                    COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_SUCCESS.increment()
                 } else {
                     log.error("Failed to create varsel-svar for innkalling dialogmote svar with msgId: ${dialogmeldingDTO.msgId}")
+                    COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_FAIL.increment()
                 }
             }
         }
