@@ -32,12 +32,45 @@ class PublishDialogmoteStatusEndringService(
             pDialogmote = database.getDialogmote(id = moteId).first(),
             personIdent = database.getMoteDeltakerArbeidstaker(moteId).personIdent,
             virksomhetsnummer = database.getMoteDeltakerArbeidsgiver(moteId).virksomhetsnummer,
+            isStatusEndretForMotedeltakerBehandler = isRelatedToMotedeltakerBehandler(
+                dialogmoteStatusEndret = dialogmoteStatusEndret,
+            ),
         )
         dialogmoteStatusEndringProducer.sendDialogmoteStatusEndring(kDialogmoteStatusEndring)
 
         database.updateMoteStatusEndretPublishedAt(
             moteStatusEndretId = dialogmoteStatusEndret.id,
         )
+    }
+
+    fun isRelatedToMotedeltakerBehandler(
+        dialogmoteStatusEndret: DialogmoteStatusEndret,
+    ): Boolean {
+        val moteId = dialogmoteStatusEndret.moteId
+        val behandler = database.getMoteDeltakerBehandler(moteId)
+        behandler?.let { pMotedeltakerBehandler ->
+
+            val statusEndretListByStatus = database.getMoteStatusEndretForMote(
+                moteId = moteId
+            ).filter {
+                it.status == dialogmoteStatusEndret.status
+            }
+            val behandlerVarselListByStatus = database.getMotedeltakerBehandlerVarselForMotedeltaker(
+                motedeltakerBehandlerId = pMotedeltakerBehandler.id,
+            ).filter {
+                it.varselType == MotedeltakerVarselType.valueOf(dialogmoteStatusEndret.status.name)
+            }
+
+            val dialogmoteStatusEndretIndex = statusEndretListByStatus.map { it.id }.indexOf(dialogmoteStatusEndret.id)
+
+            return if (dialogmoteStatusEndretIndex > 0) {
+                behandlerVarselListByStatus.getOrNull(dialogmoteStatusEndretIndex)?.let { behandlerVarsel ->
+                    behandlerVarsel.varselType.name == dialogmoteStatusEndret.status.name
+                } != null
+            } else {
+                false
+            }
+        } ?: return false
     }
 }
 
@@ -47,6 +80,7 @@ fun createKDialogmoteStatusEndring(
     pDialogmote: PDialogmote,
     personIdent: PersonIdentNumber,
     virksomhetsnummer: Virksomhetsnummer,
+    isStatusEndretForMotedeltakerBehandler: Boolean,
 ): KDialogmoteStatusEndring {
     val kDialogmoteStatusEndring = KDialogmoteStatusEndring()
     kDialogmoteStatusEndring.setDialogmoteUuid(pDialogmote.uuid.toString())
@@ -60,7 +94,7 @@ fun createKDialogmoteStatusEndring(
     kDialogmoteStatusEndring.setTilfelleStartdato(dialogmoteStatusEndret.tilfelleStart.atStartOfDay().toInstantOslo())
     kDialogmoteStatusEndring.setArbeidstaker(true)
     kDialogmoteStatusEndring.setArbeidsgiver(true)
-    kDialogmoteStatusEndring.setSykmelder(false)
+    kDialogmoteStatusEndring.setSykmelder(isStatusEndretForMotedeltakerBehandler)
     return kDialogmoteStatusEndring
 }
 
