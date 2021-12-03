@@ -22,6 +22,7 @@ class DialogmeldingService(private val behandlerVarselService: BehandlerVarselSe
                     svarTekst = innkallingSvar.svarTekst,
                     conversationRef = dialogmeldingSvar.conversationRef,
                     parentRef = dialogmeldingSvar.parentRef,
+                    msgId = dialogmeldingDTO.msgId,
                 )
                 if (varselSvarCreated) {
                     log.info("Created varsel-svar for innkalling dialogmote svar with msgId: ${dialogmeldingDTO.msgId}")

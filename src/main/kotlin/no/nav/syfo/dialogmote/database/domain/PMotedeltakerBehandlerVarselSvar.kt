@@ -12,6 +12,7 @@ data class PMotedeltakerBehandlerVarselSvar(
     val motedeltakerBehandlerVarselId: Int,
     val svarType: String,
     val svarTekst: String,
+    val msgId: String,
 )
 
 fun PMotedeltakerBehandlerVarselSvar.toDialogmoteDeltakerVarselSvar() = DialogmotedeltakerBehandlerVarselSvar(
@@ -20,4 +21,5 @@ fun PMotedeltakerBehandlerVarselSvar.toDialogmoteDeltakerVarselSvar() = Dialogmo
     createdAt = this.createdAt,
     type = DialogmoteSvarType.valueOf(this.svarType),
     tekst = this.svarTekst,
+    msgId = this.msgId,
 )
