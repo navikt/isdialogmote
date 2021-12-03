@@ -19,8 +19,9 @@ const val queryCreateMoteStatusEndring =
         mote_id,
         status,
         opprettet_av,
-        tilfelle_start
-        ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+        tilfelle_start,
+        motedeltaker_behandler
+        ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
 fun Connection.createMoteStatusEndring(
@@ -29,6 +30,7 @@ fun Connection.createMoteStatusEndring(
     opprettetAv: String,
     status: DialogmoteStatus,
     tilfelleStart: LocalDate,
+    isBehandlerMotedeltaker: Boolean,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 
@@ -42,6 +44,7 @@ fun Connection.createMoteStatusEndring(
         it.setString(5, status.name)
         it.setString(6, opprettetAv)
         it.setTimestamp(7, Timestamp.valueOf(tilfelleStart.atStartOfDay()))
+        it.setBoolean(8, isBehandlerMotedeltaker)
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -54,25 +57,6 @@ fun Connection.createMoteStatusEndring(
     }
 
     return Pair(moteStatusEndringIdList.first(), moteStatusEndringUuid)
-}
-
-const val queryMoteStatusEndretForMote =
-    """
-        SELECT *
-        FROM MOTE_STATUS_ENDRET
-        WHERE mote_id = ?
-        ORDER BY created_at DESC
-    """
-
-fun DatabaseInterface.getMoteStatusEndretForMote(
-    moteId: Int,
-): List<PMoteStatusEndret> {
-    return this.connection.use { connection ->
-        connection.prepareStatement(queryMoteStatusEndretForMote).use {
-            it.setInt(1, moteId)
-            it.executeQuery().toList { toPMoteStatusEndret() }
-        }
-    }
 }
 
 const val queryMoteStatusEndretWihtoutPublished =
@@ -119,6 +103,7 @@ fun ResultSet.toPMoteStatusEndret(): PMoteStatusEndret =
         createdAt = getTimestamp("created_at").toLocalDateTime(),
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         moteId = getInt("mote_id"),
+        motedeltakerBehandler = getBoolean("motedeltaker_behandler"),
         status = DialogmoteStatus.valueOf(getString("status")),
         opprettetAv = getString("opprettet_av"),
         tilfelleStart = getTimestamp("tilfelle_start").toLocalDateTime().toLocalDate(),
