@@ -178,7 +178,7 @@ class DialogmoteService(
                     arbeidsgiverId = createdDialogmoteIdentifiers.motedeltakerArbeidsgiverIdPair.first,
                     behandlerId = createdDialogmoteIdentifiers.motedeltakerBehandlerIdPair?.first,
                     behandlerRef = newDialogmote.behandler?.behandlerRef,
-                    behandlerParentVarselUuid = null,
+                    behandlerParentVarselId = null,
                     behandlerInnkallingUuid = null,
                     arbeidstakerPersonIdent = newDialogmote.arbeidstaker.personIdent,
                     pdfArbeidstaker = pdfInnkallingArbeidstaker,
@@ -267,7 +267,7 @@ class DialogmoteService(
                     arbeidsgiverId = dialogmote.arbeidsgiver.id,
                     behandlerId = dialogmote.behandler?.id,
                     behandlerRef = dialogmote.behandler?.behandlerRef,
-                    behandlerParentVarselUuid = dialogmote.behandler?.findParentVarselUuid(),
+                    behandlerParentVarselId = dialogmote.behandler?.findParentVarselId(),
                     behandlerInnkallingUuid = dialogmote.behandler?.findInnkallingVarselUuid(),
                     arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
                     pdfArbeidstaker = pdfAvlysningArbeidstaker,
@@ -360,7 +360,7 @@ class DialogmoteService(
                     arbeidsgiverId = dialogmote.arbeidsgiver.id,
                     behandlerId = dialogmote.behandler?.id,
                     behandlerRef = dialogmote.behandler?.behandlerRef,
-                    behandlerParentVarselUuid = dialogmote.behandler?.findParentVarselUuid(),
+                    behandlerParentVarselId = dialogmote.behandler?.findParentVarselId(),
                     behandlerInnkallingUuid = dialogmote.behandler?.findInnkallingVarselUuid(),
                     arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
                     pdfArbeidstaker = pdfEndringArbeidstaker,
@@ -390,7 +390,7 @@ class DialogmoteService(
         arbeidsgiverId: Int,
         behandlerId: Int?,
         behandlerRef: String?,
-        behandlerParentVarselUuid: UUID?,
+        behandlerParentVarselId: String?,
         behandlerInnkallingUuid: UUID?,
         arbeidstakerPersonIdent: PersonIdentNumber,
         pdfArbeidstaker: ByteArray,
@@ -466,7 +466,7 @@ class DialogmoteService(
                     pdf = pdfBehandler!!,
                     varseltype = varselType,
                     varselUuid = behandlerVarselIdPair!!.second,
-                    varselParentUuid = behandlerParentVarselUuid,
+                    varselParentId = behandlerParentVarselId,
                     varselInnkallingUuid = behandlerInnkallingUuid,
                 )
             }
@@ -572,7 +572,7 @@ class DialogmoteService(
                     pdf = pdfReferat,
                     varseltype = MotedeltakerVarselType.REFERAT,
                     varselUuid = referatUuid,
-                    varselParentUuid = it.findParentVarselUuid(),
+                    varselParentId = it.findParentVarselId(),
                     varselInnkallingUuid = it.findInnkallingVarselUuid(),
                 )
             }

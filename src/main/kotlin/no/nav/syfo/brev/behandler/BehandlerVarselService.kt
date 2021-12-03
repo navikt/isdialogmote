@@ -24,7 +24,7 @@ class BehandlerVarselService(
         pdf: ByteArray,
         varseltype: MotedeltakerVarselType,
         varselUuid: UUID,
-        varselParentUuid: UUID?,
+        varselParentId: String?,
         varselInnkallingUuid: UUID?,
     ) {
         behandlerDialogmeldingProducer.sendDialogmelding(
@@ -32,7 +32,7 @@ class BehandlerVarselService(
                 behandlerRef = behandlerRef,
                 personIdent = arbeidstakerPersonIdent.value,
                 dialogmeldingUuid = varselUuid.toString(),
-                dialogmeldingRefParent = varselParentUuid?.toString(),
+                dialogmeldingRefParent = varselParentId,
                 dialogmeldingRefConversation = getConversationUuid(varselUuid, varselInnkallingUuid).toString(),
                 dialogmeldingType = varseltype.getDialogMeldingType().name,
                 dialogmeldingKode = varseltype.getDialogMeldingKode().value,
@@ -48,7 +48,8 @@ class BehandlerVarselService(
         svarType: DialogmoteSvarType,
         svarTekst: String?,
         conversationRef: UUID?,
-        parentRef: UUID?
+        parentRef: UUID?,
+        msgId: String,
     ): Boolean {
         log.info("Received svar $svarType på varsel $varseltype with conversationRef $conversationRef and parentRef $parentRef")
         val pMotedeltakerBehandlerVarsel = getBehandlerVarselForSvar(
@@ -62,6 +63,7 @@ class BehandlerVarselService(
                 motedeltakerBehandlerVarselId = pMotedeltakerBehandlerVarsel.id,
                 type = svarType,
                 tekst = svarTekst,
+                msgId = msgId,
             )
             log.info("Created svar $svarType på varsel $varseltype with uuid ${pMotedeltakerBehandlerVarsel.uuid}")
             return true

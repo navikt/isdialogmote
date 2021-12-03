@@ -8,13 +8,14 @@ import java.time.LocalDateTime
 import java.util.*
 
 fun generateKafkaDialogmeldingDTO(
+    msgId: String? = null,
     msgType: String,
     personIdentPasient: PersonIdentNumber,
     conversationRef: String?,
     parentRef: String?,
     innkallingMoterespons: InnkallingMoterespons?
 ) = KafkaDialogmeldingDTO(
-    msgId = UUID.randomUUID().toString(),
+    msgId = msgId ?: UUID.randomUUID().toString(),
     msgType = msgType,
     navLogId = UUID.randomUUID().toString(),
     mottattTidspunkt = LocalDateTime.now(),

@@ -35,6 +35,7 @@ fun DialogmotedeltakerBehandler.findInnkallingVarselUuid(): UUID {
     return varselList.last().uuid
 }
 
-fun DialogmotedeltakerBehandler.findParentVarselUuid(): UUID {
-    return varselList.first().uuid
+fun DialogmotedeltakerBehandler.findParentVarselId(): String {
+    val latestVarsel = varselList.first()
+    return latestVarsel.svar.firstOrNull()?.msgId ?: latestVarsel.uuid.toString()
 }

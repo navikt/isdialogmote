@@ -16,14 +16,16 @@ const val queryCreateMotedeltakerBehandlerVarselSvar =
             created_at,                      
             motedeltaker_behandler_varsel_id,
             svar_type,                       
-            svar_tekst
-        ) VALUES (DEFAULT, ?, ?, ?, ?, ?) RETURNING id
+            svar_tekst,
+            msg_id
+        ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
 fun DatabaseInterface.createMotedeltakerBehandlerVarselSvar(
     motedeltakerBehandlerVarselId: Int,
     type: DialogmoteSvarType,
-    tekst: String?
+    tekst: String?,
+    msgId: String,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
     val svarUUID = UUID.randomUUID()
@@ -35,6 +37,7 @@ fun DatabaseInterface.createMotedeltakerBehandlerVarselSvar(
             it.setInt(3, motedeltakerBehandlerVarselId)
             it.setString(4, type.name)
             it.setString(5, tekst.orEmpty())
+            it.setString(6, msgId)
             it.executeQuery().toList { getInt("id") }
         }
 
@@ -75,4 +78,5 @@ fun ResultSet.toPMotedeltakerBehandlerVarselSvar(): PMotedeltakerBehandlerVarsel
         motedeltakerBehandlerVarselId = getInt("motedeltaker_behandler_varsel_id"),
         svarType = getString("svar_type"),
         svarTekst = getString("svar_tekst"),
+        msgId = getString("msg_id"),
     )

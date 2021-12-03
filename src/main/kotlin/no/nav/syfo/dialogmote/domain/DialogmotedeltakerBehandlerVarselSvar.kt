@@ -10,6 +10,7 @@ data class DialogmotedeltakerBehandlerVarselSvar(
     val createdAt: LocalDateTime,
     val type: DialogmoteSvarType,
     val tekst: String,
+    val msgId: String,
 )
 
 fun DialogmotedeltakerBehandlerVarselSvar.toDialogmotedeltakerBehandlerVarselSvarDTO() = DialogmotedeltakerBehandlerVarselSvarDTO(

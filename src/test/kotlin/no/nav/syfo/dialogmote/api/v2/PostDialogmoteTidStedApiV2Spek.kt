@@ -12,14 +12,16 @@ import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
+import no.nav.syfo.dialogmelding.DialogmeldingService
+import no.nav.syfo.dialogmelding.domain.ForesporselType
+import no.nav.syfo.dialogmelding.domain.SvarType
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithBehandler
+import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -27,6 +29,7 @@ import org.amshove.kluent.*
 import org.junit.Assert
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.UUID
 
 class PostDialogmoteTidStedApiV2Spek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -48,6 +51,9 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
             val behandlerVarselService = BehandlerVarselService(
                 database = database,
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
+            )
+            val dialogmeldingService = DialogmeldingService(
+                behandlerVarselService = behandlerVarselService
             )
 
             application.testApiModule(
@@ -298,6 +304,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             }
                         }
 
+                        val createdDialogmote: DialogmoteDTO
                         with(
                             handleRequest(HttpMethod.Get, urlMoter) {
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -310,8 +317,8 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
 
                             dialogmoteList.size shouldBeEqualTo 1
 
-                            val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.NYTT_TID_STED.name
+                            createdDialogmote = dialogmoteList.first()
+                            createdDialogmote.status shouldBeEqualTo DialogmoteStatus.NYTT_TID_STED.name
                             verify(exactly = 2) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
                             val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
@@ -327,7 +334,79 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo newDialogmoteTidSted.behandler!!.endringsdokument.serialize()
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingType shouldBeEqualTo DialogmeldingType.DIALOG_FORESPORSEL.name
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.TIDSTED.value
-                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldNotBeEqualTo null
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldBeEqualTo createdDialogmote.behandler!!.varselList[1].uuid
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation shouldBeEqualTo createdDialogmote.behandler!!.varselList[1].uuid
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
+                        }
+
+                        clearAllMocks()
+                        justRun { mqSenderMock.sendMQMessage(any(), any()) }
+                        justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                        justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+
+                        // Ny endring, etter svar fra behandler
+                        val innkallingMoterespons = generateInnkallingMoterespons(
+                            foresporselType = ForesporselType.ENDRING,
+                            svarType = SvarType.NYTT_TIDSPUNKT,
+                            svarTekst = "Forslag til nytt tidspunkt",
+                        )
+                        val msgId = UUID.randomUUID().toString()
+                        val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                            msgId = msgId,
+                            msgType = "DIALOG_SVAR",
+                            personIdentPasient = ARBEIDSTAKER_FNR,
+                            conversationRef = createdDialogmote.behandler!!.varselList[1].uuid,
+                            parentRef = createdDialogmote.behandler!!.varselList[0].uuid,
+                            innkallingMoterespons = innkallingMoterespons,
+                        )
+                        dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(newDialogmoteTidSted))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) {
+                                mqSenderMock.sendMQMessage(
+                                    MotedeltakerVarselType.NYTT_TID_STED,
+                                    any()
+                                )
+                            }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.NYTT_TID_STED.name
+
+                            val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
+                            verify(exactly = 1) {
+                                behandlerDialogmeldingProducer.sendDialogmelding(
+                                    capture(
+                                        kafkaBehandlerDialogmeldingDTOSlot
+                                    )
+                                )
+                            }
+                            val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
+                            kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo newDialogmoteTidSted.behandler!!.endringsdokument.serialize()
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingType shouldBeEqualTo DialogmeldingType.DIALOG_FORESPORSEL.name
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.TIDSTED.value
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldBeEqualTo dialogmeldingDTO.msgId
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation shouldBeEqualTo dialogmeldingDTO.conversationRef
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
                         }
                     }
