@@ -6,6 +6,7 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
+import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
@@ -179,7 +180,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             }
                         }
 
-                        assertThrows(RuntimeException::class.java) {
+                        assertThrows(ConflictException::class.java) {
                             handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -190,7 +191,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                         val urlMoteUUIDAvlys =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
                         val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
-                        assertThrows(RuntimeException::class.java) {
+                        assertThrows(ConflictException::class.java) {
                             handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -201,7 +202,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                         val urlMoteUUIDPostTidSted =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                         val endreTidStedDialogMoteDto = generateEndreDialogmoteTidStedDTO()
-                        assertThrows(RuntimeException::class.java) {
+                        assertThrows(ConflictException::class.java) {
                             handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(Authorization, bearerHeader(validToken))

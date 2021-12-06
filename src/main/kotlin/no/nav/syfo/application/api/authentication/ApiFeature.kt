@@ -11,12 +11,10 @@ import io.ktor.metrics.micrometer.*
 import io.ktor.response.*
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.metric.METRICS_REGISTRY
-import no.nav.syfo.util.NAV_CALL_ID_HEADER
-import no.nav.syfo.util.configureJacksonMapper
-import no.nav.syfo.util.getCallId
-import no.nav.syfo.util.getConsumerId
+import no.nav.syfo.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URL
@@ -99,7 +97,18 @@ fun Application.installContentNegotiation() {
 fun Application.installStatusPages() {
     install(StatusPages) {
         exception<Throwable> { cause ->
-            call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
+            val responseStatus: HttpStatusCode = when (cause) {
+                is ConflictException -> {
+                    HttpStatusCode.Conflict
+                }
+                else -> {
+                    HttpStatusCode.InternalServerError
+                }
+            }
+
+            val message = cause.message ?: "Unknown error"
+            call.respond(responseStatus, message)
+
             val callId = getCallId()
             val consumerId = getConsumerId()
             log.error("Caught exception, callId=$callId, consumerId=$consumerId", cause)
