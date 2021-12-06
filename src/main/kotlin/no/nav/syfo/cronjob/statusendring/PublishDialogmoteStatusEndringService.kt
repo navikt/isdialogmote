@@ -60,7 +60,7 @@ fun createKDialogmoteStatusEndring(
     kDialogmoteStatusEndring.setTilfelleStartdato(dialogmoteStatusEndret.tilfelleStart.atStartOfDay().toInstantOslo())
     kDialogmoteStatusEndring.setArbeidstaker(true)
     kDialogmoteStatusEndring.setArbeidsgiver(true)
-    kDialogmoteStatusEndring.setSykmelder(false)
+    kDialogmoteStatusEndring.setSykmelder(dialogmoteStatusEndret.motedeltakerBehandler)
     return kDialogmoteStatusEndring
 }
 

@@ -8,6 +8,8 @@ import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.behandler.BehandlerVarselService
+import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
@@ -34,14 +36,23 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
+            val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
+            justRun { behandlerDialogmeldingProducer.sendDialogmelding(dialogmelding = any()) }
+
             val mqSenderMock = mockk<MQSenderInterface>()
             justRun { mqSenderMock.sendMQMessage(any(), any()) }
 
             val dialogmoteStatusEndringProducer = mockk<DialogmoteStatusEndringProducer>()
             justRun { dialogmoteStatusEndringProducer.sendDialogmoteStatusEndring(any()) }
 
+            val behandlerVarselService = BehandlerVarselService(
+                database = database,
+                behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
+            )
+
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
+                behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 mqSenderMock = mqSenderMock,
             )
@@ -67,7 +78,7 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
                 )
                 val urlMote = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
 
-                it("should update publishedAt (ferdigstilt)") {
+                it("should update publishedAt (ferdigstilt) without Behandler") {
                     val newDialogmoteDTO = generateNewDialogmoteDTO(UserConstants.ARBEIDSTAKER_FNR)
                     val createdDialogmoteUUID: String
 
@@ -133,8 +144,8 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
                         result.updated shouldBeEqualTo 3
                     }
                 }
-                it("should update publishedAt (avlyst)") {
-                    val newDialogmoteDTO = generateNewDialogmoteDTO(UserConstants.ARBEIDSTAKER_FNR)
+                it("should update publishedAt (avlyst) with Behandler") {
+                    val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
                     val createdDialogmoteUUID: String
 
                     with(
@@ -167,7 +178,7 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
 
                     val urlMoteUUIDPostTidSted =
                         "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
-                    val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTO()
+                    val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTOWithBehandler()
                     with(
                         handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
                             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -193,6 +204,16 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
                     }
 
                     runBlocking {
+                        val dialogmoteStatusEndretList =
+                            publishDialogmoteStatusEndringService.getDialogmoteStatuEndretToPublishList()
+                        dialogmoteStatusEndretList.size shouldBeEqualTo 3
+
+                        val dialogmoteStatusEndretListWithBehandler =
+                            dialogmoteStatusEndretList.filter { dialogmoteStatusEndret ->
+                                dialogmoteStatusEndret.motedeltakerBehandler
+                            }
+                        dialogmoteStatusEndretListWithBehandler.size shouldBeEqualTo 3
+
                         val result = publishDialogmoteStatusEndringCronjob.dialogmoteStatusEndringPublishJob()
 
                         result.failed shouldBeEqualTo 0
