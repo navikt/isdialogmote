@@ -2,6 +2,7 @@ package no.nav.syfo.dialogmote
 
 import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
@@ -210,10 +211,10 @@ class DialogmoteService(
         token: String,
     ): Boolean {
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
-            throw RuntimeException("Failed to Avlys Dialogmote: already Ferdigstilt")
+            throw ConflictException("Failed to Avlys Dialogmote: already Ferdigstilt")
         }
         if (dialogmote.status == DialogmoteStatus.AVLYST) {
-            throw RuntimeException("Failed to Avlys Dialogmote: already Avlyst")
+            throw ConflictException("Failed to Avlys Dialogmote: already Avlyst")
         }
         if (dialogmote.behandler != null && avlysDialogmote.behandler == null) {
             throw RuntimeException("Failed to Avlys Dialogmote: missing behandler")
@@ -298,10 +299,10 @@ class DialogmoteService(
         token: String,
     ): Boolean {
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
-            throw RuntimeException("Failed to change tid/sted, already Ferdigstilt")
+            throw ConflictException("Failed to change tid/sted, already Ferdigstilt")
         }
         if (dialogmote.status == DialogmoteStatus.AVLYST) {
-            throw RuntimeException("Failed to change tid/sted, already Avlyst")
+            throw ConflictException("Failed to change tid/sted, already Avlyst")
         }
         if (dialogmote.behandler != null && endreDialogmoteTidSted.behandler == null) {
             throw RuntimeException("Failed to change tid/sted: missing behandler")
@@ -498,10 +499,10 @@ class DialogmoteService(
         token: String,
     ): Boolean {
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
-            throw RuntimeException("Failed to Ferdigstille Dialogmote, already Ferdigstilt")
+            throw ConflictException("Failed to Ferdigstille Dialogmote, already Ferdigstilt")
         }
         if (dialogmote.status == DialogmoteStatus.AVLYST) {
-            throw RuntimeException("Failed to Ferdigstille Dialogmote, already Avlyst")
+            throw ConflictException("Failed to Ferdigstille Dialogmote, already Avlyst")
         }
 
         val narmesteLeder = narmesteLederClient.activeLeder(
