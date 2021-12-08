@@ -9,7 +9,7 @@ object Versions {
     const val brukernotifikasjonAvro = "1.2021.01.18-11.12-b9c8c40b98d1"
     const val isdialogmoteSchema = "1.0.5"
     const val confluent = "6.1.3"
-    const val flyway = "8.1.0"
+    const val flyway = "8.2.0"
     const val hikari = "5.0.0"
     const val jackson = "2.13.0"
     const val jedis = "3.7.0"
