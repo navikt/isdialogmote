@@ -99,11 +99,11 @@ const val queryGetMotedeltakerBehandlerVarselOfTypeByArbeidstakerAndUuid =
 fun DatabaseInterface.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
     varselType: MotedeltakerVarselType,
     arbeidstakerPersonIdent: PersonIdentNumber,
-    uuid: UUID
+    uuid: String
 ): Pair<Int, PMotedeltakerBehandlerVarsel>? {
     return this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerBehandlerVarselOfTypeByArbeidstakerAndUuid).use {
-            it.setString(1, uuid.toString())
+            it.setString(1, uuid)
             it.setString(2, arbeidstakerPersonIdent.value)
             it.setString(3, varselType.name)
             it.executeQuery().toList { Pair(getInt(1), toPMotedeltakerBehandlerVarsel()) }
