@@ -47,8 +47,8 @@ class BehandlerVarselService(
         varseltype: MotedeltakerVarselType,
         svarType: DialogmoteSvarType,
         svarTekst: String?,
-        conversationRef: UUID?,
-        parentRef: UUID?,
+        conversationRef: String?,
+        parentRef: String?,
         msgId: String,
     ): Boolean {
         log.info("Received svar $svarType på varsel $varseltype with conversationRef $conversationRef and parentRef $parentRef")
@@ -76,8 +76,8 @@ class BehandlerVarselService(
     private fun getBehandlerVarselForSvar(
         varseltype: MotedeltakerVarselType,
         arbeidstakerPersonIdent: PersonIdentNumber,
-        conversationRef: UUID?,
-        parentRef: UUID?,
+        conversationRef: String?,
+        parentRef: String?,
     ): PMotedeltakerBehandlerVarsel? {
         return when (varseltype) {
             MotedeltakerVarselType.INNKALT -> getBehandlerVarselInnkalling(
@@ -95,7 +95,7 @@ class BehandlerVarselService(
 
     private fun getBehandlerVarselInnkalling(
         arbeidstakerPersonIdent: PersonIdentNumber,
-        conversationRef: UUID?,
+        conversationRef: String?,
     ): PMotedeltakerBehandlerVarsel? {
         val varselInnkallingForConversationRef =
             conversationRef?.let {
@@ -115,8 +115,8 @@ class BehandlerVarselService(
 
     private fun getBehandlerVarselNyttTidSted(
         arbeidstakerPersonIdent: PersonIdentNumber,
-        conversationRef: UUID?,
-        parentRef: UUID?,
+        conversationRef: String?,
+        parentRef: String?,
     ): PMotedeltakerBehandlerVarsel? {
         val varselNyttTidStedForParentRef =
             parentRef?.let {
@@ -144,7 +144,7 @@ class BehandlerVarselService(
 
     private fun getBehandlerVarselNyttTidStedFromConversationRef(
         arbeidstakerPersonIdent: PersonIdentNumber,
-        conversationRef: UUID?,
+        conversationRef: String?,
     ): PMotedeltakerBehandlerVarsel? {
         val varselInnkallingForConversationRef =
             conversationRef?.let {

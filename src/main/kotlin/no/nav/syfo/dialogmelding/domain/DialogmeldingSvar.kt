@@ -3,11 +3,10 @@ package no.nav.syfo.dialogmelding.domain
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.domain.PersonIdentNumber
-import java.util.*
 
 data class DialogmeldingSvar(
-    val conversationRef: UUID?,
-    val parentRef: UUID?,
+    val conversationRef: String?,
+    val parentRef: String?,
     val arbeidstakerPersonIdent: PersonIdentNumber,
     val innkallingDialogmoteSvar: InnkallingDialogmoteSvar?,
 )

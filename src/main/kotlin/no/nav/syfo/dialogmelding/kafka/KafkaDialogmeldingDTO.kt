@@ -3,7 +3,6 @@ package no.nav.syfo.dialogmelding.kafka
 import no.nav.syfo.dialogmelding.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import java.time.LocalDateTime
-import java.util.*
 
 data class KafkaDialogmeldingDTO(
     val msgId: String,
@@ -45,8 +44,8 @@ data class TypeForesp(
 )
 
 fun KafkaDialogmeldingDTO.toDialogmeldingSvar(): DialogmeldingSvar = DialogmeldingSvar(
-    conversationRef = this.conversationRef?.let { UUID.fromString(it) },
-    parentRef = this.parentRef?.let { UUID.fromString(it) },
+    conversationRef = this.conversationRef,
+    parentRef = this.parentRef,
     arbeidstakerPersonIdent = PersonIdentNumber(this.personIdentPasient),
     innkallingDialogmoteSvar = this.dialogmelding.innkallingMoterespons?.toInnkallingDialogmoteSvar()
 )
