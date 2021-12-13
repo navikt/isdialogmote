@@ -3,12 +3,15 @@ package no.nav.syfo.brev.behandler
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
+import no.nav.syfo.dialogmelding.COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_FAIL
+import no.nav.syfo.dialogmelding.COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_SUCCESS
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.sql.SQLException
 import java.util.*
 
 private val log: Logger = LoggerFactory.getLogger(BehandlerVarselService::class.java)
@@ -50,8 +53,8 @@ class BehandlerVarselService(
         conversationRef: String?,
         parentRef: String?,
         msgId: String,
-    ): Boolean {
-        log.info("Received svar $svarType på varsel $varseltype with conversationRef $conversationRef and parentRef $parentRef")
+    ) {
+        log.info("Received svar $svarType på varsel $varseltype with conversationRef $conversationRef, parentRef $parentRef and msgId $msgId")
         val pMotedeltakerBehandlerVarsel = getBehandlerVarselForSvar(
             varseltype = varseltype,
             arbeidstakerPersonIdent = arbeidstakerPersonIdent,
@@ -59,18 +62,23 @@ class BehandlerVarselService(
             parentRef = parentRef,
         )
         pMotedeltakerBehandlerVarsel?.let {
-            database.createMotedeltakerBehandlerVarselSvar(
-                motedeltakerBehandlerVarselId = pMotedeltakerBehandlerVarsel.id,
-                type = svarType,
-                tekst = svarTekst,
-                msgId = msgId,
-            )
-            log.info("Created svar $svarType på varsel $varseltype with uuid ${pMotedeltakerBehandlerVarsel.uuid}")
-            return true
+            try {
+                log.info("Found varsel for msgId $msgId, conversationRef $conversationRef and parentRef $parentRef")
+                database.createMotedeltakerBehandlerVarselSvar(
+                    motedeltakerBehandlerVarselId = pMotedeltakerBehandlerVarsel.id,
+                    type = svarType,
+                    tekst = svarTekst,
+                    msgId = msgId,
+                )
+                log.info("Created svar $svarType på varsel $varseltype with uuid ${pMotedeltakerBehandlerVarsel.uuid}")
+                COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_SUCCESS.increment()
+            } catch (ex: SQLException) {
+                log.error("Could not create svar for varsel", ex)
+                COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_FAIL.increment()
+            }
         }
 
-        log.error("Could not find varsel of type $varseltype for conversationRef $conversationRef and parentRef $parentRef - Could not create svar")
-        return false
+        log.warn("Could not find varsel for msgId $msgId, conversationRef $conversationRef and parentRef $parentRef - Did not create svar")
     }
 
     private fun getBehandlerVarselForSvar(
