@@ -15,7 +15,7 @@ class DialogmeldingService(private val behandlerVarselService: BehandlerVarselSe
             val dialogmeldingSvar = dialogmeldingDTO.toDialogmeldingSvar()
             dialogmeldingSvar.innkallingDialogmoteSvar?.let { innkallingSvar ->
                 log.info("Received innkalling dialogmote svar with msgId: ${dialogmeldingDTO.msgId}")
-                val varselSvarCreated = behandlerVarselService.opprettVarselSvar(
+                behandlerVarselService.opprettVarselSvar(
                     arbeidstakerPersonIdent = dialogmeldingSvar.arbeidstakerPersonIdent,
                     varseltype = innkallingSvar.foresporselType.getVarselType(),
                     svarType = innkallingSvar.svarType.getDialogmoteSvarType(),
@@ -24,13 +24,6 @@ class DialogmeldingService(private val behandlerVarselService: BehandlerVarselSe
                     parentRef = dialogmeldingSvar.parentRef,
                     msgId = dialogmeldingDTO.msgId,
                 )
-                if (varselSvarCreated) {
-                    log.info("Created varsel-svar for innkalling dialogmote svar with msgId: ${dialogmeldingDTO.msgId}")
-                    COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_SUCCESS.increment()
-                } else {
-                    log.error("Failed to create varsel-svar for innkalling dialogmote svar with msgId: ${dialogmeldingDTO.msgId}")
-                    COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_FAIL.increment()
-                }
             }
         }
     }
