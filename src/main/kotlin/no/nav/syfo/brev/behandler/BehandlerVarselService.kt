@@ -61,9 +61,9 @@ class BehandlerVarselService(
             conversationRef = conversationRef,
             parentRef = parentRef,
         )
-        pMotedeltakerBehandlerVarsel?.let {
+        if (pMotedeltakerBehandlerVarsel != null) {
             try {
-                log.info("Found varsel for msgId $msgId, conversationRef $conversationRef and parentRef $parentRef")
+                log.info("Found varsel with uuid ${pMotedeltakerBehandlerVarsel.uuid}")
                 database.createMotedeltakerBehandlerVarselSvar(
                     motedeltakerBehandlerVarselId = pMotedeltakerBehandlerVarsel.id,
                     type = svarType,
@@ -76,9 +76,9 @@ class BehandlerVarselService(
                 log.error("Could not create svar for varsel", ex)
                 COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_FAIL.increment()
             }
+        } else {
+            log.warn("Could not find varsel for conversationRef $conversationRef, parentRef $parentRef and msgId $msgId - Did not create svar")
         }
-
-        log.warn("Could not find varsel for msgId $msgId, conversationRef $conversationRef and parentRef $parentRef - Did not create svar")
     }
 
     private fun getBehandlerVarselForSvar(
