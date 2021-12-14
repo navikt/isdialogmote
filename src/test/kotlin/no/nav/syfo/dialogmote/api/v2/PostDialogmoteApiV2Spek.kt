@@ -273,6 +273,7 @@ class PostDialogmoteApiV2Spek : Spek({
                             dialogmoteDTO.behandler!!.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
                             dialogmoteDTO.behandler!!.behandlerNavn shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerNavn
                             dialogmoteDTO.behandler!!.behandlerKontor shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerKontor
+                            dialogmoteDTO.behandler!!.personIdent shouldBeEqualTo newDialogmoteDTO.behandler!!.personIdent
 
                             val behandlerVarselDTO = dialogmoteDTO.behandler!!.varselList.first()
                             behandlerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name

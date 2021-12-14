@@ -5,6 +5,7 @@ import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.testhelper.UserConstants
+import no.nav.syfo.testhelper.UserConstants.BEHANDLER_FNR
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_KONTOR
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_NAVN
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_REF
@@ -134,6 +135,7 @@ fun generateMotedeltakerArbeidsgiverDTO(
 )
 
 fun generateMotedeltakerBehandlerDTO() = NewDialogmotedeltakerBehandlerDTO(
+    personIdent = BEHANDLER_FNR.value,
     behandlerRef = BEHANDLER_REF,
     behandlerNavn = BEHANDLER_NAVN,
     behandlerKontor = BEHANDLER_KONTOR,

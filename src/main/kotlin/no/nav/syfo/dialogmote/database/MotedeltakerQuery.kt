@@ -6,7 +6,6 @@ import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
-import java.lang.RuntimeException
 import java.sql.*
 import java.time.Instant
 import java.util.*
@@ -113,8 +112,9 @@ const val queryCreateMotedeltakerBehandler =
         behandler_ref,
         behandler_navn,
         behandler_kontor,
-        behandler_type
-        ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+        behandler_type,
+        personident
+        ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
 fun Connection.createMotedeltakerBehandler(
@@ -134,6 +134,7 @@ fun Connection.createMotedeltakerBehandler(
         it.setString(6, newDialogmotedeltakerBehandler.behandlerNavn)
         it.setString(7, newDialogmotedeltakerBehandler.behandlerKontor)
         it.setString(8, BehandlerType.FASTLEGE.name)
+        it.setString(9, newDialogmotedeltakerBehandler.personIdent?.value)
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -173,6 +174,7 @@ fun ResultSet.toPMotedeltakerBehandler(): PMotedeltakerBehandler =
         createdAt = getTimestamp("created_at").toLocalDateTime(),
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         moteId = getInt("mote_id"),
+        personIdent = getString("personident")?.let { PersonIdentNumber(it) },
         behandlerRef = getString("behandler_ref"),
         behandlerNavn = getString("behandler_navn"),
         behandlerKontor = getString("behandler_kontor"),

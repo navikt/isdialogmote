@@ -7,5 +7,6 @@ data class DialogmotedeltakerBehandlerDTO(
     val behandlerKontor: String,
     val behandlerType: String,
     val type: String,
+    val personIdent: String?,
     val varselList: List<DialogmotedeltakerBehandlerVarselDTO>,
 )

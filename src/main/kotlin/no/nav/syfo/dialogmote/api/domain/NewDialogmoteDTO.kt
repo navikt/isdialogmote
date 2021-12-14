@@ -1,6 +1,5 @@
 package no.nav.syfo.dialogmote.api.domain
 
-import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdentNumber
@@ -28,6 +27,7 @@ data class NewDialogmotedeltakerArbeidsgiverDTO(
 )
 
 data class NewDialogmotedeltakerBehandlerDTO(
+    val personIdent: String?,
     val behandlerRef: String,
     val behandlerNavn: String,
     val behandlerKontor: String,
@@ -43,7 +43,6 @@ data class NewDialogmoteTidStedDTO(
 
 fun NewDialogmoteDTO.toNewDialogmote(
     requestByNAVIdent: String,
-    narmesteLeder: NarmesteLederDTO,
     navEnhet: EnhetNr,
 ): NewDialogmote {
     return NewDialogmote(
@@ -61,6 +60,7 @@ fun NewDialogmoteDTO.toNewDialogmote(
         ),
         behandler = this.behandler?.let {
             NewDialogmotedeltakerBehandler(
+                personIdent = it.personIdent?.let { personident -> PersonIdentNumber(personident) },
                 behandlerRef = it.behandlerRef,
                 behandlerNavn = it.behandlerNavn,
                 behandlerKontor = it.behandlerKontor,

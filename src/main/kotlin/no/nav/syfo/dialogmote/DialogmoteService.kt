@@ -12,26 +12,15 @@ import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.dialogmote.api.domain.AvlysDialogmoteDTO
-import no.nav.syfo.dialogmote.api.domain.EndreTidStedDialogmoteDTO
-import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
-import no.nav.syfo.dialogmote.api.domain.NewReferatDTO
-import no.nav.syfo.dialogmote.api.domain.toNewDialogmote
-import no.nav.syfo.dialogmote.api.domain.toNewReferat
+import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.database.domain.PDialogmote
-import no.nav.syfo.dialogmote.database.domain.toDialogmote
-import no.nav.syfo.dialogmote.database.domain.toDialogmoteDeltakerAnnen
-import no.nav.syfo.dialogmote.database.domain.toDialogmoteTidSted
-import no.nav.syfo.dialogmote.database.domain.toReferat
+import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.EnhetNr
-import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.domain.Virksomhetsnummer
+import no.nav.syfo.domain.*
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 class DialogmoteService(
     private val database: DatabaseInterface,
@@ -129,7 +118,6 @@ class DialogmoteService(
 
             val newDialogmote = newDialogmoteDTO.toNewDialogmote(
                 requestByNAVIdent = getNAVIdentFromToken(token),
-                narmesteLeder = narmesteLeder,
                 navEnhet = EnhetNr(behandlendeEnhet.enhetId),
             )
 

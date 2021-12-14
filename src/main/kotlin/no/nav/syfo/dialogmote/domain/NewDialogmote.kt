@@ -26,6 +26,7 @@ data class NewDialogmotedeltakerArbeidsgiver(
 )
 
 data class NewDialogmotedeltakerBehandler(
+    val personIdent: PersonIdentNumber?,
     val behandlerRef: String,
     val behandlerNavn: String,
     val behandlerKontor: String,
