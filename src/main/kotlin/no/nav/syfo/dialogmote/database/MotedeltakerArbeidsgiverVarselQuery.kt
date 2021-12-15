@@ -4,8 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerArbeidsgiverVarsel
-import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.util.configuredJacksonMapper
 import java.sql.Connection
 import java.sql.ResultSet
@@ -124,6 +123,27 @@ fun Connection.updateMotedeltakerArbeidsgiverVarselLestDato(
     }
 }
 
+const val queryUpdateMotedeltakerArbeidsgiverVarselRespons =
+    """
+        UPDATE MOTEDELTAKER_ARBEIDSGIVER_VARSEL
+        SET svar_type = ?, svar_tekst=?, svar_tidspunkt=?
+        WHERE uuid = ? AND svar_type IS NULL
+    """
+
+fun Connection.updateMotedeltakerArbeidsgiverVarselRespons(
+    motedeltakerArbeidsgiverVarselUuid: UUID,
+    svarType: DialogmoteSvarType,
+    svarTekst: String?,
+): Int {
+    return this.prepareStatement(queryUpdateMotedeltakerArbeidsgiverVarselRespons).use {
+        it.setString(1, svarType.name)
+        it.setString(2, svarTekst)
+        it.setTimestamp(3, Timestamp.from(Instant.now()))
+        it.setString(4, motedeltakerArbeidsgiverVarselUuid.toString())
+        it.executeUpdate()
+    }
+}
+
 fun ResultSet.toPMotedeltakerArbeidsgiverVarsel(): PMotedeltakerArbeidsgiverVarsel =
     PMotedeltakerArbeidsgiverVarsel(
         id = getInt("id"),
@@ -137,4 +157,7 @@ fun ResultSet.toPMotedeltakerArbeidsgiverVarsel(): PMotedeltakerArbeidsgiverVars
         lestDato = getTimestamp("lest_dato")?.toLocalDateTime(),
         fritekst = getString("fritekst"),
         document = mapper.readValue(getString("document"), object : TypeReference<List<DocumentComponentDTO>>() {}),
+        svarType = getString("svar_type"),
+        svarTekst = getString("svar_tekst"),
+        svarTidspunkt = getTimestamp("svar_tidspunkt")?.toLocalDateTime(),
     )

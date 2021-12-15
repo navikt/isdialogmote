@@ -109,6 +109,7 @@ fun Referat.toArbeidstakerBrevDTO(
     videoLink = dialogmoteTidSted.videoLink,
     virksomhetsnummer = virksomhetsnummer.value,
     document = document,
+    svar = null,
 )
 
 fun Referat.toNarmesteLederBrevDTO(
@@ -127,4 +128,5 @@ fun Referat.toNarmesteLederBrevDTO(
     videoLink = dialogmoteTidSted.videoLink,
     virksomhetsnummer = virksomhetsnummer.value,
     document = this.document,
+    svar = null,
 )

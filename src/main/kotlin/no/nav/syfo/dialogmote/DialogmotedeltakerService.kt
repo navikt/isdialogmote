@@ -152,4 +152,46 @@ class DialogmotedeltakerService(
             connection.commit()
         }
     }
+
+    fun updateArbeidstakerBrevWithRespons(
+        brevUuid: UUID,
+        svarType: DialogmoteSvarType,
+        svarTekst: String?,
+    ): Boolean {
+        val brevIsReferat = database.getReferat(brevUuid).isNotEmpty()
+        if (brevIsReferat) {
+            throw IllegalArgumentException("Cannot store response for referat")
+        }
+
+        return database.connection.use { connection ->
+            val updateCount = connection.updateMotedeltakerArbeidstakerVarselRespons(
+                motedeltakerArbeidstakerVarselUuid = brevUuid,
+                svarType = svarType,
+                svarTekst = svarTekst,
+            )
+            connection.commit()
+            updateCount > 0
+        }
+    }
+
+    fun updateArbeidsgiverBrevWithRespons(
+        brevUuid: UUID,
+        svarType: DialogmoteSvarType,
+        svarTekst: String?,
+    ): Boolean {
+        val brevIsReferat = database.getReferat(brevUuid).isNotEmpty()
+        if (brevIsReferat) {
+            throw IllegalArgumentException("Cannot store response for referat")
+        }
+
+        return database.connection.use { connection ->
+            val updateCount = connection.updateMotedeltakerArbeidsgiverVarselRespons(
+                motedeltakerArbeidsgiverVarselUuid = brevUuid,
+                svarType = svarType,
+                svarTekst = svarTekst,
+            )
+            connection.commit()
+            updateCount > 0
+        }
+    }
 }

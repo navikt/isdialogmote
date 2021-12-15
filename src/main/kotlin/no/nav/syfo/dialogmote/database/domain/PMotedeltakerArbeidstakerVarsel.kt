@@ -20,6 +20,9 @@ data class PMotedeltakerArbeidstakerVarsel(
     val journalpostId: String?,
     val brevBestillingsId: String?,
     val brevBestiltTidspunkt: LocalDateTime?,
+    val svarType: String?,
+    val svarTekst: String?,
+    val svarTidspunkt: LocalDateTime?,
 )
 
 fun PMotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstaker() =
@@ -39,4 +42,9 @@ fun PMotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstaker() =
         journalpostId = this.journalpostId,
         brevBestillingsId = this.brevBestillingsId,
         brevBestiltTidspunkt = this.brevBestiltTidspunkt,
+        svarType = this.svarType?.let {
+            DialogmoteSvarType.valueOf(this.svarType)
+        },
+        svarTekst = this.svarTekst,
+        svarTidspunkt = this.svarTidspunkt,
     )

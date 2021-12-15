@@ -1,10 +1,11 @@
 package no.nav.syfo.dialogmote.domain
 
 import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
-import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerArbeidstakerVarselDTO
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
+import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevSvarDTO
+import no.nav.syfo.dialogmote.api.domain.*
 import java.time.LocalDateTime
 import java.util.*
 
@@ -24,6 +25,9 @@ data class DialogmotedeltakerArbeidstakerVarsel(
     val journalpostId: String?,
     val brevBestillingsId: String?,
     val brevBestiltTidspunkt: LocalDateTime?,
+    val svarType: DialogmoteSvarType?,
+    val svarTekst: String?,
+    val svarTidspunkt: LocalDateTime?,
 ) : ArbeidstakerBrev
 
 fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselDTO() =
@@ -33,9 +37,16 @@ fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselD
         varselType = this.varselType.name,
         digitalt = this.digitalt,
         lestDato = this.lestDatoArbeidstaker,
-        fritekst = this.fritekst,
         document = this.document,
         brevBestiltTidspunkt = this.brevBestiltTidspunkt,
+        fritekst = this.fritekst,
+        svar = this.svarType?.let {
+            DialogmotedeltakerArbeidstakerVarselSvarDTO(
+                svarTidspunkt = this.svarTidspunkt!!,
+                svarType = it.name,
+                svarTekst = this.svarTekst,
+            )
+        },
     )
 
 fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerBrevDTO(
@@ -55,6 +66,13 @@ fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerBrevDTO(
     videoLink = dialogmoteTidSted.videoLink,
     virksomhetsnummer = virksomhetsnummer.value,
     document = this.document,
+    svar = this.svarType?.let {
+        ArbeidstakerBrevSvarDTO(
+            svarType = it.name,
+            svarTekst = this.svarTekst,
+            svarTidspunkt = this.svarTidspunkt!!,
+        )
+    },
 )
 
 fun DialogmotedeltakerArbeidstakerVarsel.toJournalpostRequest(

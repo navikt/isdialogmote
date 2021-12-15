@@ -2,12 +2,15 @@ package no.nav.syfo.brev.narmesteleder
 
 import io.ktor.application.*
 import io.ktor.http.*
+import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import no.nav.syfo.application.api.authentication.personIdent
 import no.nav.syfo.brev.arbeidstaker.domain.PdfContent
+import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederResponsDTO
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.toNarmesteLederBrevDTOList
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
@@ -20,6 +23,7 @@ private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 const val narmesteLederBrevApiBasePath = "/api/v1/narmesteleder/brev"
 const val narmesteLederBrevApiLesPath = "/les"
 const val narmesteLederBrevApiPdfPath = "/pdf"
+const val narmesteLederBrevApiResponsPath = "/respons"
 const val narmesteLederBrevApiBrevParam = "brevuuid"
 
 fun Route.registerNarmestelederBrevApi(
@@ -115,6 +119,44 @@ fun Route.registerNarmestelederBrevApi(
                     e.message,
                     callIdArgument(callId)
                 )
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
+        }
+        post("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiResponsPath") {
+            val callId = getCallId()
+            try {
+                val narmesteLederPersonIdentNumber = call.personIdent()
+                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+                val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
+                val responsDTO = call.receive<NarmesteLederResponsDTO>()
+
+                val brev = dialogmoteService.getNarmesteLederBrevFromUuid(brevUuid)
+
+                val hasAccessToBrev = narmesteLederAccessService.hasAccessToBrev(
+                    brev = brev,
+                    callId = callId,
+                    narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
+                )
+                if (hasAccessToBrev) {
+                    val updated = dialogmotedeltakerService.updateArbeidsgiverBrevWithRespons(
+                        brevUuid = brevUuid,
+                        svarType = DialogmoteSvarType.valueOf(responsDTO.svarType),
+                        svarTekst = responsDTO.svarTekst,
+                    )
+                    if (updated) {
+                        call.respond(HttpStatusCode.OK)
+                    } else {
+                        throw IllegalArgumentException("Response already stored")
+                    }
+                } else {
+                    val accessDeniedMessage = "Denied access to brev with uuid"
+                    log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
+                    call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
+                }
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Could not store response for brev with uuid"
+
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }
         }
