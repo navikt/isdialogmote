@@ -20,6 +20,7 @@ import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
+import no.nav.syfo.testhelper.UserConstants.BEHANDLER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
@@ -355,6 +356,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             msgId = msgId,
                             msgType = "DIALOG_SVAR",
                             personIdentPasient = ARBEIDSTAKER_FNR,
+                            personIdentBehandler = BEHANDLER_FNR,
                             conversationRef = createdDialogmote.behandler!!.varselList[1].uuid,
                             parentRef = createdDialogmote.behandler!!.varselList[0].uuid,
                             innkallingMoterespons = innkallingMoterespons,

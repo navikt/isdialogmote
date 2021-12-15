@@ -17,6 +17,7 @@ class DialogmeldingService(private val behandlerVarselService: BehandlerVarselSe
                 log.info("Received innkalling dialogmote svar with msgId: ${dialogmeldingDTO.msgId}")
                 behandlerVarselService.opprettVarselSvar(
                     arbeidstakerPersonIdent = dialogmeldingSvar.arbeidstakerPersonIdent,
+                    behandlerPersonIdent = dialogmeldingSvar.behandlerPersonIdent,
                     varseltype = innkallingSvar.foresporselType.getVarselType(),
                     svarType = innkallingSvar.svarType.getDialogmoteSvarType(),
                     svarTekst = innkallingSvar.svarTekst,
