@@ -47,6 +47,7 @@ fun KafkaDialogmeldingDTO.toDialogmeldingSvar(): DialogmeldingSvar = Dialogmeldi
     conversationRef = this.conversationRef,
     parentRef = this.parentRef,
     arbeidstakerPersonIdent = PersonIdentNumber(this.personIdentPasient),
+    behandlerPersonIdent = PersonIdentNumber(this.personIdentBehandler),
     innkallingDialogmoteSvar = this.dialogmelding.innkallingMoterespons?.toInnkallingDialogmoteSvar()
 )
 

@@ -108,6 +108,7 @@ class DialogmeldingServiceSpek : Spek({
                     val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
                         msgType = "DIALOG_SVAR",
                         personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
                         conversationRef = createdBehandlerVarselInnkallingUuid,
                         parentRef = createdBehandlerVarselInnkallingUuid,
                         innkallingMoterespons = innkallingMoterespons,
@@ -143,6 +144,7 @@ class DialogmeldingServiceSpek : Spek({
                     val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
                         msgType = "DIALOG_SVAR",
                         personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
                         conversationRef = UUID.randomUUID().toString(),
                         parentRef = UUID.randomUUID().toString(),
                         innkallingMoterespons = innkallingMoterespons,
@@ -178,6 +180,7 @@ class DialogmeldingServiceSpek : Spek({
                     val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
                         msgType = "DIALOG_SVAR",
                         personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
                         conversationRef = null,
                         parentRef = null,
                         innkallingMoterespons = innkallingMoterespons,
@@ -213,6 +216,7 @@ class DialogmeldingServiceSpek : Spek({
                     val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
                         msgType = "DIALOG_SVAR",
                         personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
                         conversationRef = createdBehandlerVarselInnkallingUuid,
                         parentRef = createdBehandlerVarselInnkallingUuid,
                         innkallingMoterespons = innkallingMoterespons,
@@ -242,6 +246,37 @@ class DialogmeldingServiceSpek : Spek({
                     val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
                         msgType = "DIALOG_SVAR",
                         personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                        conversationRef = null,
+                        parentRef = null,
+                        innkallingMoterespons = innkallingMoterespons,
+                    )
+                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMoter) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
+                        svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
+                    }
+                }
+                it("Oppretter ikke varsel-svar når dialogmelding inneholder annen behandler og mangler conversationRef") {
+                    val svarTekst = "Annen fastleges svar her"
+                    val innkallingMoterespons = generateInnkallingMoterespons(
+                        foresporselType = ForesporselType.INNKALLING,
+                        svarType = SvarType.KOMMER,
+                        svarTekst = svarTekst,
+                    )
+                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                        msgType = "DIALOG_SVAR",
+                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_ANNEN_FNR,
                         conversationRef = null,
                         parentRef = null,
                         innkallingMoterespons = innkallingMoterespons,
@@ -336,6 +371,7 @@ class DialogmeldingServiceSpek : Spek({
                     val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
                         msgType = "DIALOG_SVAR",
                         personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
                         conversationRef = createdBehandlerVarselInnkallingUuid,
                         parentRef = createdBehandlerVarselEndringUuid,
                         innkallingMoterespons = innkallingMoterespons,
@@ -371,6 +407,7 @@ class DialogmeldingServiceSpek : Spek({
                     val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
                         msgType = "DIALOG_SVAR",
                         personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
                         conversationRef = createdBehandlerVarselInnkallingUuid,
                         parentRef = UUID.randomUUID().toString(),
                         innkallingMoterespons = innkallingMoterespons,
@@ -406,6 +443,7 @@ class DialogmeldingServiceSpek : Spek({
                     val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
                         msgType = "DIALOG_SVAR",
                         personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
                         conversationRef = UUID.randomUUID().toString(),
                         parentRef = UUID.randomUUID().toString(),
                         innkallingMoterespons = innkallingMoterespons,
@@ -441,6 +479,7 @@ class DialogmeldingServiceSpek : Spek({
                     val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
                         msgType = "DIALOG_SVAR",
                         personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
                         conversationRef = null,
                         parentRef = null,
                         innkallingMoterespons = innkallingMoterespons,
@@ -476,6 +515,7 @@ class DialogmeldingServiceSpek : Spek({
                     val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
                         msgType = "DIALOG_SVAR",
                         personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
                         conversationRef = createdBehandlerVarselInnkallingUuid,
                         parentRef = createdBehandlerVarselEndringUuid,
                         innkallingMoterespons = innkallingMoterespons,
@@ -505,6 +545,37 @@ class DialogmeldingServiceSpek : Spek({
                     val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
                         msgType = "DIALOG_SVAR",
                         personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                        conversationRef = null,
+                        parentRef = null,
+                        innkallingMoterespons = innkallingMoterespons,
+                    )
+                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMoter) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
+                        svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
+                    }
+                }
+                it("Oppretter ikke varsel-svar når dialogmelding inneholder annen behandler og parentRef og conversationRef mangler") {
+                    val svarTekst = "Annen fastleges svar her"
+                    val innkallingMoterespons = generateInnkallingMoterespons(
+                        foresporselType = ForesporselType.ENDRING,
+                        svarType = SvarType.KAN_IKKE_KOMME,
+                        svarTekst = svarTekst,
+                    )
+                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                        msgType = "DIALOG_SVAR",
+                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_ANNEN_FNR,
                         conversationRef = null,
                         parentRef = null,
                         innkallingMoterespons = innkallingMoterespons,
@@ -552,6 +623,7 @@ class DialogmeldingServiceSpek : Spek({
                     val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
                         msgType = "DIALOG_SVAR",
                         personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
                         conversationRef = null,
                         parentRef = null,
                         innkallingMoterespons = null,
@@ -580,6 +652,7 @@ class DialogmeldingServiceSpek : Spek({
                     val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
                         msgType = "DIALOG_NOTAT",
                         personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
                         conversationRef = null,
                         parentRef = null,
                         innkallingMoterespons = innkallingMoterespons,

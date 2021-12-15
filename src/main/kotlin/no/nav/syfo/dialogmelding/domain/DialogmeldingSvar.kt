@@ -8,6 +8,7 @@ data class DialogmeldingSvar(
     val conversationRef: String?,
     val parentRef: String?,
     val arbeidstakerPersonIdent: PersonIdentNumber,
+    val behandlerPersonIdent: PersonIdentNumber,
     val innkallingDialogmoteSvar: InnkallingDialogmoteSvar?,
 )
 

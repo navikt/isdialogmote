@@ -111,7 +111,7 @@ fun DatabaseInterface.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid
     }.firstOrNull()
 }
 
-const val queryGetMotedeltakerBehandlerVarselOfTypeForArbeidstaker =
+const val queryGetMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler =
     """
         SELECT MOTEDELTAKER_BEHANDLER_VARSEL.*
         FROM MOTEDELTAKER_BEHANDLER_VARSEL INNER JOIN MOTEDELTAKER_BEHANDLER ON (MOTEDELTAKER_BEHANDLER.id = MOTEDELTAKER_BEHANDLER_VARSEL.motedeltaker_behandler_id)
@@ -119,17 +119,20 @@ const val queryGetMotedeltakerBehandlerVarselOfTypeForArbeidstaker =
                                            INNER JOIN MOTEDELTAKER_ARBEIDSTAKER ON (MOTE.id = MOTEDELTAKER_ARBEIDSTAKER.mote_id)
         WHERE MOTEDELTAKER_BEHANDLER_VARSEL.varseltype = ?
         AND MOTEDELTAKER_ARBEIDSTAKER.personident = ?
+        AND MOTEDELTAKER_BEHANDLER.personident = ?
         ORDER BY MOTEDELTAKER_BEHANDLER_VARSEL.created_at DESC
     """
 
-fun DatabaseInterface.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstaker(
+fun DatabaseInterface.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler(
     varselType: MotedeltakerVarselType,
     arbeidstakerPersonIdent: PersonIdentNumber,
+    behandlerPersonIdent: PersonIdentNumber,
 ): PMotedeltakerBehandlerVarsel? {
     return this.connection.use { connection ->
-        connection.prepareStatement(queryGetMotedeltakerBehandlerVarselOfTypeForArbeidstaker).use {
+        connection.prepareStatement(queryGetMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler).use {
             it.setString(1, varselType.name)
             it.setString(2, arbeidstakerPersonIdent.value)
+            it.setString(3, behandlerPersonIdent.value)
             it.executeQuery().toList { toPMotedeltakerBehandlerVarsel() }
         }
     }.firstOrNull()

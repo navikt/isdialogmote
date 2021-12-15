@@ -47,6 +47,7 @@ class BehandlerVarselService(
 
     fun opprettVarselSvar(
         arbeidstakerPersonIdent: PersonIdentNumber,
+        behandlerPersonIdent: PersonIdentNumber,
         varseltype: MotedeltakerVarselType,
         svarType: DialogmoteSvarType,
         svarTekst: String?,
@@ -58,6 +59,7 @@ class BehandlerVarselService(
         val pMotedeltakerBehandlerVarsel = getBehandlerVarselForSvar(
             varseltype = varseltype,
             arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+            behandlerPersonIdent = behandlerPersonIdent,
             conversationRef = conversationRef,
             parentRef = parentRef,
         )
@@ -84,16 +86,19 @@ class BehandlerVarselService(
     private fun getBehandlerVarselForSvar(
         varseltype: MotedeltakerVarselType,
         arbeidstakerPersonIdent: PersonIdentNumber,
+        behandlerPersonIdent: PersonIdentNumber,
         conversationRef: String?,
         parentRef: String?,
     ): PMotedeltakerBehandlerVarsel? {
         return when (varseltype) {
             MotedeltakerVarselType.INNKALT -> getBehandlerVarselInnkalling(
                 arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                behandlerPersonIdent = behandlerPersonIdent,
                 conversationRef = conversationRef,
             )
             MotedeltakerVarselType.NYTT_TID_STED -> getBehandlerVarselNyttTidSted(
                 arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                behandlerPersonIdent = behandlerPersonIdent,
                 conversationRef = conversationRef,
                 parentRef = parentRef,
             )
@@ -103,6 +108,7 @@ class BehandlerVarselService(
 
     private fun getBehandlerVarselInnkalling(
         arbeidstakerPersonIdent: PersonIdentNumber,
+        behandlerPersonIdent: PersonIdentNumber,
         conversationRef: String?,
     ): PMotedeltakerBehandlerVarsel? {
         val varselInnkallingForConversationRef =
@@ -115,14 +121,16 @@ class BehandlerVarselService(
             }
 
         return varselInnkallingForConversationRef?.second
-            ?: database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstaker(
+            ?: database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler(
                 varselType = MotedeltakerVarselType.INNKALT,
-                arbeidstakerPersonIdent = arbeidstakerPersonIdent
+                arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                behandlerPersonIdent = behandlerPersonIdent,
             )
     }
 
     private fun getBehandlerVarselNyttTidSted(
         arbeidstakerPersonIdent: PersonIdentNumber,
+        behandlerPersonIdent: PersonIdentNumber,
         conversationRef: String?,
         parentRef: String?,
     ): PMotedeltakerBehandlerVarsel? {
@@ -144,9 +152,10 @@ class BehandlerVarselService(
             conversationRef = conversationRef
         )
         return varselNyttTidStedForConversationRef
-            ?: database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstaker(
+            ?: database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler(
                 varselType = MotedeltakerVarselType.NYTT_TID_STED,
-                arbeidstakerPersonIdent = arbeidstakerPersonIdent
+                arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                behandlerPersonIdent = behandlerPersonIdent,
             )
     }
 
