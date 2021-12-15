@@ -12,4 +12,5 @@ data class DialogmotedeltakerArbeidstakerVarselDTO(
     val fritekst: String,
     val document: List<DocumentComponentDTO>,
     val brevBestiltTidspunkt: LocalDateTime?,
+    val svar: DialogmotedeltakerArbeidstakerVarselSvarDTO?,
 )

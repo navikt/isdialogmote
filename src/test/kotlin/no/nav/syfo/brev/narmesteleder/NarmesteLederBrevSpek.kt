@@ -7,11 +7,11 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.*
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
@@ -78,7 +78,7 @@ object NarmesteLederBrevSpek : Spek({
                     subject = UserConstants.NARMESTELEDER_FNR_2.value,
                 )
 
-                it("Should return OK") {
+                it("Should return OK when les and response") {
                     val uuid: String
                     val createdDialogmoteUUID: String
                     val createdDialogmoteDeltakerArbeidsgiverUUID: String
@@ -169,7 +169,75 @@ object NarmesteLederBrevSpek : Spek({
                         narmesteLederBrevDTO.shouldNotBeNull()
                         narmesteLederBrevDTO.lestDato.shouldNotBeNull()
                     }
+                    val urlNarmesteLederBrevUUIDRespons =
+                        "$narmesteLederBrevApiBasePath/$uuid$narmesteLederBrevApiResponsPath"
 
+                    with(
+                        handleRequest(HttpMethod.Post, urlNarmesteLederBrevUUIDRespons) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(
+                                objectMapper.writeValueAsString(
+                                    ArbeidstakerResponsDTO(
+                                        svarType = DialogmoteSvarType.KOMMER.name,
+                                        svarTekst = "Det passer bra det",
+                                    )
+                                )
+                            )
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+                    with(
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val narmesteLederBrevList =
+                            objectMapper.readValue<List<NarmesteLederBrevDTO>>(response.content!!)
+                        narmesteLederBrevList.size shouldBeEqualTo 1
+
+                        val narmesteLederBrevDTO = narmesteLederBrevList.firstOrNull()
+                        narmesteLederBrevDTO.shouldNotBeNull()
+                        narmesteLederBrevDTO.svar!!.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
+                    }
+                    with(
+                        handleRequest(HttpMethod.Get, "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath") {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenVeileder))
+                            addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                        dialogmoteList.size shouldBeEqualTo 1
+
+                        val dialogmoteDTO = dialogmoteList.first()
+                        dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                        dialogmoteDTO.arbeidsgiver.varselList[0].svar!!.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
+                        dialogmoteDTO.arbeidsgiver.varselList[0].svar!!.svarTekst shouldBeEqualTo "Det passer bra det"
+                    }
+                    // Repeated invocation should fail
+                    with(
+                        handleRequest(HttpMethod.Post, urlNarmesteLederBrevUUIDRespons) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(
+                                objectMapper.writeValueAsString(
+                                    ArbeidstakerResponsDTO(
+                                        svarType = DialogmoteSvarType.KOMMER.name,
+                                        svarTekst = "Det passer bra det fortsatt",
+                                    )
+                                )
+                            )
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                    }
                     val pdfUrl = "$narmesteLederBrevApiBasePath/$uuid$narmesteLederBrevApiPdfPath"
                     with(
                         handleRequest(HttpMethod.Get, pdfUrl) {

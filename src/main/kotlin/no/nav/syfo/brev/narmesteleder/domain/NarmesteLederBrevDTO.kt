@@ -15,4 +15,11 @@ data class NarmesteLederBrevDTO(
     val videoLink: String?,
     val document: List<DocumentComponentDTO>,
     val virksomhetsnummer: String,
+    val svar: NarmesteLederBrevSvarDTO?,
+)
+
+data class NarmesteLederBrevSvarDTO(
+    val svarTidspunkt: LocalDateTime,
+    val svarType: String,
+    val svarTekst: String?,
 )

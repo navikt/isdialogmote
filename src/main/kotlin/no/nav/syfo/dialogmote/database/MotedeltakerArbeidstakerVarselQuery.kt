@@ -5,8 +5,7 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.util.configuredJacksonMapper
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerArbeidstakerVarsel
-import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.domain.*
 import java.sql.*
 import java.time.Instant
 import java.time.LocalDateTime
@@ -198,6 +197,27 @@ fun Connection.updateMotedeltakerArbeidstakerVarselLestDato(
     }
 }
 
+const val queryUpdateMotedeltakerArbeidstakerVarselRespons =
+    """
+        UPDATE MOTEDELTAKER_ARBEIDSTAKER_VARSEL
+        SET svar_type = ?, svar_tekst=?, svar_tidspunkt=?
+        WHERE uuid = ? AND svar_type IS NULL
+    """
+
+fun Connection.updateMotedeltakerArbeidstakerVarselRespons(
+    motedeltakerArbeidstakerVarselUuid: UUID,
+    svarType: DialogmoteSvarType,
+    svarTekst: String?,
+): Int {
+    return this.prepareStatement(queryUpdateMotedeltakerArbeidstakerVarselRespons).use {
+        it.setString(1, svarType.name)
+        it.setString(2, svarTekst)
+        it.setTimestamp(3, Timestamp.from(Instant.now()))
+        it.setString(4, motedeltakerArbeidstakerVarselUuid.toString())
+        it.executeUpdate()
+    }
+}
+
 fun ResultSet.toPMotedeltakerArbeidstakerVarsel(): PMotedeltakerArbeidstakerVarsel =
     PMotedeltakerArbeidstakerVarsel(
         id = getInt("id"),
@@ -215,4 +235,7 @@ fun ResultSet.toPMotedeltakerArbeidstakerVarsel(): PMotedeltakerArbeidstakerVars
         journalpostId = getString("journalpost_id"),
         brevBestillingsId = getString("brev_bestilling_id"),
         brevBestiltTidspunkt = getTimestamp("brev_bestilt_tidspunkt")?.toLocalDateTime(),
+        svarType = getString("svar_type"),
+        svarTekst = getString("svar_tekst"),
+        svarTidspunkt = getTimestamp("svar_tidspunkt")?.toLocalDateTime(),
     )

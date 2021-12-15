@@ -9,6 +9,7 @@ import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
+import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.domain.*
@@ -54,7 +55,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                 database.addDummyDeltakere()
             }
 
-            describe("Les ArbeidstakerBrev") {
+            describe("Les og respons ArbeidstakerBrev") {
                 val validTokenSelvbetjening = generateJWT(
                     audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
                     issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
@@ -132,6 +133,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                             arbeidstakerBrevDTO.shouldNotBeNull()
                             arbeidstakerBrevDTO!!.digitalt shouldBeEqualTo true
                             arbeidstakerBrevDTO!!.lestDato.shouldNotBeNull()
+                            arbeidstakerBrevDTO!!.svar.shouldBeNull()
                             arbeidstakerBrevDTO!!.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
                             arbeidstakerBrevDTO!!.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             val isTodayBeforeDialogmotetid = LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
@@ -163,6 +165,74 @@ class ArbeidstakerBrevApiSpek : Spek({
                             arbeidstakerBrevUpdatedDTO.lestDato shouldBeEqualTo arbeidstakerBrevDTO!!.lestDato
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                             verify(exactly = 1) { brukernotifikasjonProducer.sendDone(any(), any()) }
+                        }
+                        val urlArbeidstakerBrevUUIDRespons =
+                            "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiResponsPath"
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDRespons) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(
+                                    objectMapper.writeValueAsString(
+                                        ArbeidstakerResponsDTO(
+                                            svarType = DialogmoteSvarType.KOMMER.name,
+                                            svarTekst = "Det passer bra",
+                                        )
+                                    )
+                                )
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        }
+                        with(
+                            handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val arbeidstakerBrevList =
+                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                            arbeidstakerBrevList.size shouldBeEqualTo 1
+
+                            arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
+                            arbeidstakerBrevDTO.shouldNotBeNull()
+                            arbeidstakerBrevDTO!!.svar!!.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
+                        }
+                        with(
+                            handleRequest(HttpMethod.Get, "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath") {
+                                addHeader(Authorization, bearerHeader(validTokenVeileder))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
+                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                            dialogmoteDTO.arbeidstaker.varselList[0].svar!!.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
+                            dialogmoteDTO.arbeidstaker.varselList[0].svar!!.svarTekst shouldBeEqualTo "Det passer bra"
+                        }
+                        // Repeated invocation should fail
+                        with(
+                            handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDRespons) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(
+                                    objectMapper.writeValueAsString(
+                                        ArbeidstakerResponsDTO(
+                                            svarType = DialogmoteSvarType.KOMMER.name,
+                                            svarTekst = "Det passer bra det fortsatt",
+                                        )
+                                    )
+                                )
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                         }
                     }
                 }

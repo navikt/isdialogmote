@@ -16,4 +16,11 @@ data class ArbeidstakerBrevDTO(
     val videoLink: String?,
     val document: List<DocumentComponentDTO>,
     val virksomhetsnummer: String,
+    val svar: ArbeidstakerBrevSvarDTO?,
+)
+
+data class ArbeidstakerBrevSvarDTO(
+    val svarTidspunkt: LocalDateTime,
+    val svarType: String,
+    val svarTekst: String?,
 )

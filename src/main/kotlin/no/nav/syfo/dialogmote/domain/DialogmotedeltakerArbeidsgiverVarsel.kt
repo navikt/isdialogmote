@@ -1,7 +1,8 @@
 package no.nav.syfo.dialogmote.domain
 
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
-import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerArbeidsgiverVarselDTO
+import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevSvarDTO
+import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 import java.util.UUID
@@ -18,6 +19,9 @@ data class DialogmotedeltakerArbeidsgiverVarsel(
     override val lestDatoArbeidsgiver: LocalDateTime?,
     val fritekst: String,
     override val document: List<DocumentComponentDTO>,
+    val svarType: DialogmoteSvarType?,
+    val svarTekst: String?,
+    val svarTidspunkt: LocalDateTime?,
 ) : NarmesteLederBrev
 
 fun DialogmotedeltakerArbeidsgiverVarsel.toDialogmotedeltakerArbeidsgiverVarselDTO() =
@@ -28,6 +32,13 @@ fun DialogmotedeltakerArbeidsgiverVarsel.toDialogmotedeltakerArbeidsgiverVarselD
         lestDato = this.lestDatoArbeidsgiver,
         fritekst = this.fritekst,
         document = this.document,
+        svar = this.svarType?.let {
+            DialogmotedeltakerArbeidsgiverVarselSvarDTO(
+                svarTidspunkt = this.svarTidspunkt!!,
+                svarType = it.name,
+                svarTekst = this.svarTekst,
+            )
+        },
     )
 
 fun DialogmotedeltakerArbeidsgiverVarsel.toNarmesteLederBrevDTO(
@@ -46,4 +57,11 @@ fun DialogmotedeltakerArbeidsgiverVarsel.toNarmesteLederBrevDTO(
     videoLink = dialogmoteTidSted.videoLink,
     virksomhetsnummer = virksomhetsnummer.value,
     document = this.document,
+    svar = this.svarType?.let {
+        NarmesteLederBrevSvarDTO(
+            svarType = it.name,
+            svarTekst = this.svarTekst,
+            svarTidspunkt = this.svarTidspunkt!!,
+        )
+    },
 )
