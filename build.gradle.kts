@@ -115,7 +115,6 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:${Versions.ktor}")
     testImplementation("io.mockk:mockk:${Versions.mockk}")
     testImplementation("org.amshove.kluent:kluent:${Versions.kluent}")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:${Versions.ktor}")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:${Versions.spek}") {
         exclude(group = "org.jetbrains.kotlin")
     }
