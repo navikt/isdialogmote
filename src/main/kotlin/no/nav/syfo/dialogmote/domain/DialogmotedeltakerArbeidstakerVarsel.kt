@@ -5,6 +5,7 @@ import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevSvarDTO
+import no.nav.syfo.client.dokarkiv.domain.DialogmoteDeltakerType
 import no.nav.syfo.dialogmote.api.domain.*
 import java.time.LocalDateTime
 import java.util.*
@@ -79,10 +80,11 @@ fun DialogmotedeltakerArbeidstakerVarsel.toJournalpostRequest(
     personIdent: PersonIdentNumber,
     navn: String,
 ) = createJournalpostRequest(
-    personIdent = personIdent,
-    navn = navn,
+    brukerPersonIdent = personIdent,
+    mottakerPersonIdent = personIdent,
+    mottakerNavn = navn,
     digitalt = this.digitalt,
     dokumentName = this.varselType.toJournalpostTittel(),
-    brevkodeType = this.varselType.toBrevkodeType(),
+    brevkodeType = this.varselType.toBrevkodeType(DialogmoteDeltakerType.ARBEIDSTAKER),
     dokumentPdf = this.pdf,
 )

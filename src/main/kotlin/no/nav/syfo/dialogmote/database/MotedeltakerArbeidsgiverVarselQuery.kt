@@ -123,6 +123,43 @@ fun Connection.updateMotedeltakerArbeidsgiverVarselLestDato(
     }
 }
 
+const val queryGetMotedeltakerArbeidsgiverVarselWithoutJournalpost =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_ARBEIDSGIVER_VARSEL
+        WHERE journalpost_id IS NULL
+        LIMIT 20
+    """
+
+fun DatabaseInterface.getMotedeltakerArbeidsgiverVarselWithoutJournalpost(): List<PMotedeltakerArbeidsgiverVarsel> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerArbeidsgiverVarselWithoutJournalpost).use {
+            it.executeQuery().toList { toPMotedeltakerArbeidsgiverVarsel() }
+        }
+    }
+}
+
+const val queryUpdateMotedeltakerArbeidsgiverVarselJournalpostId =
+    """
+        UPDATE MOTEDELTAKER_ARBEIDSGIVER_VARSEL
+        SET journalpost_id = ?
+        WHERE id = ?
+    """
+
+fun DatabaseInterface.updateMotedeltakerArbeidsgiverVarselJournalpostId(
+    motedeltakerArbeidsgiverVarselId: Int,
+    journalpostId: Int,
+) {
+    this.connection.use { connection ->
+        connection.prepareStatement(queryUpdateMotedeltakerArbeidsgiverVarselJournalpostId).use {
+            it.setInt(1, journalpostId)
+            it.setInt(2, motedeltakerArbeidsgiverVarselId)
+            it.execute()
+        }
+        connection.commit()
+    }
+}
+
 const val queryUpdateMotedeltakerArbeidsgiverVarselRespons =
     """
         UPDATE MOTEDELTAKER_ARBEIDSGIVER_VARSEL

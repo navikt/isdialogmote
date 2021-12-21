@@ -4,6 +4,7 @@ enum class BrukerIdType(
     val value: String,
 ) {
     PERSON_IDENT("FNR"),
+    VIRKSOMHETSNUMMER("ORGNR"),
 }
 
 data class Bruker private constructor(

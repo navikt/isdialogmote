@@ -84,11 +84,12 @@ fun Referat.toJournalforingRequest(
     personIdent: PersonIdentNumber,
     navn: String,
 ) = createJournalpostRequest(
-    personIdent = personIdent,
-    navn = navn,
+    brukerPersonIdent = personIdent,
+    mottakerPersonIdent = personIdent,
+    mottakerNavn = navn,
     digitalt = this.digitalt,
     dokumentName = "Referat fra dialogmøte",
-    brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT,
+    brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AT,
     dokumentPdf = this.pdf
 )
 

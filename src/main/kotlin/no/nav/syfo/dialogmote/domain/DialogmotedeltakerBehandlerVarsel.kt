@@ -1,6 +1,8 @@
 package no.nav.syfo.dialogmote.domain
 
+import no.nav.syfo.client.dokarkiv.domain.*
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerBehandlerVarselDTO
+import no.nav.syfo.domain.PersonIdentNumber
 import java.time.LocalDateTime
 import java.util.*
 
@@ -29,3 +31,18 @@ fun DialogmotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandlerVarselDTO() =
             it.toDialogmotedeltakerBehandlerVarselSvarDTO()
         }
     )
+
+fun DialogmotedeltakerBehandlerVarsel.toJournalpostRequest(
+    brukerPersonIdent: PersonIdentNumber,
+    behandlerPersonIdent: PersonIdentNumber?,
+    behandlerNavn: String,
+) = createJournalpostRequest(
+    brukerPersonIdent = brukerPersonIdent,
+    mottakerPersonIdent = behandlerPersonIdent,
+    mottakerNavn = behandlerNavn,
+    digitalt = true,
+    dokumentName = this.varselType.toJournalpostTittel(),
+    brevkodeType = this.varselType.toBrevkodeType(DialogmoteDeltakerType.BEHANDLER),
+    dokumentPdf = this.pdf,
+    kanal = JournalpostKanal.HELSENETTET,
+)

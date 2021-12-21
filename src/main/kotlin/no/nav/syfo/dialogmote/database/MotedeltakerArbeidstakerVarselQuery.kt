@@ -109,6 +109,7 @@ const val queryGetMotedeltakerArbeidstakerVarselWithoutJournalpost =
         SELECT *
         FROM MOTEDELTAKER_ARBEIDSTAKER_VARSEL
         WHERE journalpost_id IS NULL
+        LIMIT 20
     """
 
 fun DatabaseInterface.getMotedeltakerArbeidstakerVarselWithoutJournalpost(): List<PMotedeltakerArbeidstakerVarsel> {

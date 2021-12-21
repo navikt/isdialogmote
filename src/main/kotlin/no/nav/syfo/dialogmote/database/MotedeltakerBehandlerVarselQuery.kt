@@ -84,6 +84,43 @@ fun DatabaseInterface.getMotedeltakerBehandlerVarselForMotedeltaker(
     }
 }
 
+const val queryGetMotedeltakerBehandlerVarselWithoutJournalpost =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_BEHANDLER_VARSEL
+        WHERE journalpost_id IS NULL
+        LIMIT 20
+    """
+
+fun DatabaseInterface.getMotedeltakerBehandlerVarselWithoutJournalpost(): List<PMotedeltakerBehandlerVarsel> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerBehandlerVarselWithoutJournalpost).use {
+            it.executeQuery().toList { toPMotedeltakerBehandlerVarsel() }
+        }
+    }
+}
+
+const val queryUpdateMotedeltakerBehandlerVarselJournalpostId =
+    """
+        UPDATE MOTEDELTAKER_BEHANDLER_VARSEL
+        SET journalpost_id = ?
+        WHERE id = ?
+    """
+
+fun DatabaseInterface.updateMotedeltakerBehandlerVarselJournalpostId(
+    motedeltakerBehandlerVarselId: Int,
+    journalpostId: Int,
+) {
+    this.connection.use { connection ->
+        connection.prepareStatement(queryUpdateMotedeltakerBehandlerVarselJournalpostId).use {
+            it.setInt(1, journalpostId)
+            it.setInt(2, motedeltakerBehandlerVarselId)
+            it.execute()
+        }
+        connection.commit()
+    }
+}
+
 const val queryGetMotedeltakerBehandlerVarselOfTypeByArbeidstakerAndUuid =
     """
         SELECT MOTEDELTAKER_BEHANDLER.mote_id, MOTEDELTAKER_BEHANDLER_VARSEL.*
