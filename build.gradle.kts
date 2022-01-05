@@ -8,7 +8,7 @@ object Versions {
     const val avro = "1.10.0"
     const val brukernotifikasjonAvro = "1.2021.01.18-11.12-b9c8c40b98d1"
     const val isdialogmoteSchema = "1.0.5"
-    const val confluent = "6.2.1"
+    const val confluent = "6.2.2"
     const val flyway = "8.3.0"
     const val hikari = "5.0.0"
     const val jackson = "2.13.1"
@@ -95,9 +95,12 @@ dependencies {
     testImplementation("com.opentable.components:otj-pg-embedded:${Versions.postgresEmbedded}")
 
     // Kafka
-    implementation("org.apache.kafka:kafka_2.13:${Versions.kafka}")
-    implementation("io.confluent:kafka-avro-serializer:${Versions.confluent}")
-    implementation("io.confluent:kafka-schema-registry:${Versions.confluent}")
+    val excludeLog4j = fun ExternalModuleDependency.() {
+        exclude(group = "log4j")
+    }
+    implementation("org.apache.kafka:kafka_2.13:${Versions.kafka}", excludeLog4j)
+    implementation("io.confluent:kafka-avro-serializer:${Versions.confluent}", excludeLog4j)
+    implementation("io.confluent:kafka-schema-registry:${Versions.confluent}", excludeLog4j)
     implementation("com.github.navikt:brukernotifikasjon-schemas:${Versions.brukernotifikasjonAvro}")
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
     implementation("org.scala-lang:scala-library") {
@@ -105,7 +108,7 @@ dependencies {
             strictly(Versions.scala)
         }
     }
-    testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded}")
+    testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded}", excludeLog4j)
 
     // MQ
     implementation("com.ibm.mq:com.ibm.mq.allclient:${Versions.mq}")
