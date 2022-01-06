@@ -6,6 +6,9 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.application.api.authentication.installContentNegotiation
+import no.nav.syfo.client.ereg.EregClient.Companion.EREG_PATH
+import no.nav.syfo.client.ereg.EregOrganisasjonNavn
+import no.nav.syfo.client.ereg.EregOrganisasjonResponse
 import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient.Companion.DISTRIBUER_JOURNALPOST_PATH
 import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonResponse
 import no.nav.syfo.client.person.oppfolgingstilfelle.KOppfolgingstilfellePersonDTO
@@ -16,6 +19,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_AKTORID
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_AKTORID
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL_AKTORID
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING_AKTORID
+import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.getRandomPort
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -71,6 +75,9 @@ class IsproxyMock {
                 }
                 get("$ISPROXY_SYFOSYKETILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH/${ARBEIDSTAKER_IKKE_VARSEL_AKTORID.value}") {
                     call.respond(kOppfolgingstilfellePersonDTO(ARBEIDSTAKER_IKKE_VARSEL_AKTORID))
+                }
+                get("$EREG_PATH/${VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value}") {
+                    call.respond(EregOrganisasjonResponse(EregOrganisasjonNavn("Butikken", "")))
                 }
             }
         }

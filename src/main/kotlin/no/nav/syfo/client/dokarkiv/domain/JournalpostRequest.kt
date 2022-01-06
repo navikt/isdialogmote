@@ -1,6 +1,7 @@
 package no.nav.syfo.client.dokarkiv.domain
 
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Virksomhetsnummer
 
 const val JOURNALFORENDE_ENHET = 9999
 
@@ -21,6 +22,7 @@ enum class JournalpostKanal(
 ) {
     DITT_NAV("NAV_NO"),
     SENTRAL_UTSKRIFT("S"),
+    HELSENETTET("HELSENETTET"),
 }
 
 data class JournalpostRequest private constructor(
@@ -60,23 +62,30 @@ data class JournalpostRequest private constructor(
 }
 
 fun createJournalpostRequest(
-    personIdent: PersonIdentNumber,
-    navn: String,
+    brukerPersonIdent: PersonIdentNumber,
+    mottakerPersonIdent: PersonIdentNumber? = null,
+    mottakerVirksomhetsnummer: Virksomhetsnummer? = null,
+    mottakerNavn: String,
     brevkodeType: BrevkodeType,
     digitalt: Boolean,
     dokumentName: String,
     dokumentPdf: ByteArray,
+    kanal: JournalpostKanal? = null,
 ): JournalpostRequest {
     val avsenderMottaker = AvsenderMottaker.create(
-        id = personIdent.value,
-        idType = BrukerIdType.PERSON_IDENT,
-        navn = navn,
+        id = mottakerPersonIdent?.value ?: mottakerVirksomhetsnummer?.value,
+        idType = mottakerPersonIdent?.let {
+            BrukerIdType.PERSON_IDENT
+        } ?: mottakerVirksomhetsnummer?.let {
+            BrukerIdType.VIRKSOMHETSNUMMER
+        },
+        navn = mottakerNavn,
     )
     val bruker = Bruker.create(
-        id = personIdent.value,
+        id = brukerPersonIdent.value,
         idType = BrukerIdType.PERSON_IDENT,
     )
-    val kanal = if (digitalt) {
+    val jpKanal = kanal ?: if (digitalt) {
         JournalpostKanal.DITT_NAV
     } else {
         JournalpostKanal.SENTRAL_UTSKRIFT
@@ -96,7 +105,7 @@ fun createJournalpostRequest(
         dokumenter = dokumenter,
         journalfoerendeEnhet = JOURNALFORENDE_ENHET,
         journalpostType = JournalpostType.UTGAAENDE,
-        kanal = kanal,
+        kanal = jpKanal,
         sak = sak,
         tema = JournalpostTema.OPPFOLGING,
     )

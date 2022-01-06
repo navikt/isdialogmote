@@ -1,6 +1,7 @@
 package no.nav.syfo.dialogmote.domain
 
 import no.nav.syfo.client.dokarkiv.domain.BrevkodeType
+import no.nav.syfo.client.dokarkiv.domain.DialogmoteDeltakerType
 
 enum class MotedeltakerVarselType {
     AVLYST,
@@ -26,12 +27,34 @@ fun MotedeltakerVarselType.toJournalpostTittel(): String {
     }
 }
 
-fun MotedeltakerVarselType.toBrevkodeType(): BrevkodeType {
+fun MotedeltakerVarselType.toBrevkodeType(
+    dialogmoteDeltakerType: DialogmoteDeltakerType,
+): BrevkodeType {
     return when (this) {
-        MotedeltakerVarselType.AVLYST -> BrevkodeType.DIALOGMOTE_AVLYSNING
-        MotedeltakerVarselType.INNKALT -> BrevkodeType.DIALOGMOTE_INNKALLING
-        MotedeltakerVarselType.NYTT_TID_STED -> BrevkodeType.DIALOGMOTE_ENDRING_TID_STED
-        MotedeltakerVarselType.REFERAT -> BrevkodeType.DIALOGMOTE_REFERAT
+        MotedeltakerVarselType.AVLYST ->
+            when (dialogmoteDeltakerType) {
+                DialogmoteDeltakerType.ARBEIDSTAKER -> BrevkodeType.DIALOGMOTE_AVLYSNING_AT
+                DialogmoteDeltakerType.ARBEIDSGIVER -> BrevkodeType.DIALOGMOTE_AVLYSNING_AG
+                DialogmoteDeltakerType.BEHANDLER -> BrevkodeType.DIALOGMOTE_AVLYSNING_BEH
+            }
+        MotedeltakerVarselType.INNKALT ->
+            when (dialogmoteDeltakerType) {
+                DialogmoteDeltakerType.ARBEIDSTAKER -> BrevkodeType.DIALOGMOTE_INNKALLING_AT
+                DialogmoteDeltakerType.ARBEIDSGIVER -> BrevkodeType.DIALOGMOTE_INNKALLING_AG
+                DialogmoteDeltakerType.BEHANDLER -> BrevkodeType.DIALOGMOTE_INNKALLING_BEH
+            }
+        MotedeltakerVarselType.NYTT_TID_STED ->
+            when (dialogmoteDeltakerType) {
+                DialogmoteDeltakerType.ARBEIDSTAKER -> BrevkodeType.DIALOGMOTE_ENDRING_TID_STED_AT
+                DialogmoteDeltakerType.ARBEIDSGIVER -> BrevkodeType.DIALOGMOTE_ENDRING_TID_STED_AG
+                DialogmoteDeltakerType.BEHANDLER -> BrevkodeType.DIALOGMOTE_ENDRING_TID_STED_BEH
+            }
+        MotedeltakerVarselType.REFERAT ->
+            when (dialogmoteDeltakerType) {
+                DialogmoteDeltakerType.ARBEIDSTAKER -> BrevkodeType.DIALOGMOTE_REFERAT_AT
+                DialogmoteDeltakerType.ARBEIDSGIVER -> BrevkodeType.DIALOGMOTE_REFERAT_AG
+                DialogmoteDeltakerType.BEHANDLER -> BrevkodeType.DIALOGMOTE_REFERAT_BEH
+            }
     }
 }
 

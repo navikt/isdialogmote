@@ -2,7 +2,10 @@ package no.nav.syfo.dialogmote.domain
 
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevSvarDTO
+import no.nav.syfo.client.dokarkiv.domain.DialogmoteDeltakerType
+import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
 import no.nav.syfo.dialogmote.api.domain.*
+import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 import java.util.UUID
@@ -64,4 +67,18 @@ fun DialogmotedeltakerArbeidsgiverVarsel.toNarmesteLederBrevDTO(
             svarTidspunkt = this.svarTidspunkt!!,
         )
     },
+)
+
+fun DialogmotedeltakerArbeidsgiverVarsel.toJournalpostRequest(
+    brukerPersonIdent: PersonIdentNumber,
+    virksomhetsnummer: Virksomhetsnummer?,
+    virksomhetsnavn: String,
+) = createJournalpostRequest(
+    brukerPersonIdent = brukerPersonIdent,
+    mottakerVirksomhetsnummer = virksomhetsnummer,
+    mottakerNavn = virksomhetsnavn,
+    digitalt = true,
+    dokumentName = this.varselType.toJournalpostTittel(),
+    brevkodeType = this.varselType.toBrevkodeType(DialogmoteDeltakerType.ARBEIDSGIVER),
+    dokumentPdf = this.pdf,
 )
