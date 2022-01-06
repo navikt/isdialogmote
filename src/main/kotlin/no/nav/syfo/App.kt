@@ -32,6 +32,7 @@ const val applicationPort = 8080
 fun main() {
     val applicationState = ApplicationState()
     val logger = LoggerFactory.getLogger("ktor.application")
+    logger.info("isdialogmote starting with java version: " + Runtime.version())
     val environment = Environment()
 
     val kafkaBrukernotifikasjonProducerProperties = kafkaBrukernotifikasjonProducerConfig(environment)

@@ -29,7 +29,7 @@ the application that holds the most current information: [narmesteleder](https:/
 
 #### Requirements
 
-* JDK 11
+* JDK 17
 
 ## Download packages from Github Package Registry
 
