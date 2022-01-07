@@ -177,7 +177,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                                     objectMapper.writeValueAsString(
                                         ArbeidstakerResponsDTO(
                                             svarType = DialogmoteSvarType.KOMMER.name,
-                                            svarTekst = "Det passer bra",
+                                            svarTekst = "Det passer bra();<code>, med nørskeÆØÅ bokstaver og noen spesialtegn %!()?.",
                                         )
                                     )
                                 )
@@ -215,7 +215,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
                             dialogmoteDTO.arbeidstaker.varselList[0].svar!!.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
-                            dialogmoteDTO.arbeidstaker.varselList[0].svar!!.svarTekst shouldBeEqualTo "Det passer bra"
+                            dialogmoteDTO.arbeidstaker.varselList[0].svar!!.svarTekst shouldBeEqualTo "Det passer bra();_code_, med nørskeÆØÅ bokstaver og noen spesialtegn %!()?."
                         }
                         // Repeated invocation should fail
                         with(
