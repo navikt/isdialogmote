@@ -162,15 +162,23 @@ class DialogmotedeltakerService(
         if (brevIsReferat) {
             throw IllegalArgumentException("Cannot store response for referat")
         }
-
         return database.connection.use { connection ->
             val updateCount = connection.updateMotedeltakerArbeidstakerVarselRespons(
                 motedeltakerArbeidstakerVarselUuid = brevUuid,
                 svarType = svarType,
-                svarTekst = svarTekst,
+                svarTekst = sanitizeTextInput(svarTekst, 300),
             )
             connection.commit()
             updateCount > 0
+        }
+    }
+
+    private fun sanitizeTextInput(
+        tekst: String?,
+        truncate: Int,
+    ): String? {
+        return tekst?.let {
+            Regex("[^A-Za-z0-9 æøåÆØÅ%!()?.,;:/-]").replace(it.take(truncate), "_")
         }
     }
 
@@ -188,7 +196,7 @@ class DialogmotedeltakerService(
             val updateCount = connection.updateMotedeltakerArbeidsgiverVarselRespons(
                 motedeltakerArbeidsgiverVarselUuid = brevUuid,
                 svarType = svarType,
-                svarTekst = svarTekst,
+                svarTekst = sanitizeTextInput(svarTekst, 300),
             )
             connection.commit()
             updateCount > 0

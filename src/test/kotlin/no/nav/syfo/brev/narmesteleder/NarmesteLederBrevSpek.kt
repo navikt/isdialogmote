@@ -180,7 +180,7 @@ object NarmesteLederBrevSpek : Spek({
                                 objectMapper.writeValueAsString(
                                     ArbeidstakerResponsDTO(
                                         svarType = DialogmoteSvarType.KOMMER.name,
-                                        svarTekst = "Det passer bra det",
+                                        svarTekst = "Det passer bra - det/også <code>",
                                     )
                                 )
                             )
@@ -219,7 +219,7 @@ object NarmesteLederBrevSpek : Spek({
                         val dialogmoteDTO = dialogmoteList.first()
                         dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
                         dialogmoteDTO.arbeidsgiver.varselList[0].svar!!.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
-                        dialogmoteDTO.arbeidsgiver.varselList[0].svar!!.svarTekst shouldBeEqualTo "Det passer bra det"
+                        dialogmoteDTO.arbeidsgiver.varselList[0].svar!!.svarTekst shouldBeEqualTo "Det passer bra - det/også _code_"
                     }
                     // Repeated invocation should fail
                     with(
