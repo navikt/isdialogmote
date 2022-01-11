@@ -8,6 +8,7 @@ import no.nav.syfo.dialogmote.database.domain.PReferat
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.NewReferat
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.util.configuredJacksonMapper
 import java.sql.Connection
 import java.sql.ResultSet
@@ -68,7 +69,7 @@ fun ResultSet.toPReferat(): PReferat =
         narmesteLederNavn = getString("narmeste_leder_navn"),
         document = mapper.readValue(getString("document"), object : TypeReference<List<DocumentComponentDTO>>() {}),
         pdf = getBytes("pdf"),
-        journalpostId = getString("journalpost_id"),
+        journalpostIdArbeidstaker = getString("journalpost_id"),
         lestDatoArbeidstaker = getTimestamp("lest_dato_arbeidstaker")?.toLocalDateTime(),
         lestDatoArbeidsgiver = getTimestamp("lest_dato_arbeidsgiver")?.toLocalDateTime(),
         brevBestillingsId = getString("brev_bestilling_id"),
@@ -185,17 +186,18 @@ fun Connection.createNewReferat(
     return Pair(referatId, referatUuid)
 }
 
-const val queryGetReferatWithoutJournalpost =
+const val queryGetReferatWithoutJournalpostArbeidstaker =
     """
         SELECT MOTEDELTAKER_ARBEIDSTAKER.PERSONIDENT, MOTE_REFERAT.*
         FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
                   INNER JOIN MOTEDELTAKER_ARBEIDSTAKER ON (MOTE.ID = MOTEDELTAKER_ARBEIDSTAKER.MOTE_ID) 
         WHERE MOTE_REFERAT.journalpost_id IS NULL
+        LIMIT 20
     """
 
-fun DatabaseInterface.getReferatWithoutJournalpostList(): List<Pair<PersonIdentNumber, PReferat>> {
+fun DatabaseInterface.getReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdentNumber, PReferat>> {
     return this.connection.use { connection ->
-        connection.prepareStatement(queryGetReferatWithoutJournalpost).use {
+        connection.prepareStatement(queryGetReferatWithoutJournalpostArbeidstaker).use {
             it.executeQuery().toList {
                 Pair(PersonIdentNumber(getString(1)), toPReferat())
             }
@@ -203,19 +205,99 @@ fun DatabaseInterface.getReferatWithoutJournalpostList(): List<Pair<PersonIdentN
     }
 }
 
-const val queryUpdateReferatJournalpostId =
+const val queryGetReferatWithoutJournalpostArbeidsgiver =
+    """
+        SELECT MOTEDELTAKER_ARBEIDSGIVER.VIRKSOMHETSNUMMER, MOTE_REFERAT.*
+        FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
+                  INNER JOIN MOTEDELTAKER_ARBEIDSGIVER ON (MOTE.ID = MOTEDELTAKER_ARBEIDSGIVER.MOTE_ID) 
+        WHERE MOTE_REFERAT.journalpost_ag_id IS NULL
+        LIMIT 20
+    """
+
+fun DatabaseInterface.getReferatWithoutJournalpostArbeidsgiverList(): List<Pair<Virksomhetsnummer, PReferat>> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetReferatWithoutJournalpostArbeidsgiver).use {
+            it.executeQuery().toList {
+                Pair(Virksomhetsnummer(getString(1)), toPReferat())
+            }
+        }
+    }
+}
+
+const val queryGetReferatWithoutJournalpostBehandler =
+    """
+        SELECT MOTE_REFERAT.*
+        FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
+                  INNER JOIN MOTEDELTAKER_BEHANDLER ON (MOTE.ID = MOTEDELTAKER_BEHANDLER.MOTE_ID) 
+        WHERE MOTE_REFERAT.journalpost_beh_id IS NULL
+        LIMIT 20
+    """
+
+fun DatabaseInterface.getReferatWithoutJournalpostBehandlerList(): List<PReferat> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetReferatWithoutJournalpostBehandler).use {
+            it.executeQuery().toList {
+                toPReferat()
+            }
+        }
+    }
+}
+
+const val queryUpdateReferatJournalpostIdArbeidstaker =
     """
         UPDATE MOTE_REFERAT
         SET journalpost_id = ?
         WHERE id = ?
     """
 
-fun DatabaseInterface.updateReferatJournalpostId(
+fun DatabaseInterface.updateReferatJournalpostIdArbeidstaker(
     referatId: Int,
     journalpostId: Int,
 ) {
     this.connection.use { connection ->
-        connection.prepareStatement(queryUpdateReferatJournalpostId).use {
+        connection.prepareStatement(queryUpdateReferatJournalpostIdArbeidstaker).use {
+            it.setInt(1, journalpostId)
+            it.setInt(2, referatId)
+            it.execute()
+        }
+        connection.commit()
+    }
+}
+
+const val queryUpdateReferatJournalpostIdArbeidsgiver =
+    """
+        UPDATE MOTE_REFERAT
+        SET journalpost_ag_id = ?
+        WHERE id = ?
+    """
+
+fun DatabaseInterface.updateReferatJournalpostIdArbeidsgiver(
+    referatId: Int,
+    journalpostId: Int,
+) {
+    this.connection.use { connection ->
+        connection.prepareStatement(queryUpdateReferatJournalpostIdArbeidsgiver).use {
+            it.setInt(1, journalpostId)
+            it.setInt(2, referatId)
+            it.execute()
+        }
+        connection.commit()
+    }
+}
+
+const val queryUpdateReferatJournalpostIdBehandler =
+    """
+        UPDATE MOTE_REFERAT
+        SET journalpost_beh_id = ?
+        WHERE id = ?
+    """
+
+fun DatabaseInterface.updateReferatJournalpostIdBehandler(
+    referatId: Int,
+    journalpostId: Int,
+) {
+    this.connection.use { connection ->
+        connection.prepareStatement(queryUpdateReferatJournalpostIdBehandler).use {
             it.setInt(1, journalpostId)
             it.setInt(2, referatId)
             it.execute()

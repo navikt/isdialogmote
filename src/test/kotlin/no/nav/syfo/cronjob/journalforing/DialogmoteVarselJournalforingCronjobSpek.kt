@@ -26,6 +26,7 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.UUID
 
 class DialogmoteVarselJournalforingCronjobSpek : Spek({
 
@@ -186,10 +187,24 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                     }
                     runBlocking {
                         val result = DialogmoteCronjobResult()
-                        dialogmoteVarselJournalforingCronjob.referatJournalforingJob(result)
+                        dialogmoteVarselJournalforingCronjob.referatJournalforingJobArbeidstaker(result)
 
                         result.failed shouldBeEqualTo 0
                         result.updated shouldBeEqualTo 1
+                    }
+                    runBlocking {
+                        val result = DialogmoteCronjobResult()
+                        dialogmoteVarselJournalforingCronjob.referatJournalforingJobArbeidsgiver(result)
+
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 1
+                    }
+                    runBlocking {
+                        val result = DialogmoteCronjobResult()
+                        dialogmoteVarselJournalforingCronjob.referatJournalforingJobBehandler(result)
+
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 0
                     }
                 }
                 it("should update journalpost when behandler") {
@@ -264,6 +279,28 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                     runBlocking {
                         val result = DialogmoteCronjobResult()
                         dialogmoteVarselJournalforingCronjob.dialogmoteBehandlerVarselJournalforingJob(result)
+
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 1
+                    }
+                    database.updateMoteStatus(UUID.fromString(createdDialogmoteUUID), DialogmoteStatus.NYTT_TID_STED)
+                    val urlMoteUUIDFerdigstill =
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                    val ferdigstillDialogMoteDto = generateNewReferatDTO(behandlerOppgave = "Behandler skal gjøre sånn")
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(ferdigstillDialogMoteDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    runBlocking {
+                        val result = DialogmoteCronjobResult()
+                        dialogmoteVarselJournalforingCronjob.referatJournalforingJobBehandler(result)
 
                         result.failed shouldBeEqualTo 0
                         result.updated shouldBeEqualTo 1
@@ -345,7 +382,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                     }
                     runBlocking {
                         val result = DialogmoteCronjobResult()
-                        dialogmoteVarselJournalforingCronjob.referatJournalforingJob(result)
+                        dialogmoteVarselJournalforingCronjob.referatJournalforingJobArbeidstaker(result)
 
                         result.failed shouldBeEqualTo 0
                         result.updated shouldBeEqualTo 0
