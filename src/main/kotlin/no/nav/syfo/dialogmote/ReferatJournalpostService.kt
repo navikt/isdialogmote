@@ -2,16 +2,17 @@ package no.nav.syfo.dialogmote
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.database.domain.toDialogmoteDeltakerAnnen
-import no.nav.syfo.dialogmote.database.domain.toReferat
+import no.nav.syfo.dialogmote.database.domain.*
+import no.nav.syfo.dialogmote.domain.DialogmotedeltakerBehandler
 import no.nav.syfo.dialogmote.domain.Referat
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Virksomhetsnummer
 
 class ReferatJournalpostService(
     private val database: DatabaseInterface
 ) {
-    fun getDialogmoteReferatJournalforingList(): List<Pair<PersonIdentNumber, Referat>> {
-        return database.getReferatWithoutJournalpostList().map { (personIdentNumber, pReferat) ->
+    fun getDialogmoteReferatJournalforingListArbeidstaker(): List<Pair<PersonIdentNumber, Referat>> {
+        return database.getReferatWithoutJournalpostArbeidstakerList().map { (personIdentNumber, pReferat) ->
             val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id).map {
                 it.toDialogmoteDeltakerAnnen()
             }
@@ -29,8 +30,50 @@ class ReferatJournalpostService(
         }
     }
 
+    fun getDialogmoteReferatJournalforingListArbeidsgiver(): List<Triple<Virksomhetsnummer, PersonIdentNumber, Referat>> {
+        return database.getReferatWithoutJournalpostArbeidsgiverList().map { (virksomhetsnummer, pReferat) ->
+            val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id).map {
+                it.toDialogmoteDeltakerAnnen()
+            }
+            val motedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(pReferat.moteId)
+            val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
+
+            Triple(
+                first = virksomhetsnummer,
+                second = motedeltakerArbeidstaker.personIdent,
+                third = pReferat.toReferat(
+                    andreDeltakere = andreDeltakere,
+                    motedeltakerArbeidstakerId = motedeltakerArbeidstaker.id,
+                    motedeltakerArbeidsgiverId = motedeltakerArbeidsgiverId
+                )
+            )
+        }
+    }
+
+    fun getDialogmoteReferatJournalforingListBehandler(): List<Triple<PersonIdentNumber, DialogmotedeltakerBehandler, Referat>> {
+        return database.getReferatWithoutJournalpostBehandlerList().map { pReferat ->
+            val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id).map {
+                it.toDialogmoteDeltakerAnnen()
+            }
+            val motedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(pReferat.moteId)
+            val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
+            val motedeltakerBehandler = database.getMoteDeltakerBehandler(pReferat.moteId)!!
+                .toDialogmotedeltakerBehandler(emptyList())
+
+            Triple(
+                first = motedeltakerArbeidstaker.personIdent,
+                second = motedeltakerBehandler,
+                third = pReferat.toReferat(
+                    andreDeltakere = andreDeltakere,
+                    motedeltakerArbeidstakerId = motedeltakerArbeidstaker.id,
+                    motedeltakerArbeidsgiverId = motedeltakerArbeidsgiverId
+                )
+            )
+        }
+    }
+
     fun getDialogmoteReferatForJournalpostDistribusjonList(): List<Pair<Int, String?>> {
-        return database.getReferatForFysiskBrevUtsending().map { Pair(it.id, it.journalpostId) }
+        return database.getReferatForFysiskBrevUtsending().map { Pair(it.id, it.journalpostIdArbeidstaker) }
     }
 
     fun updateBestillingsId(
@@ -43,11 +86,31 @@ class ReferatJournalpostService(
         )
     }
 
-    fun updateJournalpostIdForReferat(
+    fun updateJournalpostIdArbeidstakerForReferat(
         referat: Referat,
         journalpostId: Int,
     ) {
-        database.updateReferatJournalpostId(
+        database.updateReferatJournalpostIdArbeidstaker(
+            referatId = referat.id,
+            journalpostId = journalpostId
+        )
+    }
+
+    fun updateJournalpostIdArbeidsgiverForReferat(
+        referat: Referat,
+        journalpostId: Int,
+    ) {
+        database.updateReferatJournalpostIdArbeidsgiver(
+            referatId = referat.id,
+            journalpostId = journalpostId
+        )
+    }
+
+    fun updateJournalpostIdBehandlerForReferat(
+        referat: Referat,
+        journalpostId: Int,
+    ) {
+        database.updateReferatJournalpostIdBehandler(
             referatId = referat.id,
             journalpostId = journalpostId
         )

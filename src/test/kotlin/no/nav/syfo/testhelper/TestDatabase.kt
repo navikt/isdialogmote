@@ -3,6 +3,7 @@ package no.nav.syfo.testhelper
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.dialogmote.database.*
+import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 import java.util.UUID
@@ -105,6 +106,16 @@ fun DatabaseInterface.addDummyDeltakere() {
     }
 }
 
+fun DatabaseInterface.updateMoteStatus(
+    moteUUID: UUID,
+    newMoteStatus: DialogmoteStatus,
+) {
+    val moteId = getDialogmote(moteUUID).first().id
+    this.connection.use {
+        it.updateMoteStatus(true, moteId, newMoteStatus)
+    }
+}
+
 fun DatabaseInterface.setReferatBrevBestilt(
     referatUuid: String,
     bestillingsId: String,
@@ -132,7 +143,7 @@ fun DatabaseInterface.setReferatJournalfort(
     journalpostId: Int,
 ) {
     val referatId = this.getReferat(UUID.fromString(referatUuid)).first().id
-    this.updateReferatJournalpostId(
+    this.updateReferatJournalpostIdArbeidstaker(
         referatId,
         journalpostId
     )

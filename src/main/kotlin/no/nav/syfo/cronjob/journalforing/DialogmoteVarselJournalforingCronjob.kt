@@ -30,7 +30,9 @@ class DialogmoteVarselJournalforingCronjob(
         dialogmoteArbeidstakerVarselJournalforingJob(journalforingResult)
         dialogmoteArbeidsgiverVarselJournalforingJob(journalforingResult)
         dialogmoteBehandlerVarselJournalforingJob(journalforingResult)
-        referatJournalforingJob(journalforingResult)
+        referatJournalforingJobArbeidstaker(journalforingResult)
+        referatJournalforingJobArbeidsgiver(journalforingResult)
+        referatJournalforingJobBehandler(journalforingResult)
 
         COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE.increment(journalforingResult.updated.toDouble())
         COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL.increment(journalforingResult.failed.toDouble())
@@ -130,22 +132,79 @@ class DialogmoteVarselJournalforingCronjob(
         }
     }
 
-    suspend fun referatJournalforingJob(
+    suspend fun referatJournalforingJobArbeidstaker(
         journalforingResult: DialogmoteCronjobResult
     ) {
-        val referatList = referatJournalpostService.getDialogmoteReferatJournalforingList()
+        val referatList = referatJournalpostService.getDialogmoteReferatJournalforingListArbeidstaker()
         referatList.forEach { (personIdentNumber, referat) ->
             try {
                 val navn = pdlClient.navn(personIdentNumber)
                 val journalpostId = dokarkivClient.journalfor(
-                    journalpostRequest = referat.toJournalforingRequest(
+                    journalpostRequest = referat.toJournalforingRequestArbeidstaker(
                         personIdent = personIdentNumber,
                         navn = navn,
                     )
                 )?.journalpostId
 
                 journalpostId?.let { it ->
-                    referatJournalpostService.updateJournalpostIdForReferat(
+                    referatJournalpostService.updateJournalpostIdArbeidstakerForReferat(
+                        referat,
+                        it,
+                    )
+                    journalforingResult.updated++
+                } ?: throw RuntimeException("Failed to Journalfor Referat: response missing JournalpostId")
+            } catch (e: Exception) {
+                log.error("Exception caught while attempting Journalforing of Referat", e)
+                journalforingResult.failed++
+            }
+        }
+    }
+
+    suspend fun referatJournalforingJobArbeidsgiver(
+        journalforingResult: DialogmoteCronjobResult
+    ) {
+        val referatList = referatJournalpostService.getDialogmoteReferatJournalforingListArbeidsgiver()
+        referatList.forEach { (virksomhetsnummer, personIdent, referat) ->
+            try {
+                val virksomhetsnavn = eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer)
+                val journalpostId = dokarkivClient.journalfor(
+                    journalpostRequest = referat.toJournalforingRequestArbeidsgiver(
+                        brukerPersonIdent = personIdent,
+                        virksomhetsnummer = virksomhetsnummer,
+                        virksomhetsnavn = virksomhetsnavn?.virksomhetsnavn ?: "",
+                    )
+                )?.journalpostId
+
+                journalpostId?.let { it ->
+                    referatJournalpostService.updateJournalpostIdArbeidsgiverForReferat(
+                        referat,
+                        it,
+                    )
+                    journalforingResult.updated++
+                } ?: throw RuntimeException("Failed to Journalfor Referat: response missing JournalpostId")
+            } catch (e: Exception) {
+                log.error("Exception caught while attempting Journalforing of Referat", e)
+                journalforingResult.failed++
+            }
+        }
+    }
+
+    suspend fun referatJournalforingJobBehandler(
+        journalforingResult: DialogmoteCronjobResult
+    ) {
+        val referatList = referatJournalpostService.getDialogmoteReferatJournalforingListBehandler()
+        referatList.forEach { (personIdentNumber, behandler, referat) ->
+            try {
+                val journalpostId = dokarkivClient.journalfor(
+                    journalpostRequest = referat.toJournalforingRequestBehandler(
+                        brukerPersonIdent = personIdentNumber,
+                        behandlerPersonIdent = behandler.personIdent,
+                        behandlerNavn = behandler.behandlerNavn,
+                    )
+                )?.journalpostId
+
+                journalpostId?.let { it ->
+                    referatJournalpostService.updateJournalpostIdBehandlerForReferat(
                         referat,
                         it,
                     )

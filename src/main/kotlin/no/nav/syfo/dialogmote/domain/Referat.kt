@@ -2,8 +2,7 @@ package no.nav.syfo.dialogmote.domain
 
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
-import no.nav.syfo.client.dokarkiv.domain.BrevkodeType
-import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
+import no.nav.syfo.client.dokarkiv.domain.*
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerAnnenDTO
 import no.nav.syfo.dialogmote.api.domain.ReferatDTO
 import no.nav.syfo.domain.PersonIdentNumber
@@ -29,7 +28,7 @@ data class Referat(
     val narmesteLederNavn: String,
     override val document: List<DocumentComponentDTO>,
     override val pdf: ByteArray,
-    val journalpostId: String?,
+    val journalpostIdArbeidstaker: String?,
     override val lestDatoArbeidstaker: LocalDateTime?,
     override val lestDatoArbeidsgiver: LocalDateTime?,
     val andreDeltakere: List<DialogmotedeltakerAnnen>,
@@ -80,7 +79,7 @@ fun DialogmotedeltakerAnnen.toDialogmotedeltakerAnnenDTO(): DialogmotedeltakerAn
     )
 }
 
-fun Referat.toJournalforingRequest(
+fun Referat.toJournalforingRequestArbeidstaker(
     personIdent: PersonIdentNumber,
     navn: String,
 ) = createJournalpostRequest(
@@ -91,6 +90,35 @@ fun Referat.toJournalforingRequest(
     dokumentName = "Referat fra dialogmøte",
     brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AT,
     dokumentPdf = this.pdf
+)
+
+fun Referat.toJournalforingRequestArbeidsgiver(
+    brukerPersonIdent: PersonIdentNumber,
+    virksomhetsnummer: Virksomhetsnummer?,
+    virksomhetsnavn: String,
+) = createJournalpostRequest(
+    brukerPersonIdent = brukerPersonIdent,
+    mottakerVirksomhetsnummer = virksomhetsnummer,
+    mottakerNavn = virksomhetsnavn,
+    digitalt = this.digitalt,
+    dokumentName = "Referat fra dialogmøte",
+    brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AG,
+    dokumentPdf = this.pdf
+)
+
+fun Referat.toJournalforingRequestBehandler(
+    brukerPersonIdent: PersonIdentNumber,
+    behandlerPersonIdent: PersonIdentNumber?,
+    behandlerNavn: String,
+) = createJournalpostRequest(
+    brukerPersonIdent = brukerPersonIdent,
+    mottakerPersonIdent = behandlerPersonIdent,
+    mottakerNavn = behandlerNavn,
+    digitalt = this.digitalt,
+    dokumentName = "Referat fra dialogmøte",
+    brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_BEH,
+    dokumentPdf = this.pdf,
+    kanal = JournalpostKanal.HELSENETTET,
 )
 
 fun Referat.toArbeidstakerBrevDTO(
