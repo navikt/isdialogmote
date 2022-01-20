@@ -27,6 +27,7 @@ fun Route.registerDialogmoteEnhetApiV2(
         get("$dialogmoteApiEnhetUrlPath/{$dialogmoteApienhetNrParam}") {
             val callId = getCallId()
             try {
+                val inkluderHistoriske = call.request.queryParameters["inkluderHistoriske"] == "true"
                 val enhetNr = call.parameters[dialogmoteApienhetNrParam]?.let { navEnhet -> EnhetNr(navEnhet) }
                     ?: throw IllegalArgumentException("No EnhetNr request param supplied")
 
@@ -40,7 +41,9 @@ fun Route.registerDialogmoteEnhetApiV2(
                 )
                 when (accessToEnhet) {
                     true -> {
-                        val dialogmoteList = dialogmoteService.getDialogmoteList(
+                        val dialogmoteList = if (inkluderHistoriske) dialogmoteService.getDialogmoteList(
+                            enhetNr = enhetNr,
+                        ) else dialogmoteService.getDialogmoteUnfinishedList(
                             enhetNr = enhetNr,
                         )
                         val personListWithVeilederAccess = dialogmoteTilgangService.hasAccessToDialogmotePersonList(

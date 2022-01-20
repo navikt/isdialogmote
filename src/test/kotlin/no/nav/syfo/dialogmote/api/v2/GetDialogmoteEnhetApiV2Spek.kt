@@ -10,6 +10,7 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
+import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
@@ -49,10 +50,12 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
             beforeEachTest {
                 justRun { mqSenderMock.sendMQMessage(any(), any()) }
                 justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                database.dropData()
             }
 
             describe("Get Dialogmoter for EnhetNr") {
                 val urlEnhetAccess = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR.value}"
+                val urlEnhetAccessIncludeHistoriske = "$urlEnhetAccess?inkluderHistoriske=true"
                 val urlEnhetNoAccess = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR_NO_ACCESS.value}"
                 val validTokenV2 = generateJWT(
                     externalMockEnvironment.environment.aadAppClient,
@@ -63,7 +66,7 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                     val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
                     val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
 
-                    it("should return DialogmoteList if request is successful") {
+                    it("should return DialogmoteList with unfinished dialogmote if request is successful") {
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
                                 addHeader(Authorization, bearerHeader(validTokenV2))
@@ -80,6 +83,20 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                         database.connection.use { connection ->
                             connection.createNewDialogmoteWithReferences(
                                 newDialogmote = newDialogmoteAdressebeskyttet
+                            )
+                        }
+                        val newDialogmoteFerdigstilt =
+                            generateNewDialogmote(ARBEIDSTAKER_FNR, status = DialogmoteStatus.FERDIGSTILT)
+                        database.connection.use { connection ->
+                            connection.createNewDialogmoteWithReferences(
+                                newDialogmote = newDialogmoteFerdigstilt
+                            )
+                        }
+                        val newDialogmoteAvlyst =
+                            generateNewDialogmote(ARBEIDSTAKER_FNR, status = DialogmoteStatus.AVLYST)
+                        database.connection.use { connection ->
+                            connection.createNewDialogmoteWithReferences(
+                                newDialogmote = newDialogmoteAvlyst
                             )
                         }
 
@@ -101,6 +118,58 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
 
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+                        }
+                    }
+
+                    it("should return DialogmoteList with all dialogmoter if request with inkluderHistoriske parameter is successful") {
+                        with(
+                            handleRequest(HttpMethod.Post, urlMote) {
+                                addHeader(Authorization, bearerHeader(validTokenV2))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            clearMocks(mqSenderMock)
+                        }
+
+                        val newDialogmoteAdressebeskyttet = generateNewDialogmote(ARBEIDSTAKER_ADRESSEBESKYTTET)
+                        database.connection.use { connection ->
+                            connection.createNewDialogmoteWithReferences(
+                                newDialogmote = newDialogmoteAdressebeskyttet
+                            )
+                        }
+                        val newDialogmoteFerdigstilt =
+                            generateNewDialogmote(ARBEIDSTAKER_FNR, status = DialogmoteStatus.FERDIGSTILT)
+                        database.connection.use { connection ->
+                            connection.createNewDialogmoteWithReferences(
+                                newDialogmote = newDialogmoteFerdigstilt
+                            )
+                        }
+                        val newDialogmoteAvlyst =
+                            generateNewDialogmote(ARBEIDSTAKER_FNR, status = DialogmoteStatus.AVLYST)
+                        database.connection.use { connection ->
+                            connection.createNewDialogmoteWithReferences(
+                                newDialogmote = newDialogmoteAvlyst
+                            )
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlEnhetAccessIncludeHistoriske) {
+                                addHeader(Authorization, bearerHeader(validTokenV2))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 3
+                            dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.status == DialogmoteStatus.INNKALT.name } shouldBeEqualTo true
+                            dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.status == DialogmoteStatus.AVLYST.name } shouldBeEqualTo true
+                            dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.status == DialogmoteStatus.FERDIGSTILT.name } shouldBeEqualTo true
                         }
                     }
                 }
