@@ -1,0 +1,1 @@
+CREATE INDEX IX_MOTE_TILDELT_ENHET_STATUS ON MOTE (tildelt_enhet, status);

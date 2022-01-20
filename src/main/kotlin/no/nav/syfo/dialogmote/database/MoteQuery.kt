@@ -2,14 +2,13 @@ package no.nav.syfo.dialogmote.database
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.dialogmote.domain.TidStedDTO
 import no.nav.syfo.dialogmote.database.domain.PDialogmote
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdentNumber
 import java.sql.*
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 const val queryGetDialogmoteForId =
     """
@@ -65,7 +64,6 @@ const val queryGetDialogmoteListForEnhetNr =
     """
         SELECT *
         FROM MOTE
-        INNER JOIN MOTEDELTAKER_ARBEIDSTAKER on MOTEDELTAKER_ARBEIDSTAKER.mote_id = MOTE.id
         WHERE tildelt_enhet = ?
         ORDER BY MOTE.created_at DESC
     """
@@ -73,6 +71,23 @@ const val queryGetDialogmoteListForEnhetNr =
 fun DatabaseInterface.getDialogmoteList(enhetNr: EnhetNr): List<PDialogmote> {
     return connection.use { connection ->
         connection.prepareStatement(queryGetDialogmoteListForEnhetNr).use {
+            it.setString(1, enhetNr.value)
+            it.executeQuery().toList { toPDialogmote() }
+        }
+    }
+}
+
+const val queryGetDialogmoteUnfinishedListForEnhetNr =
+    """
+        SELECT *
+        FROM MOTE
+        WHERE tildelt_enhet = ? AND status IN ('INNKALT', 'NYTT_TID_STED')
+        ORDER BY MOTE.created_at DESC
+    """
+
+fun DatabaseInterface.getDialogmoteUnfinishedList(enhetNr: EnhetNr): List<PDialogmote> {
+    return connection.use { connection ->
+        connection.prepareStatement(queryGetDialogmoteUnfinishedListForEnhetNr).use {
             it.setString(1, enhetNr.value)
             it.executeQuery().toList { toPDialogmote() }
         }

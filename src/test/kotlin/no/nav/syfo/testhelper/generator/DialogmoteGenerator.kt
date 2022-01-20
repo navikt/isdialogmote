@@ -25,15 +25,14 @@ fun generateMotedeltakerArbeidsgiver() = NewDialogmotedeltakerArbeidsgiver(
 )
 
 fun generateNewDialogmote(
-    personIdentNumber: PersonIdentNumber
-): NewDialogmote {
-    return NewDialogmote(
-        status = DialogmoteStatus.INNKALT,
-        opprettetAv = UserConstants.VEILEDER_IDENT,
-        tildeltVeilederIdent = UserConstants.VEILEDER_IDENT,
-        tildeltEnhet = UserConstants.ENHET_NR.value,
-        arbeidstaker = generateMotedeltakerArbeidstaker(personIdentNumber),
-        arbeidsgiver = generateMotedeltakerArbeidsgiver(),
-        tidSted = generateNewDialogmoteTidSted()
-    )
-}
+    personIdentNumber: PersonIdentNumber,
+    status: DialogmoteStatus = DialogmoteStatus.INNKALT,
+): NewDialogmote = NewDialogmote(
+    status = status,
+    opprettetAv = UserConstants.VEILEDER_IDENT,
+    tildeltVeilederIdent = UserConstants.VEILEDER_IDENT,
+    tildeltEnhet = UserConstants.ENHET_NR.value,
+    arbeidstaker = generateMotedeltakerArbeidstaker(personIdentNumber),
+    arbeidsgiver = generateMotedeltakerArbeidsgiver(),
+    tidSted = generateNewDialogmoteTidSted()
+)

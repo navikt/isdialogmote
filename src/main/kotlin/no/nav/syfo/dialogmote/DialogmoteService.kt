@@ -59,6 +59,12 @@ class DialogmoteService(
         }
     }
 
+    fun getDialogmoteUnfinishedList(enhetNr: EnhetNr): List<Dialogmote> {
+        return database.getDialogmoteUnfinishedList(enhetNr).map { pDialogmote ->
+            extendDialogmoteRelations(pDialogmote)
+        }
+    }
+
     private fun extendDialogmoteRelations(
         pDialogmote: PDialogmote,
     ): Dialogmote {
