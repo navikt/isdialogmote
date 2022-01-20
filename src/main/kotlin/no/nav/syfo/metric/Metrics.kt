@@ -1,6 +1,7 @@
 package no.nav.syfo.metric
 
 import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.Timer
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 
@@ -59,4 +60,21 @@ val COUNT_CALL_PDL_SUCCESS: Counter = Counter.builder(CALL_PDL_SUCCESS)
     .register(METRICS_REGISTRY)
 val COUNT_CALL_PDL_FAIL: Counter = Counter.builder(CALL_PDL_FAIL)
     .description("Counts the number of failed calls to pdl")
+    .register(METRICS_REGISTRY)
+
+// Timers
+const val CALL_TILGANGSKONTROLL_ENHET_TIMER = "${CALL_TILGANGSKONTROLL_ENHET_BASE}_timer"
+const val CALL_TILGANGSKONTROLL_PERSONS_TIMER = "${CALL_TILGANGSKONTROLL_PERSONS_BASE}_timer"
+const val CALL_DIALOGMOTER_ENHET_TIMER = "${METRICS_NS}_call_dialogmoter_enhet"
+val HISTOGRAM_CALL_TILGANGSKONTROLL_ENHET_TIMER: Timer = Timer
+    .builder(CALL_TILGANGSKONTROLL_ENHET_TIMER)
+    .description("Timer for calls to tilgangskontroll enhet")
+    .register(METRICS_REGISTRY)
+val HISTOGRAM_CALL_TILGANGSKONTROLL_PERSONS_TIMER: Timer = Timer
+    .builder(CALL_TILGANGSKONTROLL_PERSONS_TIMER)
+    .description("Timer for calls to tilgangskontroll persons")
+    .register(METRICS_REGISTRY)
+val HISTOGRAM_CALL_DIALOGMOTER_ENHET_TIMER: Timer = Timer
+    .builder(CALL_DIALOGMOTER_ENHET_TIMER)
+    .description("Timer for calls to get dialogmoter enhet")
     .register(METRICS_REGISTRY)
