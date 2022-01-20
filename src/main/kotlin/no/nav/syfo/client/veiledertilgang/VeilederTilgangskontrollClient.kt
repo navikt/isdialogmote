@@ -14,6 +14,7 @@ import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.metric.*
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
+import java.time.Duration
 
 class VeilederTilgangskontrollClient(
     private val azureAdV2Client: AzureAdV2Client,
@@ -42,6 +43,7 @@ class VeilederTilgangskontrollClient(
             token = token
         )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
 
+        val starttime = System.currentTimeMillis()
         return try {
             val personIdentStringList = personIdentNumberList.map { it.value }
 
@@ -67,6 +69,9 @@ class VeilederTilgangskontrollClient(
         } catch (e: ClosedReceiveChannelException) {
             handleClosedReceiveChannelException(e, "hasAccessToPersonList", resourceEnhet)
             emptyList()
+        } finally {
+            val duration = Duration.ofMillis(System.currentTimeMillis() - starttime)
+            HISTOGRAM_CALL_TILGANGSKONTROLL_PERSONS_TIMER.record(duration)
         }
     }
 
@@ -116,6 +121,7 @@ class VeilederTilgangskontrollClient(
         )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
 
         val url = "$tilgangskontrollEnhetUrl/${enhetNr.value}"
+        val starttime = System.currentTimeMillis()
         return try {
             val response: HttpResponse = httpClient.get(url) {
                 header(HttpHeaders.Authorization, bearerHeader(oboToken))
@@ -138,6 +144,9 @@ class VeilederTilgangskontrollClient(
         } catch (e: ClosedReceiveChannelException) {
             handleClosedReceiveChannelException(e, "hasAccessToEnhet", resourceEnhet)
             false
+        } finally {
+            val duration = Duration.ofMillis(System.currentTimeMillis() - starttime)
+            HISTOGRAM_CALL_TILGANGSKONTROLL_ENHET_TIMER.record(duration)
         }
     }
 

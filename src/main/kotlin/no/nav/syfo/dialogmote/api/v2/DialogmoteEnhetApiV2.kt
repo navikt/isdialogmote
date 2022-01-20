@@ -9,9 +9,11 @@ import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.domain.toDialogmoteDTO
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.domain.EnhetNr
+import no.nav.syfo.metric.HISTOGRAM_CALL_DIALOGMOTER_ENHET_TIMER
 import no.nav.syfo.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.Duration
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 
@@ -41,11 +43,15 @@ fun Route.registerDialogmoteEnhetApiV2(
                 )
                 when (accessToEnhet) {
                     true -> {
+                        val starttime = System.currentTimeMillis()
                         val dialogmoteList = if (inkluderHistoriske) dialogmoteService.getDialogmoteList(
                             enhetNr = enhetNr,
                         ) else dialogmoteService.getDialogmoteUnfinishedList(
                             enhetNr = enhetNr,
                         )
+                        val duration = Duration.ofMillis(System.currentTimeMillis() - starttime)
+                        HISTOGRAM_CALL_DIALOGMOTER_ENHET_TIMER.record(duration)
+
                         val personListWithVeilederAccess = dialogmoteTilgangService.hasAccessToDialogmotePersonList(
                             personIdentNumberList = dialogmoteList.map { it.arbeidstaker.personIdent },
                             token = token,
