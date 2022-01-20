@@ -82,6 +82,7 @@ spec:
     - configmap: loginservice-idporten
     - secret: isdialogmote-serviceuser
     - secret: isdialogmote-redis-password
+    - secret: isdialogmote-altinnuser
   kafka:
     pool: nav-prod
   env:
@@ -137,6 +138,8 @@ spec:
       value: "https://narmesteleder.nav.no"
     - name: NARMESTELEDER_CLIENT_ID
       value: "046419dd-8baa-4343-b192-a14d7c260b38"
+    - name: ALTINN_WS_URL
+      value: https://www.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternalBasic.svc
     - name: DOKDIST_FORDELING_URL
       value: "https://dokdistfordeling.prod-fss-pub.nais.io"
     - name: DOKDIST_FORDELING_CLIENT_ID

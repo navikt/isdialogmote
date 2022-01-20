@@ -16,6 +16,7 @@ import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederAccessService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.brev.narmesteleder.registerNarmestelederBrevApi
+import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
@@ -98,6 +99,13 @@ fun Application.apiModule(
         syfotilgangskontrollClientId = environment.syfotilgangskontrollClientId,
         tilgangskontrollBaseUrl = environment.syfotilgangskontrollUrl
     )
+
+    val altinnClient = AltinnClient(
+        altinnWsUrl = environment.altinnWsUrl,
+        username = environment.altinnUsername,
+        password = environment.altinnPassword
+    )
+
     val dialogmoteTilgangService = DialogmoteTilgangService(
         adressebeskyttelseClient = adressebeskyttelseClient,
         veilederTilgangskontrollClient = veilederTilgangskontrollClient,
@@ -128,17 +136,22 @@ fun Application.apiModule(
         database = database,
     )
 
-    val dialogmoteService = DialogmoteService(
-        database = database,
+    val varselService = VarselService(
         arbeidstakerVarselService = arbeidstakerVarselService,
         narmesteLederVarselService = narmesteLederVarselService,
         behandlerVarselService = behandlerVarselService,
+        altinnClient = altinnClient,
+    )
+
+    val dialogmoteService = DialogmoteService(
+        database = database,
         dialogmotedeltakerService = dialogmotedeltakerService,
         behandlendeEnhetClient = behandlendeEnhetClient,
         narmesteLederClient = narmesteLederClient,
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
         pdfGenClient = pdfGenClient,
         kontaktinformasjonClient = kontaktinformasjonClient,
+        varselService = varselService,
     )
 
     val narmesteLederTilgangService = NarmesteLederAccessService(

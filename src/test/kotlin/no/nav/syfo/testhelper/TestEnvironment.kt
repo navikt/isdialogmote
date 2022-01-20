@@ -67,6 +67,9 @@ fun testEnvironment(
     narmestelederUrl = narmestelederUrl ?: "http://narmesteleder",
     pdlClientId = "pdlClientId",
     pdlUrl = pdlUrl ?: "http://pdl",
+    altinnWsUrl = "altinnUrl",
+    altinnUsername = "username",
+    altinnPassword = "password",
     dokdistFordelingClientId = "dokdistFordelingClientId",
     dokdistFordelingUrl = "http://dokdistfordeling"
 )

@@ -337,6 +337,9 @@ class PostDialogmoteApiV2Spek : Spek({
                         }
                     }
 
+                    // TODO Endre denne til at vi sender til altinn når leder mangler, og kanskje tilsvarende i de andre testene?
+                    // VI trenger vel også en mockserver for altinn?
+                    // Nå blir testen grønn fordi kallet til altinn feiler, og da ender man oppe med 500-feil, men av feil årsak
                     it("should return status InternalServerError if denied person with Dialogmote with Virksomhet does not have a leader for that Virksomhet") {
                         val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
                         val urlMotePersonIdent = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
