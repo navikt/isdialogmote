@@ -68,7 +68,7 @@ fun ResultSet.toPReferat(): PReferat =
         behandlerOppgave = getString("behandler_oppgave"),
         narmesteLederNavn = getString("narmeste_leder_navn"),
         document = mapper.readValue(getString("document"), object : TypeReference<List<DocumentComponentDTO>>() {}),
-        pdf = getBytes("pdf"),
+        pdfId = getInt("pdf_id"),
         journalpostIdArbeidstaker = getString("journalpost_id"),
         lestDatoArbeidstaker = getTimestamp("lest_dato_arbeidstaker")?.toLocalDateTime(),
         lestDatoArbeidsgiver = getTimestamp("lest_dato_arbeidsgiver")?.toLocalDateTime(),
@@ -120,7 +120,7 @@ const val queryCreateReferat =
         behandler_oppgave,
         narmeste_leder_navn,
         document,
-        pdf
+        pdf_id
     ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?) RETURNING id
     """
 
@@ -140,7 +140,7 @@ const val queryCreateMotedeltakerAnnen =
 fun Connection.createNewReferat(
     commit: Boolean = true,
     newReferat: NewReferat,
-    pdf: ByteArray,
+    pdfId: Int,
     digitalt: Boolean,
 ): Pair<Int, UUID> {
     val referatUuid = UUID.randomUUID()
@@ -160,7 +160,7 @@ fun Connection.createNewReferat(
         it.setString(11, newReferat.behandlerOppgave)
         it.setString(12, newReferat.narmesteLederNavn)
         it.setObject(13, mapper.writeValueAsString(newReferat.document))
-        it.setBytes(14, pdf)
+        it.setInt(14, pdfId)
         it.executeQuery().toList { getInt("id") }
     }
     if (referatIdList.size != 1) {

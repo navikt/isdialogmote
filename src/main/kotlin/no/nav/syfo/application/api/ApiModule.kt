@@ -25,8 +25,7 @@ import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.dialogmote.DialogmoteService
-import no.nav.syfo.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 
@@ -128,6 +127,9 @@ fun Application.apiModule(
         azureAdV2Client = azureAdV2Client,
         cache = cache,
     )
+    val pdfService = PdfService(
+        database = database,
+    )
 
     val dialogmoteService = DialogmoteService(
         database = database,
@@ -170,11 +172,13 @@ fun Application.apiModule(
             registerArbeidstakerBrevApi(
                 dialogmoteService = dialogmoteService,
                 dialogmotedeltakerService = dialogmotedeltakerService,
+                pdfService = pdfService,
             )
             registerNarmestelederBrevApi(
                 dialogmoteService = dialogmoteService,
                 dialogmotedeltakerService = dialogmotedeltakerService,
                 narmesteLederAccessService = narmesteLederTilgangService,
+                pdfService = pdfService,
             )
         }
     }

@@ -84,10 +84,14 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                 isproxyClientId = externalMockEnvironment.environment.isproxyClientId,
                 baseUrl = externalMockEnvironment.environment.isproxyUrl,
             )
+            val pdfService = PdfService(
+                database = database,
+            )
 
             val dialogmoteVarselJournalforingCronjob = DialogmoteVarselJournalforingCronjob(
                 dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
                 referatJournalpostService = referatJournalpostService,
+                pdfService = pdfService,
                 dokarkivClient = dokarkivClient,
                 pdlClient = pdlClient,
                 eregClient = eregClient,

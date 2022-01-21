@@ -9,8 +9,10 @@ import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
+import no.nav.syfo.dialogmote.PdfService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
+import no.nav.syfo.dialogmote.database.getReferat
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
@@ -25,6 +27,7 @@ import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
+import java.util.UUID
 
 class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -44,6 +47,10 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
 
             val mqSenderMock = mockk<MQSenderInterface>()
             justRun { mqSenderMock.sendMQMessage(any(), any()) }
+
+            val pdfService = PdfService(
+                database = database,
+            )
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
@@ -152,7 +159,8 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             referat.andreDeltakere.first().funksjon shouldBeEqualTo "Verneombud"
                             referat.andreDeltakere.first().navn shouldBeEqualTo "Tøff Pyjamas"
 
-                            referat.pdf shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
+                            val pdf = pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId)
+                            pdf shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
 
                             verify(exactly = 0) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 

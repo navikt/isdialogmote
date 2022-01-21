@@ -7,6 +7,6 @@ interface NarmesteLederBrev {
     val uuid: UUID
     val motedeltakerArbeidsgiverId: Int
     val document: List<DocumentComponentDTO>
-    val pdf: ByteArray
+    val pdfId: Int
     val lestDatoArbeidsgiver: LocalDateTime?
 }

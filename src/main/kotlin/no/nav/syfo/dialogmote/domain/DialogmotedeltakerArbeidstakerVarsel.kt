@@ -18,7 +18,7 @@ data class DialogmotedeltakerArbeidstakerVarsel(
     override val motedeltakerArbeidstakerId: Int,
     val varselType: MotedeltakerVarselType,
     val digitalt: Boolean,
-    override val pdf: ByteArray,
+    override val pdfId: Int,
     val status: String,
     override val lestDatoArbeidstaker: LocalDateTime?,
     val fritekst: String,
@@ -79,6 +79,7 @@ fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerBrevDTO(
 fun DialogmotedeltakerArbeidstakerVarsel.toJournalpostRequest(
     personIdent: PersonIdentNumber,
     navn: String,
+    pdf: ByteArray,
 ) = createJournalpostRequest(
     brukerPersonIdent = personIdent,
     mottakerPersonIdent = personIdent,
@@ -86,5 +87,5 @@ fun DialogmotedeltakerArbeidstakerVarsel.toJournalpostRequest(
     digitalt = this.digitalt,
     dokumentName = this.varselType.toJournalpostTittel(),
     brevkodeType = this.varselType.toBrevkodeType(DialogmoteDeltakerType.ARBEIDSTAKER),
-    dokumentPdf = this.pdf,
+    dokumentPdf = pdf,
 )

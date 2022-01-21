@@ -13,7 +13,7 @@ data class DialogmotedeltakerBehandlerVarsel(
     val updatedAt: LocalDateTime,
     val motedeltakerBehandlerId: Int,
     val varselType: MotedeltakerVarselType,
-    val pdf: ByteArray,
+    val pdfId: Int,
     val status: String,
     val fritekst: String,
     val document: List<DocumentComponentDTO>,
@@ -36,6 +36,7 @@ fun DialogmotedeltakerBehandlerVarsel.toJournalpostRequest(
     brukerPersonIdent: PersonIdentNumber,
     behandlerPersonIdent: PersonIdentNumber?,
     behandlerNavn: String,
+    pdf: ByteArray,
 ) = createJournalpostRequest(
     brukerPersonIdent = brukerPersonIdent,
     mottakerPersonIdent = behandlerPersonIdent,
@@ -43,6 +44,6 @@ fun DialogmotedeltakerBehandlerVarsel.toJournalpostRequest(
     digitalt = true,
     dokumentName = this.varselType.toJournalpostTittel(),
     brevkodeType = this.varselType.toBrevkodeType(DialogmoteDeltakerType.BEHANDLER),
-    dokumentPdf = this.pdf,
+    dokumentPdf = pdf,
     kanal = JournalpostKanal.HELSENETTET,
 )

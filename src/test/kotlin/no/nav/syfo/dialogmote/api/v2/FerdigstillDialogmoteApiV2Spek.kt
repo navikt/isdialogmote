@@ -13,8 +13,10 @@ import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
+import no.nav.syfo.dialogmote.PdfService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
+import no.nav.syfo.dialogmote.database.getReferat
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -29,6 +31,7 @@ import org.amshove.kluent.shouldNotBeEqualTo
 import org.junit.Assert.assertThrows
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.UUID
 
 class FerdigstillDialogmoteApiV2Spek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -53,6 +56,9 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
             val behandlerVarselService = BehandlerVarselService(
                 database = database,
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
+            )
+            val pdfService = PdfService(
+                database = database,
             )
 
             application.testApiModule(
@@ -166,7 +172,8 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             referat.andreDeltakere.first().funksjon shouldBeEqualTo "Verneombud"
                             referat.andreDeltakere.first().navn shouldBeEqualTo "Tøff Pyjamas"
 
-                            referat.pdf shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
+                            val pdf = pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId)
+                            pdf shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }

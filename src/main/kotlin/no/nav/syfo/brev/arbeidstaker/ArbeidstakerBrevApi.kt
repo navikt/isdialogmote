@@ -7,12 +7,11 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import no.nav.syfo.application.api.authentication.personIdent
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
-import no.nav.syfo.dialogmote.DialogmoteService
-import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.domain.toArbeidstakerBrevDTOList
 import no.nav.syfo.util.callIdArgument
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.brev.arbeidstaker.domain.PdfContent
+import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -29,6 +28,7 @@ const val arbeidstakerBrevApiPdfPath = "/pdf"
 fun Route.registerArbeidstakerBrevApi(
     dialogmoteService: DialogmoteService,
     dialogmotedeltakerService: DialogmotedeltakerService,
+    pdfService: PdfService,
 ) {
     route(arbeidstakerBrevApiPath) {
         get {
@@ -64,7 +64,8 @@ fun Route.registerArbeidstakerBrevApi(
 
                 val hasAccessToBrev = motedeltakerArbeidstaker.personIdent == requestPersonIdent
                 if (hasAccessToBrev) {
-                    call.respond(PdfContent(brev.pdf))
+                    val pdf = pdfService.getPdf(brev.pdfId)
+                    call.respond(PdfContent(pdf))
                 } else {
                     val accessDeniedMessage = "Denied access to pdf for brev with uuid $brevUuid"
                     log.warn("$accessDeniedMessage, {}", callIdArgument(callId))

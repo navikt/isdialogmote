@@ -8,14 +8,14 @@ import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL
 import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE
 import no.nav.syfo.cronjob.DialogmoteCronjob
 import no.nav.syfo.cronjob.DialogmoteCronjobResult
-import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
-import no.nav.syfo.dialogmote.ReferatJournalpostService
+import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.domain.*
 import org.slf4j.LoggerFactory
 
 class DialogmoteVarselJournalforingCronjob(
     private val dialogmotedeltakerVarselJournalpostService: DialogmotedeltakerVarselJournalpostService,
     private val referatJournalpostService: ReferatJournalpostService,
+    private val pdfService: PdfService,
     private val dokarkivClient: DokarkivClient,
     private val pdlClient: PdlClient,
     private val eregClient: EregClient,
@@ -52,10 +52,12 @@ class DialogmoteVarselJournalforingCronjob(
         arbeidstakerVarselForJournalforingList.forEach { (personIdent, arbeidstakerVarsel) ->
             try {
                 val navn = pdlClient.navn(personIdent)
+                val pdf = pdfService.getPdf(arbeidstakerVarsel.pdfId)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = arbeidstakerVarsel.toJournalpostRequest(
                         personIdent = personIdent,
                         navn = navn,
+                        pdf = pdf,
                     ),
                 )?.journalpostId
 
@@ -81,11 +83,13 @@ class DialogmoteVarselJournalforingCronjob(
         arbeidsgiverVarselForJournalforingList.forEach { (virksomhetsnummer, personIdent, arbeidsgiverVarsel) ->
             try {
                 val virksomhetsnavn = eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer)
+                val pdf = pdfService.getPdf(arbeidsgiverVarsel.pdfId)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = arbeidsgiverVarsel.toJournalpostRequest(
                         brukerPersonIdent = personIdent,
                         virksomhetsnummer = virksomhetsnummer,
                         virksomhetsnavn = virksomhetsnavn?.virksomhetsnavn ?: "",
+                        pdf = pdf,
                     ),
                 )?.journalpostId
 
@@ -110,11 +114,13 @@ class DialogmoteVarselJournalforingCronjob(
             dialogmotedeltakerVarselJournalpostService.getDialogmotedeltakerBehandlerVarselForJournalforingList()
         behandlerVarselForJournalforingList.forEach { (personIdent, behandler, behandlerVarsel) ->
             try {
+                val pdf = pdfService.getPdf(behandlerVarsel.pdfId)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = behandlerVarsel.toJournalpostRequest(
                         brukerPersonIdent = personIdent,
                         behandlerPersonIdent = behandler.personIdent,
                         behandlerNavn = behandler.behandlerNavn,
+                        pdf = pdf,
                     ),
                 )?.journalpostId
 
@@ -139,10 +145,12 @@ class DialogmoteVarselJournalforingCronjob(
         referatList.forEach { (personIdentNumber, referat) ->
             try {
                 val navn = pdlClient.navn(personIdentNumber)
+                val pdf = pdfService.getPdf(referat.pdfId)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = referat.toJournalforingRequestArbeidstaker(
                         personIdent = personIdentNumber,
                         navn = navn,
+                        pdf = pdf,
                     )
                 )?.journalpostId
 
@@ -167,11 +175,13 @@ class DialogmoteVarselJournalforingCronjob(
         referatList.forEach { (virksomhetsnummer, personIdent, referat) ->
             try {
                 val virksomhetsnavn = eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer)
+                val pdf = pdfService.getPdf(referat.pdfId)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = referat.toJournalforingRequestArbeidsgiver(
                         brukerPersonIdent = personIdent,
                         virksomhetsnummer = virksomhetsnummer,
                         virksomhetsnavn = virksomhetsnavn?.virksomhetsnavn ?: "",
+                        pdf = pdf,
                     )
                 )?.journalpostId
 
@@ -195,11 +205,13 @@ class DialogmoteVarselJournalforingCronjob(
         val referatList = referatJournalpostService.getDialogmoteReferatJournalforingListBehandler()
         referatList.forEach { (personIdentNumber, behandler, referat) ->
             try {
+                val pdf = pdfService.getPdf(referat.pdfId)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = referat.toJournalforingRequestBehandler(
                         brukerPersonIdent = personIdentNumber,
                         behandlerPersonIdent = behandler.personIdent,
                         behandlerNavn = behandler.behandlerNavn,
+                        pdf = pdf,
                     )
                 )?.journalpostId
 
