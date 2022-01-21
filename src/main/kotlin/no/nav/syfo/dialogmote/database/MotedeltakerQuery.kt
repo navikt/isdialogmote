@@ -295,7 +295,7 @@ fun ResultSet.toPMotedeltakerArbeidsgiver(): PMotedeltakerArbeidsgiver =
         virksomhetsnummer = Virksomhetsnummer(getString("virksomhetsnummer")),
     )
 
-private fun List<Any>.assertThatExactlyOneElement(
+fun List<Any>.assertThatExactlyOneElement(
     errorMessageIfEmpty: String,
     errorMessageIfMoreThanOne: String,
 ) {

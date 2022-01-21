@@ -21,7 +21,7 @@ const val queryCreateMotedeltakerVarselBehandler =
         updated_at,
         motedeltaker_behandler_id,
         varseltype,
-        pdf,
+        pdf_id,
         status, 
         fritekst,
         document) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb) RETURNING id
@@ -34,7 +34,7 @@ fun Connection.createMotedeltakerVarselBehandler(
     motedeltakerBehandlerId: Int,
     status: String,
     varselType: MotedeltakerVarselType,
-    pdf: ByteArray,
+    pdfId: Int,
     fritekst: String,
     document: List<DocumentComponentDTO>,
 ): Pair<Int, UUID> {
@@ -47,7 +47,7 @@ fun Connection.createMotedeltakerVarselBehandler(
         it.setTimestamp(3, now)
         it.setInt(4, motedeltakerBehandlerId)
         it.setString(5, varselType.name)
-        it.setBytes(6, pdf)
+        it.setInt(6, pdfId)
         it.setString(7, status)
         it.setString(8, fritekst)
         it.setObject(9, mapper.writeValueAsString(document))
@@ -210,7 +210,7 @@ fun ResultSet.toPMotedeltakerBehandlerVarsel(): PMotedeltakerBehandlerVarsel =
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         motedeltakerBehandlerId = getInt("motedeltaker_behandler_id"),
         varselType = MotedeltakerVarselType.valueOf(getString("varseltype")),
-        pdf = getBytes("pdf"),
+        pdfId = getInt("pdf_id"),
         status = getString("status"),
         fritekst = getString("fritekst"),
         document = mapper.readValue(getString("document"), object : TypeReference<List<DocumentComponentDTO>>() {}),

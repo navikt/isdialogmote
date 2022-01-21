@@ -8,8 +8,7 @@ import io.ktor.routing.*
 import no.nav.syfo.application.api.authentication.personIdent
 import no.nav.syfo.brev.arbeidstaker.domain.PdfContent
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederResponsDTO
-import no.nav.syfo.dialogmote.DialogmoteService
-import no.nav.syfo.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.toNarmesteLederBrevDTOList
 import no.nav.syfo.domain.PersonIdentNumber
@@ -30,6 +29,7 @@ fun Route.registerNarmestelederBrevApi(
     dialogmoteService: DialogmoteService,
     dialogmotedeltakerService: DialogmotedeltakerService,
     narmesteLederAccessService: NarmesteLederAccessService,
+    pdfService: PdfService,
 ) {
     route(narmesteLederBrevApiBasePath) {
         get {
@@ -74,7 +74,8 @@ fun Route.registerNarmestelederBrevApi(
                 )
 
                 if (hasAccessToBrev) {
-                    call.respond(PdfContent(brev.pdf))
+                    val pdf = pdfService.getPdf(brev.pdfId)
+                    call.respond(PdfContent(pdf))
                 } else {
                     val accessDeniedMessage = "Denied access to pdf for brev with uuid $brevUuid"
                     log.warn("$accessDeniedMessage, {}", callIdArgument(callId))

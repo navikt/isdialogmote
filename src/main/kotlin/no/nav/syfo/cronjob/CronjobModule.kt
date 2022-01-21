@@ -15,8 +15,7 @@ import no.nav.syfo.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
 import no.nav.syfo.cronjob.journalpostdistribusjon.DialogmoteJournalpostDistribusjonCronjob
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
 import no.nav.syfo.cronjob.statusendring.*
-import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
-import no.nav.syfo.dialogmote.ReferatJournalpostService
+import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import org.apache.kafka.clients.producer.KafkaProducer
 
@@ -52,6 +51,9 @@ fun Application.cronjobModule(
         isproxyClientId = environment.isproxyClientId,
         baseUrl = environment.isproxyUrl,
     )
+    val pdfService = PdfService(
+        database = database,
+    )
     val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(
         database = database,
     )
@@ -64,6 +66,7 @@ fun Application.cronjobModule(
     val journalforDialogmoteVarslerCronjob = DialogmoteVarselJournalforingCronjob(
         dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
         referatJournalpostService = referatJournalpostService,
+        pdfService = pdfService,
         dokarkivClient = dokarkivClient,
         pdlClient = pdlClient,
         eregClient = eregClient,

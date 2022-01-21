@@ -21,7 +21,7 @@ const val queryCreateMotedeltakerVarselArbeidstaker =
         motedeltaker_arbeidstaker_id,
         varseltype,
         digitalt,
-        pdf,
+        pdf_id,
         status, 
         fritekst,
         document) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb) RETURNING id
@@ -35,7 +35,7 @@ fun Connection.createMotedeltakerVarselArbeidstaker(
     status: String,
     varselType: MotedeltakerVarselType,
     digitalt: Boolean,
-    pdf: ByteArray,
+    pdfId: Int,
     fritekst: String,
     document: List<DocumentComponentDTO>,
 ): Pair<Int, UUID> {
@@ -49,7 +49,7 @@ fun Connection.createMotedeltakerVarselArbeidstaker(
         it.setInt(4, motedeltakerArbeidstakerId)
         it.setString(5, varselType.name)
         it.setBoolean(6, digitalt)
-        it.setBytes(7, pdf)
+        it.setInt(7, pdfId)
         it.setString(8, status)
         it.setString(9, fritekst)
         it.setObject(10, mapper.writeValueAsString(document))
@@ -228,7 +228,7 @@ fun ResultSet.toPMotedeltakerArbeidstakerVarsel(): PMotedeltakerArbeidstakerVars
         motedeltakerArbeidstakerId = getInt("motedeltaker_arbeidstaker_id"),
         varselType = MotedeltakerVarselType.valueOf(getString("varseltype")),
         digitalt = getObject("digitalt") as Boolean,
-        pdf = getBytes("pdf"),
+        pdfId = getInt("pdf_id"),
         status = getString("status"),
         lestDato = getTimestamp("lest_dato")?.toLocalDateTime(),
         fritekst = getString("fritekst"),

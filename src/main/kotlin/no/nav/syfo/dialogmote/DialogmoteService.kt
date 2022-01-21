@@ -405,13 +405,21 @@ class DialogmoteService(
         moteTidspunkt: LocalDateTime,
         digitalArbeidstakerVarsling: Boolean,
     ) {
+        val pdfArbeidstakerId = connection.createPdf(
+            commit = false,
+            pdf = pdfArbeidstaker,
+        )
+        val pdfArbeidsgiverId = connection.createPdf(
+            commit = false,
+            pdf = pdfArbeidsgiver,
+        )
         val (_, varselArbeidstakerId) = connection.createMotedeltakerVarselArbeidstaker(
             commit = false,
             motedeltakerArbeidstakerId = arbeidstakerId,
             status = "OK",
             varselType = varselType,
             digitalt = digitalArbeidstakerVarsling,
-            pdf = pdfArbeidstaker,
+            pdfId = pdfArbeidstakerId.first,
             fritekst = fritekstArbeidstaker,
             document = documentArbeidstaker,
         )
@@ -420,17 +428,21 @@ class DialogmoteService(
             motedeltakerArbeidsgiverId = arbeidsgiverId,
             status = "OK",
             varselType = varselType,
-            pdf = pdfArbeidsgiver,
+            pdfId = pdfArbeidsgiverId.first,
             fritekst = fritekstArbeidsgiver,
             document = documentArbeidsgiver,
         )
         val behandlerVarselIdPair = behandlerId?.let {
+            val pdfBehandlerId = connection.createPdf(
+                commit = false,
+                pdf = pdfBehandler!!,
+            )
             connection.createMotedeltakerVarselBehandler(
                 commit = false,
                 motedeltakerBehandlerId = it,
                 status = "OK",
                 varselType = varselType,
-                pdf = pdfBehandler!!,
+                pdfId = pdfBehandlerId.first,
                 fritekst = fritekstBehandler,
                 document = documentBehandler,
             )
@@ -541,10 +553,14 @@ class DialogmoteService(
                 personIdentNumber = dialogmote.arbeidstaker.personIdent,
                 token = token,
             )
+            val pdfId = connection.createPdf(
+                commit = false,
+                pdf = pdfReferat,
+            )
             val (_, referatUuid) = connection.createNewReferat(
                 commit = false,
                 newReferat = referat.toNewReferat(dialogmote.id),
-                pdf = pdfReferat,
+                pdfId = pdfId.first,
                 digitalt = digitalVarsling,
             )
             if (digitalVarsling) {
