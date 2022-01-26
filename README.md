@@ -116,3 +116,9 @@ This application produces the following topic(s):
 This application consumes the following topic(s):
 
 * dialogmelding
+
+## Contact
+
+### For NAV employees
+
+We are available at the Slack channel `#isyfo`.
