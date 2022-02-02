@@ -33,7 +33,6 @@ class DialogmoteService(
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     private val pdfGenClient: PdfGenClient,
     private val kontaktinformasjonClient: KontaktinformasjonClient,
-    private val allowVarselMedFysiskBrev: Boolean,
 ) {
     fun getDialogmote(
         moteUUID: UUID
@@ -146,7 +145,7 @@ class DialogmoteService(
 
             val createdDialogmoteIdentifiers: CreatedDialogmoteIdentifiers
 
-            val digitalVarsling = allowVarselMedFysiskBrevDisabledOrCheckDigitalVarsling(
+            val digitalVarsling = isDigitalVarselEnabled(
                 personIdentNumber = personIdentNumber,
                 token = token,
                 callId = callId,
@@ -240,7 +239,7 @@ class DialogmoteService(
             log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
             false
         } else {
-            val digitalVarsling = allowVarselMedFysiskBrevDisabledOrCheckDigitalVarsling(
+            val digitalVarsling = isDigitalVarselEnabled(
                 personIdentNumber = dialogmote.arbeidstaker.personIdent,
                 token = token,
                 callId = callId,
@@ -329,7 +328,7 @@ class DialogmoteService(
             log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
             false
         } else {
-            val digitalVarsling = allowVarselMedFysiskBrevDisabledOrCheckDigitalVarsling(
+            val digitalVarsling = isDigitalVarselEnabled(
                 personIdentNumber = dialogmote.arbeidstaker.personIdent,
                 token = token,
                 callId = callId,
@@ -528,7 +527,7 @@ class DialogmoteService(
 
         val now = LocalDateTime.now()
 
-        val digitalVarsling = allowVarselMedFysiskBrevDisabledOrCheckDigitalVarsling(
+        val digitalVarsling = isDigitalVarselEnabled(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             token = token,
             callId = callId,
@@ -717,12 +716,12 @@ class DialogmoteService(
         return moteDeltagerArbeidsgiverVarsel ?: referat!!
     }
 
-    private suspend fun allowVarselMedFysiskBrevDisabledOrCheckDigitalVarsling(
+    private suspend fun isDigitalVarselEnabled(
         personIdentNumber: PersonIdentNumber,
         token: String,
         callId: String,
     ): Boolean {
-        return !allowVarselMedFysiskBrev || kontaktinformasjonClient.isDigitalVarselEnabled(
+        return kontaktinformasjonClient.isDigitalVarselEnabled(
             personIdentNumber = personIdentNumber,
             token = token,
             callId = callId,

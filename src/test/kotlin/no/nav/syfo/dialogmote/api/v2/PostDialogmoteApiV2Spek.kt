@@ -18,7 +18,6 @@ import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
@@ -324,21 +323,6 @@ class PostDialogmoteApiV2Spek : Spek({
 
                     it("should return status Forbidden if denied person has Adressbeskyttese") {
                         val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_ADRESSEBESKYTTET)
-                        val urlMotePersonIdent = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
-                        with(
-                            handleRequest(HttpMethod.Post, urlMotePersonIdent) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                        }
-                    }
-
-                    it("should return status Forbidden if denied person has cannot receive digital documents") {
-                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_IKKE_VARSEL)
                         val urlMotePersonIdent = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
                         with(
                             handleRequest(HttpMethod.Post, urlMotePersonIdent) {

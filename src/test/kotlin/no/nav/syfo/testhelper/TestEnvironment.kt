@@ -17,8 +17,6 @@ fun testEnvironment(
     syfotilgangskontrollUrl: String? = null,
     narmestelederUrl: String? = null,
     pdlUrl: String? = null,
-    allowVarselMedFysiskBrev: Boolean = false,
-    allowMotedeltakerBehandler: Boolean = false,
 ) = Environment(
     aadAppClient = "isdialogmote-client-id",
     aadAppSecret = "isdialogmote-secret",
@@ -42,8 +40,6 @@ fun testEnvironment(
         aivenTruststoreLocation = "truststore",
         aivenKeystoreLocation = "keystore",
     ),
-    allowVarselMedFysiskBrev = allowVarselMedFysiskBrev,
-    allowMotedeltakerBehandler = allowMotedeltakerBehandler,
     redisHost = "localhost",
     redisPort = 6599,
     redisSecret = "password",
@@ -63,17 +59,13 @@ fun testEnvironment(
     syfobehandlendeenhetUrl = syfobehandlendeenhetUrl ?: "syfobehandlendeenhet",
     syfotilgangskontrollClientId = "syfotilgangskontrollclientid",
     syfotilgangskontrollUrl = syfotilgangskontrollUrl ?: "tilgangskontroll",
-    journalforingCronjobEnabled = false,
-    publishDialogmoteStatusEndringCronjobEnabled = false,
     mqUsername = "mquser",
     mqPassword = "mqpassword",
     mqTredjepartsVarselQueue = "queuename",
-    mqSendingEnabled = false,
     narmestelederClientId = "narmestelederClientId",
     narmestelederUrl = narmestelederUrl ?: "http://narmesteleder",
     pdlClientId = "pdlClientId",
     pdlUrl = pdlUrl ?: "http://pdl",
-    toggleKafkaProcessingDialogmeldinger = true,
 )
 
 fun testAppState() = ApplicationState(

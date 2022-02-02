@@ -11,7 +11,6 @@ class DialogmoteTilgangService(
     private val adressebeskyttelseClient: AdressebeskyttelseClient,
     private val kontaktinformasjonClient: KontaktinformasjonClient,
     private val veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
-    private val allowVarselMedFysiskBrev: Boolean,
 ) {
 
     suspend fun hasAccessToDialogmotePerson(
@@ -68,7 +67,7 @@ class DialogmoteTilgangService(
         callId: String,
     ): Boolean {
         return if (hasAccessToDialogmotePerson(personIdentNumber, token, callId)) {
-            allowVarselMedFysiskBrev || checkDigitalVarselEnabled(personIdentNumber, token, callId)
+            true
         } else {
             log.warn("$DENIED_ACCESS_LOG_MESSAGE No access to person, {}", callIdArgument(callId))
             false

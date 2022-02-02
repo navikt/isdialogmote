@@ -45,7 +45,6 @@ fun main() {
         kafkaProducerBehandlerDialogmeldingBestilling = KafkaProducer<String, KafkaBehandlerDialogmeldingDTO>(
             kafkaBehandlerDialogmeldingProducerConfig(environment.kafka)
         ),
-        allowVarslingBehandler = environment.allowMotedeltakerBehandler,
     )
     val mqSender = MQSender(environment)
     val cache = RedisStore(
@@ -96,21 +95,17 @@ fun main() {
     applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) {
         applicationState.ready = true
         logger.info("Application is ready")
-        if (environment.toggleKafkaProcessingDialogmeldinger) {
-            val dialogmeldingService = DialogmeldingService(
-                behandlerVarselService = behandlerVarselService,
-            )
-            val dialogmeldingConsumerService = DialogmeldingConsumerService(
-                kafkaConsumer = KafkaConsumer(kafkaDialogmeldingConsumerConfig(environment.kafka)),
-                applicationState = applicationState,
-                dialogmeldingService = dialogmeldingService
-            )
-            launchBackgroundTask(applicationState = applicationState) {
-                logger.info("Starting dialogmelding kafka consumer")
-                dialogmeldingConsumerService.startConsumer()
-            }
-        } else {
-            logger.info("Kafka processing dialogmeldinger is not enabled")
+        val dialogmeldingService = DialogmeldingService(
+            behandlerVarselService = behandlerVarselService,
+        )
+        val dialogmeldingConsumerService = DialogmeldingConsumerService(
+            kafkaConsumer = KafkaConsumer(kafkaDialogmeldingConsumerConfig(environment.kafka)),
+            applicationState = applicationState,
+            dialogmeldingService = dialogmeldingService
+        )
+        launchBackgroundTask(applicationState = applicationState) {
+            logger.info("Starting dialogmelding kafka consumer")
+            dialogmeldingConsumerService.startConsumer()
         }
     }
 
