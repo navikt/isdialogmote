@@ -74,6 +74,7 @@ fun ResultSet.toPReferat(): PReferat =
         lestDatoArbeidsgiver = getTimestamp("lest_dato_arbeidsgiver")?.toLocalDateTime(),
         brevBestillingsId = getString("brev_bestilling_id"),
         brevBestiltTidspunkt = getTimestamp("brev_bestilt_tidspunkt")?.toLocalDateTime(),
+        ferdigstilt = getBoolean("ferdigstilt"),
     )
 
 const val queryGetDialogmotedeltakerAnnenForReferatID =
@@ -120,8 +121,9 @@ const val queryCreateReferat =
         behandler_oppgave,
         narmeste_leder_navn,
         document,
-        pdf_id
-    ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?) RETURNING id
+        pdf_id,
+        ferdigstilt
+    ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?) RETURNING id
     """
 
 const val queryCreateMotedeltakerAnnen =
@@ -161,6 +163,7 @@ fun Connection.createNewReferat(
         it.setString(12, newReferat.narmesteLederNavn)
         it.setObject(13, mapper.writeValueAsString(newReferat.document))
         it.setInt(14, pdfId)
+        it.setBoolean(15, newReferat.ferdigstilt)
         it.executeQuery().toList { getInt("id") }
     }
     if (referatIdList.size != 1) {

@@ -558,7 +558,10 @@ class DialogmoteService(
             )
             val (_, referatUuid) = connection.createNewReferat(
                 commit = false,
-                newReferat = referat.toNewReferat(dialogmote.id),
+                newReferat = referat.toNewReferat(
+                    moteId = dialogmote.id,
+                    ferdigstilt = true,
+                ),
                 pdfId = pdfId.first,
                 digitalt = digitalVarsling,
             )
@@ -647,6 +650,13 @@ class DialogmoteService(
         )
     }
 
+    private fun getFerdigReferat(
+        referatUUID: UUID
+    ): Referat? {
+        val referat = getReferat(referatUUID)
+        return if (referat?.ferdigstilt == true) referat else null
+    }
+
     private fun getReferat(
         referatUUID: UUID
     ): Referat? {
@@ -693,27 +703,29 @@ class DialogmoteService(
             uuid = brevUuid
         ).firstOrNull()
 
-        val referat = getReferat(
+        val ferdigreferat = getFerdigReferat(
             referatUUID = brevUuid
         )
-
-        if (motedeltakerArbeidstakerVarsel == null && referat == null) {
+        val noBrevFound = (motedeltakerArbeidstakerVarsel == null && ferdigreferat == null)
+        if (noBrevFound) {
             throw IllegalArgumentException("No Brev found for arbeidstaker with uuid=$brevUuid")
         }
-        return motedeltakerArbeidstakerVarsel ?: referat!!
+        return motedeltakerArbeidstakerVarsel ?: ferdigreferat!!
     }
 
     fun getNarmesteLederBrevFromUuid(brevUuid: UUID): NarmesteLederBrev {
         val moteDeltagerArbeidsgiverVarsel =
             dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverVarselList(uuid = brevUuid).firstOrNull()
 
-        val referat = getReferat(referatUUID = brevUuid)
-
-        if (moteDeltagerArbeidsgiverVarsel == null && referat == null) {
+        val ferdigReferat = getFerdigReferat(
+            referatUUID = brevUuid
+        )
+        val noBrevFound = (moteDeltagerArbeidsgiverVarsel == null && ferdigReferat == null)
+        if (noBrevFound) {
             throw IllegalArgumentException("No Brev found for arbeidsgiver with uuid=$brevUuid")
         }
 
-        return moteDeltagerArbeidsgiverVarsel ?: referat!!
+        return moteDeltagerArbeidsgiverVarsel ?: ferdigReferat!!
     }
 
     private suspend fun isDigitalVarselEnabled(

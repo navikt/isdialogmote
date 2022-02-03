@@ -34,6 +34,7 @@ data class Referat(
     val andreDeltakere: List<DialogmotedeltakerAnnen>,
     val brevBestillingsId: String?,
     val brevBestiltTidspunkt: LocalDateTime?,
+    val ferdigstilt: Boolean,
 ) : ArbeidstakerBrev, NarmesteLederBrev
 
 data class DialogmotedeltakerAnnen(
@@ -65,6 +66,7 @@ fun Referat.toReferatDTO(): ReferatDTO {
             it.toDialogmotedeltakerAnnenDTO()
         },
         brevBestiltTidspunkt = this.brevBestiltTidspunkt,
+        ferdigstilt = this.ferdigstilt,
     )
 }
 

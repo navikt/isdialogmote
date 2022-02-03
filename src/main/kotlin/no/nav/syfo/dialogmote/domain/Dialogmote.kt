@@ -46,13 +46,15 @@ fun List<Dialogmote>.toArbeidstakerBrevDTOList(): List<ArbeidstakerBrevDTO> {
     return this.map { dialogmote ->
         val brevList = mutableListOf<ArbeidstakerBrevDTO>()
         dialogmote.referat?.let {
-            brevList.add(
-                it.toArbeidstakerBrevDTO(
-                    dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
-                    deltakerUuid = dialogmote.arbeidstaker.uuid,
-                    virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+            if (it.ferdigstilt) {
+                brevList.add(
+                    it.toArbeidstakerBrevDTO(
+                        dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
+                        deltakerUuid = dialogmote.arbeidstaker.uuid,
+                        virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+                    )
                 )
-            )
+            }
         }
         brevList.addAll(
             dialogmote.arbeidstaker.varselList.map {
@@ -71,13 +73,15 @@ fun List<Dialogmote>.toNarmesteLederBrevDTOList(): List<NarmesteLederBrevDTO> {
     return this.map { dialogmote ->
         val brevList = mutableListOf<NarmesteLederBrevDTO>()
         dialogmote.referat?.let {
-            brevList.add(
-                it.toNarmesteLederBrevDTO(
-                    dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
-                    deltakerUuid = dialogmote.arbeidsgiver.uuid,
-                    virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+            if (it.ferdigstilt) {
+                brevList.add(
+                    it.toNarmesteLederBrevDTO(
+                        dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
+                        deltakerUuid = dialogmote.arbeidsgiver.uuid,
+                        virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+                    )
                 )
-            )
+            }
         }
         brevList.addAll(
             dialogmote.arbeidsgiver.varselList.map {
