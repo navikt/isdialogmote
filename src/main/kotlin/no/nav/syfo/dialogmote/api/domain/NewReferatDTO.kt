@@ -19,7 +19,10 @@ data class NewDialogmotedeltakerAnnenDTO(
     val navn: String,
 )
 
-fun NewReferatDTO.toNewReferat(moteId: Int): NewReferat {
+fun NewReferatDTO.toNewReferat(
+    moteId: Int,
+    ferdigstilt: Boolean,
+): NewReferat {
     return NewReferat(
         moteId = moteId,
         situasjon = situasjon,
@@ -33,6 +36,7 @@ fun NewReferatDTO.toNewReferat(moteId: Int): NewReferat {
         andreDeltakere = andreDeltakere.map {
             it.toNewDialogmotedeltakerAnnen()
         },
+        ferdigstilt = ferdigstilt,
     )
 }
 

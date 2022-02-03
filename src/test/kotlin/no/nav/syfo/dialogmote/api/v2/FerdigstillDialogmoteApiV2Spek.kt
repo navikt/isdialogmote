@@ -172,6 +172,8 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             referat.andreDeltakere.first().funksjon shouldBeEqualTo "Verneombud"
                             referat.andreDeltakere.first().navn shouldBeEqualTo "Tøff Pyjamas"
 
+                            referat.ferdigstilt shouldBeEqualTo true
+
                             val pdf = pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId)
                             pdf shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
 

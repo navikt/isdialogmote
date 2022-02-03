@@ -27,6 +27,7 @@ data class PReferat(
     val lestDatoArbeidsgiver: LocalDateTime?,
     val brevBestillingsId: String?,
     val brevBestiltTidspunkt: LocalDateTime?,
+    val ferdigstilt: Boolean,
 )
 
 data class PMotedeltakerAnnen(
@@ -68,6 +69,7 @@ fun PReferat.toReferat(
         andreDeltakere = andreDeltakere,
         brevBestillingsId = this.brevBestillingsId,
         brevBestiltTidspunkt = this.brevBestiltTidspunkt,
+        ferdigstilt = this.ferdigstilt,
     )
 
 fun PMotedeltakerAnnen.toDialogmoteDeltakerAnnen(): DialogmotedeltakerAnnen =
