@@ -5,9 +5,7 @@ import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.testhelper.mock.*
 
-class ExternalMockEnvironment private constructor(
-    allowVarselMedFysiskBrev: Boolean = false,
-) {
+class ExternalMockEnvironment private constructor() {
     val applicationState: ApplicationState = testAppState()
     val database = TestDatabase()
     val embeddedEnvironment: KafkaEnvironment = testKafka()
@@ -45,7 +43,6 @@ class ExternalMockEnvironment private constructor(
         syfotilgangskontrollUrl = tilgangskontrollMock.url,
         narmestelederUrl = narmesteLederMock.url,
         pdlUrl = pdlMock.url,
-        allowVarselMedFysiskBrev = allowVarselMedFysiskBrev,
     )
     val redisServer = testRedis(environment)
 
@@ -53,20 +50,14 @@ class ExternalMockEnvironment private constructor(
     val wellKnownVeilederV2 = wellKnownVeilederV2Mock()
 
     companion object {
-        private val instance: ExternalMockEnvironment by lazy {
+        private val singletonInstance: ExternalMockEnvironment by lazy {
             ExternalMockEnvironment().also {
                 it.startExternalMocks()
             }
         }
 
-        fun getInstance(allowVarselMedFysiskBrev: Boolean = false): ExternalMockEnvironment {
-            if (instance.environment.allowVarselMedFysiskBrev != allowVarselMedFysiskBrev) {
-                instance.environment = instance.environment.copy(
-                    allowVarselMedFysiskBrev = allowVarselMedFysiskBrev,
-                )
-            }
-
-            return instance
+        fun getInstance(): ExternalMockEnvironment {
+            return singletonInstance
         }
     }
 }

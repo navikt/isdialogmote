@@ -37,7 +37,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val externalMockEnvironment = ExternalMockEnvironment.getInstance(allowVarselMedFysiskBrev = true)
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
 
             val database = externalMockEnvironment.database
 

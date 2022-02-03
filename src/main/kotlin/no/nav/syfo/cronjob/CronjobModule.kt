@@ -97,31 +97,19 @@ fun Application.cronjobModule(
         journalpostdistribusjonClient = journalpostdistribusjonClient
     )
 
-    if (environment.journalforingCronjobEnabled) {
-        launchBackgroundTask(
-            applicationState = applicationState,
-        ) {
-            cronjobRunner.start(cronjob = journalforDialogmoteVarslerCronjob)
-        }
-    } else {
-        log.info("JournalforingCronjob is not enabled")
+    launchBackgroundTask(
+        applicationState = applicationState,
+    ) {
+        cronjobRunner.start(cronjob = journalforDialogmoteVarslerCronjob)
     }
-    if (environment.publishDialogmoteStatusEndringCronjobEnabled) {
-        launchBackgroundTask(
-            applicationState = applicationState,
-        ) {
-            cronjobRunner.start(cronjob = publishDialogmoteStatusEndringCronjob)
-        }
-    } else {
-        log.info("PublishDialogmoteStatusEndringCronjob is not enabled")
+    launchBackgroundTask(
+        applicationState = applicationState,
+    ) {
+        cronjobRunner.start(cronjob = publishDialogmoteStatusEndringCronjob)
     }
-    if (environment.allowVarselMedFysiskBrev) {
-        launchBackgroundTask(
-            applicationState = applicationState
-        ) {
-            cronjobRunner.start(cronjob = journalpostDistribusjonCronjob)
-        }
-    } else {
-        log.info("DialogmoteJournalpostDistribusjonCronjob not started due to allowVarselMedFysiskBrev not enabled")
+    launchBackgroundTask(
+        applicationState = applicationState
+    ) {
+        cronjobRunner.start(cronjob = journalpostDistribusjonCronjob)
     }
 }

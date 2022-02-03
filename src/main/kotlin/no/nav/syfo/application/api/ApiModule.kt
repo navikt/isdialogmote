@@ -103,7 +103,6 @@ fun Application.apiModule(
         adressebeskyttelseClient = adressebeskyttelseClient,
         kontaktinformasjonClient = kontaktinformasjonClient,
         veilederTilgangskontrollClient = veilederTilgangskontrollClient,
-        allowVarselMedFysiskBrev = environment.allowVarselMedFysiskBrev,
     )
 
     val arbeidstakerVarselService = ArbeidstakerVarselService(
@@ -142,7 +141,6 @@ fun Application.apiModule(
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
         pdfGenClient = pdfGenClient,
         kontaktinformasjonClient = kontaktinformasjonClient,
-        allowVarselMedFysiskBrev = environment.allowVarselMedFysiskBrev,
     )
 
     val narmesteLederTilgangService = NarmesteLederAccessService(

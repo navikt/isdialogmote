@@ -33,15 +33,11 @@ class MQSender(private val env: Environment) : MQSenderInterface {
 
     override fun sendMQMessage(varseltype: MotedeltakerVarselType, payload: String) {
         val queueName = getQueueName(env)
-        if (env.mqSendingEnabled) {
-            log.info("Sending message of type $varseltype to $queueName")
-            jmsContext.createContext(AUTO_ACKNOWLEDGE).use { context ->
-                val destination = context.createQueue("queue:///$queueName")
-                val message = context.createTextMessage(payload)
-                context.createProducer().send(destination, message)
-            }
-        } else {
-            log.info("MQ-message sending disabled, would have sent message of type $varseltype to $queueName")
+        log.info("Sending message of type $varseltype to $queueName")
+        jmsContext.createContext(AUTO_ACKNOWLEDGE).use { context ->
+            val destination = context.createQueue("queue:///$queueName")
+            val message = context.createTextMessage(payload)
+            context.createProducer().send(destination, message)
         }
     }
 

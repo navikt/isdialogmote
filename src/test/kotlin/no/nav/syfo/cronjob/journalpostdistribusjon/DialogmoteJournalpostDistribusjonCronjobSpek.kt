@@ -42,7 +42,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
 
             val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
             val isproxyMock = IsproxyMock()
-            val externalMockEnvironment = ExternalMockEnvironment.getInstance(allowVarselMedFysiskBrev = true)
+            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
