@@ -74,22 +74,6 @@ class DialogmoteTilgangService(
         }
     }
 
-    private suspend fun checkDigitalVarselEnabled(
-        personIdentNumber: PersonIdentNumber,
-        token: String,
-        callId: String,
-    ): Boolean {
-        val isDigitalVarselEnabled = kontaktinformasjonClient.isDigitalVarselEnabled(
-            personIdentNumber = personIdentNumber,
-            token = token,
-            callId = callId,
-        )
-        if (!isDigitalVarselEnabled) {
-            log.error("$DENIED_ACCESS_LOG_MESSAGE DigitalVarsel is not allowed, {}", callIdArgument(callId))
-        }
-        return isDigitalVarselEnabled
-    }
-
     companion object {
         private val log = LoggerFactory.getLogger(DialogmoteTilgangService::class.java)
 
