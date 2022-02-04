@@ -52,8 +52,8 @@ fun DatabaseInterface.getPdf(id: Int): PPdf {
         }
     }
     pPdfList.assertThatExactlyOneElement(
-        errorMessageIfEmpty = "No pdf found for mote with id $id",
-        errorMessageIfMoreThanOne = "More than one pdf found for mote with id $id",
+        errorMessageIfEmpty = "No pdf found for mote with id",
+        errorMessageIfMoreThanOne = "More than one pdf found for mote with id",
     )
     return pPdfList.first()
 }
