@@ -26,70 +26,47 @@ fun Route.registerDialogmoteApiV2(
 ) {
     route(dialogmoteApiV2Basepath) {
         get(dialogmoteApiPersonIdentUrlPath) {
-            try {
-                val callId = getCallId()
+            val personIdentNumber = getPersonIdentHeader()?.let { personIdent ->
+                PersonIdentNumber(personIdent)
+            } ?: throw IllegalArgumentException("No PersonIdent supplied")
 
-                val personIdentNumber = getPersonIdentHeader()?.let { personIdent ->
-                    PersonIdentNumber(personIdent)
-                } ?: throw IllegalArgumentException("No PersonIdent supplied")
-
-                val token = getBearerHeader()
-                    ?: throw IllegalArgumentException("No Authorization header supplied")
-
-                when (dialogmoteTilgangService.hasAccessToDialogmotePerson(personIdentNumber, token, callId)) {
-                    true -> {
-                        val dialogmoteDTOList = dialogmoteService.getDialogmoteList(
-                            personIdentNumber = personIdentNumber,
-                        ).map { dialogmote ->
-                            dialogmote.toDialogmoteDTO()
-                        }
-                        call.respond(dialogmoteDTOList)
-                    }
-                    else -> {
-                        val accessDeniedMessage = "Denied Veileder access to Dialogmoter for Person with PersonIdent"
-                        log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
-                        call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
-                    }
+            validateVeilederAccess(
+                dialogmoteTilgangService = dialogmoteTilgangService,
+                personIdentToAccess = personIdentNumber,
+                action = "Read Dialogmoter for Person with PersonIdent"
+            ) {
+                val dialogmoteDTOList = dialogmoteService.getDialogmoteList(
+                    personIdentNumber = personIdentNumber,
+                ).map { dialogmote ->
+                    dialogmote.toDialogmoteDTO()
                 }
-            } catch (e: IllegalArgumentException) {
-                val illegalArgumentMessage = "Could not retrieve DialogmoteList for PersonIdent"
-                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(getCallId()))
-                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+                call.respond(dialogmoteDTOList)
             }
         }
         post(dialogmoteApiPersonIdentUrlPath) {
             val callId = getCallId()
-            try {
-                val token = getBearerHeader()
-                    ?: throw IllegalArgumentException("No Authorization header supplied")
+            val token = getBearerHeader()
+                ?: throw IllegalArgumentException("No Authorization header supplied")
 
-                val newDialogmoteDTO = call.receive<NewDialogmoteDTO>()
+            val newDialogmoteDTO = call.receive<NewDialogmoteDTO>()
 
-                val personidentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
+            val personidentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
 
-                if (dialogmoteTilgangService.hasAccessToDialogmotePersonWithDigitalVarselEnabled(personidentNumber, token, callId)) {
-                    val created = dialogmoteService.createMoteinnkalling(
-                        newDialogmoteDTO = newDialogmoteDTO,
-                        token = token,
-                        callId = callId,
-                    )
-                    if (created) {
-                        call.respond(HttpStatusCode.OK)
-                    } else {
-                        call.respond(HttpStatusCode.InternalServerError, "Failed to create Dialogmoteinnkalling")
-                    }
+            validateVeilederAccess(
+                dialogmoteTilgangService = dialogmoteTilgangService,
+                personIdentToAccess = personidentNumber,
+                action = "Create new Dialogmoteinnkalling"
+            ) {
+                val created = dialogmoteService.createMoteinnkalling(
+                    newDialogmoteDTO = newDialogmoteDTO,
+                    token = token,
+                    callId = callId,
+                )
+                if (created) {
+                    call.respond(HttpStatusCode.OK)
                 } else {
-                    val accessDeniedMessage = "Denied Veileder access to creating new Dialogmote"
-                    call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
+                    call.respond(HttpStatusCode.InternalServerError, "Failed to create Dialogmoteinnkalling")
                 }
-            } catch (e: IllegalArgumentException) {
-                val illegalArgumentMessage = "Could not create new Dialogmote"
-                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
-                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
-            } catch (e: IllegalStateException) {
-                val illegalStateExceptionMessage = "Could not create new Dialogmote"
-                log.warn("$illegalStateExceptionMessage: {}, {}", e.message, callIdArgument(callId))
-                call.respond(HttpStatusCode.Forbidden, e.message ?: illegalStateExceptionMessage)
             }
         }
     }

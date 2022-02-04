@@ -4,6 +4,7 @@ import com.auth0.jwk.JwkProviderBuilder
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.auth.jwt.*
+import io.ktor.client.features.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.jackson.*
@@ -97,22 +98,49 @@ fun Application.installContentNegotiation() {
 fun Application.installStatusPages() {
     install(StatusPages) {
         exception<Throwable> { cause ->
+            val callId = getCallId()
+            val consumerId = getConsumerId()
+            val logExceptionMessage = "Caught exception, callId=$callId, consumerClientId=$consumerId"
+            when (cause) {
+                is ForbiddenAccessVeilederException -> {
+                    log.warn(logExceptionMessage, cause)
+                }
+                else -> {
+                    log.error(logExceptionMessage, cause)
+                }
+            }
+
+            var isUnexpectedException = false
+
             val responseStatus: HttpStatusCode = when (cause) {
+                is ResponseException -> {
+                    cause.response.status
+                }
+                is IllegalArgumentException -> {
+                    HttpStatusCode.BadRequest
+                }
+                is ForbiddenAccessVeilederException -> {
+                    HttpStatusCode.Forbidden
+                }
                 is ConflictException -> {
                     HttpStatusCode.Conflict
                 }
                 else -> {
+                    isUnexpectedException = true
                     HttpStatusCode.InternalServerError
                 }
             }
-
-            val message = cause.message ?: "Unknown error"
+            val message = if (isUnexpectedException) {
+                "The server reported an unexpected error and cannot complete the request."
+            } else {
+                cause.message ?: "Unknown error"
+            }
             call.respond(responseStatus, message)
-
-            val callId = getCallId()
-            val consumerId = getConsumerId()
-            log.error("Caught exception, callId=$callId, consumerId=$consumerId", cause)
-            throw cause
         }
     }
 }
+
+class ForbiddenAccessVeilederException(
+    action: String,
+    message: String = "Denied NAVIdent access to personIdent: $action",
+) : RuntimeException(message)

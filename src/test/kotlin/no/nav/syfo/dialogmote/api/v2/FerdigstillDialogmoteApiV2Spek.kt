@@ -6,7 +6,6 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
@@ -28,10 +27,9 @@ import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
-import org.junit.Assert.assertThrows
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.util.UUID
+import java.util.*
 
 class FerdigstillDialogmoteApiV2Spek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -174,7 +172,8 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
 
                             referat.ferdigstilt shouldBeEqualTo true
 
-                            val pdf = pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId)
+                            val pdf =
+                                pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId)
                             pdf shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
@@ -189,35 +188,44 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             }
                         }
 
-                        assertThrows(ConflictException::class.java) {
+                        with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(objectMapper.writeValueAsString(newReferatDTO))
                             }
-                        }.message shouldBeEqualTo "Failed to Ferdigstille Dialogmote, already Ferdigstilt"
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Conflict
+                            response.content shouldBeEqualTo "Failed to Ferdigstille Dialogmote, already Ferdigstilt"
+                        }
 
                         val urlMoteUUIDAvlys =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
                         val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
-                        assertThrows(ConflictException::class.java) {
+                        with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(Authorization, bearerHeader(validToken))
                                 setBody(objectMapper.writeValueAsString(avlysDialogMoteDto))
                             }
-                        }.message shouldBeEqualTo "Failed to Avlys Dialogmote: already Ferdigstilt"
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Conflict
+                            response.content shouldBeEqualTo "Failed to Avlys Dialogmote: already Ferdigstilt"
+                        }
 
                         val urlMoteUUIDPostTidSted =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                         val endreTidStedDialogMoteDto = generateEndreDialogmoteTidStedDTO()
-                        assertThrows(ConflictException::class.java) {
+                        with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(Authorization, bearerHeader(validToken))
                                 setBody(objectMapper.writeValueAsString(endreTidStedDialogMoteDto))
                             }
-                        }.message shouldBeEqualTo "Failed to change tid/sted, already Ferdigstilt"
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Conflict
+                            response.content shouldBeEqualTo "Failed to change tid/sted, already Ferdigstilt"
+                        }
                     }
                 }
                 describe("Happy path: with behandler") {
@@ -330,7 +338,13 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             referat.behandlerOppgave shouldBeEqualTo behandlerOppgave
 
                             val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
-                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(capture(kafkaBehandlerDialogmeldingDTOSlot)) }
+                            verify(exactly = 1) {
+                                behandlerDialogmeldingProducer.sendDialogmelding(
+                                    capture(
+                                        kafkaBehandlerDialogmeldingDTOSlot
+                                    )
+                                )
+                            }
                             val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
                             kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingUuid shouldBeEqualTo referatBehandlerVarselUUID

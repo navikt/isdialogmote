@@ -103,7 +103,7 @@ class DialogmoteService(
             }.anyUnfinished()
 
         if (anyUnfinishedDialogmote) {
-            throw IllegalStateException("Denied access to create Dialogmote: unfinished Dialogmote exists for PersonIdent")
+            throw ConflictException("Denied access to create Dialogmote: unfinished Dialogmote exists for PersonIdent")
         }
 
         val narmesteLeder = narmesteLederClient.activeLeder(
@@ -210,7 +210,7 @@ class DialogmoteService(
             throw ConflictException("Failed to Avlys Dialogmote: already Avlyst")
         }
         if (dialogmote.behandler != null && avlysDialogmote.behandler == null) {
-            throw RuntimeException("Failed to Avlys Dialogmote: missing behandler")
+            throw IllegalArgumentException("Failed to Avlys Dialogmote: missing behandler")
         }
 
         val pdfAvlysningArbeidstaker = pdfGenClient.pdfAvlysning(
@@ -298,7 +298,7 @@ class DialogmoteService(
             throw ConflictException("Failed to change tid/sted, already Avlyst")
         }
         if (dialogmote.behandler != null && endreDialogmoteTidSted.behandler == null) {
-            throw RuntimeException("Failed to change tid/sted: missing behandler")
+            throw IllegalArgumentException("Failed to change tid/sted: missing behandler")
         }
 
         val pdfEndringArbeidstaker = pdfGenClient.pdfEndringTidSted(

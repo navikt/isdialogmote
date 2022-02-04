@@ -27,10 +27,9 @@ import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.*
-import org.junit.Assert
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.util.UUID
+import java.util.*
 
 class PostDialogmoteTidStedApiV2Spek : Spek({
     val objectMapper: ObjectMapper = apiConsumerObjectMapper()
@@ -476,13 +475,16 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             behandler = null,
                         )
 
-                        Assert.assertThrows(RuntimeException::class.java) {
+                        with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(Authorization, bearerHeader(validToken))
                                 setBody(objectMapper.writeValueAsString(newDialogmoteTidStedNoBehandler))
                             }
-                        }.message shouldBeEqualTo "Failed to change tid/sted: missing behandler"
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                            response.content shouldBeEqualTo "Failed to change tid/sted: missing behandler"
+                        }
                     }
                 }
             }
