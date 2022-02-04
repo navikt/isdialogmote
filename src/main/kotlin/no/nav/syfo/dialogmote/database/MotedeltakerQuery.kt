@@ -64,8 +64,8 @@ fun DatabaseInterface.getMoteDeltakerArbeidstaker(moteId: Int): PMotedeltakerArb
         }
     }
     pMotedeltakerArbeidstakerList.assertThatExactlyOneElement(
-        errorMessageIfEmpty = "No motedeltakerArbeidstaker found for mote with id $moteId",
-        errorMessageIfMoreThanOne = "More than one motedeltakerArbeidstaker found for mote with id $moteId",
+        errorMessageIfEmpty = "No motedeltakerArbeidstaker found for mote with id",
+        errorMessageIfMoreThanOne = "More than one motedeltakerArbeidstaker found for mote with id",
     )
     return pMotedeltakerArbeidstakerList.first()
 }
@@ -85,8 +85,8 @@ fun DatabaseInterface.getMotedeltakerArbeidstakerById(motedeltakerId: Int): PMot
         }
     }
     pMotedeltakerArbeidstakerList.assertThatExactlyOneElement(
-        errorMessageIfEmpty = "No motedeltakerArbeidstaker found for motedeltakerId with id $motedeltakerId",
-        errorMessageIfMoreThanOne = "More than one motedeltakerArbeidstaker found for motedeltakerId with id $motedeltakerId",
+        errorMessageIfEmpty = "No motedeltakerArbeidstaker found for motedeltakerId with id",
+        errorMessageIfMoreThanOne = "More than one motedeltakerArbeidstaker found for motedeltakerId with id",
     )
     return pMotedeltakerArbeidstakerList.first()
 }
@@ -182,8 +182,8 @@ fun DatabaseInterface.getMotedeltakerBehandlerById(motedeltakerId: Int): PMotede
         }
     }
     pMotedeltakerBehandlerList.assertThatExactlyOneElement(
-        errorMessageIfEmpty = "No motedeltakerBehandler found for motedeltakerId with id $motedeltakerId",
-        errorMessageIfMoreThanOne = "More than one motedeltakerBehandler found for motedeltakerId with id $motedeltakerId",
+        errorMessageIfEmpty = "No motedeltakerBehandler found for motedeltakerId with id",
+        errorMessageIfMoreThanOne = "More than one motedeltakerBehandler found for motedeltakerId with id",
     )
     return pMotedeltakerBehandlerList.first()
 }
@@ -258,8 +258,8 @@ fun DatabaseInterface.getMoteDeltakerArbeidsgiver(moteId: Int): PMotedeltakerArb
         }
     }
     pMotedeltakerArbeidsgiverList.assertThatExactlyOneElement(
-        errorMessageIfEmpty = "No motedeltakerArbeidsgiver found for moteId with id $moteId",
-        errorMessageIfMoreThanOne = "More than one motedeltakerArbeidsgiver found for motedeltakerId with id $moteId",
+        errorMessageIfEmpty = "No motedeltakerArbeidsgiver found for moteId with id",
+        errorMessageIfMoreThanOne = "More than one motedeltakerArbeidsgiver found for motedeltakerId with id",
     )
     return pMotedeltakerArbeidsgiverList.first()
 }
@@ -279,8 +279,8 @@ fun DatabaseInterface.getMoteDeltakerArbeidsgiverById(moteDeltakerArbeidsgiverId
         }
     }
     pMotedeltakerArbeidsgiverList.assertThatExactlyOneElement(
-        errorMessageIfEmpty = "No motedeltakerArbeidsgiver found for id  $moteDeltakerArbeidsgiverId",
-        errorMessageIfMoreThanOne = "More than one motedeltakerArbeidsgiver found for motedeltakerId $moteDeltakerArbeidsgiverId",
+        errorMessageIfEmpty = "No motedeltakerArbeidsgiver found for id",
+        errorMessageIfMoreThanOne = "More than one motedeltakerArbeidsgiver found for motedeltakerId",
     )
     return pMotedeltakerArbeidsgiverList.first()
 }
