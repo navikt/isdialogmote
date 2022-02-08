@@ -17,9 +17,9 @@ suspend fun PipelineContext<out Unit, ApplicationCall>.validateVeilederAccess(
     val token = getBearerHeader()
         ?: throw IllegalArgumentException("No Authorization header supplied")
 
-    val hasVeilederAccess = dialogmoteTilgangService.hasAccessToDialogmotePerson(
+    val hasVeilederAccess = dialogmoteTilgangService.hasAccessToAllDialogmotePersons(
         callId = callId,
-        personIdentNumber = personIdentToAccess,
+        personIdentNumberList = listOf(personIdentToAccess),
         token = token,
     )
     if (hasVeilederAccess) {
