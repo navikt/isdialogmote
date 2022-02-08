@@ -23,12 +23,10 @@ class VeilederTilgangskontrollClient(
 ) {
     private val httpClient = httpClientDefault()
 
-    private val tilgangskontrollPersonUrl: String
     private val tilgangskontrollPersonListUrl: String
     private val tilgangskontrollEnhetUrl: String
 
     init {
-        tilgangskontrollPersonUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_PERSON_PATH"
         tilgangskontrollPersonListUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_PERSON_LIST_PATH"
         tilgangskontrollEnhetUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_ENHET_PATH"
     }
@@ -72,41 +70,6 @@ class VeilederTilgangskontrollClient(
         } finally {
             val duration = Duration.ofMillis(System.currentTimeMillis() - starttime)
             HISTOGRAM_CALL_TILGANGSKONTROLL_PERSONS_TIMER.record(duration)
-        }
-    }
-
-    suspend fun hasAccess(
-        personIdentNumber: PersonIdentNumber,
-        token: String,
-        callId: String
-    ): Boolean {
-        val oboToken = azureAdV2Client.getOnBehalfOfToken(
-            scopeClientId = syfotilgangskontrollClientId,
-            token = token
-        )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
-
-        return try {
-            val response: HttpResponse = httpClient.get(tilgangskontrollPersonUrl) {
-                header(HttpHeaders.Authorization, bearerHeader(oboToken))
-                header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
-                header(NAV_CALL_ID_HEADER, callId)
-                accept(ContentType.Application.Json)
-            }
-            COUNT_CALL_TILGANGSKONTROLL_PERSON_SUCCESS.increment()
-            response.receive<Tilgang>().harTilgang
-        } catch (e: ClientRequestException) {
-            if (e.response.status == HttpStatusCode.Forbidden) {
-                COUNT_CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN.increment()
-            } else {
-                handleUnexpectedResponseException(e.response, resourcePerson, callId)
-            }
-            false
-        } catch (e: ServerResponseException) {
-            handleUnexpectedResponseException(e.response, resourcePerson, callId)
-            false
-        } catch (e: ClosedReceiveChannelException) {
-            handleClosedReceiveChannelException(e, "hasAccess", resourcePerson)
-            false
         }
     }
 
@@ -194,7 +157,6 @@ class VeilederTilgangskontrollClient(
         private const val resourceEnhet = "ENHET"
 
         const val TILGANGSKONTROLL_COMMON_PATH = "/syfo-tilgangskontroll/api/tilgang/navident"
-        const val TILGANGSKONTROLL_PERSON_PATH = "$TILGANGSKONTROLL_COMMON_PATH/person"
         const val TILGANGSKONTROLL_PERSON_LIST_PATH = "$TILGANGSKONTROLL_COMMON_PATH/brukere"
         const val TILGANGSKONTROLL_ENHET_PATH = "$TILGANGSKONTROLL_COMMON_PATH/enhet"
     }

@@ -10,15 +10,15 @@ import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.veiledertilgang.Tilgang
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient.Companion.TILGANGSKONTROLL_ENHET_PATH
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient.Companion.TILGANGSKONTROLL_PERSON_LIST_PATH
-import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient.Companion.TILGANGSKONTROLL_PERSON_PATH
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR_NO_ACCESS
 import no.nav.syfo.testhelper.getRandomPort
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 
 class VeilederTilgangskontrollMock {
     private val port = getRandomPort()
@@ -50,25 +50,15 @@ class VeilederTilgangskontrollMock {
         ) {
             installContentNegotiation()
             routing {
-                get(TILGANGSKONTROLL_PERSON_PATH) {
-                    when {
-                        call.request.headers[NAV_PERSONIDENT_HEADER] == ARBEIDSTAKER_VEILEDER_NO_ACCESS.value -> {
-                            call.respond(HttpStatusCode.Forbidden, tilgangFalse)
-                        }
-                        call.request.headers[NAV_PERSONIDENT_HEADER] != null -> {
-                            call.respond(tilgangTrue)
-                        }
-                        else -> {
-                            call.respond(HttpStatusCode.BadRequest)
-                        }
-                    }
-                }
                 post(TILGANGSKONTROLL_PERSON_LIST_PATH) {
                     call.respond(
                         listOf(
                             ARBEIDSTAKER_FNR.value,
                             ARBEIDSTAKER_ANNEN_FNR.value,
                             ARBEIDSTAKER_ADRESSEBESKYTTET.value,
+                            ARBEIDSTAKER_NO_JOURNALFORING.value,
+                            ARBEIDSTAKER_IKKE_VARSEL.value,
+                            ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value,
                         )
                     )
                 }
