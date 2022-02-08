@@ -6,7 +6,6 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
@@ -23,11 +22,7 @@ import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldNotBeEqualTo
-import org.amshove.kluent.shouldNotBeNull
-import org.junit.Assert.assertThrows
+import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDateTime
@@ -178,35 +173,46 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         }
 
-                        assertThrows(ConflictException::class.java) {
+                        with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(Authorization, bearerHeader(validToken))
                                 setBody(objectMapper.writeValueAsString(avlysDialogMoteDto))
                             }
-                        }.message shouldBeEqualTo "Failed to Avlys Dialogmote: already Avlyst"
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Conflict
+                            response.content shouldBeEqualTo "Failed to Avlys Dialogmote: already Avlyst"
+                        }
 
                         val urlMoteUUIDFerdigstill =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                         val newReferatDTO = generateNewReferatDTO()
-                        assertThrows(ConflictException::class.java) {
+
+                        with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(objectMapper.writeValueAsString(newReferatDTO))
                             }
-                        }.message shouldBeEqualTo "Failed to Ferdigstille Dialogmote, already Avlyst"
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Conflict
+                            response.content shouldBeEqualTo "Failed to Ferdigstille Dialogmote, already Avlyst"
+                        }
 
                         val urlMoteUUIDPostTidSted =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                         val endreTidStedDialogMoteDto = generateEndreDialogmoteTidStedDTO()
-                        assertThrows(ConflictException::class.java) {
+
+                        with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(Authorization, bearerHeader(validToken))
                                 setBody(objectMapper.writeValueAsString(endreTidStedDialogMoteDto))
                             }
-                        }.message shouldBeEqualTo "Failed to change tid/sted, already Avlyst"
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Conflict
+                            response.content shouldBeEqualTo "Failed to change tid/sted, already Avlyst"
+                        }
                     }
                 }
                 describe("With behandler") {
@@ -281,7 +287,13 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
                             val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
-                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(capture(kafkaBehandlerDialogmeldingDTOSlot)) }
+                            verify(exactly = 1) {
+                                behandlerDialogmeldingProducer.sendDialogmelding(
+                                    capture(
+                                        kafkaBehandlerDialogmeldingDTOSlot
+                                    )
+                                )
+                            }
                             val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
                             kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo avlysDialogMoteDto.behandler!!.avlysning.serialize()
@@ -330,13 +342,16 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
                         val avlysDialogMoteDto = generateAvlysDialogmoteDTONoBehandler()
 
-                        assertThrows(RuntimeException::class.java) {
+                        with(
                             handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(Authorization, bearerHeader(validToken))
                                 setBody(objectMapper.writeValueAsString(avlysDialogMoteDto))
                             }
-                        }.message shouldBeEqualTo "Failed to Avlys Dialogmote: missing behandler"
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                            response.content shouldBeEqualTo "Failed to Avlys Dialogmote: missing behandler"
+                        }
                     }
                 }
 

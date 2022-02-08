@@ -101,7 +101,6 @@ fun Application.apiModule(
     )
     val dialogmoteTilgangService = DialogmoteTilgangService(
         adressebeskyttelseClient = adressebeskyttelseClient,
-        kontaktinformasjonClient = kontaktinformasjonClient,
         veilederTilgangskontrollClient = veilederTilgangskontrollClient,
     )
 

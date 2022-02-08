@@ -351,7 +351,7 @@ class PostDialogmoteApiV2Spek : Spek({
                         }
                     }
 
-                    it("should return Forbidden if requesting to create Dialogmote for PersonIdent with an existing unfinished Dialogmote") {
+                    it("should return Conflict if requesting to create Dialogmote for PersonIdent with an existing unfinished Dialogmote") {
                         val newDialogmoteDTO = generateNewDialogmoteDTOWithMissingValues(ARBEIDSTAKER_FNR)
 
                         with(
@@ -373,7 +373,7 @@ class PostDialogmoteApiV2Spek : Spek({
                                 setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
                             }
                         ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                            response.status() shouldBeEqualTo HttpStatusCode.Conflict
                             verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                             clearMocks(mqSenderMock)
                         }
