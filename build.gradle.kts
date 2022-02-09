@@ -16,7 +16,8 @@ object Versions {
     const val kafka = "2.8.1"
     const val kafkaEmbedded = "2.8.1"
     const val ktor = "1.6.7"
-    const val jaxb = "2.3.1"
+    const val jaxbApi = "2.3.1"
+    const val jaxbRuntime = "2.3.6"
     const val kluent = "1.68"
     const val logback = "1.2.10"
     const val logstashEncoder = "7.0.1"
@@ -81,8 +82,8 @@ dependencies {
 
     // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jackson}")
-    implementation("javax.xml.bind:jaxb-api:${Versions.jaxb}")
-    implementation("org.glassfish.jaxb:jaxb-runtime:${Versions.jaxb}")
+    implementation("javax.xml.bind:jaxb-api:${Versions.jaxbApi}")
+    implementation("org.glassfish.jaxb:jaxb-runtime:${Versions.jaxbRuntime}")
 
     // Cache
     implementation("redis.clients:jedis:${Versions.jedis}")
