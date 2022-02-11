@@ -11,7 +11,7 @@ import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
-import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.client.person.oppfolgingstilfelle.*
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
@@ -126,6 +126,16 @@ class DialogmoteService(
                 navEnhet = EnhetNr(behandlendeEnhet.enhetId),
             )
 
+            val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfelle(
+                callId = callId,
+                personIdentNumber = personIdentNumber,
+                token = token,
+            ) ?: throw RuntimeException("Cannot create Dialogmote: No Oppfolgingstilfelle was found")
+
+            if (tilfelle.isInactive()) {
+                throw RuntimeException("Cannot create Dialogmote: Dialogmoteinnkalling for person with inactive Oppfolgingstilfelle is not allowed")
+            }
+
             val pdfInnkallingArbeidstaker = pdfGenClient.pdfInnkalling(
                 callId = callId,
                 documentComponentDTOList = newDialogmoteDTO.arbeidstaker.innkalling,
@@ -157,14 +167,12 @@ class DialogmoteService(
                     newDialogmote = newDialogmote,
                 )
                 createMoteStatusEndring(
-                    callId = callId,
                     connection = connection,
                     dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
                     dialogmoteStatus = newDialogmote.status,
                     isBehandlerMotedeltaker = newDialogmote.behandler != null,
                     opprettetAv = newDialogmote.opprettetAv,
-                    personIdentNumber = newDialogmote.arbeidstaker.personIdent,
-                    token = token,
+                    tilfelle = tilfelle,
                 )
                 createAndSendVarsel(
                     connection = connection,
@@ -665,45 +673,42 @@ class DialogmoteService(
         personIdentNumber: PersonIdentNumber,
         token: String,
     ) {
+        val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfelle(
+            callId = callId,
+            personIdentNumber = personIdentNumber,
+            token = token,
+        ) ?: throw RuntimeException("Cannot update MoteStatusEndring: No Oppfolgingstilfelle was found")
+
         connection.updateMoteStatus(
             commit = false,
             moteId = dialogmoteId,
             moteStatus = newDialogmoteStatus,
         )
         createMoteStatusEndring(
-            callId = callId,
             connection = connection,
             dialogmoteId = dialogmoteId,
             dialogmoteStatus = newDialogmoteStatus,
             isBehandlerMotedeltaker = isBehandlerMotedeltaker,
             opprettetAv = opprettetAv,
-            personIdentNumber = personIdentNumber,
-            token = token,
+            tilfelle = tilfelle,
         )
     }
 
-    private suspend fun createMoteStatusEndring(
-        callId: String,
+    private fun createMoteStatusEndring(
         connection: Connection,
         dialogmoteId: Int,
         dialogmoteStatus: DialogmoteStatus,
         isBehandlerMotedeltaker: Boolean,
         opprettetAv: String,
-        personIdentNumber: PersonIdentNumber,
-        token: String,
+        tilfelle: OppfolgingstilfellePerson,
     ) {
-        val tilfelleStart = oppfolgingstilfelleClient.oppfolgingstilfelle(
-            callId = callId,
-            personIdentNumber = personIdentNumber,
-            token = token,
-        )?.fom ?: throw RuntimeException("Cannot create MoteStatusEndring: No TilfelleStart was found")
         connection.createMoteStatusEndring(
             commit = false,
             moteId = dialogmoteId,
             opprettetAv = opprettetAv,
             isBehandlerMotedeltaker = isBehandlerMotedeltaker,
             status = dialogmoteStatus,
-            tilfelleStart = tilfelleStart,
+            tilfelleStart = tilfelle.fom,
         )
     }
 

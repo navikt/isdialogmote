@@ -14,6 +14,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
@@ -59,6 +60,7 @@ class VeilederTilgangskontrollMock {
                             ARBEIDSTAKER_NO_JOURNALFORING.value,
                             ARBEIDSTAKER_IKKE_VARSEL.value,
                             ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value,
+                            ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE.value,
                         )
                     )
                 }
