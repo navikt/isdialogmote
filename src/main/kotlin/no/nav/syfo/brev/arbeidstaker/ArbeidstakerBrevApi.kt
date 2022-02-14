@@ -63,8 +63,8 @@ fun Route.registerArbeidstakerBrevApi(
                 )
 
                 val hasAccessToBrev = motedeltakerArbeidstaker.personIdent == requestPersonIdent
-                if (hasAccessToBrev) {
-                    val pdf = pdfService.getPdf(brev.pdfId)
+                if (hasAccessToBrev && brev.pdfId != null) {
+                    val pdf = pdfService.getPdf(brev.pdfId!!)
                     call.respond(PdfContent(pdf))
                 } else {
                     val accessDeniedMessage = "Denied access to pdf for brev with uuid $brevUuid"

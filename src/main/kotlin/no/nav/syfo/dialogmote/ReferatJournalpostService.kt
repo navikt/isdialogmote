@@ -12,7 +12,7 @@ class ReferatJournalpostService(
     private val database: DatabaseInterface
 ) {
     fun getDialogmoteReferatJournalforingListArbeidstaker(): List<Pair<PersonIdentNumber, Referat>> {
-        return database.getReferatWithoutJournalpostArbeidstakerList().map { (personIdentNumber, pReferat) ->
+        return database.getFerdigstilteReferatWithoutJournalpostArbeidstakerList().map { (personIdentNumber, pReferat) ->
             val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id).map {
                 it.toDialogmoteDeltakerAnnen()
             }
@@ -31,7 +31,7 @@ class ReferatJournalpostService(
     }
 
     fun getDialogmoteReferatJournalforingListArbeidsgiver(): List<Triple<Virksomhetsnummer, PersonIdentNumber, Referat>> {
-        return database.getReferatWithoutJournalpostArbeidsgiverList().map { (virksomhetsnummer, pReferat) ->
+        return database.getFerdigstilteReferatWithoutJournalpostArbeidsgiverList().map { (virksomhetsnummer, pReferat) ->
             val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id).map {
                 it.toDialogmoteDeltakerAnnen()
             }
@@ -51,7 +51,7 @@ class ReferatJournalpostService(
     }
 
     fun getDialogmoteReferatJournalforingListBehandler(): List<Triple<PersonIdentNumber, DialogmotedeltakerBehandler, Referat>> {
-        return database.getReferatWithoutJournalpostBehandlerList().map { pReferat ->
+        return database.getFerdigstilteReferatWithoutJournalpostBehandlerList().map { pReferat ->
             val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id).map {
                 it.toDialogmoteDeltakerAnnen()
             }

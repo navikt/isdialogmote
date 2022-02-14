@@ -145,7 +145,7 @@ class DialogmoteVarselJournalforingCronjob(
         referatList.forEach { (personIdentNumber, referat) ->
             try {
                 val navn = pdlClient.navn(personIdentNumber)
-                val pdf = pdfService.getPdf(referat.pdfId)
+                val pdf = pdfService.getPdf(referat.pdfId!!)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = referat.toJournalforingRequestArbeidstaker(
                         personIdent = personIdentNumber,
@@ -175,7 +175,7 @@ class DialogmoteVarselJournalforingCronjob(
         referatList.forEach { (virksomhetsnummer, personIdent, referat) ->
             try {
                 val virksomhetsnavn = eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer)
-                val pdf = pdfService.getPdf(referat.pdfId)
+                val pdf = pdfService.getPdf(referat.pdfId!!)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = referat.toJournalforingRequestArbeidsgiver(
                         brukerPersonIdent = personIdent,
@@ -205,7 +205,7 @@ class DialogmoteVarselJournalforingCronjob(
         val referatList = referatJournalpostService.getDialogmoteReferatJournalforingListBehandler()
         referatList.forEach { (personIdentNumber, behandler, referat) ->
             try {
-                val pdf = pdfService.getPdf(referat.pdfId)
+                val pdf = pdfService.getPdf(referat.pdfId!!)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = referat.toJournalforingRequestBehandler(
                         brukerPersonIdent = personIdentNumber,

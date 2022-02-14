@@ -496,6 +496,52 @@ class DialogmoteService(
         return true
     }
 
+    fun mellomlagreReferat(
+        dialogmote: Dialogmote,
+        opprettetAv: String,
+        referat: NewReferatDTO,
+    ): Boolean {
+        if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
+            throw ConflictException("Failed to mellomlagre referat Dialogmote, already Ferdigstilt")
+        }
+        if (dialogmote.status == DialogmoteStatus.AVLYST) {
+            throw ConflictException("Failed to mellomlagre referat Dialogmote, already Avlyst")
+        }
+
+        database.connection.use { connection ->
+
+            if (dialogmote.tildeltVeilederIdent != opprettetAv) {
+                connection.updateMoteTildeltVeileder(
+                    commit = false,
+                    moteId = dialogmote.id,
+                    veilederId = opprettetAv,
+                )
+            }
+            val newReferat = referat.toNewReferat(
+                moteId = dialogmote.id,
+                ferdigstilt = false,
+            )
+            if (dialogmote.referat == null) {
+                connection.createNewReferat(
+                    commit = false,
+                    newReferat = newReferat,
+                    pdfId = null,
+                    digitalt = true,
+                )
+            } else {
+                connection.updateReferat(
+                    commit = false,
+                    referat = dialogmote.referat,
+                    newReferat = newReferat,
+                    pdfId = null,
+                    digitalt = true,
+                )
+            }
+            connection.commit()
+        }
+        return true
+    }
+
     suspend fun ferdigstillMote(
         callId: String,
         dialogmote: Dialogmote,
@@ -556,15 +602,26 @@ class DialogmoteService(
                 commit = false,
                 pdf = pdfReferat,
             )
-            val (_, referatUuid) = connection.createNewReferat(
-                commit = false,
-                newReferat = referat.toNewReferat(
-                    moteId = dialogmote.id,
-                    ferdigstilt = true,
-                ),
-                pdfId = pdfId.first,
-                digitalt = digitalVarsling,
+            val newReferat = referat.toNewReferat(
+                moteId = dialogmote.id,
+                ferdigstilt = true,
             )
+            val (_, referatUuid) = if (dialogmote.referat == null) {
+                connection.createNewReferat(
+                    commit = false,
+                    newReferat = newReferat,
+                    pdfId = pdfId.first,
+                    digitalt = digitalVarsling,
+                )
+            } else {
+                connection.updateReferat(
+                    commit = false,
+                    referat = dialogmote.referat,
+                    newReferat = newReferat,
+                    pdfId = pdfId.first,
+                    digitalt = digitalVarsling,
+                )
+            }
             if (digitalVarsling) {
                 arbeidstakerVarselService.sendVarsel(
                     createdAt = now,

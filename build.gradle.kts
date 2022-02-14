@@ -25,7 +25,7 @@ object Versions {
     const val nimbusjosejwt = "9.18"
     const val postgresEmbedded = "0.13.4"
     const val postgres = "42.3.2"
-    const val redisEmbedded = "0.8.2"
+    const val redisEmbedded = "0.7.3"
     const val scala = "2.13.7"
     const val spek = "2.0.17"
     const val mq = "9.2.4.0"
@@ -87,7 +87,7 @@ dependencies {
 
     // Cache
     implementation("redis.clients:jedis:${Versions.jedis}")
-    testImplementation("org.signal:embedded-redis:${Versions.redisEmbedded}")
+    testImplementation("it.ozimov:embedded-redis:${Versions.redisEmbedded}")
 
     // Database
     implementation("org.postgresql:postgresql:${Versions.postgres}")

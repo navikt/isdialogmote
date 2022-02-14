@@ -18,6 +18,7 @@ private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 
 const val dialogmoteApiMoteParam = "moteuuid"
 const val dialogmoteApiMoteAvlysPath = "/avlys"
+const val dialogmoteApiMoteMellomlagrePath = "/mellomlagre"
 const val dialogmoteApiMoteFerdigstillPath = "/ferdigstill"
 const val dialogmoteApiMoteTidStedPath = "/tidsted"
 const val dialogmoteActionsApiOvertaPath = "/overta"
@@ -53,6 +54,33 @@ fun Route.registerDialogmoteActionsApiV2(
                     call.respond(HttpStatusCode.OK)
                 } else {
                     call.respond(HttpStatusCode.InternalServerError, "Failed to Avlys Dialogmoteinnkalling")
+                }
+            }
+        }
+
+        post("/{$dialogmoteApiMoteParam}$dialogmoteApiMoteMellomlagrePath") {
+            val token = getBearerHeader()
+                ?: throw IllegalArgumentException("No Authorization header supplied")
+
+            val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
+            val newReferat = call.receive<NewReferatDTO>()
+
+            val dialogmote = dialogmoteService.getDialogmote(moteUUID)
+
+            validateVeilederAccess(
+                dialogmoteTilgangService = dialogmoteTilgangService,
+                personIdentToAccess = dialogmote.arbeidstaker.personIdent,
+                action = "Mellomlagre Dialogmote for moteUUID"
+            ) {
+                val success = dialogmoteService.mellomlagreReferat(
+                    dialogmote = dialogmote,
+                    opprettetAv = getNAVIdentFromToken(token),
+                    referat = newReferat,
+                )
+                if (success) {
+                    call.respond(HttpStatusCode.OK)
+                } else {
+                    call.respond(HttpStatusCode.InternalServerError, "Failed to mellomlagre referat for Dialogmote")
                 }
             }
         }
