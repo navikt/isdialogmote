@@ -5,15 +5,11 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerAnnen
 import no.nav.syfo.dialogmote.database.domain.PReferat
-import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
-import no.nav.syfo.dialogmote.domain.NewReferat
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.util.configuredJacksonMapper
-import java.sql.Connection
-import java.sql.ResultSet
-import java.sql.SQLException
-import java.sql.Timestamp
+import java.sql.*
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
@@ -139,10 +135,15 @@ const val queryCreateMotedeltakerAnnen =
     ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
+const val queryDeleteMotedeltakerAnnen =
+    """
+    DELETE FROM MOTEDELTAKER_ANNEN WHERE mote_referat_id=?
+    """
+
 fun Connection.createNewReferat(
     commit: Boolean = true,
     newReferat: NewReferat,
-    pdfId: Int,
+    pdfId: Int?,
     digitalt: Boolean,
 ): Pair<Int, UUID> {
     val referatUuid = UUID.randomUUID()
@@ -162,7 +163,11 @@ fun Connection.createNewReferat(
         it.setString(11, newReferat.behandlerOppgave)
         it.setString(12, newReferat.narmesteLederNavn)
         it.setObject(13, mapper.writeValueAsString(newReferat.document))
-        it.setInt(14, pdfId)
+        if (pdfId != null) {
+            it.setInt(14, pdfId)
+        } else {
+            it.setNull(14, Types.INTEGER)
+        }
         it.setBoolean(15, newReferat.ferdigstilt)
         it.executeQuery().toList { getInt("id") }
     }
@@ -170,7 +175,81 @@ fun Connection.createNewReferat(
         throw SQLException("Creating Referat failed, no rows affected.")
     }
     val referatId = referatIdList.first()
+    updateAndreDeltakereForReferat(referatId, newReferat)
+    if (commit) {
+        this.commit()
+    }
+    return Pair(referatId, referatUuid)
+}
 
+const val queryUpdateReferat =
+    """
+        UPDATE MOTE_REFERAT
+        SET updated_at = ?,
+            digitalt = ?,
+            situasjon = ?,
+            konklusjon = ?,
+            arbeidstaker_oppgave = ?,
+            arbeidsgiver_oppgave = ?,
+            veileder_oppgave = ?,
+            behandler_oppgave = ?,
+            narmeste_leder_navn = ?,
+            document = ?::jsonb,
+            pdf_id = ?,
+            ferdigstilt = ?        
+        WHERE id = ?
+    """
+
+fun Connection.updateReferat(
+    commit: Boolean = true,
+    referat: Referat,
+    newReferat: NewReferat,
+    pdfId: Int?,
+    digitalt: Boolean,
+): Pair<Int, UUID> {
+    val now = Timestamp.from(Instant.now())
+
+    val rowCount = this.prepareStatement(queryUpdateReferat).use {
+        it.setTimestamp(1, now)
+        it.setBoolean(2, digitalt)
+        it.setString(3, newReferat.situasjon)
+        it.setString(4, newReferat.konklusjon)
+        it.setString(5, newReferat.arbeidstakerOppgave)
+        it.setString(6, newReferat.arbeidsgiverOppgave)
+        it.setString(7, newReferat.veilederOppgave)
+        it.setString(8, newReferat.behandlerOppgave)
+        it.setString(9, newReferat.narmesteLederNavn)
+        it.setObject(10, mapper.writeValueAsString(newReferat.document))
+        if (pdfId != null) {
+            it.setInt(11, pdfId)
+        } else {
+            it.setNull(11, Types.INTEGER)
+        }
+        it.setBoolean(12, newReferat.ferdigstilt)
+        it.setInt(13, referat.id)
+        it.executeUpdate()
+    }
+    if (rowCount != 1) {
+        throw SQLException("Update Referat failed, no rows affected.")
+    }
+
+    updateAndreDeltakereForReferat(referat.id, newReferat)
+
+    if (commit) {
+        this.commit()
+    }
+    return Pair(referat.id, referat.uuid)
+}
+
+private fun Connection.updateAndreDeltakereForReferat(
+    referatId: Int,
+    newReferat: NewReferat,
+) {
+    this.prepareStatement(queryDeleteMotedeltakerAnnen).use {
+        it.setInt(1, referatId)
+        it.executeUpdate()
+    }
+    val now = Timestamp.from(Instant.now())
     newReferat.andreDeltakere.forEach { deltaker ->
         this.prepareStatement(queryCreateMotedeltakerAnnen).use {
             it.setString(1, UUID.randomUUID().toString())
@@ -182,25 +261,20 @@ fun Connection.createNewReferat(
             it.executeQuery()
         }
     }
-
-    if (commit) {
-        this.commit()
-    }
-    return Pair(referatId, referatUuid)
 }
 
-const val queryGetReferatWithoutJournalpostArbeidstaker =
+const val queryGetFerdigstilteReferatWithoutJournalpostArbeidstaker =
     """
         SELECT MOTEDELTAKER_ARBEIDSTAKER.PERSONIDENT, MOTE_REFERAT.*
         FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
                   INNER JOIN MOTEDELTAKER_ARBEIDSTAKER ON (MOTE.ID = MOTEDELTAKER_ARBEIDSTAKER.MOTE_ID) 
-        WHERE MOTE_REFERAT.journalpost_id IS NULL
+        WHERE MOTE_REFERAT.journalpost_id IS NULL AND MOTE_REFERAT.ferdigstilt = true
         LIMIT 20
     """
 
-fun DatabaseInterface.getReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdentNumber, PReferat>> {
+fun DatabaseInterface.getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdentNumber, PReferat>> {
     return this.connection.use { connection ->
-        connection.prepareStatement(queryGetReferatWithoutJournalpostArbeidstaker).use {
+        connection.prepareStatement(queryGetFerdigstilteReferatWithoutJournalpostArbeidstaker).use {
             it.executeQuery().toList {
                 Pair(PersonIdentNumber(getString(1)), toPReferat())
             }
@@ -208,18 +282,18 @@ fun DatabaseInterface.getReferatWithoutJournalpostArbeidstakerList(): List<Pair<
     }
 }
 
-const val queryGetReferatWithoutJournalpostArbeidsgiver =
+const val queryGetFerdigstilteReferatWithoutJournalpostArbeidsgiver =
     """
         SELECT MOTEDELTAKER_ARBEIDSGIVER.VIRKSOMHETSNUMMER, MOTE_REFERAT.*
         FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
                   INNER JOIN MOTEDELTAKER_ARBEIDSGIVER ON (MOTE.ID = MOTEDELTAKER_ARBEIDSGIVER.MOTE_ID) 
-        WHERE MOTE_REFERAT.journalpost_ag_id IS NULL
+        WHERE MOTE_REFERAT.journalpost_ag_id IS NULL AND MOTE_REFERAT.ferdigstilt = true
         LIMIT 20
     """
 
-fun DatabaseInterface.getReferatWithoutJournalpostArbeidsgiverList(): List<Pair<Virksomhetsnummer, PReferat>> {
+fun DatabaseInterface.getFerdigstilteReferatWithoutJournalpostArbeidsgiverList(): List<Pair<Virksomhetsnummer, PReferat>> {
     return this.connection.use { connection ->
-        connection.prepareStatement(queryGetReferatWithoutJournalpostArbeidsgiver).use {
+        connection.prepareStatement(queryGetFerdigstilteReferatWithoutJournalpostArbeidsgiver).use {
             it.executeQuery().toList {
                 Pair(Virksomhetsnummer(getString(1)), toPReferat())
             }
@@ -227,18 +301,18 @@ fun DatabaseInterface.getReferatWithoutJournalpostArbeidsgiverList(): List<Pair<
     }
 }
 
-const val queryGetReferatWithoutJournalpostBehandler =
+const val queryGetFerdigstilteReferatWithoutJournalpostBehandler =
     """
         SELECT MOTE_REFERAT.*
         FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
                   INNER JOIN MOTEDELTAKER_BEHANDLER ON (MOTE.ID = MOTEDELTAKER_BEHANDLER.MOTE_ID) 
-        WHERE MOTE_REFERAT.journalpost_beh_id IS NULL
+        WHERE MOTE_REFERAT.journalpost_beh_id IS NULL AND MOTE_REFERAT.ferdigstilt = true
         LIMIT 20
     """
 
-fun DatabaseInterface.getReferatWithoutJournalpostBehandlerList(): List<PReferat> {
+fun DatabaseInterface.getFerdigstilteReferatWithoutJournalpostBehandlerList(): List<PReferat> {
     return this.connection.use { connection ->
-        connection.prepareStatement(queryGetReferatWithoutJournalpostBehandler).use {
+        connection.prepareStatement(queryGetFerdigstilteReferatWithoutJournalpostBehandler).use {
             it.executeQuery().toList {
                 toPReferat()
             }

@@ -27,7 +27,7 @@ data class Referat(
     val behandlerOppgave: String?,
     val narmesteLederNavn: String,
     override val document: List<DocumentComponentDTO>,
-    override val pdfId: Int,
+    override val pdfId: Int?,
     val journalpostIdArbeidstaker: String?,
     override val lestDatoArbeidstaker: LocalDateTime?,
     override val lestDatoArbeidsgiver: LocalDateTime?,

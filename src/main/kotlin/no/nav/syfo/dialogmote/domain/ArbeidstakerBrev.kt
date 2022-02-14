@@ -7,6 +7,6 @@ interface ArbeidstakerBrev {
     val uuid: UUID
     val motedeltakerArbeidstakerId: Int
     val document: List<DocumentComponentDTO>
-    val pdfId: Int
+    val pdfId: Int?
     val lestDatoArbeidstaker: LocalDateTime?
 }

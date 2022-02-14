@@ -173,7 +173,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             referat.ferdigstilt shouldBeEqualTo true
 
                             val pdf =
-                                pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId)
+                                pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId!!)
                             pdf shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
@@ -355,6 +355,134 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             endreTidStedBehandlerVarselUUID shouldNotBeEqualTo referatBehandlerVarselUUID
                             referatBehandlerVarselUUID shouldNotBeEqualTo innkallingBehandlerVarselUUID
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldBeEqualTo endreTidStedBehandlerVarselUUID
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation shouldBeEqualTo innkallingBehandlerVarselUUID
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
+                        }
+                    }
+                }
+                describe("Happy path: with behandler og mellomlagring") {
+                    val behandlerOppgave = "Dette er en beskrivelse av behandlers oppgave"
+                    val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+                    val newReferatDTO = generateNewReferatDTO(behandlerOppgave = behandlerOppgave)
+
+                    val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
+
+                    it("should return OK if request is successful") {
+                        val createdDialogmoteUUID: String
+                        val innkallingBehandlerVarselUUID: String?
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                            clearMocks(behandlerDialogmeldingProducer)
+                            justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+                            dialogmoteDTO.referat shouldBeEqualTo null
+
+                            createdDialogmoteUUID = dialogmoteDTO.uuid
+                            innkallingBehandlerVarselUUID = dialogmoteDTO.behandler?.varselList?.lastOrNull()?.uuid
+                        }
+
+                        val urlMoteUUIDMellomlagre =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteMellomlagrePath"
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoteUUIDMellomlagre) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newReferatDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.REFERAT, any()) }
+                        }
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            val referat = dialogmoteDTO.referat!!
+                            referat.ferdigstilt shouldBeEqualTo false
+                            referat.konklusjon shouldBeEqualTo "Dette er en beskrivelse av konklusjon"
+                            referat.andreDeltakere[0].navn shouldBeEqualTo "Tøff Pyjamas"
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+                        }
+
+                        val modfisertReferat = generateModfisertReferatDTO(behandlerOppgave = behandlerOppgave)
+                        val urlMoteUUIDFerdigstill =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(modfisertReferat))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.REFERAT, any()) }
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            val referat = dialogmoteDTO.referat!!
+                            val referatBehandlerVarselUUID = referat.uuid
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.FERDIGSTILT.name
+                            dialogmoteDTO.behandler!!.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            referat.behandlerOppgave shouldBeEqualTo behandlerOppgave
+                            referat.ferdigstilt shouldBeEqualTo true
+                            referat.andreDeltakere.size shouldBeEqualTo 1
+                            referat.andreDeltakere[0].navn shouldBeEqualTo "Tøffere Pyjamas"
+                            referat.konklusjon shouldBeEqualTo "Dette er en beskrivelse av konklusjon modifisert"
+
+                            val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(capture(kafkaBehandlerDialogmeldingDTOSlot)) }
+                            val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
+                            kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingUuid shouldBeEqualTo referatBehandlerVarselUUID
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo newReferatDTO.document.serialize()
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingType shouldBeEqualTo DialogmeldingType.DIALOG_NOTAT.name
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.REFERAT.value
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation shouldBeEqualTo innkallingBehandlerVarselUUID
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
                         }

@@ -21,7 +21,7 @@ data class PReferat(
     val behandlerOppgave: String?,
     val document: List<DocumentComponentDTO>,
     val narmesteLederNavn: String,
-    val pdfId: Int,
+    val pdfId: Int?,
     val journalpostIdArbeidstaker: String?,
     val lestDatoArbeidstaker: LocalDateTime?,
     val lestDatoArbeidsgiver: LocalDateTime?,
