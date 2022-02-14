@@ -23,7 +23,7 @@ object Versions {
     const val logstashEncoder = "7.0.1"
     const val mockk = "1.12.2"
     const val nimbusjosejwt = "9.18"
-    const val postgresEmbedded = "0.13.4"
+    const val postgresEmbedded = "1.0.0"
     const val postgres = "42.3.2"
     const val redisEmbedded = "0.7.3"
     const val scala = "2.13.7"

@@ -18,7 +18,7 @@ class TestDatabase : DatabaseInterface {
         pg = try {
             EmbeddedPostgres.start()
         } catch (e: Exception) {
-            EmbeddedPostgres.builder().setLocaleConfig("locale", "en_US").start()
+            EmbeddedPostgres.builder().start()
         }
 
         Flyway.configure().run {

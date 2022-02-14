@@ -20,7 +20,7 @@ import no.nav.syfo.domain.*
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 class DialogmoteService(
     private val database: DatabaseInterface,
@@ -139,17 +139,20 @@ class DialogmoteService(
             val pdfInnkallingArbeidstaker = pdfGenClient.pdfInnkalling(
                 callId = callId,
                 documentComponentDTOList = newDialogmoteDTO.arbeidstaker.innkalling,
+                deltager = ARBEIDSTAKER
             ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidstaker")
 
             val pdfInnkallingArbeidsgiver = pdfGenClient.pdfInnkalling(
                 callId = callId,
                 documentComponentDTOList = newDialogmoteDTO.arbeidsgiver.innkalling,
+                deltager = ARBEIDSGIVER
             ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidsgiver")
 
             val pdfInnkallingBehandler = newDialogmoteDTO.behandler?.let {
                 pdfGenClient.pdfInnkalling(
                     callId = callId,
                     documentComponentDTOList = it.innkalling,
+                    deltager = BEHANDLER
                 ) ?: throw RuntimeException("Failed to request PDF - Innkalling Behandler")
             }
 
@@ -224,17 +227,20 @@ class DialogmoteService(
         val pdfAvlysningArbeidstaker = pdfGenClient.pdfAvlysning(
             callId = callId,
             documentComponentDTOList = avlysDialogmote.arbeidstaker.avlysning,
+            deltager = ARBEIDSTAKER
         ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidstaker")
 
         val pdfAvlysningArbeidsgiver = pdfGenClient.pdfAvlysning(
             callId = callId,
             documentComponentDTOList = avlysDialogmote.arbeidsgiver.avlysning,
+            deltager = ARBEIDSGIVER
         ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidsgiver")
 
         val pdfAvlysningBehandler = avlysDialogmote.behandler?.let {
             pdfGenClient.pdfAvlysning(
                 callId = callId,
                 documentComponentDTOList = it.avlysning,
+                deltager = BEHANDLER
             ) ?: throw RuntimeException("Failed to request PDF - Avlysning Behandler")
         }
 
@@ -311,18 +317,21 @@ class DialogmoteService(
 
         val pdfEndringArbeidstaker = pdfGenClient.pdfEndringTidSted(
             callId = callId,
-            documentComponentDTOList = endreDialogmoteTidSted.arbeidstaker.endringsdokument
+            documentComponentDTOList = endreDialogmoteTidSted.arbeidstaker.endringsdokument,
+            deltager = ARBEIDSTAKER
         ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidstaker")
 
         val pdfEndringArbeidsgiver = pdfGenClient.pdfEndringTidSted(
             callId = callId,
-            documentComponentDTOList = endreDialogmoteTidSted.arbeidsgiver.endringsdokument
+            documentComponentDTOList = endreDialogmoteTidSted.arbeidsgiver.endringsdokument,
+            deltager = ARBEIDSGIVER
         ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidsgiver")
 
         val pdfEndringBehandler = endreDialogmoteTidSted.behandler?.let {
             pdfGenClient.pdfEndringTidSted(
                 callId = callId,
-                documentComponentDTOList = it.endringsdokument
+                documentComponentDTOList = it.endringsdokument,
+                deltager = BEHANDLER
             ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Behandler")
         }
 
@@ -803,6 +812,10 @@ class DialogmoteService(
     }
 
     companion object {
+        const val ARBEIDSGIVER = "arbeidsgiver"
+        const val ARBEIDSTAKER = "arbeidstaker"
+        const val BEHANDLER = "behandler"
+
         private val log = LoggerFactory.getLogger(DialogmoteService::class.java)
     }
 }

@@ -32,44 +32,54 @@ class PdfGenClient(
     suspend fun pdfAvlysning(
         callId: String,
         documentComponentDTOList: List<DocumentComponentDTO>,
+        deltager: String
     ): ByteArray? {
         return getPdf(
             callId = callId,
             documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = avlysningUrl,
+            pdfUrl = "$avlysningUrl-$deltager",
         )
     }
 
     suspend fun pdfEndringTidSted(
         callId: String,
         documentComponentDTOList: List<DocumentComponentDTO>,
+        deltager: String
     ): ByteArray? {
         return getPdf(
             callId = callId,
             documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = endringTidStedUrl,
+            pdfUrl = "$endringTidStedUrl-$deltager",
         )
     }
 
     suspend fun pdfInnkalling(
         callId: String,
         documentComponentDTOList: List<DocumentComponentDTO>,
+        deltager: String
     ): ByteArray? {
         return getPdf(
             callId = callId,
             documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = innkallingUrl,
+            pdfUrl = "$innkallingUrl-$deltager",
         )
     }
 
     suspend fun pdfReferat(
         callId: String,
         documentComponentDTOList: List<DocumentComponentDTO>,
+        deltager: String? = null
     ): ByteArray? {
+        val url = if (deltager != null) {
+            "$referatUrl-$deltager"
+        } else {
+            referatUrl
+        }
+
         return getPdf(
             callId = callId,
             documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = referatUrl,
+            pdfUrl = url,
         )
     }
 

@@ -10,6 +10,7 @@ import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.AVLYSNING_PATH
 import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.ENDRING_TIDSTED_PATH
 import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.INNKALLING_PATH
 import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.REFERAT_PATH
+import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.testhelper.getRandomPort
 
 class IsdialogmotepdfgenMock {
@@ -35,13 +36,31 @@ class IsdialogmotepdfgenMock {
         ) {
             installContentNegotiation()
             routing {
-                post(AVLYSNING_PATH) {
+                post("$AVLYSNING_PATH-${DialogmoteService.ARBEIDSTAKER}") {
                     call.respond(pdfAvlysning)
                 }
-                post(ENDRING_TIDSTED_PATH) {
+                post("$AVLYSNING_PATH-${DialogmoteService.ARBEIDSGIVER}") {
+                    call.respond(pdfAvlysning)
+                }
+                post("$AVLYSNING_PATH-${DialogmoteService.BEHANDLER}") {
+                    call.respond(pdfAvlysning)
+                }
+                post("$ENDRING_TIDSTED_PATH-${DialogmoteService.ARBEIDSTAKER}") {
                     call.respond(pdfEndringTidSted)
                 }
-                post(INNKALLING_PATH) {
+                post("$ENDRING_TIDSTED_PATH-${DialogmoteService.ARBEIDSGIVER}") {
+                    call.respond(pdfEndringTidSted)
+                }
+                post("$ENDRING_TIDSTED_PATH-${DialogmoteService.BEHANDLER}") {
+                    call.respond(pdfEndringTidSted)
+                }
+                post("$INNKALLING_PATH-${DialogmoteService.ARBEIDSTAKER}") {
+                    call.respond(pdfInnkalling)
+                }
+                post("$INNKALLING_PATH-${DialogmoteService.ARBEIDSGIVER}") {
+                    call.respond(pdfInnkalling)
+                }
+                post("$INNKALLING_PATH-${DialogmoteService.BEHANDLER}") {
                     call.respond(pdfInnkalling)
                 }
                 post(REFERAT_PATH) {
