@@ -9,9 +9,9 @@ import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
+import no.nav.syfo.client.oppfolgingstilfelle.*
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
-import no.nav.syfo.client.person.oppfolgingstilfelle.*
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
@@ -700,7 +700,7 @@ class DialogmoteService(
         dialogmoteStatus: DialogmoteStatus,
         isBehandlerMotedeltaker: Boolean,
         opprettetAv: String,
-        tilfelle: OppfolgingstilfellePerson,
+        tilfelle: Oppfolgingstilfelle,
     ) {
         connection.createMoteStatusEndring(
             commit = false,
@@ -708,7 +708,7 @@ class DialogmoteService(
             opprettetAv = opprettetAv,
             isBehandlerMotedeltaker = isBehandlerMotedeltaker,
             status = dialogmoteStatus,
-            tilfelleStart = tilfelle.fom,
+            tilfelleStart = tilfelle.start,
         )
     }
 

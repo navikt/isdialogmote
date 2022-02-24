@@ -23,7 +23,7 @@ import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
-import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.api.v2.*
@@ -87,9 +87,8 @@ fun Application.apiModule(
     )
     val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
         azureAdV2Client = azureAdV2Client,
-        isproxyBaseUrl = environment.isproxyUrl,
-        isproxyClientId = environment.isproxyClientId,
-        pdlClient = pdlClient,
+        isoppfolgingstilfelleBaseUrl = environment.isoppfolgingstilfelleUrl,
+        isoppfolgingstilfelleClientId = environment.isoppfolgingstilfelleClientId,
     )
     val pdfGenClient = PdfGenClient(
         pdfGenBaseUrl = environment.isdialogmotepdfgenUrl
