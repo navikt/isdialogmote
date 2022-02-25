@@ -63,6 +63,7 @@ spec:
         - host: "syfo-tilgangskontroll.prod-fss-pub.nais.io"
         - host: "isproxy.prod-fss-pub.nais.io"
         - host: "pdl-api.prod-fss-pub.nais.io"
+        - host: "dokdistfordeling.prod-fss-pub.nais.io"
       rules:
         - application: digdir-krr-proxy
         - application: isdialogmote-redis
@@ -132,3 +133,7 @@ spec:
       value: "https://narmesteleder.nav.no"
     - name: NARMESTELEDER_CLIENT_ID
       value: "046419dd-8baa-4343-b192-a14d7c260b38"
+    - name: DOKDIST_FORDELING_URL
+      value: "https://dokdistfordeling.prod-fss-pub.nais.io"
+    - name: DOKDIST_FORDELING_CLIENT_ID
+      value: "prod-fss.teamdokumenthandtering.saf"

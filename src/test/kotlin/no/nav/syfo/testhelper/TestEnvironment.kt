@@ -66,6 +66,8 @@ fun testEnvironment(
     narmestelederUrl = narmestelederUrl ?: "http://narmesteleder",
     pdlClientId = "pdlClientId",
     pdlUrl = pdlUrl ?: "http://pdl",
+    dokdistFordelingClientId = "dokdistFordelingClientId",
+    dokdistFordelingUrl = "http://dokdistfordeling"
 )
 
 fun testAppState() = ApplicationState(

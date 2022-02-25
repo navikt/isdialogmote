@@ -12,18 +12,18 @@ import org.slf4j.LoggerFactory
 
 class JournalpostdistribusjonClient(
     private val azureAdV2Client: AzureAdV2Client,
-    private val isproxyClientId: String,
-    isproxyUrl: String
+    private val dokdistFordelingClientId: String,
+    dokdistFordelingBaseUrl: String
 ) {
 
-    private val distribuerJournalpostUrl: String = "$isproxyUrl$DISTRIBUER_JOURNALPOST_PATH"
+    private val distribuerJournalpostUrl: String = "$dokdistFordelingBaseUrl$DISTRIBUER_JOURNALPOST_PATH"
     private val httpClient = httpClientDefault()
 
     suspend fun distribuerJournalpost(
         journalpostId: String
     ): JournalpostdistribusjonResponse? {
-        val accessToken = azureAdV2Client.getSystemToken(isproxyClientId)?.accessToken
-            ?: throw RuntimeException("Failed to request Journalpost distribution: No accessToken was found")
+        val accessToken = azureAdV2Client.getSystemToken(dokdistFordelingClientId)?.accessToken
+            ?: throw RuntimeException("Failed to request Journalpost distribution: Failed to get System token")
         val request = JournalpostdistribusjonRequest(
             journalpostId = journalpostId,
             bestillendeFagsystem = BESTILLENDE_FAGSYSTEM,
@@ -51,7 +51,7 @@ class JournalpostdistribusjonClient(
         message: String?
     ) {
         log.error(
-            "Error while requesting Journalpost distribution from isproxy with {}, {}",
+            "Error while requesting Journalpost distribution from dokdistFordeling with {}, {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             StructuredArguments.keyValue("message", message),
         )
@@ -61,7 +61,7 @@ class JournalpostdistribusjonClient(
     companion object {
         const val BESTILLENDE_FAGSYSTEM = "MODIA_SYKEFRAVAER"
         const val DOKUMENTPRODUSERENDE_APP = "isdialogmote"
-        const val DISTRIBUER_JOURNALPOST_PATH = "/api/v1/dokdist/distribuerjournalpost"
+        const val DISTRIBUER_JOURNALPOST_PATH = "/rest/v1/distribuerjournalpost"
         private val log = LoggerFactory.getLogger(JournalpostdistribusjonClient::class.java)
     }
 }

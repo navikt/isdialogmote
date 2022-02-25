@@ -19,6 +19,7 @@ class ExternalMockEnvironment private constructor() {
     val syfobehandlendeenhetMock = SyfobehandlendeenhetMock()
     val tilgangskontrollMock = VeilederTilgangskontrollMock()
     var narmesteLederMock = NarmesteLederMock()
+    val dokdistMock = DokdistFordelingMock()
 
     val externalApplicationMockMap = hashMapOf(
         azureAdV2Mock.name to azureAdV2Mock.server,
@@ -30,6 +31,7 @@ class ExternalMockEnvironment private constructor() {
         tilgangskontrollMock.name to tilgangskontrollMock.server,
         narmesteLederMock.name to narmesteLederMock.server,
         pdlMock.name to pdlMock.server,
+        dokdistMock.name to dokdistMock.server
     )
 
     var environment = testEnvironment(

@@ -23,7 +23,6 @@ import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewReferatDTO
-import no.nav.syfo.testhelper.mock.IsproxyMock
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBeEqualTo
@@ -41,7 +40,6 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             start()
 
             val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
-            val isproxyMock = IsproxyMock()
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
@@ -63,8 +61,8 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             val referatJournalpostService = ReferatJournalpostService(database = database)
             val journalpostdistribusjonClient = JournalpostdistribusjonClient(
                 azureAdV2Client = azureAdV2ClientMock,
-                isproxyClientId = "isproxyclientid",
-                isproxyUrl = isproxyMock.url
+                dokdistFordelingClientId = externalMockEnvironment.dokdistMock.name,
+                dokdistFordelingBaseUrl = externalMockEnvironment.dokdistMock.url
             )
 
             val journalpostDistribusjonCronjob = DialogmoteJournalpostDistribusjonCronjob(
@@ -75,14 +73,6 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
 
             afterEachTest {
                 database.dropData()
-            }
-
-            beforeGroup {
-                isproxyMock.server.start()
-            }
-
-            afterGroup {
-                isproxyMock.server.stop(1L, 10L)
             }
 
             val validToken = generateJWT(
