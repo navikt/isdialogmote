@@ -64,7 +64,7 @@ class KontaktinformasjonClient(
                     digitalKontaktinfoBolkResponse
                 } catch (responseException: ResponseException) {
                     log.error(
-                        "Error while requesting Kontaktinformasjon of person from Isproxy with {}, {}",
+                        "Error while requesting Kontaktinformasjon of person from Digdir-krr-proxy with {}, {}",
                         StructuredArguments.keyValue("statusCode", responseException.response.status.value.toString()),
                         callIdArgument(callId)
                     )

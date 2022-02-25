@@ -22,11 +22,11 @@ val HISTOGRAM_CALL_PERSON_ADRESSEBESKYTTELSE_TIMER: Timer = Timer
     .register(METRICS_REGISTRY)
 val COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS: Counter = Counter
     .builder(CALL_PERSON_KONTAKTINFORMASJON_SUCCESS)
-    .description("Counts the number of successful calls to Isproxy - Kontaktinformasjon")
+    .description("Counts the number of successful calls to KRR - Kontaktinformasjon")
     .register(METRICS_REGISTRY)
 val COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL: Counter = Counter
     .builder(CALL_PERSON_KONTAKTINFORMASJON_FAIL)
-    .description("Counts the number of failed calls to Isproxy - Kontaktinformasjon")
+    .description("Counts the number of failed calls to KRR - Kontaktinformasjon")
     .register(METRICS_REGISTRY)
 val COUNT_CALL_PERSON_OPPFOLGINGSTILFELLE_SUCCESS: Counter = Counter
     .builder(CALL_PERSON_OPPFOLGINGSTILFELLE_SUCCESS)
