@@ -9,8 +9,6 @@ import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.ereg.EregClient.Companion.EREG_PATH
 import no.nav.syfo.client.ereg.EregOrganisasjonNavn
 import no.nav.syfo.client.ereg.EregOrganisasjonResponse
-import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient.Companion.DISTRIBUER_JOURNALPOST_PATH
-import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonResponse
 import no.nav.syfo.client.person.oppfolgingstilfelle.*
 import no.nav.syfo.client.person.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISPROXY_SYFOSYKETILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH
 import no.nav.syfo.domain.AktorId
@@ -23,7 +21,6 @@ import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.getRandomPort
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
 
 fun kOppfolgingstilfellePersonDTO(
     aktorId: AktorId = ARBEIDSTAKER_AKTORID,
@@ -62,9 +59,6 @@ class IsproxyMock {
         ) {
             installContentNegotiation()
             routing {
-                post(DISTRIBUER_JOURNALPOST_PATH) {
-                    call.respond(JournalpostdistribusjonResponse(bestillingsId = UUID.randomUUID().toString()))
-                }
                 get("$ISPROXY_SYFOSYKETILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH/${ARBEIDSTAKER_AKTORID.value}") {
                     call.respond(kOppfolgingstilfellePersonDTO(ARBEIDSTAKER_AKTORID))
                 }

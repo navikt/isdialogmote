@@ -38,8 +38,8 @@ fun Application.cronjobModule(
     )
     val journalpostdistribusjonClient = JournalpostdistribusjonClient(
         azureAdV2Client = azureAdV2Client,
-        isproxyClientId = environment.isproxyClientId,
-        isproxyUrl = environment.isproxyUrl
+        dokdistFordelingClientId = environment.dokdistFordelingClientId,
+        dokdistFordelingBaseUrl = environment.dokdistFordelingUrl,
     )
     val pdlClient = PdlClient(
         azureAdV2Client = azureAdV2Client,
