@@ -33,6 +33,10 @@ data class Environment(
     val isdialogmoteDbName: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTE_ISDIALOGMOTE_DB_DATABASE"),
     val isdialogmoteDbUsername: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTE_ISDIALOGMOTE_DB_USERNAME"),
     val isdialogmoteDbPassword: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTE_ISDIALOGMOTE_DB_PASSWORD"),
+
+    val isoppfolgingstilfelleClientId: String = getEnvVar("ISOPPFOLGINGSTILFELLE_CLIENT_ID"),
+    val isoppfolgingstilfelleUrl: String = getEnvVar("ISOPPFOLGINGSTILFELLE_URL"),
+
     val isproxyUrl: String = getEnvVar("ISPROXY_URL"),
     val isproxyClientId: String = getEnvVar("ISPROXY_CLIENT_ID"),
     val sidecarInitialDelay: Long = getEnvVar("SIDECAR_INITIAL_DELAY", "30000").toLong(),

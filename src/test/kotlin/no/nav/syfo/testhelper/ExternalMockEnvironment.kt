@@ -14,6 +14,7 @@ class ExternalMockEnvironment private constructor() {
     val dokarkivMock = DokarkivMock()
     val pdlMock = PdlMock()
     val isdialogmotepdfgenMock = IsdialogmotepdfgenMock()
+    val isoppfolgingstilfelleMock = IsoppfolgingstilfelleMock()
     val isproxyMock = IsproxyMock()
     val krrMock = KrrMock()
     val syfobehandlendeenhetMock = SyfobehandlendeenhetMock()
@@ -25,6 +26,7 @@ class ExternalMockEnvironment private constructor() {
         azureAdV2Mock.name to azureAdV2Mock.server,
         dokarkivMock.name to dokarkivMock.server,
         isdialogmotepdfgenMock.name to isdialogmotepdfgenMock.server,
+        isoppfolgingstilfelleMock.name to isoppfolgingstilfelleMock.server,
         isproxyMock.name to isproxyMock.server,
         krrMock.name to krrMock.server,
         syfobehandlendeenhetMock.name to syfobehandlendeenhetMock.server,
@@ -39,6 +41,7 @@ class ExternalMockEnvironment private constructor() {
         azureTokenEndpoint = azureAdV2Mock.url,
         dokarkivUrl = dokarkivMock.url,
         isdialogmotepdfgenUrl = isdialogmotepdfgenMock.url,
+        isoppfolgingstilfelleUrl = isoppfolgingstilfelleMock.url,
         isproxyUrl = isproxyMock.url,
         krrUrl = krrMock.url,
         syfobehandlendeenhetUrl = syfobehandlendeenhetMock.url,

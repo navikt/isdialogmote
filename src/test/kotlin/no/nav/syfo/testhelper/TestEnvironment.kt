@@ -1,8 +1,6 @@
 package no.nav.syfo.testhelper
 
-import no.nav.syfo.application.ApplicationEnvironmentKafka
-import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.Environment
+import no.nav.syfo.application.*
 import java.net.ServerSocket
 import java.util.*
 
@@ -11,6 +9,7 @@ fun testEnvironment(
     dokarkivUrl: String = "http://dokarkiv",
     azureTokenEndpoint: String = "azureTokenEndpoint",
     isdialogmotepdfgenUrl: String? = null,
+    isoppfolgingstilfelleUrl: String = "isoppfolgingstilfelle",
     isproxyUrl: String = "isproxy",
     krrUrl: String = "krr",
     syfobehandlendeenhetUrl: String? = null,
@@ -23,6 +22,8 @@ fun testEnvironment(
     aadTokenEndpoint = azureTokenEndpoint,
     azureAppWellKnownUrl = "wellknown",
     dokarkivClientId = "dokarkiv-client-id",
+    isoppfolgingstilfelleClientId = "isoppfolgingstilfelle-client-id",
+    isoppfolgingstilfelleUrl = isoppfolgingstilfelleUrl,
     isproxyClientId = "isproxy-client-id",
     isproxyUrl = isproxyUrl,
     electorPath = "electorPath",

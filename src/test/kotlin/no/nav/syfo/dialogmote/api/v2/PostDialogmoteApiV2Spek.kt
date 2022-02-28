@@ -11,7 +11,7 @@ import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProduc
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
-import no.nav.syfo.client.person.oppfolgingstilfelle.toOppfolgingstilfellePerson
+import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.*
@@ -24,7 +24,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTEL
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.*
-import no.nav.syfo.testhelper.mock.kOppfolgingstilfellePersonDTO
+import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.*
@@ -182,7 +182,7 @@ class PostDialogmoteApiV2Spek : Spek({
 
                             moteStatusEndretList.first().status.name shouldBeEqualTo dialogmoteDTO.status
                             moteStatusEndretList.first().opprettetAv shouldBeEqualTo VEILEDER_IDENT
-                            moteStatusEndretList.first().tilfelleStart shouldBeEqualTo kOppfolgingstilfellePersonDTO().toOppfolgingstilfellePerson().fom
+                            moteStatusEndretList.first().tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start
                         }
                     }
 

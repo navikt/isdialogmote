@@ -99,6 +99,10 @@ spec:
       value: "162b3255-2f72-4399-8f7a-244add9ffaac"
     - name: DOKARKIV_URL
       value: "https://dokarkiv.prod-fss-pub.nais.io"
+    - name: ISOPPFOLGINGSTILFELLE_CLIENT_ID
+      value: "prod-gcp.teamsykefravr.isoppfolgingstilfelle"
+    - name: ISOPPFOLGINGSTILFELLE_URL
+      value: "https://isoppfolgingstilfelle.intern.nav.no"
     - name: ISPROXY_CLIENT_ID
       value: "prod-fss.teamsykefravr.isproxy"
     - name: ISPROXY_URL
