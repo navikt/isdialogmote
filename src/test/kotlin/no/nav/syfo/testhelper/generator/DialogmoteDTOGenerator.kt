@@ -4,7 +4,6 @@ import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_FNR
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_KONTOR
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_NAVN
@@ -156,7 +155,6 @@ fun generateNewDialogmoteDTO(
     virksomhetsnummer: String = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
 ): NewDialogmoteDTO {
     return NewDialogmoteDTO(
-        tildeltEnhet = UserConstants.ENHET_NR.value,
         arbeidstaker = generateMotedeltakerArbeidstakerDTO(personIdentNumber),
         arbeidsgiver = generateMotedeltakerArbeidsgiverDTO(virksomhetsnummer = virksomhetsnummer),
         tidSted = generateNewDialogmoteTidStedDTO(sted, dato)
@@ -167,7 +165,6 @@ fun generateNewDialogmoteDTOWithMissingValues(
     personIdentNumber: PersonIdentNumber
 ): NewDialogmoteDTO {
     return NewDialogmoteDTO(
-        tildeltEnhet = UserConstants.ENHET_NR.value,
         arbeidstaker = generateMotedeltakerArbeidstakerDTOMissingValues(personIdentNumber),
         arbeidsgiver = generateMotedeltakerArbeidsgiverDTOMissingValues(),
         tidSted = generateNewDialogmoteTidStedDTONoVideoLink()
@@ -178,7 +175,6 @@ fun generateNewDialogmoteDTOWithBehandler(
     personIdentNumber: PersonIdentNumber
 ): NewDialogmoteDTO {
     return NewDialogmoteDTO(
-        tildeltEnhet = UserConstants.ENHET_NR.value,
         arbeidstaker = generateMotedeltakerArbeidstakerDTO(personIdentNumber),
         arbeidsgiver = generateMotedeltakerArbeidsgiverDTO(),
         behandler = generateMotedeltakerBehandlerDTO(),

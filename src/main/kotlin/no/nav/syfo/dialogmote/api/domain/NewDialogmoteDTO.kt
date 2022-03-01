@@ -7,7 +7,6 @@ import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 
 data class NewDialogmoteDTO(
-    val tildeltEnhet: String,
     val arbeidstaker: NewDialogmotedeltakerArbeidstakerDTO,
     val arbeidsgiver: NewDialogmotedeltakerArbeidsgiverDTO,
     val behandler: NewDialogmotedeltakerBehandlerDTO? = null,
