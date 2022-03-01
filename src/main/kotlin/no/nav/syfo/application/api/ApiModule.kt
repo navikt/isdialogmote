@@ -16,6 +16,7 @@ import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederAccessService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
+import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.brev.narmesteleder.registerNarmestelederBrevApi
 import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.azuread.AzureAdV2Client
@@ -36,6 +37,7 @@ fun Application.apiModule(
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
     behandlerVarselService: BehandlerVarselService,
     database: DatabaseInterface,
+    dineSykmeldteVarselProducer: DineSykmeldteVarselProducer,
     mqSender: MQSenderInterface,
     environment: Environment,
     wellKnownSelvbetjening: WellKnown,
@@ -116,6 +118,7 @@ fun Application.apiModule(
 
     val narmesteLederVarselService = NarmesteLederVarselService(
         mqSender = mqSender,
+        dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
     )
 
     val dialogmotedeltakerService = DialogmotedeltakerService(

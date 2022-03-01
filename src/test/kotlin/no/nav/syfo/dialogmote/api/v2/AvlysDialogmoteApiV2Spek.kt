@@ -11,6 +11,7 @@ import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProduc
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
+import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
@@ -38,6 +39,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             val mqSenderMock = mockk<MQSenderInterface>()
             val behandlerVarselService = BehandlerVarselService(
@@ -49,6 +51,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
+                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
             )
 
@@ -60,6 +63,8 @@ class AvlysDialogmoteApiV2Spek : Spek({
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                 clearMocks(mqSenderMock)
                 justRun { mqSenderMock.sendMQMessage(any(), any()) }
+                clearMocks(dineSykmeldteVarselProducer)
+                justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
             }
 
             afterEachTest {

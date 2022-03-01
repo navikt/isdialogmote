@@ -3,15 +3,22 @@ package no.nav.syfo.brev.narmesteleder
 import no.nav.melding.virksomhet.servicemeldingmedkontaktinformasjon.v1.servicemeldingmedkontaktinformasjon.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
+import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
+import no.nav.syfo.brev.narmesteleder.domain.DineSykmeldteHendelse
+import no.nav.syfo.brev.narmesteleder.domain.OpprettHendelse
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.domain.toDineSykmeldteVarselTekst
 import java.io.StringWriter
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
 
 class NarmesteLederVarselService(
-    private val mqSender: MQSenderInterface
+    private val mqSender: MQSenderInterface,
+    private val dineSykmeldteVarselProducer: DineSykmeldteVarselProducer,
 ) {
     fun sendVarsel(
         createdAt: LocalDateTime,
@@ -31,6 +38,31 @@ class NarmesteLederVarselService(
         val melding = opprettServiceMelding(narmesteLeder, varseltype, parameterListe)
         val xmlString = marshallServiceMelding(ObjectFactory().createServicemelding(melding))
         mqSender.sendMQMessage(varseltype, xmlString)
+
+        sendVarselTilDineSykmeldte(narmesteLeder, varseltype)
+    }
+
+    private fun sendVarselTilDineSykmeldte(
+        narmesteLeder: NarmesteLederRelasjonDTO,
+        varseltype: MotedeltakerVarselType
+    ) {
+        val dineSykmeldteOpprettHendelse = OpprettHendelse(
+            ansattFnr = narmesteLeder.arbeidstakerPersonIdentNumber,
+            orgnummer = narmesteLeder.virksomhetsnummer,
+            oppgavetype = getDineSykmeldteOppgavetype(varseltype).name,
+            tekst = varseltype.toDineSykmeldteVarselTekst(),
+            timestamp = OffsetDateTime.now(),
+            utlopstidspunkt = OffsetDateTime.now().plusWeeks(4),
+            lenke = null,
+        )
+
+        val dineSykmeldteHendelse = DineSykmeldteHendelse(
+            id = UUID.randomUUID().toString(),
+            opprettHendelse = dineSykmeldteOpprettHendelse,
+            ferdigstillHendelse = null
+        )
+
+        dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(UUID.randomUUID().toString(), dineSykmeldteHendelse)
     }
 
     private fun opprettServiceMelding(
@@ -53,6 +85,15 @@ class NarmesteLederVarselService(
             MotedeltakerVarselType.AVLYST -> NarmesteLederVarselType.NARMESTE_LEDER_MOTE_AVLYST
             MotedeltakerVarselType.NYTT_TID_STED -> NarmesteLederVarselType.NARMESTE_LEDER_MOTE_NYTID
             MotedeltakerVarselType.REFERAT -> NarmesteLederVarselType.NARMESTE_LEDER_REFERAT
+        }
+    }
+
+    private fun getDineSykmeldteOppgavetype(motedeltakerVarselType: MotedeltakerVarselType): DineSykmeldteOppgavetype {
+        return when (motedeltakerVarselType) {
+            MotedeltakerVarselType.INNKALT -> DineSykmeldteOppgavetype.DIALOGMOTE_INNKALLING
+            MotedeltakerVarselType.AVLYST -> DineSykmeldteOppgavetype.DIALOGMOTE_AVLYSNING
+            MotedeltakerVarselType.NYTT_TID_STED -> DineSykmeldteOppgavetype.DIALOGMOTE_ENDRING
+            MotedeltakerVarselType.REFERAT -> DineSykmeldteOppgavetype.DIALOGMOTE_REFERAT
         }
     }
 

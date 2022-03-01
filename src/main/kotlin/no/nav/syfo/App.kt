@@ -18,6 +18,9 @@ import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.kafkaBrukernotifikasjonP
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.*
 import no.nav.syfo.client.altinn.createPort
+import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
+import no.nav.syfo.brev.narmesteleder.dinesykmeldte.kafkaDineSykmeldteVarselProducerConfig
+import no.nav.syfo.brev.narmesteleder.domain.DineSykmeldteHendelse
 import no.nav.syfo.cronjob.cronjobModule
 import no.nav.syfo.dialogmelding.DialogmeldingService
 import no.nav.syfo.dialogmelding.kafka.DialogmeldingConsumerService
@@ -43,6 +46,13 @@ fun main() {
         kafkaProducerBeskjed = KafkaProducer<NokkelInput, BeskjedInput>(kafkaBrukernotifikasjonProducerProperties),
         kafkaProducerOppgave = KafkaProducer<NokkelInput, OppgaveInput>(kafkaBrukernotifikasjonProducerProperties),
         kafkaProducerDone = KafkaProducer<NokkelInput, DoneInput>(kafkaBrukernotifikasjonProducerProperties),
+    )
+    val dineSykmeldteVarselProducer = DineSykmeldteVarselProducer(
+        kafkaProducerVarsel = KafkaProducer<String, DineSykmeldteHendelse>(
+            kafkaDineSykmeldteVarselProducerConfig(
+                environment.kafka
+            )
+        ),
     )
     val behandlerDialogmeldingProducer = BehandlerDialogmeldingProducer(
         kafkaProducerBehandlerDialogmeldingBestilling = KafkaProducer<String, KafkaBehandlerDialogmeldingDTO>(
@@ -84,6 +94,7 @@ fun main() {
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 behandlerVarselService = behandlerVarselService,
                 database = applicationDatabase,
+                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSender = mqSender,
                 environment = environment,
                 wellKnownSelvbetjening = getWellKnown(environment.loginserviceIdportenDiscoveryUrl),

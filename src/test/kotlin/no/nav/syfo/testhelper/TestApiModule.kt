@@ -8,12 +8,14 @@ import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
+import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import redis.clients.jedis.*
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
     behandlerVarselService: BehandlerVarselService = mockk(),
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
+    dineSykmeldteVarselProducer: DineSykmeldteVarselProducer,
     mqSenderMock: MQSenderInterface,
     altinnMock: ICorrespondenceAgencyExternalBasic = mockk(),
 ) {
@@ -37,5 +39,6 @@ fun Application.testApiModule(
         wellKnownVeilederV2 = externalMockEnvironment.wellKnownVeilederV2,
         cache = cache,
         altinnSoapClient = altinnMock,
+        dineSykmeldteVarselProducer = dineSykmeldteVarselProducer
     )
 }
