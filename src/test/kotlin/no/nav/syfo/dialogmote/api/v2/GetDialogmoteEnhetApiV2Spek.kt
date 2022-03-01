@@ -113,7 +113,7 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.tildeltEnhet shouldBeEqualTo newDialogmoteDTO.tildeltEnhet
+                            dialogmoteDTO.tildeltEnhet shouldBeEqualTo ENHET_NR.value
                             dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
                             dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
 
