@@ -31,6 +31,7 @@ object UserConstants {
 
     val NARMESTELEDER_FNR = PersonIdentNumber("98765432101")
     val NARMESTELEDER_FNR_2 = PersonIdentNumber("98765432102")
+    val VIRKSOMHETSNUMMER_NO_NARMESTELEDER = Virksomhetsnummer("911111111")
     val VIRKSOMHETSNUMMER_HAS_NARMESTELEDER = Virksomhetsnummer("912345678")
     val OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER = Virksomhetsnummer("922222222")
 

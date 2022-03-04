@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.syfo"
@@ -31,6 +32,10 @@ object Versions {
     const val mq = "9.2.4.0"
     const val tjenesteSpesifikasjonerGithub = "1.2020.06.11-19.53-1cad83414166"
     const val micrometerRegistry = "1.8.2"
+    const val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
+    const val cxfVersion = "3.5.0"
+    const val jaxsWsApiVersion = "2.3.1"
+    const val jaxwsToolsVersion = "2.3.1"
 }
 
 plugins {
@@ -125,6 +130,17 @@ dependencies {
     testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:${Versions.spek}") {
         exclude(group = "org.jetbrains.kotlin")
     }
+
+    // Soap
+    implementation("no.nav.tjenestespesifikasjoner:altinn-correspondence-agency-external-basic:${Versions.altinnCorrespondenceAgencyExternalVersion}")
+    implementation("org.apache.cxf:cxf-rt-frontend-jaxws:${Versions.cxfVersion}")
+    implementation("org.apache.cxf:cxf-rt-features-logging:${Versions.cxfVersion}")
+    implementation("org.apache.cxf:cxf-rt-transports-http:${Versions.cxfVersion}")
+    implementation("org.apache.cxf:cxf-rt-ws-security:${Versions.cxfVersion}")
+    implementation("javax.xml.ws:jaxws-api:${Versions.jaxsWsApiVersion}")
+    implementation("com.sun.xml.ws:jaxws-tools:${Versions.jaxwsToolsVersion}") {
+        exclude(group = "com.sun.xml.ws", module = "policy")
+    }
 }
 
 tasks {
@@ -142,10 +158,18 @@ tasks {
         kotlinOptions.jvmTarget = "17"
     }
 
+    shadowJar {
+        isZip64 = true
+    }
+
     withType<ShadowJar> {
         archiveBaseName.set("app")
         archiveClassifier.set("")
         archiveVersion.set("")
+        transform(ServiceFileTransformer::class.java) {
+            setPath("META-INF/cxf")
+            include("bus-extensions.txt")
+        }
     }
 
     withType<Test> {

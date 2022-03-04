@@ -14,7 +14,7 @@ import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
 
 data class NarmesteLederRelasjonDTO(
-    val narmesteLederRelasjon: NarmesteLederDTO,
+    val narmesteLederRelasjon: NarmesteLederDTO?,
 )
 
 class NarmesteLederClient(

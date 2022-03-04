@@ -3,9 +3,6 @@ package no.nav.syfo.dialogmote
 import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.exception.ConflictException
-import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.brev.behandler.BehandlerVarselService
-import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
@@ -16,7 +13,9 @@ import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.*
+import no.nav.syfo.domain.EnhetNr
+import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Virksomhetsnummer
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.LocalDateTime
@@ -24,15 +23,13 @@ import java.util.*
 
 class DialogmoteService(
     private val database: DatabaseInterface,
-    private val arbeidstakerVarselService: ArbeidstakerVarselService,
-    private val narmesteLederVarselService: NarmesteLederVarselService,
-    private val behandlerVarselService: BehandlerVarselService,
     private val dialogmotedeltakerService: DialogmotedeltakerService,
     private val behandlendeEnhetClient: BehandlendeEnhetClient,
     private val narmesteLederClient: NarmesteLederClient,
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     private val pdfGenClient: PdfGenClient,
     private val kontaktinformasjonClient: KontaktinformasjonClient,
+    private val varselService: VarselService,
 ) {
     fun getDialogmote(
         moteUUID: UUID
@@ -111,98 +108,95 @@ class DialogmoteService(
             virksomhetsnummer = virksomhetsnummer,
             callId = callId
         )
-        return if (narmesteLeder == null) {
-            log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
-            false
-        } else {
-            val behandlendeEnhet = behandlendeEnhetClient.getEnhet(
-                callId = callId,
-                personIdentNumber = personIdentNumber,
-                token = token,
-            ) ?: throw RuntimeException("Failed to request BehandlendeEnhet of Person")
 
-            val newDialogmote = newDialogmoteDTO.toNewDialogmote(
-                requestByNAVIdent = getNAVIdentFromToken(token),
-                navEnhet = EnhetNr(behandlendeEnhet.enhetId),
-            )
+        val behandlendeEnhet = behandlendeEnhetClient.getEnhet(
+            callId = callId,
+            personIdentNumber = personIdentNumber,
+            token = token,
+        ) ?: throw RuntimeException("Failed to request BehandlendeEnhet of Person")
 
-            val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfelle(
-                callId = callId,
-                personIdentNumber = personIdentNumber,
-                token = token,
-            ) ?: throw RuntimeException("Cannot create Dialogmote: No Oppfolgingstilfelle was found")
+        val newDialogmote = newDialogmoteDTO.toNewDialogmote(
+            requestByNAVIdent = getNAVIdentFromToken(token),
+            navEnhet = EnhetNr(behandlendeEnhet.enhetId),
+        )
 
-            if (tilfelle.isInactive()) {
-                throw RuntimeException("Cannot create Dialogmote: Dialogmoteinnkalling for person with inactive Oppfolgingstilfelle is not allowed")
-            }
+        val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfelle(
+            callId = callId,
+            personIdentNumber = personIdentNumber,
+            token = token,
+        ) ?: throw RuntimeException("Cannot create Dialogmote: No Oppfolgingstilfelle was found")
 
-            val pdfInnkallingArbeidstaker = pdfGenClient.pdfInnkalling(
-                callId = callId,
-                documentComponentDTOList = newDialogmoteDTO.arbeidstaker.innkalling,
-            ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidstaker")
-
-            val pdfInnkallingArbeidsgiver = pdfGenClient.pdfInnkalling(
-                callId = callId,
-                documentComponentDTOList = newDialogmoteDTO.arbeidsgiver.innkalling,
-            ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidsgiver")
-
-            val pdfInnkallingBehandler = newDialogmoteDTO.behandler?.let {
-                pdfGenClient.pdfInnkalling(
-                    callId = callId,
-                    documentComponentDTOList = it.innkalling,
-                ) ?: throw RuntimeException("Failed to request PDF - Innkalling Behandler")
-            }
-
-            val createdDialogmoteIdentifiers: CreatedDialogmoteIdentifiers
-
-            val digitalVarsling = isDigitalVarselEnabled(
-                personIdentNumber = personIdentNumber,
-                token = token,
-                callId = callId,
-            )
-
-            database.connection.use { connection ->
-                createdDialogmoteIdentifiers = connection.createNewDialogmoteWithReferences(
-                    commit = false,
-                    newDialogmote = newDialogmote,
-                )
-                createMoteStatusEndring(
-                    connection = connection,
-                    dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
-                    dialogmoteStatus = newDialogmote.status,
-                    isBehandlerMotedeltaker = newDialogmote.behandler != null,
-                    opprettetAv = newDialogmote.opprettetAv,
-                    tilfelle = tilfelle,
-                )
-                createAndSendVarsel(
-                    connection = connection,
-                    arbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdPair.first,
-                    arbeidstakerUuid = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdPair.second,
-                    arbeidsgiverId = createdDialogmoteIdentifiers.motedeltakerArbeidsgiverIdPair.first,
-                    behandlerId = createdDialogmoteIdentifiers.motedeltakerBehandlerIdPair?.first,
-                    behandlerRef = newDialogmote.behandler?.behandlerRef,
-                    behandlerParentVarselId = null,
-                    behandlerInnkallingUuid = null,
-                    arbeidstakerPersonIdent = newDialogmote.arbeidstaker.personIdent,
-                    pdfArbeidstaker = pdfInnkallingArbeidstaker,
-                    pdfArbeidsgiver = pdfInnkallingArbeidsgiver,
-                    pdfBehandler = pdfInnkallingBehandler,
-                    narmesteLeder = narmesteLeder,
-                    varselType = MotedeltakerVarselType.INNKALT,
-                    fritekstArbeidstaker = newDialogmote.arbeidstaker.fritekstInnkalling.orEmpty(),
-                    fritekstArbeidsgiver = newDialogmote.arbeidsgiver.fritekstInnkalling.orEmpty(),
-                    fritekstBehandler = newDialogmote.behandler?.fritekstInnkalling.orEmpty(),
-                    documentArbeidstaker = newDialogmoteDTO.arbeidstaker.innkalling,
-                    documentArbeidsgiver = newDialogmoteDTO.arbeidsgiver.innkalling,
-                    documentBehandler = newDialogmoteDTO.behandler?.innkalling ?: emptyList(),
-                    moteTidspunkt = newDialogmoteDTO.tidSted.tid,
-                    digitalArbeidstakerVarsling = digitalVarsling,
-                )
-
-                connection.commit()
-            }
-            true
+        if (tilfelle.isInactive()) {
+            throw RuntimeException("Cannot create Dialogmote: Dialogmoteinnkalling for person with inactive Oppfolgingstilfelle is not allowed")
         }
+
+        val pdfInnkallingArbeidstaker = pdfGenClient.pdfInnkalling(
+            callId = callId,
+            documentComponentDTOList = newDialogmoteDTO.arbeidstaker.innkalling,
+        ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidstaker")
+
+        val pdfInnkallingArbeidsgiver = pdfGenClient.pdfInnkalling(
+            callId = callId,
+            documentComponentDTOList = newDialogmoteDTO.arbeidsgiver.innkalling,
+        ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidsgiver")
+
+        val pdfInnkallingBehandler = newDialogmoteDTO.behandler?.let {
+            pdfGenClient.pdfInnkalling(
+                callId = callId,
+                documentComponentDTOList = it.innkalling,
+            ) ?: throw RuntimeException("Failed to request PDF - Innkalling Behandler")
+        }
+
+        val createdDialogmoteIdentifiers: CreatedDialogmoteIdentifiers
+
+        val digitalVarsling = isDigitalVarselEnabled(
+            personIdentNumber = personIdentNumber,
+            token = token,
+            callId = callId,
+        )
+
+        database.connection.use { connection ->
+            createdDialogmoteIdentifiers = connection.createNewDialogmoteWithReferences(
+                commit = false,
+                newDialogmote = newDialogmote,
+            )
+            createMoteStatusEndring(
+                connection = connection,
+                dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
+                dialogmoteStatus = newDialogmote.status,
+                isBehandlerMotedeltaker = newDialogmote.behandler != null,
+                opprettetAv = newDialogmote.opprettetAv,
+                tilfelle = tilfelle,
+            )
+            createAndSendVarsel(
+                connection = connection,
+                arbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdPair.first,
+                arbeidstakerUuid = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdPair.second,
+                arbeidsgiverId = createdDialogmoteIdentifiers.motedeltakerArbeidsgiverIdPair.first,
+                behandlerId = createdDialogmoteIdentifiers.motedeltakerBehandlerIdPair?.first,
+                behandlerRef = newDialogmote.behandler?.behandlerRef,
+                behandlerParentVarselId = null,
+                behandlerInnkallingUuid = null,
+                arbeidstakerPersonIdent = newDialogmote.arbeidstaker.personIdent,
+                pdfArbeidstaker = pdfInnkallingArbeidstaker,
+                pdfArbeidsgiver = pdfInnkallingArbeidsgiver,
+                pdfBehandler = pdfInnkallingBehandler,
+                narmesteLeder = narmesteLeder,
+                varselType = MotedeltakerVarselType.INNKALT,
+                fritekstArbeidstaker = newDialogmote.arbeidstaker.fritekstInnkalling.orEmpty(),
+                fritekstArbeidsgiver = newDialogmote.arbeidsgiver.fritekstInnkalling.orEmpty(),
+                fritekstBehandler = newDialogmote.behandler?.fritekstInnkalling.orEmpty(),
+                documentArbeidstaker = newDialogmoteDTO.arbeidstaker.innkalling,
+                documentArbeidsgiver = newDialogmoteDTO.arbeidsgiver.innkalling,
+                documentBehandler = newDialogmoteDTO.behandler?.innkalling ?: emptyList(),
+                moteTidspunkt = newDialogmoteDTO.tidSted.tid,
+                digitalArbeidstakerVarsling = digitalVarsling,
+                virksomhetsnummer = virksomhetsnummer
+            )
+
+            connection.commit()
+        }
+        return true
     }
 
     suspend fun avlysMoteinnkalling(
@@ -211,6 +205,9 @@ class DialogmoteService(
         avlysDialogmote: AvlysDialogmoteDTO,
         token: String,
     ): Boolean {
+
+        val virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer
+
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
             throw ConflictException("Failed to Avlys Dialogmote: already Ferdigstilt")
         }
@@ -240,57 +237,53 @@ class DialogmoteService(
 
         val narmesteLeder = narmesteLederClient.activeLeder(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
-            virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+            virksomhetsnummer = virksomhetsnummer,
             callId = callId
         )
-        return if (narmesteLeder == null) {
-            log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
-            false
-        } else {
-            val digitalVarsling = isDigitalVarselEnabled(
+        val digitalVarsling = isDigitalVarselEnabled(
+            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            token = token,
+            callId = callId,
+        )
+
+        database.connection.use { connection ->
+            updateMoteStatus(
+                callId = callId,
+                connection = connection,
+                dialogmoteId = dialogmote.id,
+                isBehandlerMotedeltaker = avlysDialogmote.behandler != null,
+                newDialogmoteStatus = DialogmoteStatus.AVLYST,
+                opprettetAv = getNAVIdentFromToken(token),
                 personIdentNumber = dialogmote.arbeidstaker.personIdent,
                 token = token,
-                callId = callId,
             )
-
-            database.connection.use { connection ->
-                updateMoteStatus(
-                    callId = callId,
-                    connection = connection,
-                    dialogmoteId = dialogmote.id,
-                    isBehandlerMotedeltaker = avlysDialogmote.behandler != null,
-                    newDialogmoteStatus = DialogmoteStatus.AVLYST,
-                    opprettetAv = getNAVIdentFromToken(token),
-                    personIdentNumber = dialogmote.arbeidstaker.personIdent,
-                    token = token,
-                )
-                createAndSendVarsel(
-                    connection = connection,
-                    arbeidstakerId = dialogmote.arbeidstaker.id,
-                    arbeidstakerUuid = dialogmote.arbeidstaker.uuid,
-                    arbeidsgiverId = dialogmote.arbeidsgiver.id,
-                    behandlerId = dialogmote.behandler?.id,
-                    behandlerRef = dialogmote.behandler?.behandlerRef,
-                    behandlerParentVarselId = dialogmote.behandler?.findParentVarselId(),
-                    behandlerInnkallingUuid = dialogmote.behandler?.findInnkallingVarselUuid(),
-                    arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
-                    pdfArbeidstaker = pdfAvlysningArbeidstaker,
-                    pdfArbeidsgiver = pdfAvlysningArbeidsgiver,
-                    pdfBehandler = pdfAvlysningBehandler,
-                    narmesteLeder = narmesteLeder,
-                    varselType = MotedeltakerVarselType.AVLYST,
-                    fritekstArbeidstaker = avlysDialogmote.arbeidstaker.begrunnelse,
-                    fritekstArbeidsgiver = avlysDialogmote.arbeidsgiver.begrunnelse,
-                    documentArbeidstaker = avlysDialogmote.arbeidstaker.avlysning,
-                    documentArbeidsgiver = avlysDialogmote.arbeidsgiver.avlysning,
-                    documentBehandler = avlysDialogmote.behandler?.avlysning ?: emptyList(),
-                    moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
-                    digitalArbeidstakerVarsling = digitalVarsling,
-                )
-                connection.commit()
-            }
-            true
+            createAndSendVarsel(
+                connection = connection,
+                arbeidstakerId = dialogmote.arbeidstaker.id,
+                arbeidstakerUuid = dialogmote.arbeidstaker.uuid,
+                arbeidsgiverId = dialogmote.arbeidsgiver.id,
+                behandlerId = dialogmote.behandler?.id,
+                behandlerRef = dialogmote.behandler?.behandlerRef,
+                behandlerParentVarselId = dialogmote.behandler?.findParentVarselId(),
+                behandlerInnkallingUuid = dialogmote.behandler?.findInnkallingVarselUuid(),
+                arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
+                pdfArbeidstaker = pdfAvlysningArbeidstaker,
+                pdfArbeidsgiver = pdfAvlysningArbeidsgiver,
+                pdfBehandler = pdfAvlysningBehandler,
+                narmesteLeder = narmesteLeder,
+                varselType = MotedeltakerVarselType.AVLYST,
+                fritekstArbeidstaker = avlysDialogmote.arbeidstaker.begrunnelse,
+                fritekstArbeidsgiver = avlysDialogmote.arbeidsgiver.begrunnelse,
+                documentArbeidstaker = avlysDialogmote.arbeidstaker.avlysning,
+                documentArbeidsgiver = avlysDialogmote.arbeidsgiver.avlysning,
+                documentBehandler = avlysDialogmote.behandler?.avlysning ?: emptyList(),
+                moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
+                digitalArbeidstakerVarsling = digitalVarsling,
+                virksomhetsnummer = virksomhetsnummer,
+            )
+            connection.commit()
         }
+        return true
     }
 
     suspend fun nyttMoteinnkallingTidSted(
@@ -299,6 +292,9 @@ class DialogmoteService(
         endreDialogmoteTidSted: EndreTidStedDialogmoteDTO,
         token: String,
     ): Boolean {
+
+        val virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer
+
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
             throw ConflictException("Failed to change tid/sted, already Ferdigstilt")
         }
@@ -328,64 +324,60 @@ class DialogmoteService(
 
         val narmesteLeder = narmesteLederClient.activeLeder(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
-            virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+            virksomhetsnummer = virksomhetsnummer,
             callId = callId
         )
 
-        return if (narmesteLeder == null) {
-            log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
-            false
-        } else {
-            val digitalVarsling = isDigitalVarselEnabled(
+        val digitalVarsling = isDigitalVarselEnabled(
+            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            token = token,
+            callId = callId,
+        )
+
+        database.connection.use { connection ->
+            connection.updateMoteTidSted(
+                commit = false,
+                moteId = dialogmote.id,
+                newDialogmoteTidSted = endreDialogmoteTidSted,
+            )
+            updateMoteStatus(
+                callId = callId,
+                connection = connection,
+                dialogmoteId = dialogmote.id,
+                isBehandlerMotedeltaker = dialogmote.behandler != null,
+                newDialogmoteStatus = DialogmoteStatus.NYTT_TID_STED,
+                opprettetAv = getNAVIdentFromToken(token),
                 personIdentNumber = dialogmote.arbeidstaker.personIdent,
                 token = token,
-                callId = callId,
+            )
+            createAndSendVarsel(
+                connection = connection,
+                arbeidstakerId = dialogmote.arbeidstaker.id,
+                arbeidstakerUuid = dialogmote.arbeidstaker.uuid,
+                arbeidsgiverId = dialogmote.arbeidsgiver.id,
+                behandlerId = dialogmote.behandler?.id,
+                behandlerRef = dialogmote.behandler?.behandlerRef,
+                behandlerParentVarselId = dialogmote.behandler?.findParentVarselId(),
+                behandlerInnkallingUuid = dialogmote.behandler?.findInnkallingVarselUuid(),
+                arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
+                pdfArbeidstaker = pdfEndringArbeidstaker,
+                pdfArbeidsgiver = pdfEndringArbeidsgiver,
+                pdfBehandler = pdfEndringBehandler,
+                narmesteLeder = narmesteLeder,
+                varselType = MotedeltakerVarselType.NYTT_TID_STED,
+                fritekstArbeidstaker = endreDialogmoteTidSted.arbeidstaker.begrunnelse,
+                fritekstArbeidsgiver = endreDialogmoteTidSted.arbeidsgiver.begrunnelse,
+                documentArbeidstaker = endreDialogmoteTidSted.arbeidstaker.endringsdokument,
+                documentArbeidsgiver = endreDialogmoteTidSted.arbeidsgiver.endringsdokument,
+                documentBehandler = endreDialogmoteTidSted.behandler?.endringsdokument ?: emptyList(),
+                moteTidspunkt = endreDialogmoteTidSted.tid,
+                digitalArbeidstakerVarsling = digitalVarsling,
+                virksomhetsnummer = virksomhetsnummer,
             )
 
-            database.connection.use { connection ->
-                connection.updateMoteTidSted(
-                    commit = false,
-                    moteId = dialogmote.id,
-                    newDialogmoteTidSted = endreDialogmoteTidSted,
-                )
-                updateMoteStatus(
-                    callId = callId,
-                    connection = connection,
-                    dialogmoteId = dialogmote.id,
-                    isBehandlerMotedeltaker = dialogmote.behandler != null,
-                    newDialogmoteStatus = DialogmoteStatus.NYTT_TID_STED,
-                    opprettetAv = getNAVIdentFromToken(token),
-                    personIdentNumber = dialogmote.arbeidstaker.personIdent,
-                    token = token,
-                )
-                createAndSendVarsel(
-                    connection = connection,
-                    arbeidstakerId = dialogmote.arbeidstaker.id,
-                    arbeidstakerUuid = dialogmote.arbeidstaker.uuid,
-                    arbeidsgiverId = dialogmote.arbeidsgiver.id,
-                    behandlerId = dialogmote.behandler?.id,
-                    behandlerRef = dialogmote.behandler?.behandlerRef,
-                    behandlerParentVarselId = dialogmote.behandler?.findParentVarselId(),
-                    behandlerInnkallingUuid = dialogmote.behandler?.findInnkallingVarselUuid(),
-                    arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
-                    pdfArbeidstaker = pdfEndringArbeidstaker,
-                    pdfArbeidsgiver = pdfEndringArbeidsgiver,
-                    pdfBehandler = pdfEndringBehandler,
-                    narmesteLeder = narmesteLeder,
-                    varselType = MotedeltakerVarselType.NYTT_TID_STED,
-                    fritekstArbeidstaker = endreDialogmoteTidSted.arbeidstaker.begrunnelse,
-                    fritekstArbeidsgiver = endreDialogmoteTidSted.arbeidsgiver.begrunnelse,
-                    documentArbeidstaker = endreDialogmoteTidSted.arbeidstaker.endringsdokument,
-                    documentArbeidsgiver = endreDialogmoteTidSted.arbeidsgiver.endringsdokument,
-                    documentBehandler = endreDialogmoteTidSted.behandler?.endringsdokument ?: emptyList(),
-                    moteTidspunkt = endreDialogmoteTidSted.tid,
-                    digitalArbeidstakerVarsling = digitalVarsling,
-                )
-
-                connection.commit()
-            }
-            true
+            connection.commit()
         }
+        return true
     }
 
     private fun createAndSendVarsel(
@@ -401,7 +393,7 @@ class DialogmoteService(
         pdfArbeidstaker: ByteArray,
         pdfArbeidsgiver: ByteArray,
         pdfBehandler: ByteArray?,
-        narmesteLeder: NarmesteLederDTO,
+        narmesteLeder: NarmesteLederDTO?,
         varselType: MotedeltakerVarselType,
         fritekstArbeidstaker: String = "",
         fritekstArbeidsgiver: String = "",
@@ -411,6 +403,7 @@ class DialogmoteService(
         documentBehandler: List<DocumentComponentDTO> = emptyList(),
         moteTidspunkt: LocalDateTime,
         digitalArbeidstakerVarsling: Boolean,
+        virksomhetsnummer: Virksomhetsnummer,
     ) {
         val pdfArbeidstakerId = connection.createPdf(
             commit = false,
@@ -430,7 +423,7 @@ class DialogmoteService(
             fritekst = fritekstArbeidstaker,
             document = documentArbeidstaker,
         )
-        connection.createMotedeltakerVarselArbeidsgiver(
+        val (_, virksomhetsbrevId) = connection.createMotedeltakerVarselArbeidsgiver(
             commit = false,
             motedeltakerArbeidsgiverId = arbeidsgiverId,
             status = "OK",
@@ -458,35 +451,27 @@ class DialogmoteService(
         val now = LocalDateTime.now()
         val isDialogmoteTidPassed = moteTidspunkt.isBefore(now)
 
-        if (!isDialogmoteTidPassed && digitalArbeidstakerVarsling) {
-            arbeidstakerVarselService.sendVarsel(
-                createdAt = now,
-                personIdent = arbeidstakerPersonIdent,
-                type = varselType,
-                motedeltakerArbeidstakerUuid = arbeidstakerUuid,
-                varselUuid = varselArbeidstakerId,
-            )
-        }
-
         if (!isDialogmoteTidPassed) {
-            narmesteLederVarselService.sendVarsel(
-                createdAt = now,
+            varselService.sendVarsel(
+                tidspunktForVarsel = now,
+                varselType = varselType,
                 moteTidspunkt = moteTidspunkt,
+                isDigitalVarselEnabledForArbeidstaker = digitalArbeidstakerVarsling,
+                arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                arbeidstakerId = arbeidstakerUuid,
+                arbeidstakerbrevId = varselArbeidstakerId,
                 narmesteLeder = narmesteLeder,
-                varseltype = varselType
+                virksomhetsbrevId = virksomhetsbrevId,
+                virksomhetsPdf = pdfArbeidsgiver,
+                virksomhetsnummer = virksomhetsnummer,
+                behandlerId = behandlerId,
+                behandlerRef = behandlerRef,
+                behandlerDocument = documentBehandler,
+                behandlerPdf = pdfBehandler,
+                behandlerbrevId = behandlerVarselIdPair,
+                behandlerbrevParentId = behandlerParentVarselId,
+                behandlerInnkallingUuid = behandlerInnkallingUuid
             )
-            behandlerId?.let {
-                behandlerVarselService.sendVarsel(
-                    behandlerRef = behandlerRef!!,
-                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
-                    document = documentBehandler,
-                    pdf = pdfBehandler!!,
-                    varseltype = varselType,
-                    varselUuid = behandlerVarselIdPair!!.second,
-                    varselParentId = behandlerParentVarselId,
-                    varselInnkallingUuid = behandlerInnkallingUuid,
-                )
-            }
         }
     }
 
@@ -564,15 +549,13 @@ class DialogmoteService(
             throw ConflictException("Failed to Ferdigstille Dialogmote, already Avlyst")
         }
 
+        val virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer
+
         val narmesteLeder = narmesteLederClient.activeLeder(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
-            virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
+            virksomhetsnummer = virksomhetsnummer,
             callId = callId
         )
-        if (narmesteLeder == null) {
-            log.warn("Denied access to Dialogmoter: No NarmesteLeder was found for person")
-            throw RuntimeException("Denied access to Dialogmoter: No NarmesteLeder was found for person")
-        }
 
         val pdfReferat = pdfGenClient.pdfReferat(
             callId = callId,
@@ -630,34 +613,29 @@ class DialogmoteService(
                     digitalt = digitalVarsling,
                 )
             }
-            if (digitalVarsling) {
-                arbeidstakerVarselService.sendVarsel(
-                    createdAt = now,
-                    personIdent = dialogmote.arbeidstaker.personIdent,
-                    type = MotedeltakerVarselType.REFERAT,
-                    motedeltakerArbeidstakerUuid = dialogmote.arbeidstaker.uuid,
-                    varselUuid = referatUuid,
-                )
-            }
+            val behandler = dialogmote.behandler
 
-            narmesteLederVarselService.sendVarsel(
-                createdAt = now,
+            varselService.sendVarsel(
+                tidspunktForVarsel = now,
+                varselType = MotedeltakerVarselType.REFERAT,
                 moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
+                isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
+                arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
+                arbeidstakerId = dialogmote.arbeidstaker.uuid,
+                arbeidstakerbrevId = referatUuid,
                 narmesteLeder = narmesteLeder,
-                varseltype = MotedeltakerVarselType.REFERAT,
+                virksomhetsbrevId = referatUuid,
+                virksomhetsPdf = pdfReferat,
+                virksomhetsnummer = virksomhetsnummer,
+                behandlerId = behandler?.id,
+                behandlerRef = behandler?.behandlerRef,
+                behandlerDocument = referat.document,
+                behandlerPdf = pdfReferat,
+                behandlerbrevId = Pair(1, referatUuid),
+                behandlerbrevParentId = behandler?.findParentVarselId(),
+                behandlerInnkallingUuid = behandler?.findInnkallingVarselUuid(),
             )
-            dialogmote.behandler?.let {
-                behandlerVarselService.sendVarsel(
-                    behandlerRef = it.behandlerRef,
-                    arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
-                    document = referat.document,
-                    pdf = pdfReferat,
-                    varseltype = MotedeltakerVarselType.REFERAT,
-                    varselUuid = referatUuid,
-                    varselParentId = it.findParentVarselId(),
-                    varselInnkallingUuid = it.findInnkallingVarselUuid(),
-                )
-            }
+
             connection.commit()
         }
         return true
