@@ -13,10 +13,7 @@ import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.EnhetNr
-import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.domain.Virksomhetsnummer
-import org.slf4j.LoggerFactory
+import no.nav.syfo.domain.*
 import java.sql.Connection
 import java.time.LocalDateTime
 import java.util.*
@@ -530,6 +527,14 @@ class DialogmoteService(
                     digitalt = true,
                 )
             }
+
+            if (dialogmote.behandler != null) {
+                connection.updateMotedeltakerBehandler(
+                    deltakerId = dialogmote.behandler.id,
+                    deltatt = referat.behandlerDeltatt ?: true,
+                    mottarReferat = referat.behandlerMottarReferat ?: true,
+                )
+            }
             connection.commit()
         }
         return true
@@ -614,6 +619,13 @@ class DialogmoteService(
                 )
             }
             val behandler = dialogmote.behandler
+            if (behandler != null) {
+                connection.updateMotedeltakerBehandler(
+                    deltakerId = behandler.id,
+                    deltatt = referat.behandlerDeltatt ?: true,
+                    mottarReferat = referat.behandlerMottarReferat ?: true,
+                )
+            }
 
             varselService.sendVarsel(
                 tidspunktForVarsel = now,
@@ -627,6 +639,7 @@ class DialogmoteService(
                 virksomhetsbrevId = referatUuid,
                 virksomhetsPdf = pdfReferat,
                 virksomhetsnummer = virksomhetsnummer,
+                skalVarsleBehandler = referat.behandlerMottarReferat ?: true,
                 behandlerId = behandler?.id,
                 behandlerRef = behandler?.behandlerRef,
                 behandlerDocument = referat.document,
@@ -778,9 +791,5 @@ class DialogmoteService(
             token = token,
             callId = callId,
         )
-    }
-
-    companion object {
-        private val log = LoggerFactory.getLogger(DialogmoteService::class.java)
     }
 }

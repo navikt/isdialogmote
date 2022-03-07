@@ -31,6 +31,7 @@ class VarselService(
         virksomhetsbrevId: UUID,
         virksomhetsPdf: ByteArray,
         virksomhetsnummer: Virksomhetsnummer,
+        skalVarsleBehandler: Boolean = true,
         behandlerId: Int?,
         behandlerRef: String?,
         behandlerDocument: List<DocumentComponentDTO>,
@@ -60,17 +61,20 @@ class VarselService(
             // TODO Gjør dette først
             altinnClient.sendToVirksomhet(virksomhetsbrevId, virksomhetsPdf, virksomhetsnummer)
         }
-        behandlerId?.let {
-            behandlerVarselService.sendVarsel(
-                behandlerRef = behandlerRef!!,
-                arbeidstakerPersonIdent = arbeidstakerPersonIdent,
-                document = behandlerDocument,
-                pdf = behandlerPdf!!,
-                varseltype = varselType,
-                varselUuid = behandlerbrevId!!.second,
-                varselParentId = behandlerbrevParentId,
-                varselInnkallingUuid = behandlerInnkallingUuid,
-            )
+
+        if (skalVarsleBehandler) {
+            behandlerId?.let {
+                behandlerVarselService.sendVarsel(
+                    behandlerRef = behandlerRef!!,
+                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                    document = behandlerDocument,
+                    pdf = behandlerPdf!!,
+                    varseltype = varselType,
+                    varselUuid = behandlerbrevId!!.second,
+                    varselParentId = behandlerbrevParentId,
+                    varselInnkallingUuid = behandlerInnkallingUuid,
+                )
+            }
         }
     }
 }

@@ -12,6 +12,8 @@ data class NewReferatDTO(
     val narmesteLederNavn: String,
     val document: List<DocumentComponentDTO>,
     val andreDeltakere: List<NewDialogmotedeltakerAnnenDTO>,
+    val behandlerDeltatt: Boolean?,
+    val behandlerMottarReferat: Boolean?,
 )
 
 data class NewDialogmotedeltakerAnnenDTO(

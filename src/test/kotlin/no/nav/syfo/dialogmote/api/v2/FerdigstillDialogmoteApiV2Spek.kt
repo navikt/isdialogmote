@@ -32,9 +32,9 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.util.*
 
-val objectMapper: ObjectMapper = apiConsumerObjectMapper()
-
 class FerdigstillDialogmoteApiV2Spek : Spek({
+
+    val objectMapper: ObjectMapper = apiConsumerObjectMapper()
 
     describe(FerdigstillDialogmoteApiV2Spek::class.java.simpleName) {
 
@@ -92,6 +92,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                         val createdDialogmote = createDialogmote(
                             validToken,
                             newDialogmoteDTO,
+                            objectMapper,
                         )
                         val createdDialogmoteUUID = createdDialogmote.uuid
                         verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
@@ -219,6 +220,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                         val createdDialogmote = createDialogmote(
                             validToken,
                             newDialogmoteDTO,
+                            objectMapper,
                         )
                         verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                         verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -286,7 +288,10 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             val referat = dialogmoteDTO.referat!!
                             referatBehandlerVarselUUID = referat.uuid
                             dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.FERDIGSTILT.name
-                            dialogmoteDTO.behandler!!.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            val behandlerDeltaker = dialogmoteDTO.behandler!!
+                            behandlerDeltaker.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            behandlerDeltaker.mottarReferat shouldBeEqualTo true
+                            behandlerDeltaker.deltatt shouldBeEqualTo true
                             referat.behandlerOppgave shouldBeEqualTo behandlerOppgave
 
                             val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
@@ -312,6 +317,106 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                         }
                     }
                 }
+                describe("Happy path: with behandler (ikke deltatt, ikke motta referat)") {
+                    val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+                    val newReferatDTO = generateNewReferatDTO(behandlerDeltatt = false, behandlerMottarReferat = false)
+
+                    val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
+
+                    it("should return OK if request is successful") {
+                        val createdDialogmote = createDialogmote(
+                            validToken,
+                            newDialogmoteDTO,
+                            objectMapper,
+                        )
+                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                        verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        clearMocks(behandlerDialogmeldingProducer)
+                        justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        val createdDialogmoteUUID = createdDialogmote.uuid
+
+                        val urlMoteUUIDFerdigstill =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newReferatDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 0) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            val behandlerDeltaker = dialogmoteDTO.behandler!!
+                            behandlerDeltaker.mottarReferat shouldBeEqualTo false
+                            behandlerDeltaker.deltatt shouldBeEqualTo false
+                        }
+                    }
+                }
+                describe("Happy path: with behandler (ikke deltatt, motta referat)") {
+                    val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+                    val newReferatDTO = generateNewReferatDTO(behandlerDeltatt = false, behandlerMottarReferat = true)
+
+                    val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
+
+                    it("should return OK if request is successful") {
+                        val createdDialogmote = createDialogmote(
+                            validToken,
+                            newDialogmoteDTO,
+                            objectMapper,
+                        )
+                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                        verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        clearMocks(behandlerDialogmeldingProducer)
+                        justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        val createdDialogmoteUUID = createdDialogmote.uuid
+
+                        val urlMoteUUIDFerdigstill =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newReferatDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            val behandlerDeltaker = dialogmoteDTO.behandler!!
+                            behandlerDeltaker.mottarReferat shouldBeEqualTo true
+                            behandlerDeltaker.deltatt shouldBeEqualTo false
+                        }
+                    }
+                }
                 describe("Happy path: with behandler og mellomlagring") {
                     val behandlerOppgave = "Dette er en beskrivelse av behandlers oppgave"
                     val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
@@ -323,6 +428,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                         val createdDialogmote = createDialogmote(
                             validToken,
                             newDialogmoteDTO,
+                            objectMapper,
                         )
                         val createdDialogmoteUUID = createdDialogmote.uuid
                         val innkallingBehandlerVarselUUID = createdDialogmote.behandler?.varselList?.lastOrNull()?.uuid
@@ -394,7 +500,10 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             val referat = dialogmoteDTO.referat!!
                             val referatBehandlerVarselUUID = referat.uuid
                             dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.FERDIGSTILT.name
-                            dialogmoteDTO.behandler!!.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            val behandlerDeltaker = dialogmoteDTO.behandler!!
+                            behandlerDeltaker.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            behandlerDeltaker.mottarReferat shouldBeEqualTo true
+                            behandlerDeltaker.deltatt shouldBeEqualTo true
                             referat.behandlerOppgave shouldBeEqualTo behandlerOppgave
                             referat.ferdigstilt shouldBeEqualTo true
                             referat.andreDeltakere.size shouldBeEqualTo 1
@@ -414,6 +523,55 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                         }
                     }
                 }
+                describe("Happy path: with behandler og mellomlagring (ikke deltatt, ikke motta referat)") {
+                    val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+                    val newReferatDTO = generateNewReferatDTO(behandlerDeltatt = false, behandlerMottarReferat = false)
+
+                    val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
+
+                    it("should return OK if request is successful") {
+                        val createdDialogmote = createDialogmote(
+                            validToken,
+                            newDialogmoteDTO,
+                            objectMapper,
+                        )
+                        val createdDialogmoteUUID = createdDialogmote.uuid
+                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                        verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        clearMocks(behandlerDialogmeldingProducer)
+                        justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+
+                        val urlMoteUUIDMellomlagre =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteMellomlagrePath"
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoteUUIDMellomlagre) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newReferatDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 0) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        }
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            val behandlerDeltaker = dialogmoteDTO.behandler!!
+                            behandlerDeltaker.mottarReferat shouldBeEqualTo false
+                            behandlerDeltaker.deltatt shouldBeEqualTo false
+                        }
+                    }
+                }
                 describe("Happy path: ferdigstilling gjøres av annen bruker enn den som gjør innkalling") {
                     val validToken2 = generateJWT(
                         externalMockEnvironment.environment.aadAppClient,
@@ -429,6 +587,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                         val createdDialogmote = createDialogmote(
                             validToken,
                             newDialogmoteDTO,
+                            objectMapper,
                         )
                         val createdDialogmoteUUID = createdDialogmote.uuid
                         verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
@@ -472,6 +631,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
 private fun TestApplicationEngine.createDialogmote(
     validToken: String,
     newDialogmoteDTO: NewDialogmoteDTO,
+    objectMapper: ObjectMapper,
 ): DialogmoteDTO {
     val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
     with(
