@@ -14,6 +14,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.getRandomPort
 import no.nav.syfo.util.getPersonIdentHeader
@@ -47,7 +48,8 @@ class SyfobehandlendeenhetMock {
                         getPersonIdentHeader() == ARBEIDSTAKER_ANNEN_FNR.value ||
                         getPersonIdentHeader() == ARBEIDSTAKER_NO_JOURNALFORING.value ||
                         getPersonIdentHeader() == ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE.value ||
-                        getPersonIdentHeader() == ARBEIDSTAKER_IKKE_VARSEL.value
+                        getPersonIdentHeader() == ARBEIDSTAKER_IKKE_VARSEL.value ||
+                        getPersonIdentHeader() == ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value
                     ) {
                         call.respond(behandlendeEnhetDTO)
                     } else {

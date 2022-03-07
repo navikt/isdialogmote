@@ -11,6 +11,7 @@ import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProduc
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
+import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
@@ -47,6 +48,8 @@ class PostDialogmoteApiV2Spek : Spek({
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             val mqSenderMock = mockk<MQSenderInterface>()
+            val altinnMock = mockk<AltinnClient>()
+
             val behandlerVarselService = BehandlerVarselService(
                 database = database,
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
@@ -57,6 +60,7 @@ class PostDialogmoteApiV2Spek : Spek({
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 mqSenderMock = mqSenderMock,
+                altinnMock = altinnMock,
             )
 
             val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
@@ -79,6 +83,8 @@ class PostDialogmoteApiV2Spek : Spek({
                     justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                     clearMocks(mqSenderMock)
                     justRun { mqSenderMock.sendMQMessage(any(), any()) }
+                    clearMocks(altinnMock)
+                    justRun { altinnMock.sendToVirksomhet(any()) }
                 }
 
                 afterEachTest {
@@ -118,6 +124,7 @@ class PostDialogmoteApiV2Spek : Spek({
                             xml.shouldContain("<parameterListe><key>navn</key><value>narmesteLederNavn</value></parameterListe>")
                             xml.shouldContain("<parameterListe><key>tidspunkt</key><value>$moteTidspunktString</value></parameterListe>")
                             clearMocks(mqSenderMock)
+                            verify(exactly = 0) { altinnMock.sendToVirksomhet(any()) }
                         }
 
                         with(
@@ -294,6 +301,21 @@ class PostDialogmoteApiV2Spek : Spek({
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
                         }
                     }
+
+                    it("should return OK if request is successful: does not have a leader for Virksomhet") {
+                        val newDialogmoteDTO = generateNewDialogmoteDTO(personIdentNumber = ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
+                        with(
+                            handleRequest(HttpMethod.Post, urlMote) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
+                            verify(exactly = 1) { altinnMock.sendToVirksomhet(any()) }
+                        }
+                    }
                 }
 
                 describe("Unhappy paths") {
@@ -333,24 +355,6 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                        }
-                    }
-
-                    // TODO Endre denne til at vi sender til altinn når leder mangler, og kanskje tilsvarende i de andre testene?
-                    // VI trenger vel også en mockserver for altinn?
-                    // Nå blir testen grønn fordi kallet til altinn feiler, og da ender man oppe med 500-feil, men av feil årsak
-                    it("should return status InternalServerError if denied person with Dialogmote with Virksomhet does not have a leader for that Virksomhet") {
-                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
-                        val urlMotePersonIdent = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
-                        with(
-                            handleRequest(HttpMethod.Post, urlMotePersonIdent) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
                             verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }

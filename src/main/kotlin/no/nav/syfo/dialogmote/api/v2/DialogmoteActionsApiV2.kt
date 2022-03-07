@@ -44,17 +44,13 @@ fun Route.registerDialogmoteActionsApiV2(
                 personIdentToAccess = dialogmote.arbeidstaker.personIdent,
                 action = "Avlys Dialogmote for moteUUID"
             ) {
-                val success = dialogmoteService.avlysMoteinnkalling(
+                dialogmoteService.avlysMoteinnkalling(
                     callId = callId,
                     dialogmote = dialogmote,
                     avlysDialogmote = avlysDialogmoteDto,
                     token = token,
                 )
-                if (success) {
-                    call.respond(HttpStatusCode.OK)
-                } else {
-                    call.respond(HttpStatusCode.InternalServerError, "Failed to Avlys Dialogmoteinnkalling")
-                }
+                call.respond(HttpStatusCode.OK)
             }
         }
 
@@ -72,16 +68,12 @@ fun Route.registerDialogmoteActionsApiV2(
                 personIdentToAccess = dialogmote.arbeidstaker.personIdent,
                 action = "Mellomlagre Dialogmote for moteUUID"
             ) {
-                val success = dialogmoteService.mellomlagreReferat(
+                dialogmoteService.mellomlagreReferat(
                     dialogmote = dialogmote,
                     opprettetAv = getNAVIdentFromToken(token),
                     referat = newReferat,
                 )
-                if (success) {
-                    call.respond(HttpStatusCode.OK)
-                } else {
-                    call.respond(HttpStatusCode.InternalServerError, "Failed to mellomlagre referat for Dialogmote")
-                }
+                call.respond(HttpStatusCode.OK)
             }
         }
 
@@ -101,18 +93,14 @@ fun Route.registerDialogmoteActionsApiV2(
                 personIdentToAccess = dialogmote.arbeidstaker.personIdent,
                 action = "Ferdigstill Dialogmote for moteUUID"
             ) {
-                val success = dialogmoteService.ferdigstillMote(
+                dialogmoteService.ferdigstillMote(
                     callId = callId,
                     dialogmote = dialogmote,
                     opprettetAv = getNAVIdentFromToken(token),
                     referat = newReferat,
                     token = token,
                 )
-                if (success) {
-                    call.respond(HttpStatusCode.OK)
-                } else {
-                    call.respond(HttpStatusCode.InternalServerError, "Failed to Ferdigstill Dialogmote")
-                }
+                call.respond(HttpStatusCode.OK)
             }
         }
 
@@ -133,17 +121,13 @@ fun Route.registerDialogmoteActionsApiV2(
                 personIdentToAccess = dialogmote.arbeidstaker.personIdent,
                 action = "Create NewDialogmoteTidSted for moteUUID"
             ) {
-                val success = dialogmoteService.nyttMoteinnkallingTidSted(
+                dialogmoteService.nyttMoteinnkallingTidSted(
                     callId = callId,
                     dialogmote = dialogmote,
                     endreDialogmoteTidSted = endreDialogmoteTidSted,
                     token = token,
                 )
-                if (success) {
-                    call.respond(HttpStatusCode.OK)
-                } else {
-                    call.respond(HttpStatusCode.InternalServerError, "Failed to create NewDialogmoteTidSted")
-                }
+                call.respond(HttpStatusCode.OK)
             }
         }
 
@@ -164,12 +148,8 @@ fun Route.registerDialogmoteActionsApiV2(
                         callId
                     )
                 ) {
-                    val success = dialogmoteService.overtaMoter(getNAVIdentFromToken(token), dialogmoter)
-                    if (success) {
-                        call.respond(HttpStatusCode.OK)
-                    } else {
-                        call.respond(HttpStatusCode.InternalServerError, "Failed to Overta Dialogmøter")
-                    }
+                    dialogmoteService.overtaMoter(getNAVIdentFromToken(token), dialogmoter)
+                    call.respond(HttpStatusCode.OK)
                 } else {
                     val accessDeniedMessage = "Denied Veileder access to Dialogmøter for Person with PersonIdent"
                     log.warn("$accessDeniedMessage, {}", callIdArgument(callId))

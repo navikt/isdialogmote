@@ -4,6 +4,7 @@ import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.client.altinn.AltinnClient
+import no.nav.syfo.client.altinn.createAltinnMelding
 import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
@@ -36,10 +37,24 @@ class VarselService(
         behandlerRef: String?,
         behandlerDocument: List<DocumentComponentDTO>,
         behandlerPdf: ByteArray?,
-        behandlerbrevId: Pair<Int, UUID>?,
+        behandlerbrevId: UUID?,
         behandlerbrevParentId: String?,
         behandlerInnkallingUuid: UUID?,
     ) {
+        if (narmesteLeder != null) {
+            narmesteLederVarselService.sendVarsel(
+                createdAt = tidspunktForVarsel,
+                moteTidspunkt = moteTidspunkt,
+                narmesteLeder = narmesteLeder,
+                varseltype = varselType,
+            )
+        } else {
+            val altinnMelding = createAltinnMelding(virksomhetsbrevId, virksomhetsnummer, virksomhetsPdf, varselType)
+            altinnClient.sendToVirksomhet(
+                altinnMelding = altinnMelding,
+            )
+        }
+
         if (isDigitalVarselEnabledForArbeidstaker) {
             arbeidstakerVarselService.sendVarsel(
                 createdAt = tidspunktForVarsel,
@@ -50,18 +65,6 @@ class VarselService(
             )
         }
 
-        if (narmesteLeder != null) {
-            narmesteLederVarselService.sendVarsel(
-                createdAt = tidspunktForVarsel,
-                moteTidspunkt = moteTidspunkt,
-                narmesteLeder = narmesteLeder,
-                varseltype = varselType
-            )
-        } else {
-            // TODO Gjør dette først
-            altinnClient.sendToVirksomhet(virksomhetsbrevId, virksomhetsPdf, virksomhetsnummer)
-        }
-
         if (skalVarsleBehandler) {
             behandlerId?.let {
                 behandlerVarselService.sendVarsel(
@@ -70,7 +73,7 @@ class VarselService(
                     document = behandlerDocument,
                     pdf = behandlerPdf!!,
                     varseltype = varselType,
-                    varselUuid = behandlerbrevId!!.second,
+                    varselUuid = behandlerbrevId!!,
                     varselParentId = behandlerbrevParentId,
                     varselInnkallingUuid = behandlerInnkallingUuid,
                 )

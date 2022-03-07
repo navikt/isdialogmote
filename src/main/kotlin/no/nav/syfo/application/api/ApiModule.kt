@@ -40,6 +40,7 @@ fun Application.apiModule(
     wellKnownSelvbetjening: WellKnown,
     wellKnownVeilederV2: WellKnown,
     cache: RedisStore,
+    altinnClient: AltinnClient
 ) {
     installMetrics()
     installCallId()
@@ -98,12 +99,6 @@ fun Application.apiModule(
         azureAdV2Client = azureAdV2Client,
         syfotilgangskontrollClientId = environment.syfotilgangskontrollClientId,
         tilgangskontrollBaseUrl = environment.syfotilgangskontrollUrl
-    )
-
-    val altinnClient = AltinnClient(
-        altinnWsUrl = environment.altinnWsUrl,
-        username = environment.altinnUsername,
-        password = environment.altinnPassword
     )
 
     val dialogmoteTilgangService = DialogmoteTilgangService(

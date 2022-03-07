@@ -15,6 +15,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.getRandomPort
 import no.nav.syfo.util.getPersonIdentHeader
@@ -64,6 +65,7 @@ class IsoppfolgingstilfelleMock {
                             end = LocalDate.now().minusDays(ARBEIDSGIVERPERIODE_DAYS + 1),
                         )
                     )
+                    ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value -> call.respond(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER))
                     else -> call.respond(HttpStatusCode.InternalServerError, "")
                 }
             }
