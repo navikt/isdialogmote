@@ -16,6 +16,8 @@ data class PMotedeltakerBehandler(
     val behandlerKontor: String,
     val behandlerType: String,
     val personIdent: PersonIdentNumber?,
+    val mottarReferat: Boolean,
+    val deltatt: Boolean,
 )
 
 fun PMotedeltakerBehandler.toDialogmotedeltakerBehandler(
@@ -33,4 +35,6 @@ fun PMotedeltakerBehandler.toDialogmotedeltakerBehandler(
     type = DialogmotedeltakerType.BEHANDLER,
     personIdent = this.personIdent,
     varselList = dialogmotedeltakerBehandlerVarsel,
+    deltatt = this.deltatt,
+    mottarReferat = this.mottarReferat,
 )

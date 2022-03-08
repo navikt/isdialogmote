@@ -9,4 +9,6 @@ data class DialogmotedeltakerBehandlerDTO(
     val type: String,
     val personIdent: String?,
     val varselList: List<DialogmotedeltakerBehandlerVarselDTO>,
+    val deltatt: Boolean,
+    val mottarReferat: Boolean
 )

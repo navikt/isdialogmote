@@ -150,6 +150,30 @@ fun Connection.createMotedeltakerBehandler(
     return Pair(motedeltakerBehandlerIdList.first(), motedeltakerUuid)
 }
 
+const val queryUpdateMotedeltakerBehandler =
+    """
+        UPDATE MOTEDELTAKER_BEHANDLER
+        SET deltatt = ?, mottar_referat = ?
+        WHERE id = ?
+    """
+
+fun Connection.updateMotedeltakerBehandler(
+    deltakerId: Int,
+    deltatt: Boolean,
+    mottarReferat: Boolean,
+) {
+    val rowCount = this.prepareStatement(queryUpdateMotedeltakerBehandler).use {
+        it.setBoolean(1, deltatt)
+        it.setBoolean(2, mottarReferat)
+        it.setInt(3, deltakerId)
+        it.executeUpdate()
+    }
+
+    if (rowCount != 1) {
+        throw SQLException("Update MotedeltakerBehandler failed, no rows affected.")
+    }
+}
+
 const val queryGetMotedeltakerBehandlerForMote =
     """
         SELECT *
@@ -200,6 +224,8 @@ fun ResultSet.toPMotedeltakerBehandler(): PMotedeltakerBehandler =
         behandlerNavn = getString("behandler_navn"),
         behandlerKontor = getString("behandler_kontor"),
         behandlerType = getString("behandler_type"),
+        mottarReferat = getBoolean("mottar_referat"),
+        deltatt = getBoolean("deltatt"),
     )
 
 const val queryCreateMotedeltakerArbeidsgiver =

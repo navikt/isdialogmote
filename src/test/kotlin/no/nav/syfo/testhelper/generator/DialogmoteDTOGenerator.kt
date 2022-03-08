@@ -182,7 +182,11 @@ fun generateNewDialogmoteDTOWithBehandler(
     )
 }
 
-fun generateNewReferatDTO(behandlerOppgave: String? = null) =
+fun generateNewReferatDTO(
+    behandlerOppgave: String? = null,
+    behandlerDeltatt: Boolean? = null,
+    behandlerMottarReferat: Boolean? = null,
+) =
     NewReferatDTO(
         situasjon = "Dette er en beskrivelse av situasjonen",
         konklusjon = "Dette er en beskrivelse av konklusjon",
@@ -198,9 +202,13 @@ fun generateNewReferatDTO(behandlerOppgave: String? = null) =
                 navn = "Tøff Pyjamas"
             )
         ),
+        behandlerDeltatt = behandlerDeltatt,
+        behandlerMottarReferat = behandlerMottarReferat,
     )
 
-fun generateModfisertReferatDTO(behandlerOppgave: String? = null) =
+fun generateModfisertReferatDTO(
+    behandlerOppgave: String? = null,
+) =
     NewReferatDTO(
         situasjon = "Dette er en beskrivelse av situasjonen",
         konklusjon = "Dette er en beskrivelse av konklusjon modifisert",
@@ -216,6 +224,8 @@ fun generateModfisertReferatDTO(behandlerOppgave: String? = null) =
                 navn = "Tøffere Pyjamas"
             )
         ),
+        behandlerMottarReferat = true,
+        behandlerDeltatt = true,
     )
 
 fun generateReferatComponentList(): List<DocumentComponentDTO> {

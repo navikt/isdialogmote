@@ -18,6 +18,8 @@ data class DialogmotedeltakerBehandler(
     val type: DialogmotedeltakerType,
     val personIdent: PersonIdentNumber?,
     val varselList: List<DialogmotedeltakerBehandlerVarsel>,
+    val deltatt: Boolean,
+    val mottarReferat: Boolean,
 )
 
 fun DialogmotedeltakerBehandler.toDialogmotedeltakerBehandlerDTO() =
@@ -31,7 +33,9 @@ fun DialogmotedeltakerBehandler.toDialogmotedeltakerBehandlerDTO() =
         personIdent = this.personIdent?.value,
         varselList = this.varselList.map {
             it.toDialogmotedeltakerBehandlerVarselDTO()
-        }
+        },
+        deltatt = this.deltatt,
+        mottarReferat = this.mottarReferat,
     )
 
 fun DialogmotedeltakerBehandler.findInnkallingVarselUuid(): UUID {
