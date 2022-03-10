@@ -19,7 +19,7 @@ data class Dialogmote(
     val arbeidsgiver: DialogmotedeltakerArbeidsgiver,
     val behandler: DialogmotedeltakerBehandler?,
     val tidStedList: List<DialogmoteTidSted>,
-    val referat: Referat?,
+    val referatList: List<Referat>,
 )
 
 fun Dialogmote.toDialogmoteDTO(): DialogmoteDTO {
@@ -38,23 +38,22 @@ fun Dialogmote.toDialogmoteDTO(): DialogmoteDTO {
         sted = dialogmoteTidSted.sted,
         tid = dialogmoteTidSted.tid,
         videoLink = dialogmoteTidSted.videoLink,
-        referat = this.referat?.toReferatDTO(),
+        referat = this.referatList.firstOrNull()?.toReferatDTO(),
+        referatList = this.referatList.toReferatDTOList(),
     )
 }
 
 fun List<Dialogmote>.toArbeidstakerBrevDTOList(): List<ArbeidstakerBrevDTO> {
     return this.map { dialogmote ->
         val brevList = mutableListOf<ArbeidstakerBrevDTO>()
-        dialogmote.referat?.let {
-            if (it.ferdigstilt) {
-                brevList.add(
-                    it.toArbeidstakerBrevDTO(
-                        dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
-                        deltakerUuid = dialogmote.arbeidstaker.uuid,
-                        virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
-                    )
+        dialogmote.referatList.ferdigstilte().map {
+            brevList.add(
+                it.toArbeidstakerBrevDTO(
+                    dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
+                    deltakerUuid = dialogmote.arbeidstaker.uuid,
+                    virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
                 )
-            }
+            )
         }
         brevList.addAll(
             dialogmote.arbeidstaker.varselList.map {
@@ -72,16 +71,14 @@ fun List<Dialogmote>.toArbeidstakerBrevDTOList(): List<ArbeidstakerBrevDTO> {
 fun List<Dialogmote>.toNarmesteLederBrevDTOList(): List<NarmesteLederBrevDTO> {
     return this.map { dialogmote ->
         val brevList = mutableListOf<NarmesteLederBrevDTO>()
-        dialogmote.referat?.let {
-            if (it.ferdigstilt) {
-                brevList.add(
-                    it.toNarmesteLederBrevDTO(
-                        dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
-                        deltakerUuid = dialogmote.arbeidsgiver.uuid,
-                        virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
-                    )
+        dialogmote.referatList.ferdigstilte().map {
+            brevList.add(
+                it.toNarmesteLederBrevDTO(
+                    dialogmoteTidSted = dialogmote.tidStedList.latest()!!,
+                    deltakerUuid = dialogmote.arbeidsgiver.uuid,
+                    virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer,
                 )
-            }
+            )
         }
         brevList.addAll(
             dialogmote.arbeidsgiver.varselList.map {
