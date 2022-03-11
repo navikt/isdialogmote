@@ -73,7 +73,7 @@ private val SMS_BODY_INNKALT = """
 private val SMS_BODY_NYTT_TID_STED = """
     $ALTINN_VAR_REPORTEE_NAME ($ALTINN_VAR_REPORTEE_NUMBER) er innkalt til dialogmøte med NAV i forbindelse med
     sykefraværet til en av deres ansatte. NAV har endret tidspunktet eller stedet for dialogmøtet.
-    Logg inn i Altinn for å lese endringen. pluss mellomrom? Ja, det skal vel være det? Er det på de andre
+    Logg inn i Altinn for å lese endringen. 
 """.trimIndent()
 private var SMS_BODY_AVLYST = """
     $ALTINN_VAR_REPORTEE_NAME ($ALTINN_VAR_REPORTEE_NUMBER) var kalt inn til et dialogmøte med NAV i forbindelse med 
