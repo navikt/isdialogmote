@@ -1,5 +1,6 @@
 package no.nav.syfo.client.altinn
 
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.domain.Virksomhetsnummer
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -15,7 +16,11 @@ object AltinnUtilSpek : Spek({
             val brev = byteArrayOf(0x2E, 0x38)
             val virksomhetsnummer = Virksomhetsnummer("123456789")
 
-            val mappedObject = createVirksomhetsBrevAltinnWSRequest(brevId, brev, virksomhetsnummer)
+            val altinnMelding = createAltinnMelding(brevId, virksomhetsnummer, brev, MotedeltakerVarselType.INNKALT)
+
+            val mappedObject = mapToInsertCorrespondenceV2WS(
+                altinnMelding
+            )
 
             mappedObject.reportee shouldBeEqualTo virksomhetsnummer.value
             mappedObject.content.attachments.binaryAttachments.binaryAttachmentV2.first().sendersReference shouldBeEqualTo "$brevId.pdf"

@@ -87,7 +87,7 @@ class DialogmoteService(
         newDialogmoteDTO: NewDialogmoteDTO,
         callId: String,
         token: String,
-    ): Boolean {
+    ) {
         val personIdentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
         val virksomhetsnummer = Virksomhetsnummer(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer)
 
@@ -193,7 +193,6 @@ class DialogmoteService(
 
             connection.commit()
         }
-        return true
     }
 
     suspend fun avlysMoteinnkalling(
@@ -201,7 +200,7 @@ class DialogmoteService(
         dialogmote: Dialogmote,
         avlysDialogmote: AvlysDialogmoteDTO,
         token: String,
-    ): Boolean {
+    ) {
 
         val virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer
 
@@ -280,7 +279,6 @@ class DialogmoteService(
             )
             connection.commit()
         }
-        return true
     }
 
     suspend fun nyttMoteinnkallingTidSted(
@@ -288,7 +286,7 @@ class DialogmoteService(
         dialogmote: Dialogmote,
         endreDialogmoteTidSted: EndreTidStedDialogmoteDTO,
         token: String,
-    ): Boolean {
+    ) {
 
         val virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer
 
@@ -374,7 +372,6 @@ class DialogmoteService(
 
             connection.commit()
         }
-        return true
     }
 
     private fun createAndSendVarsel(
@@ -465,14 +462,14 @@ class DialogmoteService(
                 behandlerRef = behandlerRef,
                 behandlerDocument = documentBehandler,
                 behandlerPdf = pdfBehandler,
-                behandlerbrevId = behandlerVarselIdPair,
+                behandlerbrevId = behandlerVarselIdPair?.second,
                 behandlerbrevParentId = behandlerParentVarselId,
                 behandlerInnkallingUuid = behandlerInnkallingUuid
             )
         }
     }
 
-    fun overtaMoter(veilederIdent: String, dialogmoter: List<Dialogmote>): Boolean {
+    fun overtaMoter(veilederIdent: String, dialogmoter: List<Dialogmote>) {
         database.connection.use { connection ->
             dialogmoter.forEach { dialogmote ->
                 connection.updateMoteTildeltVeileder(
@@ -483,14 +480,13 @@ class DialogmoteService(
             }
             connection.commit()
         }
-        return true
     }
 
     fun mellomlagreReferat(
         dialogmote: Dialogmote,
         opprettetAv: String,
         referat: NewReferatDTO,
-    ): Boolean {
+    ) {
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
             throw ConflictException("Failed to mellomlagre referat Dialogmote, already Ferdigstilt")
         }
@@ -537,7 +533,6 @@ class DialogmoteService(
             }
             connection.commit()
         }
-        return true
     }
 
     suspend fun ferdigstillMote(
@@ -546,7 +541,7 @@ class DialogmoteService(
         opprettetAv: String,
         referat: NewReferatDTO,
         token: String,
-    ): Boolean {
+    ) {
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
             throw ConflictException("Failed to Ferdigstille Dialogmote, already Ferdigstilt")
         }
@@ -644,14 +639,13 @@ class DialogmoteService(
                 behandlerRef = behandler?.behandlerRef,
                 behandlerDocument = referat.document,
                 behandlerPdf = pdfReferat,
-                behandlerbrevId = Pair(1, referatUuid),
+                behandlerbrevId = referatUuid,
                 behandlerbrevParentId = behandler?.findParentVarselId(),
                 behandlerInnkallingUuid = behandler?.findInnkallingVarselUuid(),
             )
 
             connection.commit()
         }
-        return true
     }
 
     private suspend fun updateMoteStatus(

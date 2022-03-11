@@ -17,6 +17,7 @@ import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProduc
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.kafkaBrukernotifikasjonProducerConfig
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.*
+import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.cronjob.cronjobModule
 import no.nav.syfo.dialogmelding.DialogmeldingService
 import no.nav.syfo.dialogmelding.kafka.DialogmeldingConsumerService
@@ -56,6 +57,13 @@ fun main() {
             environment.redisSecret
         )
     )
+
+    val altinnClient = AltinnClient(
+        altinnWsUrl = environment.altinnWsUrl,
+        username = environment.altinnUsername,
+        password = environment.altinnPassword
+    )
+
     lateinit var behandlerVarselService: BehandlerVarselService
 
     val applicationEngineEnvironment = applicationEngineEnvironment {
@@ -72,6 +80,7 @@ fun main() {
                 database = applicationDatabase,
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer
             )
+
             apiModule(
                 applicationState = applicationState,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
@@ -82,6 +91,7 @@ fun main() {
                 wellKnownSelvbetjening = getWellKnown(environment.loginserviceIdportenDiscoveryUrl),
                 wellKnownVeilederV2 = getWellKnown(environment.azureAppWellKnownUrl),
                 cache = cache,
+                altinnClient = altinnClient,
             )
             cronjobModule(
                 applicationState = applicationState,

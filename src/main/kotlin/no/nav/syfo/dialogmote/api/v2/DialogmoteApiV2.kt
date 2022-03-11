@@ -57,16 +57,12 @@ fun Route.registerDialogmoteApiV2(
                 personIdentToAccess = personidentNumber,
                 action = "Create new Dialogmoteinnkalling"
             ) {
-                val created = dialogmoteService.createMoteinnkalling(
+                dialogmoteService.createMoteinnkalling(
                     newDialogmoteDTO = newDialogmoteDTO,
                     token = token,
                     callId = callId,
                 )
-                if (created) {
-                    call.respond(HttpStatusCode.OK)
-                } else {
-                    call.respond(HttpStatusCode.InternalServerError, "Failed to create Dialogmoteinnkalling")
-                }
+                call.respond(HttpStatusCode.OK)
             }
         }
     }

@@ -7,6 +7,7 @@ import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
+import no.nav.syfo.client.altinn.AltinnClient
 import redis.clients.jedis.*
 
 fun Application.testApiModule(
@@ -14,6 +15,7 @@ fun Application.testApiModule(
     behandlerVarselService: BehandlerVarselService = mockk(),
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
     mqSenderMock: MQSenderInterface,
+    altinnMock: AltinnClient = mockk(),
 ) {
     val cache = RedisStore(
         JedisPool(
@@ -34,5 +36,6 @@ fun Application.testApiModule(
         wellKnownSelvbetjening = externalMockEnvironment.wellKnownSelvbetjening,
         wellKnownVeilederV2 = externalMockEnvironment.wellKnownVeilederV2,
         cache = cache,
+        altinnClient = altinnMock,
     )
 }

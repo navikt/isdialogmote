@@ -8,6 +8,7 @@ import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.client.altinn.AltinnClient
+import no.nav.syfo.client.altinn.createAltinnMelding
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_NO_NARMESTELEDER
@@ -43,7 +44,7 @@ object VarselServiceSpek : Spek({
             justRun { arbeidstakerVarselService.sendVarsel(any(), any(), any(), any(), any()) }
             justRun { narmesteLederVarselService.sendVarsel(any(), any(), any(), any()) }
             justRun { behandlerVarselService.sendVarsel(any(), any(), any(), any(), any(), any(), any(), any()) }
-            justRun { altinnClient.sendToVirksomhet(any(), any(), any()) }
+            justRun { altinnClient.sendToVirksomhet(any()) }
         }
 
         it("Send varsel to nærmeste leder") {
@@ -72,7 +73,7 @@ object VarselServiceSpek : Spek({
                 behandlerInnkallingUuid = null
             )
 
-            verify(exactly = 0) { altinnClient.sendToVirksomhet(any(), any(), any()) }
+            verify(exactly = 0) { altinnClient.sendToVirksomhet(any()) }
 
             verify(exactly = 1) {
                 narmesteLederVarselService.sendVarsel(
@@ -105,7 +106,13 @@ object VarselServiceSpek : Spek({
                 behandlerInnkallingUuid = null
             )
 
-            verify(exactly = 1) { altinnClient.sendToVirksomhet(virksomhetsbrevId, virksomhetsPdf, VIRKSOMHETSNUMMER_NO_NARMESTELEDER) }
+            val altinnMelding = createAltinnMelding(virksomhetsbrevId, VIRKSOMHETSNUMMER_NO_NARMESTELEDER, virksomhetsPdf, MotedeltakerVarselType.INNKALT)
+
+            verify(exactly = 1) {
+                altinnClient.sendToVirksomhet(
+                    altinnMelding
+                )
+            }
 
             verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), any(), any()) }
         }

@@ -9,39 +9,32 @@ import no.altinn.schemas.services.serviceengine.notification._2009._10.*
 import no.altinn.schemas.services.serviceengine.subscription._2009._10.AttachmentFunctionType
 import no.altinn.services.serviceengine.reporteeelementlist._2010._10.BinaryAttachmentExternalBEV2List
 import no.altinn.services.serviceengine.reporteeelementlist._2010._10.BinaryAttachmentV2
-import no.nav.syfo.domain.Virksomhetsnummer
 import java.lang.Boolean.FALSE
-import java.util.*
 
 private const val DIALOGMOTE_TJENESTEKODE =
     "5793" // OBS! VIKTIG! Denne må ikke endres, da kan feil personer få tilgang til innkallinger i Altinn!
 private const val DIALOGMOTE_TJENESTEVERSJON = "1"
 private const val NORSK_BOKMAL = "1044"
 private const val AVSENDER_NAV = "NAV"
-private const val MESSAGE_BODY = "Det er ikke registrert noen nærmeste leder for denne arbeidstakeren. Det " +
-    "må registreres en leder, og lederen må deretter gå inn på Dine Sykmeldte på nav.no for å svare på " +
-    "innkallingen."
 private const val FRA_EPOST_ALTINN = "noreply@altinn.no"
 private const val NOTIFICATION_TYPE = "TokenTextOnly"
 
-fun createVirksomhetsBrevAltinnWSRequest(
-    brevUuid: UUID,
-    brev: ByteArray,
-    virksomhetsnummer: Virksomhetsnummer,
+fun mapToInsertCorrespondenceV2WS(
+    altinnMelding: AltinnMelding,
 ): InsertCorrespondenceV2 {
 
     return InsertCorrespondenceV2()
         .withAllowForwarding(FALSE)
-        .withReportee(virksomhetsnummer.value)
+        .withReportee(altinnMelding.virksomhetsnummer.value)
         .withMessageSender(AVSENDER_NAV)
         .withServiceCode(DIALOGMOTE_TJENESTEKODE)
         .withServiceEdition(DIALOGMOTE_TJENESTEVERSJON)
-        .withNotifications(createNotifications())
+        .withNotifications(createNotifications(altinnMelding))
         .withContent(
             ExternalContentV2()
                 .withLanguageCode(NORSK_BOKMAL)
-                .withMessageTitle("Dialogmøte hos NAV")
-                .withMessageBody(MESSAGE_BODY)
+                .withMessageTitle(altinnMelding.title)
+                .withMessageBody(altinnMelding.body)
                 .withCustomMessageData(null)
                 .withAttachments(
                     AttachmentsV2()
@@ -49,10 +42,10 @@ fun createVirksomhetsBrevAltinnWSRequest(
                             BinaryAttachmentExternalBEV2List()
                                 .withBinaryAttachmentV2(
                                     createBinaryAttachment(
-                                        brev,
-                                        "moteinkalling.pdf",
-                                        "Møteinnkalling",
-                                        "$brevUuid.pdf"
+                                        fil = altinnMelding.file,
+                                        filnavn = altinnMelding.filename,
+                                        navn = altinnMelding.displayFilename,
+                                        sendersRef = "${altinnMelding.reference}.pdf"
                                     ),
                                 )
                         )
@@ -60,22 +53,20 @@ fun createVirksomhetsBrevAltinnWSRequest(
         ).withArchiveReference(null)
 }
 
-fun createNotifications(): NotificationBEList {
+fun createNotifications(altinnMelding: AltinnMelding): NotificationBEList {
     return NotificationBEList()
-        .withNotification(epostNotification(), smsNotification())
+        .withNotification(
+            epostNotification(altinnMelding.emailTitle, altinnMelding.emailBody),
+            smsNotification(altinnMelding.smsBody, altinnMelding.smsSender)
+        )
 }
 
-private fun epostNotification(): Notification {
-    val title = "Innkalling til dialogmøte "
-    val body = "<p>En ansatt i \$reporteeName$ (\$reporteeNumber$) skal ha dialogmøte.</p>" +
-        "<p>Vennlig hilsen NAV.</p>"
-    return createNotification(FRA_EPOST_ALTINN, TransportType.EMAIL, convertToTextTokens(title, body))
+private fun epostNotification(emailTitle: String, emailBody: String): Notification {
+    return createNotification(FRA_EPOST_ALTINN, TransportType.EMAIL, convertToTextTokens(emailTitle, emailBody))
 }
 
-private fun smsNotification(): Notification {
-    val infoText = "En ansatt i \$reporteeName$ (\$reporteeNumber$) skal ha dialogmøte. "
-    val avsenderText = "Vennlig hilsen NAV."
-    return createNotification(null, TransportType.SMS, convertToTextTokens(infoText, avsenderText))
+private fun smsNotification(smsNotification: String, smsSender: String): Notification {
+    return createNotification(null, TransportType.SMS, convertToTextTokens(smsNotification, smsSender))
 }
 
 private fun createNotification(fromEmail: String?, type: TransportType, textTokens: Array<TextToken?>): Notification {
