@@ -97,7 +97,7 @@ spec:
     - name: DIALOGMOTE_ARBEIDSTAKER_URL
       value: "https://www-gcp.dev.nav.no/syk/dialogmote"
     - name: DOKARKIV_CLIENT_ID
-      value: "972814f3-8bdf-44f8-a191-c2ed00020b54"
+      value: "dev-fss.teamdokumenthandtering.dokarkiv-q1"
     - name: DOKARKIV_URL
       value: "https://dokarkiv.dev-fss-pub.nais.io"
     - name: ISOPPFOLGINGSTILFELLE_CLIENT_ID
