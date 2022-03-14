@@ -21,6 +21,7 @@ const val queryGetReferatForMoteUUID =
         SELECT MOTE_REFERAT.*
         FROM MOTE INNER JOIN MOTE_REFERAT on (MOTE.id = MOTE_REFERAT.mote_id)
         WHERE MOTE.uuid = ?
+        ORDER BY MOTE_REFERAT.created_at DESC
     """
 
 fun DatabaseInterface.getReferatForMote(moteUUID: UUID): List<PReferat> {

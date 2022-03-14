@@ -20,7 +20,7 @@ fun PDialogmote.toDialogmote(
     dialogmotedeltakerArbeidsgiver: DialogmotedeltakerArbeidsgiver,
     dialogmotedeltakerBehandler: DialogmotedeltakerBehandler?,
     dialogmoteTidStedList: List<DialogmoteTidSted>,
-    referat: Referat?,
+    referatList: List<Referat>,
 ): Dialogmote =
     Dialogmote(
         id = this.id,
@@ -35,5 +35,5 @@ fun PDialogmote.toDialogmote(
         arbeidsgiver = dialogmotedeltakerArbeidsgiver,
         behandler = dialogmotedeltakerBehandler,
         tidStedList = dialogmoteTidStedList,
-        referat = referat,
+        referatList = referatList,
     )

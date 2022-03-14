@@ -65,13 +65,13 @@ class DialogmoteService(
         val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
         val motedeltakerBehandler = dialogmotedeltakerService.getDialogmoteDeltakerBehandler(pDialogmote.id)
         val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
-        val referat = getReferatForMote(pDialogmote.uuid)
+        val referatList = getReferatForMote(pDialogmote.uuid)
         return pDialogmote.toDialogmote(
             dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
             dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
             dialogmotedeltakerBehandler = motedeltakerBehandler,
             dialogmoteTidStedList = dialogmoteTidStedList,
-            referat = referat,
+            referatList = referatList,
         )
     }
 
@@ -507,7 +507,8 @@ class DialogmoteService(
                 moteId = dialogmote.id,
                 ferdigstilt = false,
             )
-            if (dialogmote.referat == null) {
+            val existingReferat = dialogmote.referatList.firstOrNull()
+            if (existingReferat == null || existingReferat.ferdigstilt) {
                 connection.createNewReferat(
                     commit = false,
                     newReferat = newReferat,
@@ -517,7 +518,7 @@ class DialogmoteService(
             } else {
                 connection.updateReferat(
                     commit = false,
-                    referat = dialogmote.referat,
+                    referat = existingReferat,
                     newReferat = newReferat,
                     pdfId = null,
                     digitalt = true,
@@ -597,7 +598,7 @@ class DialogmoteService(
                 moteId = dialogmote.id,
                 ferdigstilt = true,
             )
-            val (_, referatUuid) = if (dialogmote.referat == null) {
+            val (_, referatUuid) = if (dialogmote.referatList.isEmpty()) {
                 connection.createNewReferat(
                     commit = false,
                     newReferat = newReferat,
@@ -605,9 +606,13 @@ class DialogmoteService(
                     digitalt = digitalVarsling,
                 )
             } else {
+                val existingReferat = dialogmote.referatList.first()
+                if (existingReferat.ferdigstilt) {
+                    throw ConflictException("Failed to Ferdigstille referat for Dialogmote, referat already Ferdigstilt")
+                }
                 connection.updateReferat(
                     commit = false,
-                    referat = dialogmote.referat,
+                    referat = existingReferat,
                     newReferat = newReferat,
                     pdfId = pdfId.first,
                     digitalt = digitalVarsling,
@@ -721,8 +726,8 @@ class DialogmoteService(
 
     private fun getReferatForMote(
         moteUUID: UUID
-    ): Referat? {
-        return database.getReferatForMote(moteUUID).firstOrNull()?.let { pReferat ->
+    ): List<Referat> {
+        return database.getReferatForMote(moteUUID).map { pReferat ->
             val andreDeltakere = getAndreDeltakere(pReferat.id)
             val motedeltakerArbeidstakerId = database.getMoteDeltakerArbeidstaker(pReferat.moteId).id
             val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
