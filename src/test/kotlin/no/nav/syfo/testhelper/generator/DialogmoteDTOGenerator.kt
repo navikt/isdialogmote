@@ -231,7 +231,7 @@ fun generateModfisertReferatDTO(
 fun generateReferatComponentList(): List<DocumentComponentDTO> {
     return listOf(
         DocumentComponentDTO(
-            type = DocumentComponentType.HEADER,
+            type = DocumentComponentType.HEADER_H1,
             title = null,
             texts = listOf("Tittel referat"),
         ),

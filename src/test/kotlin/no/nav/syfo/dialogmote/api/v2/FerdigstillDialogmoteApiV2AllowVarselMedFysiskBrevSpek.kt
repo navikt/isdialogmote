@@ -145,7 +145,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             referat.digitalt shouldBeEqualTo false
                             referat.situasjon shouldBeEqualTo "Dette er en beskrivelse av situasjonen"
                             referat.narmesteLederNavn shouldBeEqualTo "Grønn Bamse"
-                            referat.document[0].type shouldBeEqualTo DocumentComponentType.HEADER
+                            referat.document[0].type shouldBeEqualTo DocumentComponentType.HEADER_H1
                             referat.document[0].texts shouldBeEqualTo listOf("Tittel referat")
 
                             referat.document[1].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
