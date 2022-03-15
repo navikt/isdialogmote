@@ -1,18 +1,19 @@
 package no.nav.syfo.brev.arbeidstaker
 
-import no.nav.brukernotifikasjon.schemas.*
 import no.nav.brukernotifikasjon.schemas.builders.*
+import no.nav.brukernotifikasjon.schemas.input.*
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.domain.PersonIdentNumber
 import java.net.URL
-import java.time.LocalDateTime
+import java.time.*
 import java.util.*
 
 class ArbeidstakerVarselService(
     private val brukernotifikasjonProducer: BrukernotifikasjonProducer,
     private val dialogmoteArbeidstakerUrl: String,
-    private val serviceuserUsername: String,
+    private val namespace: String,
+    private val appname: String,
 ) {
     fun sendVarsel(
         createdAt: LocalDateTime,
@@ -22,8 +23,11 @@ class ArbeidstakerVarselService(
         varselUuid: UUID,
     ) {
         val nokkel = createBrukernotifikasjonNokkel(
-            serviceuser = serviceuserUsername,
             varselUuid = varselUuid,
+            grupperingsId = motedeltakerArbeidstakerUuid,
+            personIdent = personIdent,
+            namespace = namespace,
+            appname = appname,
         )
         val tekst = when (type) {
             MotedeltakerVarselType.INNKALT -> {
@@ -42,10 +46,8 @@ class ArbeidstakerVarselService(
         if (type == MotedeltakerVarselType.INNKALT || type == MotedeltakerVarselType.NYTT_TID_STED) {
             val oppgave = createBrukernotifikasjonOppgave(
                 createdAt = createdAt,
-                personIdent = personIdent,
                 tekst = tekst,
                 link = URL(dialogmoteArbeidstakerUrl),
-                grupperingsId = motedeltakerArbeidstakerUuid,
             )
             brukernotifikasjonProducer.sendOppgave(
                 nokkel,
@@ -54,10 +56,8 @@ class ArbeidstakerVarselService(
         } else {
             val beskjed = createBrukernotifikasjonBeskjed(
                 createdAt = createdAt,
-                personIdent = personIdent,
                 tekst = tekst,
                 link = URL(dialogmoteArbeidstakerUrl),
-                grupperingsId = motedeltakerArbeidstakerUuid,
             )
             brukernotifikasjonProducer.sendBeskjed(
                 nokkel,
@@ -72,13 +72,14 @@ class ArbeidstakerVarselService(
         varselUuid: UUID,
     ) {
         val nokkel = createBrukernotifikasjonNokkel(
-            serviceuser = serviceuserUsername,
-            varselUuid = varselUuid
-        )
-        val done = createBrukernotifikasjonDone(
-            personIdent = personIdent,
+            varselUuid = varselUuid,
             grupperingsId = motedeltakerArbeidstakerUuid,
+            personIdent = personIdent,
+            namespace = namespace,
+            appname = appname,
         )
+        val done = createBrukernotifikasjonDone()
+
         brukernotifikasjonProducer.sendDone(
             nokkel,
             done,
@@ -87,23 +88,25 @@ class ArbeidstakerVarselService(
 }
 
 fun createBrukernotifikasjonNokkel(
-    serviceuser: String,
     varselUuid: UUID,
-): Nokkel = NokkelBuilder()
-    .withSystembruker(serviceuser)
+    grupperingsId: UUID,
+    personIdent: PersonIdentNumber,
+    namespace: String,
+    appname: String,
+): NokkelInput = NokkelInputBuilder()
     .withEventId(varselUuid.toString())
+    .withNamespace(namespace)
+    .withAppnavn(appname)
+    .withGrupperingsId(grupperingsId.toString())
+    .withFodselsnummer(personIdent.value)
     .build()
 
 fun createBrukernotifikasjonBeskjed(
     createdAt: LocalDateTime,
     tekst: String,
     link: URL,
-    personIdent: PersonIdentNumber,
-    grupperingsId: UUID,
-): Beskjed = BeskjedBuilder()
-    .withTidspunkt(createdAt)
-    .withGrupperingsId(grupperingsId.toString())
-    .withFodselsnummer(personIdent.value)
+): BeskjedInput = BeskjedInputBuilder()
+    .withTidspunkt(createdAt.toLocalDateTimeUTC())
     .withTekst(tekst)
     .withLink(link)
     .withSikkerhetsnivaa(4)
@@ -115,23 +118,17 @@ fun createBrukernotifikasjonOppgave(
     createdAt: LocalDateTime,
     tekst: String,
     link: URL,
-    personIdent: PersonIdentNumber,
-    grupperingsId: UUID,
-): Oppgave = OppgaveBuilder()
-    .withTidspunkt(createdAt)
-    .withGrupperingsId(grupperingsId.toString())
-    .withFodselsnummer(personIdent.value)
+): OppgaveInput = OppgaveInputBuilder()
+    .withTidspunkt(createdAt.toLocalDateTimeUTC())
     .withTekst(tekst)
     .withLink(link)
     .withSikkerhetsnivaa(4)
     .withEksternVarsling(true)
     .build()
 
-fun createBrukernotifikasjonDone(
-    personIdent: PersonIdentNumber,
-    grupperingsId: UUID,
-): Done = DoneBuilder()
-    .withTidspunkt(LocalDateTime.now())
-    .withFodselsnummer(personIdent.value)
-    .withGrupperingsId(grupperingsId.toString())
+fun createBrukernotifikasjonDone(): DoneInput = DoneInputBuilder()
+    .withTidspunkt(LocalDateTime.now().toLocalDateTimeUTC())
     .build()
+
+fun LocalDateTime.toLocalDateTimeUTC() =
+    this.atZone(ZoneId.of("Europe/Oslo")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()

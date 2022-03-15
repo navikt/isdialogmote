@@ -1,22 +1,22 @@
 package no.nav.syfo.brev.arbeidstaker.brukernotifikasjon
 
-import no.nav.brukernotifikasjon.schemas.*
+import no.nav.brukernotifikasjon.schemas.input.*
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 
-const val BRUKERNOTIFIKASJON_BESKJED_TOPIC = "aapen-brukernotifikasjon-nyBeskjed-v1"
-const val BRUKERNOTIFIKASJON_OPPGAVE_TOPIC = "aapen-brukernotifikasjon-nyOppgave-v1"
-const val BRUKERNOTIFIKASJON_DONE_TOPIC = "aapen-brukernotifikasjon-done-v1"
+const val BRUKERNOTIFIKASJON_BESKJED_TOPIC = "min-side.aapen-brukernotifikasjon-beskjed-v1"
+const val BRUKERNOTIFIKASJON_OPPGAVE_TOPIC = "min-side.aapen-brukernotifikasjon-oppgave-v1"
+const val BRUKERNOTIFIKASJON_DONE_TOPIC = "min-side.aapen-brukernotifikasjon-done-v1"
 
 class BrukernotifikasjonProducer(
-    private val kafkaProducerBeskjed: KafkaProducer<Nokkel, Beskjed>,
-    private val kafkaProducerOppgave: KafkaProducer<Nokkel, Oppgave>,
-    private val kafkaProducerDone: KafkaProducer<Nokkel, Done>,
+    private val kafkaProducerBeskjed: KafkaProducer<NokkelInput, BeskjedInput>,
+    private val kafkaProducerOppgave: KafkaProducer<NokkelInput, OppgaveInput>,
+    private val kafkaProducerDone: KafkaProducer<NokkelInput, DoneInput>,
 ) {
     fun sendBeskjed(
-        nokkel: Nokkel,
-        beskjed: Beskjed,
+        nokkel: NokkelInput,
+        beskjed: BeskjedInput,
     ) {
         try {
             kafkaProducerBeskjed.send(
@@ -33,8 +33,8 @@ class BrukernotifikasjonProducer(
     }
 
     fun sendOppgave(
-        nokkel: Nokkel,
-        oppgave: Oppgave,
+        nokkel: NokkelInput,
+        oppgave: OppgaveInput,
     ) {
         try {
             kafkaProducerOppgave.send(
@@ -51,8 +51,8 @@ class BrukernotifikasjonProducer(
     }
 
     fun sendDone(
-        nokkel: Nokkel,
-        done: Done,
+        nokkel: NokkelInput,
+        done: DoneInput,
     ) {
         try {
             kafkaProducerDone.send(

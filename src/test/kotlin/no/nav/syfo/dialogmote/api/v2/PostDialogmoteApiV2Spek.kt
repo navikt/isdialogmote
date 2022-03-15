@@ -6,6 +6,8 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
+import no.nav.brukernotifikasjon.schemas.input.NokkelInput
+import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
@@ -31,7 +33,7 @@ import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.LocalDateTime
+import java.time.*
 import java.time.format.DateTimeFormatter
 
 class PostDialogmoteApiV2Spek : Spek({
@@ -245,7 +247,7 @@ class PostDialogmoteApiV2Spek : Spek({
                     }
                     it("should return OK if request is successful: with behandler") {
                         val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
-
+                        val createdAt = LocalDateTime.now()
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -289,7 +291,16 @@ class PostDialogmoteApiV2Spek : Spek({
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo ""
 
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                            val nokkelInputSlot = slot<NokkelInput>()
+                            val oppgaveInputSlot = slot<OppgaveInput>()
+                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(capture(nokkelInputSlot), capture(oppgaveInputSlot)) }
+                            val nokkelInput = nokkelInputSlot.captured
+                            nokkelInput.getFodselsnummer() shouldBeEqualTo ARBEIDSTAKER_FNR.value
+                            val oppgaveInput = oppgaveInputSlot.captured
+                            val oppgaveTidspunkt = Instant.ofEpochMilli(oppgaveInput.getTidspunkt()).atOffset(ZoneOffset.UTC).toLocalDateTime()
+                            oppgaveTidspunkt shouldBeBefore createdAt // Since oppgaveTidspunkt is UTC
+                            oppgaveInput.getTekst() shouldBeEqualTo "Du har mottatt et brev om innkalling til dialogmøte"
+
                             val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
                             verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(capture(kafkaBehandlerDialogmeldingDTOSlot)) }
                             val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured

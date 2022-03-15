@@ -5,7 +5,7 @@ import io.ktor.application.*
 import io.ktor.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import no.nav.brukernotifikasjon.schemas.*
+import no.nav.brukernotifikasjon.schemas.input.*
 import no.nav.syfo.application.*
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.api.authentication.getWellKnown
@@ -36,11 +36,13 @@ fun main() {
     logger.info("isdialogmote starting with java version: " + Runtime.version())
     val environment = Environment()
 
-    val kafkaBrukernotifikasjonProducerProperties = kafkaBrukernotifikasjonProducerConfig(environment)
+    val kafkaBrukernotifikasjonProducerProperties = kafkaBrukernotifikasjonProducerConfig(
+        environment.kafka,
+    )
     val brukernotifikasjonProducer = BrukernotifikasjonProducer(
-        kafkaProducerBeskjed = KafkaProducer<Nokkel, Beskjed>(kafkaBrukernotifikasjonProducerProperties),
-        kafkaProducerOppgave = KafkaProducer<Nokkel, Oppgave>(kafkaBrukernotifikasjonProducerProperties),
-        kafkaProducerDone = KafkaProducer<Nokkel, Done>(kafkaBrukernotifikasjonProducerProperties),
+        kafkaProducerBeskjed = KafkaProducer<NokkelInput, BeskjedInput>(kafkaBrukernotifikasjonProducerProperties),
+        kafkaProducerOppgave = KafkaProducer<NokkelInput, OppgaveInput>(kafkaBrukernotifikasjonProducerProperties),
+        kafkaProducerDone = KafkaProducer<NokkelInput, DoneInput>(kafkaBrukernotifikasjonProducerProperties),
     )
     val behandlerDialogmeldingProducer = BehandlerDialogmeldingProducer(
         kafkaProducerBehandlerDialogmeldingBestilling = KafkaProducer<String, KafkaBehandlerDialogmeldingDTO>(

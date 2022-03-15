@@ -3,6 +3,8 @@ package no.nav.syfo.application
 import io.ktor.application.*
 
 data class Environment(
+    val namespace: String = "teamsykefravr",
+    val appname: String = "isdialogmote",
     val aadAppClient: String = getEnvVar("AZURE_APP_CLIENT_ID"),
     val aadAppSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val aadTokenEndpoint: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
@@ -12,8 +14,6 @@ data class Environment(
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
     val kafka: ApplicationEnvironmentKafka = ApplicationEnvironmentKafka(
-        bootstrapServers = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
-        schemaRegistryUrl = getEnvVar("KAFKA_SCHEMA_REGISTRY_URL"),
         aivenBootstrapServers = getEnvVar("KAFKA_BROKERS"),
         aivenSchemaRegistryUrl = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
         aivenRegistryUser = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
@@ -26,8 +26,6 @@ data class Environment(
     val redisHost: String = getEnvVar("REDIS_HOST"),
     val redisPort: Int = getEnvVar("REDIS_PORT", "6379").toInt(),
     val redisSecret: String = getEnvVar("REDIS_PASSWORD"),
-    val serviceuserUsername: String = getEnvVar("SERVICEUSER_USERNAME"),
-    val serviceuserPassword: String = getEnvVar("SERVICEUSER_PASSWORD"),
     val isdialogmoteDbHost: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTE_ISDIALOGMOTE_DB_HOST"),
     val isdialogmoteDbPort: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTE_ISDIALOGMOTE_DB_PORT"),
     val isdialogmoteDbName: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTE_ISDIALOGMOTE_DB_DATABASE"),
@@ -73,8 +71,6 @@ data class Environment(
 }
 
 data class ApplicationEnvironmentKafka(
-    val bootstrapServers: String,
-    val schemaRegistryUrl: String,
     val aivenBootstrapServers: String,
     val aivenSchemaRegistryUrl: String,
     val aivenRegistryUser: String,

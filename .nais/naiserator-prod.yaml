@@ -88,10 +88,6 @@ spec:
   env:
     - name: KTOR_ENV
       value: "production"
-    - name: KAFKA_BOOTSTRAP_SERVERS_URL
-      value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
-    - name: KAFKA_SCHEMA_REGISTRY_URL
-      value: "https://kafka-schema-registry.nais.adeo.no"
     - name: REDIS_HOST
       value: "isdialogmote-redis.teamsykefravr.svc.cluster.local"
     - name: DIALOGMOTE_ARBEIDSTAKER_URL
