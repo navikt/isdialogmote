@@ -109,7 +109,8 @@ fun Application.apiModule(
     val arbeidstakerVarselService = ArbeidstakerVarselService(
         brukernotifikasjonProducer = brukernotifikasjonProducer,
         dialogmoteArbeidstakerUrl = environment.dialogmoteArbeidstakerUrl,
-        serviceuserUsername = environment.serviceuserUsername,
+        namespace = environment.namespace,
+        appname = environment.appname,
     )
 
     val narmesteLederVarselService = NarmesteLederVarselService(

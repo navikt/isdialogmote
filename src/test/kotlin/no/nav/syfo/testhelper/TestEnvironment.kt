@@ -30,8 +30,6 @@ fun testEnvironment(
     loginserviceIdportenDiscoveryUrl = "",
     loginserviceIdportenAudience = listOf("idporten"),
     kafka = ApplicationEnvironmentKafka(
-        bootstrapServers = kafkaBootstrapServers,
-        schemaRegistryUrl = "http://kafka-schema-registry.tpa.svc.nais.local:8081",
         aivenBootstrapServers = kafkaBootstrapServers,
         aivenSchemaRegistryUrl = "http://kafka-schema-registry.tpa.svc.nais.local:8081",
         aivenRegistryUser = "registryuser",
@@ -44,8 +42,6 @@ fun testEnvironment(
     redisHost = "localhost",
     redisPort = 6599,
     redisSecret = "password",
-    serviceuserUsername = "user",
-    serviceuserPassword = "password",
     isdialogmoteDbHost = "localhost",
     isdialogmoteDbPort = "5432",
     isdialogmoteDbName = "isdialogmote_dev",
