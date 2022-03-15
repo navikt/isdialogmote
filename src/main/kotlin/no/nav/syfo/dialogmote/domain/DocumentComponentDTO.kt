@@ -8,7 +8,9 @@ data class DocumentComponentDTO(
 )
 
 enum class DocumentComponentType {
-    HEADER,
+    HEADER, // legacy
+    HEADER_H1,
+    HEADER_H2,
     PARAGRAPH,
     LINK,
 }
