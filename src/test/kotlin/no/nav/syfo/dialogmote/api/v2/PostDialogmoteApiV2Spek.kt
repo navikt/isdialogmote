@@ -6,6 +6,9 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
+import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
 import no.nav.syfo.application.mq.MQSenderInterface
@@ -13,7 +16,6 @@ import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProduc
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
-import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
@@ -50,7 +52,7 @@ class PostDialogmoteApiV2Spek : Spek({
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             val mqSenderMock = mockk<MQSenderInterface>()
-            val altinnMock = mockk<AltinnClient>()
+            val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
             val behandlerVarselService = BehandlerVarselService(
                 database = database,
@@ -79,6 +81,9 @@ class PostDialogmoteApiV2Spek : Spek({
                 )
 
                 beforeEachTest {
+                    val altinnResponse = ReceiptExternal()
+                    altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
+
                     clearMocks(brukernotifikasjonProducer)
                     justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                     clearMocks(behandlerDialogmeldingProducer)
@@ -86,7 +91,7 @@ class PostDialogmoteApiV2Spek : Spek({
                     clearMocks(mqSenderMock)
                     justRun { mqSenderMock.sendMQMessage(any(), any()) }
                     clearMocks(altinnMock)
-                    justRun { altinnMock.sendToVirksomhet(any()) }
+                    every { altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any()) } returns altinnResponse
                 }
 
                 afterEachTest {
@@ -126,7 +131,7 @@ class PostDialogmoteApiV2Spek : Spek({
                             xml.shouldContain("<parameterListe><key>navn</key><value>narmesteLederNavn</value></parameterListe>")
                             xml.shouldContain("<parameterListe><key>tidspunkt</key><value>$moteTidspunktString</value></parameterListe>")
                             clearMocks(mqSenderMock)
-                            verify(exactly = 0) { altinnMock.sendToVirksomhet(any()) }
+                            verify(exactly = 0) { altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any()) }
                         }
 
                         with(
@@ -324,7 +329,7 @@ class PostDialogmoteApiV2Spek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                            verify(exactly = 1) { altinnMock.sendToVirksomhet(any()) }
+                            verify(exactly = 1) { altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any()) }
                         }
                     }
                 }

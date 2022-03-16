@@ -2,12 +2,12 @@ package no.nav.syfo.testhelper
 
 import io.ktor.application.*
 import io.mockk.mockk
+import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
-import no.nav.syfo.client.altinn.AltinnClient
 import redis.clients.jedis.*
 
 fun Application.testApiModule(
@@ -15,7 +15,7 @@ fun Application.testApiModule(
     behandlerVarselService: BehandlerVarselService = mockk(),
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
     mqSenderMock: MQSenderInterface,
-    altinnMock: AltinnClient = mockk(),
+    altinnMock: ICorrespondenceAgencyExternalBasic = mockk(),
 ) {
     val cache = RedisStore(
         JedisPool(
@@ -36,6 +36,6 @@ fun Application.testApiModule(
         wellKnownSelvbetjening = externalMockEnvironment.wellKnownSelvbetjening,
         wellKnownVeilederV2 = externalMockEnvironment.wellKnownVeilederV2,
         cache = cache,
-        altinnClient = altinnMock,
+        altinnSoapClient = altinnMock,
     )
 }
