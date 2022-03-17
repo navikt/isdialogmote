@@ -17,12 +17,17 @@ class NarmesteLederAccessService(
         moteList: List<Dialogmote>,
         narmesteLederPersonIdentNumber: PersonIdentNumber,
     ): List<Dialogmote> {
-        val virksomhetnummerListWhereNarmesteLederOfArbeidstaker = getVirksomhetnummerListWhereNarmesteLederOfArbeidstaker(
-            arbeidstakerPersonIdentNumber = arbeidstakerPersonIdentNumber,
-            callId = callId,
-            narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
-        )
-        return moteList.filter { virksomhetnummerListWhereNarmesteLederOfArbeidstaker.contains(it.arbeidsgiver.virksomhetsnummer) }
+        return if (moteList.isEmpty()) {
+            moteList
+        } else {
+            val virksomhetnummerListWhereNarmesteLederOfArbeidstaker =
+                getVirksomhetnummerListWhereNarmesteLederOfArbeidstaker(
+                    arbeidstakerPersonIdentNumber = arbeidstakerPersonIdentNumber,
+                    callId = callId,
+                    narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
+                )
+            moteList.filter { virksomhetnummerListWhereNarmesteLederOfArbeidstaker.contains(it.arbeidsgiver.virksomhetsnummer) }
+        }
     }
 
     suspend fun hasAccessToBrev(
