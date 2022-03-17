@@ -2,7 +2,7 @@ package no.nav.syfo.brev.narmesteleder
 
 import no.nav.melding.virksomhet.servicemeldingmedkontaktinformasjon.v1.servicemeldingmedkontaktinformasjon.*
 import no.nav.syfo.application.mq.MQSenderInterface
-import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
+import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import java.io.StringWriter
 import java.time.LocalDateTime
@@ -16,7 +16,7 @@ class NarmesteLederVarselService(
     fun sendVarsel(
         createdAt: LocalDateTime,
         moteTidspunkt: LocalDateTime,
-        narmesteLeder: NarmesteLederDTO,
+        narmesteLeder: NarmesteLederRelasjonDTO,
         varseltype: MotedeltakerVarselType
     ) {
         val parameterListe: MutableList<WSParameter> = ArrayList()
@@ -26,7 +26,7 @@ class NarmesteLederVarselService(
                 "tidspunkt", moteTidspunkt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
             )
         )
-        parameterListe.add(createParameter("navn", narmesteLeder.navn ?: "nærmeste leder"))
+        parameterListe.add(createParameter("navn", narmesteLeder.narmesteLederNavn ?: "nærmeste leder"))
 
         val melding = opprettServiceMelding(narmesteLeder, varseltype, parameterListe)
         val xmlString = marshallServiceMelding(ObjectFactory().createServicemelding(melding))
@@ -34,13 +34,13 @@ class NarmesteLederVarselService(
     }
 
     private fun opprettServiceMelding(
-        narmesteLeder: NarmesteLederDTO,
+        narmesteLeder: NarmesteLederRelasjonDTO,
         varseltype: MotedeltakerVarselType,
         parametere: List<WSParameter>
     ): WSServicemeldingMedKontaktinformasjon {
         return WSServicemeldingMedKontaktinformasjon().apply {
-            mottaker = personIdent(narmesteLeder.narmesteLederFnr)
-            tilhoerendeOrganisasjon = organisasjon(narmesteLeder.orgnummer)
+            mottaker = personIdent(narmesteLeder.narmesteLederPersonIdentNumber)
+            tilhoerendeOrganisasjon = organisasjon(narmesteLeder.virksomhetsnummer)
             varseltypeId = getNaermesteLederVarselType(varseltype).id
             parameterListe.addAll(parametere)
             kontaktinformasjonListe.addAll(kontaktinformasjon(narmesteLeder))
@@ -56,7 +56,7 @@ class NarmesteLederVarselService(
         }
     }
 
-    private fun kontaktinformasjon(narmesteLeder: NarmesteLederDTO): List<WSKontaktinformasjon> {
+    private fun kontaktinformasjon(narmesteLeder: NarmesteLederRelasjonDTO): List<WSKontaktinformasjon> {
         return listOf(
             opprettKontaktinformasjon(narmesteLeder.narmesteLederEpost, "EPOST"),
             opprettKontaktinformasjon(narmesteLeder.narmesteLederTelefonnummer, "SMS")

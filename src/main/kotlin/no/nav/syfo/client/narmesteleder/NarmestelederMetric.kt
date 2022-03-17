@@ -20,9 +20,9 @@ val COUNT_CALL_NARMESTE_LEDER_CACHE_MISS: Counter = Counter
     .register(METRICS_REGISTRY)
 val COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS: Counter = Counter
     .builder(CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS)
-    .description("Counts the number of successful calls to Narmesteleder - NarmesteLeder current")
+    .description("Counts the number of successful calls to isnarmesteleder - NarmesteLeder current")
     .register(METRICS_REGISTRY)
 val COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_FAIL: Counter = Counter
     .builder(CALL_PERSON_NARMESTE_LEDER_CURRENT_FAIL)
-    .description("Counts the number of failed calls to Narmesteleder - NarmesteLeder current")
+    .description("Counts the number of failed calls to isnarmesteleder - NarmesteLeder current")
     .register(METRICS_REGISTRY)

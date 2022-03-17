@@ -15,6 +15,7 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.*
+import java.util.UUID
 
 class NarmesteLederClientSpek : Spek({
 
@@ -39,16 +40,20 @@ class NarmesteLederClientSpek : Spek({
             val cacheKey =
                 "${NarmesteLederClient.CACHE_NARMESTE_LEDER_AKTIVE_ANSATTE_KEY_PREFIX}${NARMESTELEDER_FNR.value}"
             val cachedValue = listOf(
-                NarmesteLederDTO(
-                    fnr = ARBEIDSTAKER_FNR.value,
-                    orgnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
-                    narmesteLederFnr = NARMESTELEDER_FNR.value,
+                NarmesteLederRelasjonDTO(
+                    uuid = UUID.randomUUID().toString(),
+                    arbeidstakerPersonIdentNumber = ARBEIDSTAKER_FNR.value,
+                    virksomhetsnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
+                    virksomhetsnavn = "",
+                    narmesteLederPersonIdentNumber = NARMESTELEDER_FNR.value,
                     narmesteLederTelefonnummer = "",
                     narmesteLederEpost = "",
                     aktivFom = LocalDate.now(),
-                    tilganger = emptyList(),
-                    timestamp = OffsetDateTime.now(),
-                    navn = "",
+                    aktivTom = null,
+                    timestamp = LocalDateTime.now(),
+                    narmesteLederNavn = "",
+                    arbeidsgiverForskutterer = true,
+                    status = NarmesteLederRelasjonStatus.INNMELDT_AKTIV.name,
                 )
             )
 
@@ -74,13 +79,13 @@ class NarmesteLederClientSpek : Spek({
                     ).size shouldBeEqualTo 1
                 }
                 verify(exactly = 1) { cacheMock.get(cacheKey) }
-                verify(exactly = 0) { cacheMock.setObject(any(), any() as List<NarmesteLederDTO>?, any()) }
+                verify(exactly = 0) { cacheMock.setObject(any(), any() as List<NarmesteLederRelasjonDTO>?, any()) }
             }
 
             it("aktive ledere when no cached value") {
                 every { cacheMock.mapper } returns mapper
                 every { cacheMock.get(cacheKey) } returns null
-                justRun { cacheMock.setObject(any(), any() as List<NarmesteLederDTO>, any()) }
+                justRun { cacheMock.setObject(any(), any() as List<NarmesteLederRelasjonDTO>, any()) }
 
                 runBlocking {
                     runBlocking {
@@ -91,7 +96,7 @@ class NarmesteLederClientSpek : Spek({
                     }
                 }
                 verify(exactly = 1) { cacheMock.get(cacheKey) }
-                verify(exactly = 1) { cacheMock.setObject(any(), any() as List<NarmesteLederDTO>?, any()) }
+                verify(exactly = 1) { cacheMock.setObject(any(), any() as List<NarmesteLederRelasjonDTO>?, any()) }
             }
         }
     }

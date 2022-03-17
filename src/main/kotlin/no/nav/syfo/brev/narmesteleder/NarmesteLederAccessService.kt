@@ -58,9 +58,9 @@ class NarmesteLederAccessService(
     ): List<Virksomhetsnummer> {
         val aktiveAnsatteRelasjoner = narmesteLederClient.getAktiveAnsatte(narmesteLederPersonIdentNumber, callId)
         return aktiveAnsatteRelasjoner.filter { nlrelasjon ->
-            nlrelasjon.fnr == arbeidstakerPersonIdentNumber.value
+            nlrelasjon.arbeidstakerPersonIdentNumber == arbeidstakerPersonIdentNumber.value
         }.map { relasjon ->
-            Virksomhetsnummer(relasjon.orgnummer)
+            Virksomhetsnummer(relasjon.virksomhetsnummer)
         }.distinctBy { it.value }
     }
 }
