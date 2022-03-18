@@ -68,6 +68,7 @@ spec:
         - application: digdir-krr-proxy
         - application: isdialogmote-redis
         - application: isdialogmotepdfgen
+        - application: isnarmesteleder
         - application: syfobehandlendeenhet
   azure:
     application:
@@ -131,9 +132,9 @@ spec:
     - name: TREDJEPARTSVARSEL_QUEUENAME
       value: "QA.P_VARSELPRODUKSJON.BEST_SRVMLD_M_KONTAKT"
     - name: NARMESTELEDER_URL
-      value: "https://narmesteleder.nav.no"
+      value: "https://isnarmesteleder.intern.nav.no"
     - name: NARMESTELEDER_CLIENT_ID
-      value: "046419dd-8baa-4343-b192-a14d7c260b38"
+      value: "prod-gcp.teamsykefravr.isnarmesteleder"
     - name: ALTINN_WS_URL
       value: https://www.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternalBasic.svc
     - name: DOKDIST_FORDELING_URL

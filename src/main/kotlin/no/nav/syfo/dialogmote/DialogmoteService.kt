@@ -5,7 +5,7 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
-import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
+import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.client.oppfolgingstilfelle.*
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
@@ -103,7 +103,8 @@ class DialogmoteService(
         val narmesteLeder = narmesteLederClient.activeLeder(
             personIdentNumber = personIdentNumber,
             virksomhetsnummer = virksomhetsnummer,
-            callId = callId
+            callId = callId,
+            token = token,
         )
 
         val behandlendeEnhet = behandlendeEnhetClient.getEnhet(
@@ -234,7 +235,8 @@ class DialogmoteService(
         val narmesteLeder = narmesteLederClient.activeLeder(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = virksomhetsnummer,
-            callId = callId
+            callId = callId,
+            token = token,
         )
         val digitalVarsling = isDigitalVarselEnabled(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
@@ -320,7 +322,8 @@ class DialogmoteService(
         val narmesteLeder = narmesteLederClient.activeLeder(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = virksomhetsnummer,
-            callId = callId
+            callId = callId,
+            token = token,
         )
 
         val digitalVarsling = isDigitalVarselEnabled(
@@ -387,7 +390,7 @@ class DialogmoteService(
         pdfArbeidstaker: ByteArray,
         pdfArbeidsgiver: ByteArray,
         pdfBehandler: ByteArray?,
-        narmesteLeder: NarmesteLederDTO?,
+        narmesteLeder: NarmesteLederRelasjonDTO?,
         varselType: MotedeltakerVarselType,
         fritekstArbeidstaker: String = "",
         fritekstArbeidsgiver: String = "",
@@ -555,7 +558,8 @@ class DialogmoteService(
         val narmesteLeder = narmesteLederClient.activeLeder(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = virksomhetsnummer,
-            callId = callId
+            callId = callId,
+            token = token,
         )
 
         val pdfReferat = pdfGenClient.pdfReferat(

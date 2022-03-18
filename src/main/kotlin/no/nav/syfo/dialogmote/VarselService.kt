@@ -5,7 +5,7 @@ import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.altinn.createAltinnMelding
-import no.nav.syfo.client.narmesteleder.NarmesteLederDTO
+import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.domain.PersonIdentNumber
@@ -28,7 +28,7 @@ class VarselService(
         arbeidstakerPersonIdent: PersonIdentNumber,
         arbeidstakerId: UUID,
         arbeidstakerbrevId: UUID,
-        narmesteLeder: NarmesteLederDTO?,
+        narmesteLeder: NarmesteLederRelasjonDTO?,
         virksomhetsbrevId: UUID,
         virksomhetsPdf: ByteArray,
         virksomhetsnummer: Virksomhetsnummer,

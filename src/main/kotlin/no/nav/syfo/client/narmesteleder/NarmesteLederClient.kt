@@ -13,18 +13,14 @@ import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
 
-data class NarmesteLederRelasjonDTO(
-    val narmesteLederRelasjon: NarmesteLederDTO?,
-)
-
 class NarmesteLederClient(
     narmesteLederBaseUrl: String,
     private val narmestelederClientId: String,
     private val azureAdV2Client: AzureAdV2Client,
     private val cache: RedisStore,
 ) {
-    private val sykmeldtAktivNarmesteLederPath = "$narmesteLederBaseUrl$CURRENT_NARMESTELEDER_PATH?orgnummer="
-    private val ansatteNarmesteLederPath = "$narmesteLederBaseUrl$CURRENT_ANSATTE_PATH"
+    private val narmesteLederPath = "$narmesteLederBaseUrl$CURRENT_NARMESTELEDER_PATH"
+    private val ansatteNarmesteLederPath = "$narmesteLederBaseUrl$NARMESTELEDERE_PATH"
 
     private val httpClient = httpClientDefault()
 
@@ -32,23 +28,25 @@ class NarmesteLederClient(
         personIdentNumber: PersonIdentNumber,
         virksomhetsnummer: Virksomhetsnummer,
         callId: String,
-    ): NarmesteLederDTO? {
+        token: String,
+    ): NarmesteLederRelasjonDTO? {
 
-        val systemToken = azureAdV2Client.getSystemToken(
+        val oboToken = azureAdV2Client.getOnBehalfOfToken(
             scopeClientId = narmestelederClientId,
-        )?.accessToken
-            ?: throw RuntimeException("Failed to request access to current Narmesteleder: Failed to get System token")
+            token = token,
+        )?.accessToken ?: throw RuntimeException("Failed to request active leader: Failed to get OBO token")
 
         return try {
-            val url = "$sykmeldtAktivNarmesteLederPath${virksomhetsnummer.value}"
-            val narmesteLederRelasjon: NarmesteLederRelasjonDTO =
-                httpClient.get(url) {
-                    header(HttpHeaders.Authorization, bearerHeader(systemToken))
-                    header(SYKMELDT_FNR_HEADER, personIdentNumber.value)
+            val narmesteLederRelasjon: List<NarmesteLederRelasjonDTO> =
+                httpClient.get(narmesteLederPath) {
+                    header(HttpHeaders.Authorization, bearerHeader(oboToken))
+                    header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
+                    header(NAV_CALL_ID_HEADER, callId)
                     accept(ContentType.Application.Json)
                 }
             COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.increment()
-            narmesteLederRelasjon.narmesteLederRelasjon
+            narmesteLederRelasjon.filter { it.virksomhetsnummer == virksomhetsnummer.value }
+                .filter { it.status == NarmesteLederRelasjonStatus.INNMELDT_AKTIV.name }.firstOrNull()
         } catch (e: ClientRequestException) {
             handleUnexpectedResponseException(e.response, callId)
             null
@@ -58,23 +56,26 @@ class NarmesteLederClient(
         }
     }
 
-    suspend fun getAktiveAnsatte(narmesteLederIdent: PersonIdentNumber, callId: String): List<NarmesteLederDTO> {
+    suspend fun getAktiveAnsatte(
+        narmesteLederIdent: PersonIdentNumber,
+        callId: String,
+    ): List<NarmesteLederRelasjonDTO> {
         val cacheKey = "$CACHE_NARMESTE_LEDER_AKTIVE_ANSATTE_KEY_PREFIX${narmesteLederIdent.value}"
-        val cachedNarmesteLedere = cache.getListObject<NarmesteLederDTO>(cacheKey)
+        val cachedNarmesteLedere = cache.getListObject<NarmesteLederRelasjonDTO>(cacheKey)
         return if (cachedNarmesteLedere != null) {
             COUNT_CALL_NARMESTE_LEDER_CACHE_HIT.increment()
             cachedNarmesteLedere
         } else {
             val systemToken = azureAdV2Client.getSystemToken(
                 scopeClientId = narmestelederClientId,
-            )?.accessToken
-                ?: throw RuntimeException("Could not get AktiveAnsatte: Failed to get System token")
+            )?.accessToken ?: throw RuntimeException("Could not get AktiveAnsatte: Failed to get System token")
 
             try {
-                val narmesteLedere: List<NarmesteLederDTO> =
+                val narmesteLedere: List<NarmesteLederRelasjonDTO> =
                     httpClient.get(ansatteNarmesteLederPath) {
                         header(HttpHeaders.Authorization, bearerHeader(systemToken))
-                        header(NARMESTELEDER_FNR_HEADER, narmesteLederIdent.value)
+                        header(NAV_PERSONIDENT_HEADER, narmesteLederIdent.value)
+                        header(NAV_CALL_ID_HEADER, callId)
                         accept(ContentType.Application.Json)
                     }
                 COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.increment()
@@ -82,9 +83,9 @@ class NarmesteLederClient(
                 cache.setObject(
                     cacheKey,
                     narmesteLedere,
-                    CACHE_NARMESTE_LEDER_EXPIRE_SECONDS
+                    CACHE_NARMESTE_LEDER_EXPIRE_SECONDS,
                 )
-                narmesteLedere
+                narmesteLedere.filter { it.narmesteLederPersonIdentNumber == narmesteLederIdent.value }
             } catch (e: ClientRequestException) {
                 handleUnexpectedResponseException(e.response, callId)
                 emptyList()
@@ -112,10 +113,7 @@ class NarmesteLederClient(
         const val CACHE_NARMESTE_LEDER_AKTIVE_ANSATTE_KEY_PREFIX = "narmeste-leder-aktive-ansatte-"
         const val CACHE_NARMESTE_LEDER_EXPIRE_SECONDS = 3600L
 
-        const val CURRENT_NARMESTELEDER_PATH = "/sykmeldt/narmesteleder"
-        const val NARMESTELEDERE_PATH = "/sykmeldt/narmesteledere"
-        const val CURRENT_ANSATTE_PATH = "/leder/narmesteleder/aktive"
-        const val SYKMELDT_FNR_HEADER = "Sykmeldt-Fnr"
-        const val NARMESTELEDER_FNR_HEADER = "Narmeste-Leder-Fnr"
+        const val CURRENT_NARMESTELEDER_PATH = "/api/v1/narmestelederrelasjon/personident"
+        const val NARMESTELEDERE_PATH = "/api/system/v1/narmestelederrelasjoner"
     }
 }
