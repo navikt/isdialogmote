@@ -3,6 +3,7 @@ package no.nav.syfo.application.api
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.routing.*
+import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.*
@@ -40,7 +41,7 @@ fun Application.apiModule(
     wellKnownSelvbetjening: WellKnown,
     wellKnownVeilederV2: WellKnown,
     cache: RedisStore,
-    altinnClient: AltinnClient
+    altinnSoapClient: ICorrespondenceAgencyExternalBasic,
 ) {
     installMetrics()
     installCallId()
@@ -130,6 +131,12 @@ fun Application.apiModule(
     )
     val pdfService = PdfService(
         database = database,
+    )
+
+    val altinnClient = AltinnClient(
+        username = environment.altinnUsername,
+        password = environment.altinnPassword,
+        altinnSoapClient = altinnSoapClient,
     )
 
     val varselService = VarselService(

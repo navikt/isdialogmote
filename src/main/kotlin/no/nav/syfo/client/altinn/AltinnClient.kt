@@ -1,20 +1,20 @@
 package no.nav.syfo.client.altinn
 
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
+import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import org.slf4j.LoggerFactory
 
 class AltinnClient(
-    altinnWsUrl: String,
+    private val altinnSoapClient: ICorrespondenceAgencyExternalBasic,
     private val username: String,
-    private val password: String
+    private val password: String,
 ) {
     private val SYSTEM_USER_CODE = "NAV_DIGISYFO"
     private val log = LoggerFactory.getLogger(AltinnClient::class.java)
-    private val iCorrespondenceAgencyExternalBasic = createPort(altinnWsUrl)
 
     fun sendToVirksomhet(altinnMelding: AltinnMelding) {
         try {
-            val receiptWS = iCorrespondenceAgencyExternalBasic.insertCorrespondenceBasicV2(
+            val receiptWS = altinnSoapClient.insertCorrespondenceBasicV2(
                 username,
                 password,
                 SYSTEM_USER_CODE,
