@@ -1,9 +1,6 @@
 package no.nav.syfo.dialogmote
 
-import io.mockk.clearMocks
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
@@ -11,8 +8,8 @@ import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.altinn.createAltinnMelding
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.UserConstants
-import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
+import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.mock.narmesteLeder
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -106,7 +103,12 @@ object VarselServiceSpek : Spek({
                 behandlerInnkallingUuid = null
             )
 
-            val altinnMelding = createAltinnMelding(virksomhetsbrevId, VIRKSOMHETSNUMMER_NO_NARMESTELEDER, virksomhetsPdf, MotedeltakerVarselType.INNKALT)
+            val altinnMelding = createAltinnMelding(
+                virksomhetsbrevId,
+                VIRKSOMHETSNUMMER_NO_NARMESTELEDER,
+                virksomhetsPdf,
+                MotedeltakerVarselType.INNKALT
+            )
 
             verify(exactly = 1) {
                 altinnClient.sendToVirksomhet(

@@ -17,15 +17,14 @@ import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.generator.*
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.util.*
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDateTime
 
 class ArbeidstakerBrevApiSpek : Spek({
-    val objectMapper: ObjectMapper = apiConsumerObjectMapper()
+    val objectMapper: ObjectMapper = configuredJacksonMapper()
 
     describe(ArbeidstakerBrevApiSpek::class.java.simpleName) {
 

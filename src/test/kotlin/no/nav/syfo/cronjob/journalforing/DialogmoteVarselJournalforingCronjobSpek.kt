@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.mockk.*
+import io.mockk.justRun
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
@@ -26,11 +27,11 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.util.UUID
+import java.util.*
 
 class DialogmoteVarselJournalforingCronjobSpek : Spek({
 
-    val objectMapper: ObjectMapper = apiConsumerObjectMapper()
+    val objectMapper: ObjectMapper = configuredJacksonMapper()
 
     describe(DialogmoteVarselJournalforingCronjobSpek::class.java.simpleName) {
 

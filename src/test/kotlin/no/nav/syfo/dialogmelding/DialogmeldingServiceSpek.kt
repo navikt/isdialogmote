@@ -18,8 +18,7 @@ import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.util.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
@@ -27,7 +26,7 @@ import org.spekframework.spek2.style.specification.describe
 import java.util.*
 
 class DialogmeldingServiceSpek : Spek({
-    val objectMapper: ObjectMapper = apiConsumerObjectMapper()
+    val objectMapper: ObjectMapper = configuredJacksonMapper()
 
     describe(DialogmeldingServiceSpek::class.java.simpleName) {
         with(TestApplicationEngine()) {

@@ -24,8 +24,7 @@ import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT_2
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.util.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
@@ -34,7 +33,7 @@ import java.util.*
 
 class FerdigstillDialogmoteApiV2Spek : Spek({
 
-    val objectMapper: ObjectMapper = apiConsumerObjectMapper()
+    val objectMapper: ObjectMapper = configuredJacksonMapper()
 
     describe(FerdigstillDialogmoteApiV2Spek::class.java.simpleName) {
 
@@ -575,7 +574,13 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             referat.konklusjon shouldBeEqualTo "Dette er en beskrivelse av konklusjon modifisert"
 
                             val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
-                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(capture(kafkaBehandlerDialogmeldingDTOSlot)) }
+                            verify(exactly = 1) {
+                                behandlerDialogmeldingProducer.sendDialogmelding(
+                                    capture(
+                                        kafkaBehandlerDialogmeldingDTOSlot
+                                    )
+                                )
+                            }
                             val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
                             kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingUuid shouldBeEqualTo referatBehandlerVarselUUID
