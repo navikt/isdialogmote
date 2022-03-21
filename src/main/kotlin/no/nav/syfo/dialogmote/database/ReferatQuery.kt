@@ -57,6 +57,7 @@ fun ResultSet.toPReferat(): PReferat =
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         moteId = getInt("mote_id"),
         digitalt = getBoolean("digitalt"),
+        begrunnelseEndring = getString("begrunnelse_endring"),
         situasjon = getString("situasjon"),
         konklusjon = getString("konklusjon"),
         arbeidstakerOppgave = getString("arbeidstaker_oppgave"),
@@ -110,6 +111,7 @@ const val queryCreateReferat =
         updated_at,
         mote_id,
         digitalt,
+        begrunnelse_endring,
         situasjon,
         konklusjon,
         arbeidstaker_oppgave,
@@ -120,7 +122,7 @@ const val queryCreateReferat =
         document,
         pdf_id,
         ferdigstilt
-    ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?) RETURNING id
+    ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?) RETURNING id
     """
 
 const val queryCreateMotedeltakerAnnen =
@@ -156,20 +158,21 @@ fun Connection.createNewReferat(
         it.setTimestamp(3, now)
         it.setInt(4, newReferat.moteId)
         it.setBoolean(5, digitalt)
-        it.setString(6, newReferat.situasjon)
-        it.setString(7, newReferat.konklusjon)
-        it.setString(8, newReferat.arbeidstakerOppgave)
-        it.setString(9, newReferat.arbeidsgiverOppgave)
-        it.setString(10, newReferat.veilederOppgave)
-        it.setString(11, newReferat.behandlerOppgave)
-        it.setString(12, newReferat.narmesteLederNavn)
-        it.setObject(13, mapper.writeValueAsString(newReferat.document))
+        it.setString(6, newReferat.begrunnelseEndring)
+        it.setString(7, newReferat.situasjon)
+        it.setString(8, newReferat.konklusjon)
+        it.setString(9, newReferat.arbeidstakerOppgave)
+        it.setString(10, newReferat.arbeidsgiverOppgave)
+        it.setString(11, newReferat.veilederOppgave)
+        it.setString(12, newReferat.behandlerOppgave)
+        it.setString(13, newReferat.narmesteLederNavn)
+        it.setObject(14, mapper.writeValueAsString(newReferat.document))
         if (pdfId != null) {
-            it.setInt(14, pdfId)
+            it.setInt(15, pdfId)
         } else {
-            it.setNull(14, Types.INTEGER)
+            it.setNull(15, Types.INTEGER)
         }
-        it.setBoolean(15, newReferat.ferdigstilt)
+        it.setBoolean(16, newReferat.ferdigstilt)
         it.executeQuery().toList { getInt("id") }
     }
     if (referatIdList.size != 1) {
@@ -188,6 +191,7 @@ const val queryUpdateReferat =
         UPDATE MOTE_REFERAT
         SET updated_at = ?,
             digitalt = ?,
+            begrunnelse_endring = ?,
             situasjon = ?,
             konklusjon = ?,
             arbeidstaker_oppgave = ?,
@@ -213,21 +217,22 @@ fun Connection.updateReferat(
     val rowCount = this.prepareStatement(queryUpdateReferat).use {
         it.setTimestamp(1, now)
         it.setBoolean(2, digitalt)
-        it.setString(3, newReferat.situasjon)
-        it.setString(4, newReferat.konklusjon)
-        it.setString(5, newReferat.arbeidstakerOppgave)
-        it.setString(6, newReferat.arbeidsgiverOppgave)
-        it.setString(7, newReferat.veilederOppgave)
-        it.setString(8, newReferat.behandlerOppgave)
-        it.setString(9, newReferat.narmesteLederNavn)
-        it.setObject(10, mapper.writeValueAsString(newReferat.document))
+        it.setString(3, newReferat.begrunnelseEndring)
+        it.setString(4, newReferat.situasjon)
+        it.setString(5, newReferat.konklusjon)
+        it.setString(6, newReferat.arbeidstakerOppgave)
+        it.setString(7, newReferat.arbeidsgiverOppgave)
+        it.setString(8, newReferat.veilederOppgave)
+        it.setString(9, newReferat.behandlerOppgave)
+        it.setString(10, newReferat.narmesteLederNavn)
+        it.setObject(11, mapper.writeValueAsString(newReferat.document))
         if (pdfId != null) {
-            it.setInt(11, pdfId)
+            it.setInt(12, pdfId)
         } else {
-            it.setNull(11, Types.INTEGER)
+            it.setNull(12, Types.INTEGER)
         }
-        it.setBoolean(12, newReferat.ferdigstilt)
-        it.setInt(13, referat.id)
+        it.setBoolean(13, newReferat.ferdigstilt)
+        it.setInt(14, referat.id)
         it.executeUpdate()
     }
     if (rowCount != 1) {

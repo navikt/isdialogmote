@@ -21,6 +21,7 @@ data class ReferatDTO(
     val andreDeltakere: List<DialogmotedeltakerAnnenDTO>,
     val brevBestiltTidspunkt: LocalDateTime?,
     val ferdigstilt: Boolean,
+    val begrunnelseEndring: String? = null,
 )
 
 data class DialogmotedeltakerAnnenDTO(

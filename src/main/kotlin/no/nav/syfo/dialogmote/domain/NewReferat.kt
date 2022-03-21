@@ -2,6 +2,7 @@ package no.nav.syfo.dialogmote.domain
 
 data class NewReferat(
     val moteId: Int,
+    val begrunnelseEndring: String?,
     val situasjon: String,
     val konklusjon: String,
     val arbeidstakerOppgave: String,

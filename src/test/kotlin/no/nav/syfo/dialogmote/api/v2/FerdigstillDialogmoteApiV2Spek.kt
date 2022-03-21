@@ -258,7 +258,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             val dialogmoteDTO = dialogmoteList.first()
                             endreTidStedBehandlerVarselUUID = dialogmoteDTO.behandler?.varselList?.firstOrNull()?.uuid
                         }
-
                         val urlMoteUUIDFerdigstill =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
                         with(
@@ -306,6 +305,71 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingUuid shouldBeEqualTo referatBehandlerVarselUUID
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo newReferatDTO.document.serialize()
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingType shouldBeEqualTo DialogmeldingType.DIALOG_NOTAT.name
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.REFERAT.value
+                            endreTidStedBehandlerVarselUUID shouldNotBeEqualTo innkallingBehandlerVarselUUID
+                            endreTidStedBehandlerVarselUUID shouldNotBeEqualTo referatBehandlerVarselUUID
+                            referatBehandlerVarselUUID shouldNotBeEqualTo innkallingBehandlerVarselUUID
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldBeEqualTo endreTidStedBehandlerVarselUUID
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation shouldBeEqualTo innkallingBehandlerVarselUUID
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
+                        }
+
+                        val endretReferatDTO = generateNewReferatDTO(
+                            behandlerOppgave = "Endret oppgave for behandler",
+                            begrunnelseEndring = "Dette er en begrunnelse",
+                        )
+
+                        clearMocks(behandlerDialogmeldingProducer, mqSenderMock)
+                        justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        justRun { mqSenderMock.sendMQMessage(any(), any()) }
+
+                        val urlMoteUUIDEndreFerdigstilt =
+                            "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteEndreFerdigstiltPath"
+                        with(
+                            handleRequest(HttpMethod.Post, urlMoteUUIDEndreFerdigstilt) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(endretReferatDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.REFERAT, any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoter) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 1
+
+                            val dialogmoteDTO = dialogmoteList.first()
+                            val referatList = dialogmoteDTO.referatList
+                            referatList.size shouldBeEqualTo 2
+                            val referat = referatList.first()
+                            referat.behandlerOppgave shouldBeEqualTo endretReferatDTO.behandlerOppgave
+                            referat.begrunnelseEndring shouldBeEqualTo endretReferatDTO.begrunnelseEndring
+                            val newReferatBehandlerVarselUUID = referat.uuid
+                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.FERDIGSTILT.name
+
+                            val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
+                            verify(exactly = 1) {
+                                behandlerDialogmeldingProducer.sendDialogmelding(
+                                    capture(
+                                        kafkaBehandlerDialogmeldingDTOSlot
+                                    )
+                                )
+                            }
+                            val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
+                            kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingUuid shouldBeEqualTo newReferatBehandlerVarselUUID
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo endretReferatDTO.document.serialize()
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingType shouldBeEqualTo DialogmeldingType.DIALOG_NOTAT.name
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.REFERAT.value
                             endreTidStedBehandlerVarselUUID shouldNotBeEqualTo innkallingBehandlerVarselUUID

@@ -186,8 +186,10 @@ fun generateNewReferatDTO(
     behandlerOppgave: String? = null,
     behandlerDeltatt: Boolean? = null,
     behandlerMottarReferat: Boolean? = null,
+    begrunnelseEndring: String? = null,
 ) =
     NewReferatDTO(
+        begrunnelseEndring = begrunnelseEndring,
         situasjon = "Dette er en beskrivelse av situasjonen",
         konklusjon = "Dette er en beskrivelse av konklusjon",
         arbeidstakerOppgave = "Dette er en beskrivelse av arbeidstakerOppgave",

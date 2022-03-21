@@ -13,6 +13,7 @@ data class PReferat(
     val updatedAt: LocalDateTime,
     val moteId: Int,
     val digitalt: Boolean,
+    val begrunnelseEndring: String?,
     val situasjon: String,
     val konklusjon: String,
     val arbeidstakerOppgave: String,
@@ -70,6 +71,7 @@ fun PReferat.toReferat(
         brevBestillingsId = this.brevBestillingsId,
         brevBestiltTidspunkt = this.brevBestiltTidspunkt,
         ferdigstilt = this.ferdigstilt,
+        begrunnelseEndring = this.begrunnelseEndring,
     )
 
 fun PMotedeltakerAnnen.toDialogmoteDeltakerAnnen(): DialogmotedeltakerAnnen =
