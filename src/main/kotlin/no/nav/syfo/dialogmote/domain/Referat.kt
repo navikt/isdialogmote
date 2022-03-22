@@ -8,6 +8,8 @@ import no.nav.syfo.dialogmote.api.domain.ReferatDTO
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import java.util.UUID
 
 data class Referat(
@@ -98,12 +100,13 @@ fun Referat.toJournalforingRequestArbeidstaker(
     personIdent: PersonIdentNumber,
     navn: String,
     pdf: ByteArray,
+    moteTidspunkt: LocalDateTime?,
 ) = createJournalpostRequest(
     brukerPersonIdent = personIdent,
     mottakerPersonIdent = personIdent,
     mottakerNavn = navn,
     digitalt = this.digitalt,
-    dokumentName = "Referat fra dialogmøte",
+    dokumentName = this.toJournalpostTittel(moteTidspunkt),
     brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AT,
     dokumentPdf = pdf,
 )
@@ -113,12 +116,13 @@ fun Referat.toJournalforingRequestArbeidsgiver(
     virksomhetsnummer: Virksomhetsnummer?,
     virksomhetsnavn: String,
     pdf: ByteArray,
+    moteTidspunkt: LocalDateTime?,
 ) = createJournalpostRequest(
     brukerPersonIdent = brukerPersonIdent,
     mottakerVirksomhetsnummer = virksomhetsnummer,
     mottakerNavn = virksomhetsnavn,
     digitalt = this.digitalt,
-    dokumentName = "Referat fra dialogmøte",
+    dokumentName = this.toJournalpostTittel(moteTidspunkt),
     brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AG,
     dokumentPdf = pdf,
 )
@@ -128,16 +132,28 @@ fun Referat.toJournalforingRequestBehandler(
     behandlerPersonIdent: PersonIdentNumber?,
     behandlerNavn: String,
     pdf: ByteArray,
+    moteTidspunkt: LocalDateTime?,
 ) = createJournalpostRequest(
     brukerPersonIdent = brukerPersonIdent,
     mottakerPersonIdent = behandlerPersonIdent,
     mottakerNavn = behandlerNavn,
     digitalt = this.digitalt,
-    dokumentName = "Referat fra dialogmøte",
+    dokumentName = this.toJournalpostTittel(moteTidspunkt),
     brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_BEH,
     dokumentPdf = pdf,
     kanal = JournalpostKanal.HELSENETTET,
 )
+
+private val dateFormatterNorwegian = DateTimeFormatter.ofPattern("d. MMMM YYYY", Locale.forLanguageTag("no-NO"))
+
+fun Referat.toJournalpostTittel(
+    moteTidspunkt: LocalDateTime?,
+): String {
+    val moteDatoString = moteTidspunkt?.toLocalDate()?.format(dateFormatterNorwegian) ?: ""
+    val updatedDatoString = updatedAt.toLocalDate().format(dateFormatterNorwegian)
+    val endretString = if (this.begrunnelseEndring == null) "" else " - Endret $updatedDatoString"
+    return "${MotedeltakerVarselType.REFERAT.toJournalpostTittel()} $moteDatoString$endretString"
+}
 
 fun Referat.toArbeidstakerBrevDTO(
     dialogmoteTidSted: DialogmoteTidSted,

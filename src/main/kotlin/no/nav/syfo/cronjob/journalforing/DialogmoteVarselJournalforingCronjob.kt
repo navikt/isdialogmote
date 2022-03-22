@@ -146,11 +146,13 @@ class DialogmoteVarselJournalforingCronjob(
             try {
                 val navn = pdlClient.navn(personIdentNumber)
                 val pdf = pdfService.getPdf(referat.pdfId!!)
+                val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = referat.toJournalforingRequestArbeidstaker(
                         personIdent = personIdentNumber,
                         navn = navn,
                         pdf = pdf,
+                        moteTidspunkt = moteTidspunkt,
                     )
                 )?.journalpostId
 
@@ -176,12 +178,14 @@ class DialogmoteVarselJournalforingCronjob(
             try {
                 val virksomhetsnavn = eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer)
                 val pdf = pdfService.getPdf(referat.pdfId!!)
+                val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = referat.toJournalforingRequestArbeidsgiver(
                         brukerPersonIdent = personIdent,
                         virksomhetsnummer = virksomhetsnummer,
                         virksomhetsnavn = virksomhetsnavn?.virksomhetsnavn ?: "",
                         pdf = pdf,
+                        moteTidspunkt = moteTidspunkt,
                     )
                 )?.journalpostId
 
@@ -206,12 +210,14 @@ class DialogmoteVarselJournalforingCronjob(
         referatList.forEach { (personIdentNumber, behandler, referat) ->
             try {
                 val pdf = pdfService.getPdf(referat.pdfId!!)
+                val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = referat.toJournalforingRequestBehandler(
                         brukerPersonIdent = personIdentNumber,
                         behandlerPersonIdent = behandler.personIdent,
                         behandlerNavn = behandler.behandlerNavn,
                         pdf = pdf,
+                        moteTidspunkt = moteTidspunkt,
                     )
                 )?.journalpostId
 

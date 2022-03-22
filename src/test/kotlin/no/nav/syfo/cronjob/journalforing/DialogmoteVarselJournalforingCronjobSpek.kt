@@ -19,7 +19,7 @@ import no.nav.syfo.cronjob.DialogmoteCronjobResult
 import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.*
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.*
@@ -27,6 +27,8 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDateTime
+import java.time.Month
 import java.util.*
 
 class DialogmoteVarselJournalforingCronjobSpek : Spek({
@@ -422,7 +424,56 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                         result.updated shouldBeEqualTo 0
                     }
                 }
+                it("Check that correct title is generated") {
+                    val moteTidspunkt = LocalDateTime.of(2022, Month.JUNE, 20, 0, 0, 0)
+                    val referatUtenEndring = createReferat(
+                        begrunnelseEndring = null,
+                        updatedAt = LocalDateTime.now(),
+                    )
+
+                    val tittelUtenEndring = referatUtenEndring.toJournalpostTittel(moteTidspunkt)
+                    tittelUtenEndring shouldBeEqualTo "Referat fra dialogmøte 20. juni 2022"
+
+                    val oppdatertTidspunkt = LocalDateTime.of(2022, Month.JULY, 1, 0, 0, 0)
+                    val referatMedEndring = createReferat(
+                        begrunnelseEndring = "Dette er en begrunnelse",
+                        updatedAt = oppdatertTidspunkt,
+                    )
+                    val tittelMedEndring = referatMedEndring.toJournalpostTittel(moteTidspunkt)
+                    tittelMedEndring shouldBeEqualTo "Referat fra dialogmøte 20. juni 2022 - Endret 1. juli 2022"
+                }
             }
         }
     }
 })
+
+fun createReferat(
+    begrunnelseEndring: String?,
+    updatedAt: LocalDateTime,
+) = Referat(
+    id = 1,
+    uuid = UUID.randomUUID(),
+    createdAt = LocalDateTime.now(),
+    updatedAt = updatedAt,
+    moteId = 1,
+    motedeltakerArbeidstakerId = 1,
+    motedeltakerArbeidsgiverId = 1,
+    digitalt = true,
+    situasjon = "",
+    konklusjon = "",
+    arbeidstakerOppgave = "",
+    arbeidsgiverOppgave = "",
+    veilederOppgave = null,
+    behandlerOppgave = null,
+    narmesteLederNavn = "",
+    document = emptyList(),
+    pdfId = null,
+    journalpostIdArbeidstaker = null,
+    lestDatoArbeidstaker = null,
+    lestDatoArbeidsgiver = null,
+    andreDeltakere = emptyList(),
+    brevBestillingsId = null,
+    brevBestiltTidspunkt = null,
+    ferdigstilt = true,
+    begrunnelseEndring = begrunnelseEndring,
+)
