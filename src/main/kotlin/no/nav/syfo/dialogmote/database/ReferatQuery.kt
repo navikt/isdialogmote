@@ -9,6 +9,7 @@ import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.util.configuredJacksonMapper
+import no.nav.syfo.util.nowUTC
 import java.sql.*
 import java.time.Instant
 import java.time.LocalDateTime
@@ -121,8 +122,9 @@ const val queryCreateReferat =
         narmeste_leder_navn,
         document,
         pdf_id,
-        ferdigstilt
-    ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?) RETURNING id
+        ferdigstilt,
+        altinn_sent_at
+    ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?) RETURNING id
     """
 
 const val queryCreateMotedeltakerAnnen =
@@ -148,9 +150,11 @@ fun Connection.createNewReferat(
     newReferat: NewReferat,
     pdfId: Int?,
     digitalt: Boolean,
+    sendAltinn: Boolean,
 ): Pair<Int, UUID> {
     val referatUuid = UUID.randomUUID()
     val now = Timestamp.from(Instant.now())
+    val nowUTC = nowUTC()
 
     val referatIdList = this.prepareStatement(queryCreateReferat).use {
         it.setString(1, referatUuid.toString())
@@ -173,6 +177,11 @@ fun Connection.createNewReferat(
             it.setNull(15, Types.INTEGER)
         }
         it.setBoolean(16, newReferat.ferdigstilt)
+        if (sendAltinn) {
+            it.setObject(17, nowUTC)
+        } else {
+            it.setNull(17, Types.TIMESTAMP)
+        }
         it.executeQuery().toList { getInt("id") }
     }
     if (referatIdList.size != 1) {
@@ -201,7 +210,8 @@ const val queryUpdateReferat =
             narmeste_leder_navn = ?,
             document = ?::jsonb,
             pdf_id = ?,
-            ferdigstilt = ?        
+            ferdigstilt = ?,       
+            altinn_sent_at = ?       
         WHERE id = ?
     """
 
@@ -211,8 +221,10 @@ fun Connection.updateReferat(
     newReferat: NewReferat,
     pdfId: Int?,
     digitalt: Boolean,
+    sendAltinn: Boolean,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
+    val nowUTC = nowUTC()
 
     val rowCount = this.prepareStatement(queryUpdateReferat).use {
         it.setTimestamp(1, now)
@@ -232,7 +244,12 @@ fun Connection.updateReferat(
             it.setNull(12, Types.INTEGER)
         }
         it.setBoolean(13, newReferat.ferdigstilt)
-        it.setInt(14, referat.id)
+        if (sendAltinn) {
+            it.setObject(14, nowUTC)
+        } else {
+            it.setNull(14, Types.TIMESTAMP)
+        }
+        it.setInt(15, referat.id)
         it.executeUpdate()
     }
     if (rowCount != 1) {

@@ -6,13 +6,11 @@ import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.util.configuredJacksonMapper
-import java.sql.Connection
-import java.sql.ResultSet
-import java.sql.SQLException
-import java.sql.Timestamp
+import no.nav.syfo.util.nowUTC
+import java.sql.*
 import java.time.Instant
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 const val queryCreateMotedeltakerVarselArbeidsgiver =
     """
@@ -26,7 +24,8 @@ const val queryCreateMotedeltakerVarselArbeidsgiver =
         pdf_id,
         status, 
         fritekst,
-        document) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb) RETURNING id
+        altinn_sent_at,
+        document) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb) RETURNING id
     """
 
 private val mapper = configuredJacksonMapper()
@@ -38,9 +37,11 @@ fun Connection.createMotedeltakerVarselArbeidsgiver(
     varselType: MotedeltakerVarselType,
     pdfId: Int,
     fritekst: String,
+    sendAltinn: Boolean,
     document: List<DocumentComponentDTO>,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
+    val nowUTC = nowUTC()
 
     val motedeltakerArbeidsgiverVarselUuid = UUID.randomUUID()
     val motedeltakerArbeidsgiverVarselIdList = this.prepareStatement(queryCreateMotedeltakerVarselArbeidsgiver).use {
@@ -52,7 +53,12 @@ fun Connection.createMotedeltakerVarselArbeidsgiver(
         it.setInt(6, pdfId)
         it.setString(7, status)
         it.setString(8, fritekst)
-        it.setObject(9, mapper.writeValueAsString(document))
+        if (sendAltinn) {
+            it.setObject(9, nowUTC)
+        } else {
+            it.setNull(9, Types.TIMESTAMP)
+        }
+        it.setObject(10, mapper.writeValueAsString(document))
         it.executeQuery().toList { getInt("id") }
     }
 
