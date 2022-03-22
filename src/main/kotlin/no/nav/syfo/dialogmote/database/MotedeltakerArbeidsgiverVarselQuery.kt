@@ -26,7 +26,8 @@ const val queryCreateMotedeltakerVarselArbeidsgiver =
         pdf_id,
         status, 
         fritekst,
-        document) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb) RETURNING id
+        send_altinn,
+        document) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb) RETURNING id
     """
 
 private val mapper = configuredJacksonMapper()
@@ -38,6 +39,7 @@ fun Connection.createMotedeltakerVarselArbeidsgiver(
     varselType: MotedeltakerVarselType,
     pdfId: Int,
     fritekst: String,
+    sendAltinn: Boolean,
     document: List<DocumentComponentDTO>,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
@@ -52,7 +54,8 @@ fun Connection.createMotedeltakerVarselArbeidsgiver(
         it.setInt(6, pdfId)
         it.setString(7, status)
         it.setString(8, fritekst)
-        it.setObject(9, mapper.writeValueAsString(document))
+        it.setBoolean(9, sendAltinn)
+        it.setObject(10, mapper.writeValueAsString(document))
         it.executeQuery().toList { getInt("id") }
     }
 

@@ -427,6 +427,7 @@ class DialogmoteService(
             varselType = varselType,
             pdfId = pdfArbeidsgiverId,
             fritekst = fritekstArbeidsgiver,
+            sendAltinn = narmesteLeder != null,
             document = documentArbeidsgiver,
         )
         val behandlerVarselIdPair = behandlerId?.let {
