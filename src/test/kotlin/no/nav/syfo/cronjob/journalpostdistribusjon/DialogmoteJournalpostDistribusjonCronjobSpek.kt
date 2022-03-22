@@ -14,26 +14,18 @@ import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
 import no.nav.syfo.dialogmote.ReferatJournalpostService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteFerdigstillPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteTidStedPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
+import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
-import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTO
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
-import no.nav.syfo.testhelper.generator.generateNewReferatDTO
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.util.bearerHeader
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldNotBeNull
+import no.nav.syfo.testhelper.generator.*
+import no.nav.syfo.util.*
+import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
 class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
 
-    val objectMapper: ObjectMapper = apiConsumerObjectMapper()
+    val objectMapper: ObjectMapper = configuredJacksonMapper()
 
     describe(DialogmoteJournalpostDistribusjonCronjob::class.java.simpleName) {
         with(TestApplicationEngine()) {

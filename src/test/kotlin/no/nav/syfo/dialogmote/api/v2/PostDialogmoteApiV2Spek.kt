@@ -30,8 +30,7 @@ import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.util.*
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -39,7 +38,7 @@ import java.time.*
 import java.time.format.DateTimeFormatter
 
 class PostDialogmoteApiV2Spek : Spek({
-    val objectMapper: ObjectMapper = apiConsumerObjectMapper()
+    val objectMapper: ObjectMapper = configuredJacksonMapper()
 
     describe(PostDialogmoteApiV2Spek::class.java.simpleName) {
 
@@ -91,7 +90,15 @@ class PostDialogmoteApiV2Spek : Spek({
                     clearMocks(mqSenderMock)
                     justRun { mqSenderMock.sendMQMessage(any(), any()) }
                     clearMocks(altinnMock)
-                    every { altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any()) } returns altinnResponse
+                    every {
+                        altinnMock.insertCorrespondenceBasicV2(
+                            any(),
+                            any(),
+                            any(),
+                            any(),
+                            any()
+                        )
+                    } returns altinnResponse
                 }
 
                 afterEachTest {
@@ -131,7 +138,15 @@ class PostDialogmoteApiV2Spek : Spek({
                             xml.shouldContain("<parameterListe><key>navn</key><value>narmesteLederNavn</value></parameterListe>")
                             xml.shouldContain("<parameterListe><key>tidspunkt</key><value>$moteTidspunktString</value></parameterListe>")
                             clearMocks(mqSenderMock)
-                            verify(exactly = 0) { altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any()) }
+                            verify(exactly = 0) {
+                                altinnMock.insertCorrespondenceBasicV2(
+                                    any(),
+                                    any(),
+                                    any(),
+                                    any(),
+                                    any()
+                                )
+                            }
                         }
 
                         with(
@@ -298,16 +313,29 @@ class PostDialogmoteApiV2Spek : Spek({
 
                             val nokkelInputSlot = slot<NokkelInput>()
                             val oppgaveInputSlot = slot<OppgaveInput>()
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(capture(nokkelInputSlot), capture(oppgaveInputSlot)) }
+                            verify(exactly = 1) {
+                                brukernotifikasjonProducer.sendOppgave(
+                                    capture(nokkelInputSlot),
+                                    capture(oppgaveInputSlot)
+                                )
+                            }
                             val nokkelInput = nokkelInputSlot.captured
                             nokkelInput.getFodselsnummer() shouldBeEqualTo ARBEIDSTAKER_FNR.value
                             val oppgaveInput = oppgaveInputSlot.captured
-                            val oppgaveTidspunkt = Instant.ofEpochMilli(oppgaveInput.getTidspunkt()).atOffset(ZoneOffset.UTC).toLocalDateTime()
+                            val oppgaveTidspunkt =
+                                Instant.ofEpochMilli(oppgaveInput.getTidspunkt()).atOffset(ZoneOffset.UTC)
+                                    .toLocalDateTime()
                             oppgaveTidspunkt shouldBeBefore createdAt // Since oppgaveTidspunkt is UTC
                             oppgaveInput.getTekst() shouldBeEqualTo "Du har mottatt et brev om innkalling til dialogmøte"
 
                             val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
-                            verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(capture(kafkaBehandlerDialogmeldingDTOSlot)) }
+                            verify(exactly = 1) {
+                                behandlerDialogmeldingProducer.sendDialogmelding(
+                                    capture(
+                                        kafkaBehandlerDialogmeldingDTOSlot
+                                    )
+                                )
+                            }
                             val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
                             kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo newDialogmoteDTO.behandler!!.innkalling.serialize()
@@ -319,7 +347,8 @@ class PostDialogmoteApiV2Spek : Spek({
                     }
 
                     it("should return OK if request is successful: does not have a leader for Virksomhet") {
-                        val newDialogmoteDTO = generateNewDialogmoteDTO(personIdentNumber = ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
+                        val newDialogmoteDTO =
+                            generateNewDialogmoteDTO(personIdentNumber = ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -329,7 +358,15 @@ class PostDialogmoteApiV2Spek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                            verify(exactly = 1) { altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any()) }
+                            verify(exactly = 1) {
+                                altinnMock.insertCorrespondenceBasicV2(
+                                    any(),
+                                    any(),
+                                    any(),
+                                    any(),
+                                    any()
+                                )
+                            }
                         }
                     }
                 }
