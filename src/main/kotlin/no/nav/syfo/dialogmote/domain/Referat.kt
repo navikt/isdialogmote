@@ -35,6 +35,7 @@ data class Referat(
     val brevBestillingsId: String?,
     val brevBestiltTidspunkt: LocalDateTime?,
     val ferdigstilt: Boolean,
+    val begrunnelseEndring: String?,
 ) : ArbeidstakerBrev, NarmesteLederBrev
 
 data class DialogmotedeltakerAnnen(
@@ -67,6 +68,7 @@ fun Referat.toReferatDTO(): ReferatDTO {
         },
         brevBestiltTidspunkt = this.brevBestiltTidspunkt,
         ferdigstilt = this.ferdigstilt,
+        begrunnelseEndring = this.begrunnelseEndring,
     )
 }
 
@@ -144,7 +146,7 @@ fun Referat.toArbeidstakerBrevDTO(
 ) = ArbeidstakerBrevDTO(
     uuid = uuid.toString(),
     deltakerUuid = deltakerUuid.toString(),
-    createdAt = createdAt,
+    createdAt = updatedAt,
     brevType = MotedeltakerVarselType.REFERAT.name,
     digitalt = digitalt,
     lestDato = lestDatoArbeidstaker,
@@ -164,7 +166,7 @@ fun Referat.toNarmesteLederBrevDTO(
 ) = NarmesteLederBrevDTO(
     uuid = this.uuid.toString(),
     deltakerUuid = deltakerUuid.toString(),
-    createdAt = this.createdAt,
+    createdAt = this.updatedAt,
     brevType = MotedeltakerVarselType.REFERAT.name,
     lestDato = this.lestDatoArbeidsgiver,
     fritekst = konklusjon,

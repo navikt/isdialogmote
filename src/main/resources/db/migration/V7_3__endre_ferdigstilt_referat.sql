@@ -1,0 +1,2 @@
+ALTER TABLE MOTE_REFERAT
+    ADD COLUMN begrunnelse_endring TEXT;

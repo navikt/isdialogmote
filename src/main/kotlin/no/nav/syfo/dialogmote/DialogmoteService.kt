@@ -402,11 +402,11 @@ class DialogmoteService(
         digitalArbeidstakerVarsling: Boolean,
         virksomhetsnummer: Virksomhetsnummer,
     ) {
-        val pdfArbeidstakerId = connection.createPdf(
+        val (pdfArbeidstakerId, _) = connection.createPdf(
             commit = false,
             pdf = pdfArbeidstaker,
         )
-        val pdfArbeidsgiverId = connection.createPdf(
+        val (pdfArbeidsgiverId, _) = connection.createPdf(
             commit = false,
             pdf = pdfArbeidsgiver,
         )
@@ -416,7 +416,7 @@ class DialogmoteService(
             status = "OK",
             varselType = varselType,
             digitalt = digitalArbeidstakerVarsling,
-            pdfId = pdfArbeidstakerId.first,
+            pdfId = pdfArbeidstakerId,
             fritekst = fritekstArbeidstaker,
             document = documentArbeidstaker,
         )
@@ -425,12 +425,12 @@ class DialogmoteService(
             motedeltakerArbeidsgiverId = arbeidsgiverId,
             status = "OK",
             varselType = varselType,
-            pdfId = pdfArbeidsgiverId.first,
+            pdfId = pdfArbeidsgiverId,
             fritekst = fritekstArbeidsgiver,
             document = documentArbeidsgiver,
         )
         val behandlerVarselIdPair = behandlerId?.let {
-            val pdfBehandlerId = connection.createPdf(
+            val (pdfBehandlerId, _) = connection.createPdf(
                 commit = false,
                 pdf = pdfBehandler!!,
             )
@@ -439,7 +439,7 @@ class DialogmoteService(
                 motedeltakerBehandlerId = it,
                 status = "OK",
                 varselType = varselType,
-                pdfId = pdfBehandlerId.first,
+                pdfId = pdfBehandlerId,
                 fritekst = fritekstBehandler,
                 document = documentBehandler,
             )
@@ -490,9 +490,6 @@ class DialogmoteService(
         opprettetAv: String,
         referat: NewReferatDTO,
     ) {
-        if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
-            throw ConflictException("Failed to mellomlagre referat Dialogmote, already Ferdigstilt")
-        }
         if (dialogmote.status == DialogmoteStatus.AVLYST) {
             throw ConflictException("Failed to mellomlagre referat Dialogmote, already Avlyst")
         }
@@ -594,7 +591,7 @@ class DialogmoteService(
                 personIdentNumber = dialogmote.arbeidstaker.personIdent,
                 token = token,
             )
-            val pdfId = connection.createPdf(
+            val (pdfId, _) = connection.createPdf(
                 commit = false,
                 pdf = pdfReferat,
             )
@@ -606,7 +603,7 @@ class DialogmoteService(
                 connection.createNewReferat(
                     commit = false,
                     newReferat = newReferat,
-                    pdfId = pdfId.first,
+                    pdfId = pdfId,
                     digitalt = digitalVarsling,
                 )
             } else {
@@ -618,7 +615,7 @@ class DialogmoteService(
                     commit = false,
                     referat = existingReferat,
                     newReferat = newReferat,
-                    pdfId = pdfId.first,
+                    pdfId = pdfId,
                     digitalt = digitalVarsling,
                 )
             }
@@ -633,6 +630,109 @@ class DialogmoteService(
 
             varselService.sendVarsel(
                 tidspunktForVarsel = now,
+                varselType = MotedeltakerVarselType.REFERAT,
+                moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
+                isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
+                arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
+                arbeidstakerId = dialogmote.arbeidstaker.uuid,
+                arbeidstakerbrevId = referatUuid,
+                narmesteLeder = narmesteLeder,
+                virksomhetsbrevId = referatUuid,
+                virksomhetsPdf = pdfReferat,
+                virksomhetsnummer = virksomhetsnummer,
+                skalVarsleBehandler = referat.behandlerMottarReferat ?: true,
+                behandlerId = behandler?.id,
+                behandlerRef = behandler?.behandlerRef,
+                behandlerDocument = referat.document,
+                behandlerPdf = pdfReferat,
+                behandlerbrevId = referatUuid,
+                behandlerbrevParentId = behandler?.findParentVarselId(),
+                behandlerInnkallingUuid = behandler?.findInnkallingVarselUuid(),
+            )
+
+            connection.commit()
+        }
+    }
+
+    suspend fun endreFerdigstiltReferat(
+        callId: String,
+        dialogmote: Dialogmote,
+        opprettetAv: String,
+        referat: NewReferatDTO,
+        token: String,
+    ) {
+        if (dialogmote.status != DialogmoteStatus.FERDIGSTILT) {
+            throw ConflictException("Failed to Endre Ferdigstilt Dialogmote, not Ferdigstilt")
+        }
+
+        val virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer
+
+        val narmesteLeder = narmesteLederClient.activeLeder(
+            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            virksomhetsnummer = virksomhetsnummer,
+            callId = callId,
+            token = token,
+        )
+
+        val pdfReferat = pdfGenClient.pdfReferat(
+            callId = callId,
+            documentComponentDTOList = referat.document,
+        ) ?: throw RuntimeException("Failed to request PDF - Referat")
+
+        val digitalVarsling = isDigitalVarselEnabled(
+            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            token = token,
+            callId = callId,
+        )
+
+        val newReferat = referat.toNewReferat(
+            moteId = dialogmote.id,
+            ferdigstilt = true,
+        )
+        val existingReferat = dialogmote.referatList.firstOrNull()
+            ?: throw RuntimeException("Ferdigstilt mote ${dialogmote.id} does not have referat")
+
+        database.connection.use { connection ->
+
+            if (dialogmote.tildeltVeilederIdent != opprettetAv) {
+                connection.updateMoteTildeltVeileder(
+                    commit = false,
+                    moteId = dialogmote.id,
+                    veilederId = opprettetAv,
+                )
+            }
+            val (pdfId, _) = connection.createPdf(
+                commit = false,
+                pdf = pdfReferat,
+            )
+
+            val (_, referatUuid) = if (existingReferat.ferdigstilt) {
+                connection.createNewReferat(
+                    commit = false,
+                    newReferat = newReferat,
+                    pdfId = pdfId,
+                    digitalt = digitalVarsling,
+                )
+            } else {
+                connection.updateReferat(
+                    commit = false,
+                    referat = existingReferat,
+                    newReferat = newReferat,
+                    pdfId = pdfId,
+                    digitalt = digitalVarsling,
+                )
+            }
+            val behandler = dialogmote.behandler
+            if (behandler != null) {
+                connection.updateMotedeltakerBehandler(
+                    deltakerId = behandler.id,
+                    deltatt = referat.behandlerDeltatt ?: true,
+                    mottarReferat = referat.behandlerMottarReferat ?: true,
+                )
+            }
+
+            varselService.sendVarsel(
+                tidspunktForVarsel = LocalDateTime.now(),
                 varselType = MotedeltakerVarselType.REFERAT,
                 moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,

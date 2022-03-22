@@ -20,6 +20,7 @@ const val dialogmoteApiMoteParam = "moteuuid"
 const val dialogmoteApiMoteAvlysPath = "/avlys"
 const val dialogmoteApiMoteMellomlagrePath = "/mellomlagre"
 const val dialogmoteApiMoteFerdigstillPath = "/ferdigstill"
+const val dialogmoteApiMoteEndreFerdigstiltPath = "/endreferdigstilt"
 const val dialogmoteApiMoteTidStedPath = "/tidsted"
 const val dialogmoteActionsApiOvertaPath = "/overta"
 
@@ -94,6 +95,33 @@ fun Route.registerDialogmoteActionsApiV2(
                 action = "Ferdigstill Dialogmote for moteUUID"
             ) {
                 dialogmoteService.ferdigstillMote(
+                    callId = callId,
+                    dialogmote = dialogmote,
+                    opprettetAv = getNAVIdentFromToken(token),
+                    referat = newReferat,
+                    token = token,
+                )
+                call.respond(HttpStatusCode.OK)
+            }
+        }
+
+        post("/{$dialogmoteApiMoteParam}$dialogmoteApiMoteEndreFerdigstiltPath") {
+            val callId = getCallId()
+
+            val token = getBearerHeader()
+                ?: throw IllegalArgumentException("No Authorization header supplied")
+
+            val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
+            val newReferat = call.receive<NewReferatDTO>()
+
+            val dialogmote = dialogmoteService.getDialogmote(moteUUID)
+
+            validateVeilederAccess(
+                dialogmoteTilgangService = dialogmoteTilgangService,
+                personIdentToAccess = dialogmote.arbeidstaker.personIdent,
+                action = "Endre Ferdigstilt Dialogmote for moteUUID"
+            ) {
+                dialogmoteService.endreFerdigstiltReferat(
                     callId = callId,
                     dialogmote = dialogmote,
                     opprettetAv = getNAVIdentFromToken(token),

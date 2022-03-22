@@ -3,6 +3,7 @@ package no.nav.syfo.dialogmote.api.domain
 import no.nav.syfo.dialogmote.domain.*
 
 data class NewReferatDTO(
+    val begrunnelseEndring: String? = null,
     val situasjon: String,
     val konklusjon: String,
     val arbeidstakerOppgave: String,
@@ -27,6 +28,7 @@ fun NewReferatDTO.toNewReferat(
 ): NewReferat {
     return NewReferat(
         moteId = moteId,
+        begrunnelseEndring = begrunnelseEndring,
         situasjon = situasjon,
         konklusjon = konklusjon,
         arbeidstakerOppgave = arbeidstakerOppgave,
