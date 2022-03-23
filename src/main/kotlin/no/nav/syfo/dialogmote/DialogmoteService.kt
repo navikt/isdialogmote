@@ -427,6 +427,7 @@ class DialogmoteService(
             varselType = varselType,
             pdfId = pdfArbeidsgiverId,
             fritekst = fritekstArbeidsgiver,
+            sendAltinn = narmesteLeder == null,
             document = documentArbeidsgiver,
         )
         val behandlerVarselIdPair = behandlerId?.let {
@@ -514,6 +515,7 @@ class DialogmoteService(
                     newReferat = newReferat,
                     pdfId = null,
                     digitalt = true,
+                    sendAltinn = false,
                 )
             } else {
                 connection.updateReferat(
@@ -522,6 +524,7 @@ class DialogmoteService(
                     newReferat = newReferat,
                     pdfId = null,
                     digitalt = true,
+                    sendAltinn = false,
                 )
             }
 
@@ -605,6 +608,7 @@ class DialogmoteService(
                     newReferat = newReferat,
                     pdfId = pdfId,
                     digitalt = digitalVarsling,
+                    sendAltinn = narmesteLeder == null,
                 )
             } else {
                 val existingReferat = dialogmote.referatList.first()
@@ -617,6 +621,7 @@ class DialogmoteService(
                     newReferat = newReferat,
                     pdfId = pdfId,
                     digitalt = digitalVarsling,
+                    sendAltinn = narmesteLeder == null,
                 )
             }
             val behandler = dialogmote.behandler
@@ -712,6 +717,7 @@ class DialogmoteService(
                     newReferat = newReferat,
                     pdfId = pdfId,
                     digitalt = digitalVarsling,
+                    sendAltinn = narmesteLeder == null,
                 )
             } else {
                 connection.updateReferat(
@@ -720,6 +726,7 @@ class DialogmoteService(
                     newReferat = newReferat,
                     pdfId = pdfId,
                     digitalt = digitalVarsling,
+                    sendAltinn = narmesteLeder == null,
                 )
             }
             val behandler = dialogmote.behandler
