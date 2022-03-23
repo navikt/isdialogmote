@@ -39,7 +39,7 @@ class ArbeidstakerVarselService(
             MotedeltakerVarselType.NYTT_TID_STED -> {
                 "Du har mottatt et brev om endret dialogmøte"
             }
-            MotedeltakerVarselType.REFERAT -> {
+            MotedeltakerVarselType.REFERAT, MotedeltakerVarselType.REFERAT_ENDRET -> {
                 "Du har mottatt et referat fra dialogmøte"
             }
         }

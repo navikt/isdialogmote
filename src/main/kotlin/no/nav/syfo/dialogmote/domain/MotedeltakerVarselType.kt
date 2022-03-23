@@ -8,6 +8,7 @@ enum class MotedeltakerVarselType {
     INNKALT,
     NYTT_TID_STED,
     REFERAT,
+    REFERAT_ENDRET,
 }
 
 fun MotedeltakerVarselType.toJournalpostTittel(): String {
@@ -21,7 +22,7 @@ fun MotedeltakerVarselType.toJournalpostTittel(): String {
         MotedeltakerVarselType.NYTT_TID_STED -> {
             "Endring av tid og sted for innkalt dialogmøte"
         }
-        MotedeltakerVarselType.REFERAT -> {
+        MotedeltakerVarselType.REFERAT, MotedeltakerVarselType.REFERAT_ENDRET -> {
             "Referat fra dialogmøte"
         }
     }
@@ -49,7 +50,7 @@ fun MotedeltakerVarselType.toBrevkodeType(
                 DialogmoteDeltakerType.ARBEIDSGIVER -> BrevkodeType.DIALOGMOTE_ENDRING_TID_STED_AG
                 DialogmoteDeltakerType.BEHANDLER -> BrevkodeType.DIALOGMOTE_ENDRING_TID_STED_BEH
             }
-        MotedeltakerVarselType.REFERAT ->
+        MotedeltakerVarselType.REFERAT, MotedeltakerVarselType.REFERAT_ENDRET ->
             when (dialogmoteDeltakerType) {
                 DialogmoteDeltakerType.ARBEIDSTAKER -> BrevkodeType.DIALOGMOTE_REFERAT_AT
                 DialogmoteDeltakerType.ARBEIDSGIVER -> BrevkodeType.DIALOGMOTE_REFERAT_AG
@@ -63,7 +64,7 @@ fun MotedeltakerVarselType.getDialogMeldingType(): DialogmeldingType {
         MotedeltakerVarselType.INNKALT -> DialogmeldingType.DIALOG_FORESPORSEL
         MotedeltakerVarselType.NYTT_TID_STED -> DialogmeldingType.DIALOG_FORESPORSEL
         MotedeltakerVarselType.AVLYST -> DialogmeldingType.DIALOG_NOTAT
-        MotedeltakerVarselType.REFERAT -> DialogmeldingType.DIALOG_NOTAT
+        MotedeltakerVarselType.REFERAT, MotedeltakerVarselType.REFERAT_ENDRET -> DialogmeldingType.DIALOG_NOTAT
     }
 }
 
@@ -72,7 +73,7 @@ fun MotedeltakerVarselType.getDialogMeldingKode(): DialogmeldingKode {
         MotedeltakerVarselType.INNKALT -> DialogmeldingKode.INNKALLING
         MotedeltakerVarselType.NYTT_TID_STED -> DialogmeldingKode.TIDSTED
         MotedeltakerVarselType.AVLYST -> DialogmeldingKode.AVLYST
-        MotedeltakerVarselType.REFERAT -> DialogmeldingKode.REFERAT
+        MotedeltakerVarselType.REFERAT, MotedeltakerVarselType.REFERAT_ENDRET -> DialogmeldingKode.REFERAT
     }
 }
 

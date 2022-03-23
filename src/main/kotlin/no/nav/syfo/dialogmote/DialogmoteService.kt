@@ -733,7 +733,7 @@ class DialogmoteService(
 
             varselService.sendVarsel(
                 tidspunktForVarsel = LocalDateTime.now(),
-                varselType = MotedeltakerVarselType.REFERAT,
+                varselType = MotedeltakerVarselType.REFERAT_ENDRET,
                 moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
                 arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,

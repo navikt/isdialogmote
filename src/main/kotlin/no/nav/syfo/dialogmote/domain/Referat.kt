@@ -147,7 +147,7 @@ fun Referat.toArbeidstakerBrevDTO(
     uuid = uuid.toString(),
     deltakerUuid = deltakerUuid.toString(),
     createdAt = updatedAt,
-    brevType = MotedeltakerVarselType.REFERAT.name,
+    brevType = this.getMotedeltakerVarselType().name,
     digitalt = digitalt,
     lestDato = lestDatoArbeidstaker,
     fritekst = konklusjon,
@@ -167,7 +167,7 @@ fun Referat.toNarmesteLederBrevDTO(
     uuid = this.uuid.toString(),
     deltakerUuid = deltakerUuid.toString(),
     createdAt = this.updatedAt,
-    brevType = MotedeltakerVarselType.REFERAT.name,
+    brevType = this.getMotedeltakerVarselType().name,
     lestDato = this.lestDatoArbeidsgiver,
     fritekst = konklusjon,
     sted = dialogmoteTidSted.sted,
@@ -177,3 +177,6 @@ fun Referat.toNarmesteLederBrevDTO(
     document = this.document,
     svar = null,
 )
+
+private fun Referat.getMotedeltakerVarselType() =
+    if (begrunnelseEndring == null) MotedeltakerVarselType.REFERAT else MotedeltakerVarselType.REFERAT_ENDRET

@@ -125,7 +125,7 @@ private fun toMessageTitle(varseltype: MotedeltakerVarselType): String {
         MotedeltakerVarselType.INNKALT -> TITTEL_INNKALT
         MotedeltakerVarselType.NYTT_TID_STED -> TITTEL_NYTT_TID_STED
         MotedeltakerVarselType.AVLYST -> TITTEL_AVLYST
-        MotedeltakerVarselType.REFERAT -> TITTEL_REFERAT
+        MotedeltakerVarselType.REFERAT, MotedeltakerVarselType.REFERAT_ENDRET -> TITTEL_REFERAT
     }
 }
 
@@ -138,7 +138,7 @@ private fun toFilename(varseltype: MotedeltakerVarselType): String {
         MotedeltakerVarselType.INNKALT -> FILNAVN_INNKALT
         MotedeltakerVarselType.NYTT_TID_STED -> FILNAVN_NYTT_TID_STED
         MotedeltakerVarselType.AVLYST -> FILNAVN_AVLYST
-        MotedeltakerVarselType.REFERAT -> FILNAVN_REFERAT
+        MotedeltakerVarselType.REFERAT, MotedeltakerVarselType.REFERAT_ENDRET -> FILNAVN_REFERAT
     }
 }
 
@@ -147,7 +147,7 @@ private fun toMessageBody(varseltype: MotedeltakerVarselType): String {
         MotedeltakerVarselType.INNKALT -> BODY_KREVER_HANDLING
         MotedeltakerVarselType.NYTT_TID_STED -> BODY_KREVER_HANDLING
         MotedeltakerVarselType.AVLYST -> BODY_FERDIGSTILL
-        MotedeltakerVarselType.REFERAT -> BODY_FERDIGSTILL
+        MotedeltakerVarselType.REFERAT, MotedeltakerVarselType.REFERAT_ENDRET -> BODY_FERDIGSTILL
     }
 }
 
@@ -156,7 +156,7 @@ private fun toEmailTitle(varseltype: MotedeltakerVarselType): String {
         MotedeltakerVarselType.INNKALT -> EMAIL_TITTEL_INNKALT
         MotedeltakerVarselType.NYTT_TID_STED -> EMAIL_TITTEL_NYTT_TID_STED
         MotedeltakerVarselType.AVLYST -> EMAIL_TITTEL_AVLYST
-        MotedeltakerVarselType.REFERAT -> EMAIL_TITTEL_REFERAT
+        MotedeltakerVarselType.REFERAT, MotedeltakerVarselType.REFERAT_ENDRET -> EMAIL_TITTEL_REFERAT
     }
 }
 
@@ -165,7 +165,7 @@ private fun toEmailBody(varseltype: MotedeltakerVarselType): String {
         MotedeltakerVarselType.INNKALT -> EMAIL_BODY_INNKALT
         MotedeltakerVarselType.NYTT_TID_STED -> EMAIL_BODY_NYTT_TID_STED
         MotedeltakerVarselType.AVLYST -> EMAIL_BODY_AVLYST
-        MotedeltakerVarselType.REFERAT -> EMAIL_BODY_REFERAT
+        MotedeltakerVarselType.REFERAT, MotedeltakerVarselType.REFERAT_ENDRET -> EMAIL_BODY_REFERAT
     }
 }
 
@@ -174,6 +174,6 @@ private fun toSMSBody(varseltype: MotedeltakerVarselType): String {
         MotedeltakerVarselType.INNKALT -> SMS_BODY_INNKALT
         MotedeltakerVarselType.NYTT_TID_STED -> SMS_BODY_NYTT_TID_STED
         MotedeltakerVarselType.AVLYST -> SMS_BODY_AVLYST
-        MotedeltakerVarselType.REFERAT -> SMS_BODY_REFERAT
+        MotedeltakerVarselType.REFERAT, MotedeltakerVarselType.REFERAT_ENDRET -> SMS_BODY_REFERAT
     }
 }

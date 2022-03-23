@@ -344,6 +344,36 @@ object NarmesteLederBrevSpek : Spek({
                         val pdfContent = response.byteContent!!
                         pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
                     }
+                    val urlMoteUUIDEndreReferat =
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteEndreFerdigstiltPath"
+                    val referatEndretDto = generateNewReferatDTO(
+                        behandlerOppgave = "Dette er en en endring",
+                        begrunnelseEndring = "Dette er en begrunnelse",
+                    )
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDEndreReferat) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenVeileder))
+                            setBody(objectMapper.writeValueAsString(referatEndretDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+                    with(
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                            addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val arbeidsgiverBrevList =
+                            objectMapper.readValue<List<NarmesteLederBrevDTO>>(response.content!!)
+                        arbeidsgiverBrevList.size shouldBeEqualTo 3
+
+                        val endretReferatBrevDTO = arbeidsgiverBrevList.firstOrNull()
+                        endretReferatBrevDTO.shouldNotBeNull()
+                        endretReferatBrevDTO.brevType shouldBeEqualTo MotedeltakerVarselType.REFERAT_ENDRET.name
+                    }
                 }
                 it("Same narmesteleder and arbeidstaker, different virksomhet") {
                     with(
