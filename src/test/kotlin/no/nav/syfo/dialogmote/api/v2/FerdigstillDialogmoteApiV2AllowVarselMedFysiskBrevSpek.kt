@@ -101,7 +101,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
 
                             val dialogmoteDTO = dialogmoteList.first()
                             dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
-                            dialogmoteDTO.referat shouldBeEqualTo null
+                            dialogmoteDTO.referatList shouldBeEqualTo emptyList()
 
                             createdDialogmoteUUID = dialogmoteDTO.uuid
                         }
@@ -139,7 +139,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
 
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
 
-                            val referat = dialogmoteDTO.referat!!
+                            val referat = dialogmoteDTO.referatList.first()
                             referatUuid = referat.uuid
                             referat.digitalt shouldBeEqualTo false
                             referat.situasjon shouldBeEqualTo "Dette er en beskrivelse av situasjonen"
@@ -186,7 +186,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
-                            val referat = dialogmoteDTO.referat!!
+                            val referat = dialogmoteDTO.referatList.first()
                             referat.brevBestiltTidspunkt shouldNotBe null
                             referat.brevBestiltTidspunkt!!.toLocalDate() shouldBeEqualTo LocalDate.now()
                         }
