@@ -1,6 +1,7 @@
 package no.nav.syfo.dialogmote.domain
 
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
+import no.nav.syfo.brev.domain.BrevType
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
 import no.nav.syfo.client.dokarkiv.domain.*
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerAnnenDTO
@@ -163,7 +164,7 @@ fun Referat.toArbeidstakerBrevDTO(
     uuid = uuid.toString(),
     deltakerUuid = deltakerUuid.toString(),
     createdAt = updatedAt,
-    brevType = MotedeltakerVarselType.REFERAT.name,
+    brevType = this.getBrevType().name,
     digitalt = digitalt,
     lestDato = lestDatoArbeidstaker,
     fritekst = konklusjon,
@@ -183,7 +184,7 @@ fun Referat.toNarmesteLederBrevDTO(
     uuid = this.uuid.toString(),
     deltakerUuid = deltakerUuid.toString(),
     createdAt = this.updatedAt,
-    brevType = MotedeltakerVarselType.REFERAT.name,
+    brevType = this.getBrevType().name,
     lestDato = this.lestDatoArbeidsgiver,
     fritekst = konklusjon,
     sted = dialogmoteTidSted.sted,
@@ -193,3 +194,6 @@ fun Referat.toNarmesteLederBrevDTO(
     document = this.document,
     svar = null,
 )
+
+private fun Referat.getBrevType() =
+    if (begrunnelseEndring == null) BrevType.REFERAT else BrevType.REFERAT_ENDRET

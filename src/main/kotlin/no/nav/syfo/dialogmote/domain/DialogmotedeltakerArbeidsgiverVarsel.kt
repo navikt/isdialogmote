@@ -52,7 +52,7 @@ fun DialogmotedeltakerArbeidsgiverVarsel.toNarmesteLederBrevDTO(
     uuid = this.uuid.toString(),
     deltakerUuid = deltakerUuid.toString(),
     createdAt = this.createdAt,
-    brevType = this.varselType.name,
+    brevType = this.varselType.toBrevType().name,
     lestDato = this.lestDatoArbeidsgiver,
     fritekst = this.fritekst,
     sted = dialogmoteTidSted.sted,

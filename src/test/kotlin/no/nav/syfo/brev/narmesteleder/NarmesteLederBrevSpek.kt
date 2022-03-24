@@ -8,6 +8,7 @@ import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
+import no.nav.syfo.brev.domain.BrevType
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
@@ -348,6 +349,36 @@ object NarmesteLederBrevSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val pdfContent = response.byteContent!!
                         pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
+                    }
+                    val urlMoteUUIDEndreReferat =
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteEndreFerdigstiltPath"
+                    val referatEndretDto = generateNewReferatDTO(
+                        behandlerOppgave = "Dette er en en endring",
+                        begrunnelseEndring = "Dette er en begrunnelse",
+                    )
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDEndreReferat) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenVeileder))
+                            setBody(objectMapper.writeValueAsString(referatEndretDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+                    with(
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                            addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val arbeidsgiverBrevList =
+                            objectMapper.readValue<List<NarmesteLederBrevDTO>>(response.content!!)
+                        arbeidsgiverBrevList.size shouldBeEqualTo 3
+
+                        val endretReferatBrevDTO = arbeidsgiverBrevList.firstOrNull()
+                        endretReferatBrevDTO.shouldNotBeNull()
+                        endretReferatBrevDTO.brevType shouldBeEqualTo BrevType.REFERAT_ENDRET.name
                     }
                 }
                 it("Same narmesteleder and arbeidstaker, different virksomhet") {

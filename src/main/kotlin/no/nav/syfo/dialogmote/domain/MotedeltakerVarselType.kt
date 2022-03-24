@@ -1,5 +1,6 @@
 package no.nav.syfo.dialogmote.domain
 
+import no.nav.syfo.brev.domain.BrevType
 import no.nav.syfo.client.dokarkiv.domain.BrevkodeType
 import no.nav.syfo.client.dokarkiv.domain.DialogmoteDeltakerType
 
@@ -72,6 +73,15 @@ fun MotedeltakerVarselType.toBrevkodeType(
                 DialogmoteDeltakerType.ARBEIDSGIVER -> BrevkodeType.DIALOGMOTE_REFERAT_AG
                 DialogmoteDeltakerType.BEHANDLER -> BrevkodeType.DIALOGMOTE_REFERAT_BEH
             }
+    }
+}
+
+fun MotedeltakerVarselType.toBrevType(): BrevType {
+    return when (this) {
+        MotedeltakerVarselType.INNKALT -> BrevType.INNKALT
+        MotedeltakerVarselType.NYTT_TID_STED -> BrevType.NYTT_TID_STED
+        MotedeltakerVarselType.AVLYST -> BrevType.AVLYST
+        MotedeltakerVarselType.REFERAT -> BrevType.REFERAT
     }
 }
 
