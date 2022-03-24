@@ -292,6 +292,7 @@ const val queryGetFerdigstilteReferatWithoutJournalpostArbeidstaker =
         FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
                   INNER JOIN MOTEDELTAKER_ARBEIDSTAKER ON (MOTE.ID = MOTEDELTAKER_ARBEIDSTAKER.MOTE_ID) 
         WHERE MOTE_REFERAT.journalpost_id IS NULL AND MOTE_REFERAT.ferdigstilt = true
+        ORDER BY MOTE_REFERAT.created_at ASC
         LIMIT 20
     """
 
@@ -311,6 +312,7 @@ const val queryGetFerdigstilteReferatWithoutJournalpostArbeidsgiver =
         FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
                   INNER JOIN MOTEDELTAKER_ARBEIDSGIVER ON (MOTE.ID = MOTEDELTAKER_ARBEIDSGIVER.MOTE_ID) 
         WHERE MOTE_REFERAT.journalpost_ag_id IS NULL AND MOTE_REFERAT.ferdigstilt = true
+        ORDER BY MOTE_REFERAT.created_at ASC
         LIMIT 20
     """
 
@@ -330,6 +332,7 @@ const val queryGetFerdigstilteReferatWithoutJournalpostBehandler =
         FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
                   INNER JOIN MOTEDELTAKER_BEHANDLER ON (MOTE.ID = MOTEDELTAKER_BEHANDLER.MOTE_ID) 
         WHERE MOTE_REFERAT.journalpost_beh_id IS NULL AND MOTE_REFERAT.ferdigstilt = true
+        ORDER BY MOTE_REFERAT.created_at ASC
         LIMIT 20
     """
 

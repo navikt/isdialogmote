@@ -109,6 +109,7 @@ const val queryGetMotedeltakerArbeidstakerVarselWithoutJournalpost =
         SELECT *
         FROM MOTEDELTAKER_ARBEIDSTAKER_VARSEL
         WHERE journalpost_id IS NULL
+        ORDER BY created_at ASC
         LIMIT 20
     """
 
