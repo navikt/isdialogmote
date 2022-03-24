@@ -7,6 +7,7 @@ import no.nav.syfo.dialogmote.domain.DialogmotedeltakerBehandler
 import no.nav.syfo.dialogmote.domain.Referat
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
+import java.time.LocalDateTime
 
 class ReferatJournalpostService(
     private val database: DatabaseInterface
@@ -71,6 +72,9 @@ class ReferatJournalpostService(
             )
         }
     }
+
+    fun getMotetidspunkt(moteId: Int): LocalDateTime? =
+        database.getTidSted(moteId).maxByOrNull { it.createdAt }?.tid
 
     fun getDialogmoteReferatForJournalpostDistribusjonList(): List<Pair<Int, String?>> {
         return database.getReferatForFysiskBrevUtsending().map { Pair(it.id, it.journalpostIdArbeidstaker) }
