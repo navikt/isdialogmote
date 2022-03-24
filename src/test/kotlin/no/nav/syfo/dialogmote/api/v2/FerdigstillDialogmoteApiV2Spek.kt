@@ -129,7 +129,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
 
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
 
-                            val referat = dialogmoteDTO.referat!!
+                            val referat = dialogmoteDTO.referatList.first()
                             referat.digitalt shouldBeEqualTo true
                             referat.situasjon shouldBeEqualTo "Dette er en beskrivelse av situasjonen"
                             referat.behandlerOppgave shouldBeEqualTo null
@@ -283,7 +283,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
-                            val referat = dialogmoteDTO.referat!!
+                            val referat = dialogmoteDTO.referatList.first()
                             referatBehandlerVarselUUID = referat.uuid
                             dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.FERDIGSTILT.name
                             val behandlerDeltaker = dialogmoteDTO.behandler!!
@@ -525,7 +525,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
-                            val referat = dialogmoteDTO.referat!!
+                            val referat = dialogmoteDTO.referatList.first()
                             referat.ferdigstilt shouldBeEqualTo false
                             referat.konklusjon shouldBeEqualTo "Dette er en beskrivelse av konklusjon"
                             referat.andreDeltakere[0].navn shouldBeEqualTo "Tøff Pyjamas"
@@ -560,7 +560,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
-                            val referat = dialogmoteDTO.referat!!
+                            val referat = dialogmoteDTO.referatList.first()
                             val referatBehandlerVarselUUID = referat.uuid
                             dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.FERDIGSTILT.name
                             val behandlerDeltaker = dialogmoteDTO.behandler!!
@@ -727,7 +727,7 @@ private fun TestApplicationEngine.createDialogmote(
 
         val dialogmoteDTO = dialogmoteList.first()
         dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
-        dialogmoteDTO.referat shouldBeEqualTo null
+        dialogmoteDTO.referatList shouldBeEqualTo emptyList()
 
         return dialogmoteDTO
     }

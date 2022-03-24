@@ -140,7 +140,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
                         val dialogmoteDTO = dialogmoteList.first()
-                        referatUuid = dialogmoteDTO.referat!!.uuid
+                        referatUuid = dialogmoteDTO.referatList.first().uuid
                         varselUuids =
                             dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
                                 .map { it.uuid }
@@ -169,7 +169,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
                         val dialogmoteDTO = dialogmoteList.first()
-                        dialogmoteDTO.referat!!.brevBestiltTidspunkt.shouldNotBeNull()
+                        dialogmoteDTO.referatList.first().brevBestiltTidspunkt.shouldNotBeNull()
                         dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
                             .forEach {
                                 it.brevBestiltTidspunkt.shouldNotBeNull()
@@ -235,7 +235,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
                         val dialogmoteDTO = dialogmoteList.first()
-                        dialogmoteDTO.referat!!.brevBestiltTidspunkt.shouldBeNull()
+                        dialogmoteDTO.referatList.first().brevBestiltTidspunkt.shouldBeNull()
                         dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
                             .forEach {
                                 it.brevBestiltTidspunkt.shouldBeNull()
@@ -292,7 +292,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
                         val dialogmoteDTO = dialogmoteList.first()
-                        referatUuid = dialogmoteDTO.referat!!.uuid
+                        referatUuid = dialogmoteDTO.referatList.first().uuid
                         varselUuids =
                             dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
                                 .map { it.uuid }
@@ -384,7 +384,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
                         val dialogmoteDTO = dialogmoteList.first()
-                        referatUuid = dialogmoteDTO.referat!!.uuid
+                        referatUuid = dialogmoteDTO.referatList.first().uuid
                         varselUuids =
                             dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
                                 .map { it.uuid }
@@ -413,7 +413,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
                         val dialogmoteDTO = dialogmoteList.first()
-                        dialogmoteDTO.referat!!.brevBestiltTidspunkt.shouldBeNull()
+                        dialogmoteDTO.referatList.first().brevBestiltTidspunkt.shouldBeNull()
                         dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
                             .forEach {
                                 it.brevBestiltTidspunkt.shouldBeNull()
@@ -479,7 +479,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
                         val dialogmoteDTO = dialogmoteList.first()
-                        dialogmoteDTO.referat!!.brevBestiltTidspunkt.shouldBeNull()
+                        dialogmoteDTO.referatList.first().brevBestiltTidspunkt.shouldBeNull()
                         dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
                             .forEach {
                                 it.brevBestiltTidspunkt.shouldBeNull()
@@ -550,7 +550,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
                         val dialogmoteDTO = dialogmoteList.first()
-                        referatUuid = dialogmoteDTO.referat!!.uuid
+                        referatUuid = dialogmoteDTO.referatList.first().uuid
                         varselUuids =
                             dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
                                 .map { it.uuid }

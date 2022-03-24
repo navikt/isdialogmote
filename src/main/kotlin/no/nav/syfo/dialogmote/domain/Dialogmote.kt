@@ -38,7 +38,6 @@ fun Dialogmote.toDialogmoteDTO(): DialogmoteDTO {
         sted = dialogmoteTidSted.sted,
         tid = dialogmoteTidSted.tid,
         videoLink = dialogmoteTidSted.videoLink,
-        referat = this.referatList.firstOrNull()?.toReferatDTO(),
         referatList = this.referatList.toReferatDTOList(),
     )
 }
