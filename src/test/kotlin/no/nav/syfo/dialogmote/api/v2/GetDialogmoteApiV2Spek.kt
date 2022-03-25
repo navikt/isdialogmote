@@ -10,14 +10,15 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithMissingValues
+import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -51,7 +52,8 @@ class GetDialogmoteApiV2Spek : Spek({
             )
 
             describe("Get Dialogmoter for PersonIdent") {
-                val url = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
+                val urlMote = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
+                val urlMoteVeilederIdent = "$dialogmoteApiV2Basepath$dialogmoteApiVeilederIdentUrlPath"
                 val validToken = generateJWT(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
@@ -67,8 +69,6 @@ class GetDialogmoteApiV2Spek : Spek({
                     afterEachTest {
                         database.dropData()
                     }
-
-                    val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
 
                     it("should return DialogmoteList if request is successful") {
                         val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
@@ -86,7 +86,7 @@ class GetDialogmoteApiV2Spek : Spek({
                         }
 
                         with(
-                            handleRequest(HttpMethod.Get, url) {
+                            handleRequest(HttpMethod.Get, urlMote) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
                             }
@@ -107,6 +107,46 @@ class GetDialogmoteApiV2Spek : Spek({
                         }
                     }
 
+                    it("should return DialogmoteList based on VeilederIdent") {
+                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMote) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Post, urlMote) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(generateNewDialogmoteDTO(ARBEIDSTAKER_ANNEN_FNR)))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 2) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            clearMocks(mqSenderMock)
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoteVeilederIdent) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                            dialogmoteList.size shouldBeEqualTo 2
+                        }
+                    }
+
                     it("should return DialogmoteList if request is successful: optional values missing") {
                         val newDialogmoteDTO = generateNewDialogmoteDTOWithMissingValues(ARBEIDSTAKER_FNR)
 
@@ -123,7 +163,7 @@ class GetDialogmoteApiV2Spek : Spek({
                         }
 
                         with(
-                            handleRequest(HttpMethod.Get, url) {
+                            handleRequest(HttpMethod.Get, urlMote) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
                             }
@@ -153,16 +193,51 @@ class GetDialogmoteApiV2Spek : Spek({
 
                     it("should return status Unauthorized if no token is supplied") {
                         with(
-                            handleRequest(HttpMethod.Get, url) {}
+                            handleRequest(HttpMethod.Get, urlMote) {}
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                             verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
+                    it("veilederident should return status Unauthorized if no token is supplied") {
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoteVeilederIdent) {}
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
+                        }
+                    }
+
+                    it("should return empty dialogmoteList if no access") {
+
+                        val newDialogmoteVeilederNoAccess = generateNewDialogmote(ARBEIDSTAKER_VEILEDER_NO_ACCESS).copy(
+                            opprettetAv = VEILEDER_IDENT,
+                            tildeltVeilederIdent = VEILEDER_IDENT
+                        )
+
+                        database.connection.use { connection ->
+                            connection.createNewDialogmoteWithReferences(
+                                newDialogmote = newDialogmoteVeilederNoAccess
+                            )
+                        }
+                        with(
+                            handleRequest(HttpMethod.Get, urlMoteVeilederIdent) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
+
+                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                            dialogmoteList.size shouldBeEqualTo 0
+                        }
+                    }
+
                     it("should return status BadRequest if no $NAV_PERSONIDENT_HEADER is supplied") {
                         with(
-                            handleRequest(HttpMethod.Get, url) {
+                            handleRequest(HttpMethod.Get, urlMote) {
                                 addHeader(Authorization, bearerHeader(validToken))
                             }
                         ) {
@@ -173,7 +248,7 @@ class GetDialogmoteApiV2Spek : Spek({
 
                     it("should return status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
                         with(
-                            handleRequest(HttpMethod.Get, url) {
+                            handleRequest(HttpMethod.Get, urlMote) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value.drop(1))
                             }
@@ -185,7 +260,7 @@ class GetDialogmoteApiV2Spek : Spek({
 
                     it("should return status Forbidden if denied access to person") {
                         with(
-                            handleRequest(HttpMethod.Get, url) {
+                            handleRequest(HttpMethod.Get, urlMote) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_VEILEDER_NO_ACCESS.value)
                             }
@@ -197,7 +272,7 @@ class GetDialogmoteApiV2Spek : Spek({
 
                     it("should return status Forbidden if denied person has Adressbeskyttese") {
                         with(
-                            handleRequest(HttpMethod.Get, url) {
+                            handleRequest(HttpMethod.Get, urlMote) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_ADRESSEBESKYTTET.value)
                             }
