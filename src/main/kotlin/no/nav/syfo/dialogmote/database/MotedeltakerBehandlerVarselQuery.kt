@@ -89,6 +89,7 @@ const val queryGetMotedeltakerBehandlerVarselWithoutJournalpost =
         SELECT *
         FROM MOTEDELTAKER_BEHANDLER_VARSEL
         WHERE journalpost_id IS NULL
+        ORDER BY created_at ASC
         LIMIT 20
     """
 
