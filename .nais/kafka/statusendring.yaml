@@ -29,3 +29,6 @@ spec:
     - team: team-dialog
       application: sf-dialogmote
       access: read
+    - team: teamsykefravr
+      application: isdialogmotekandidat
+      access: read
