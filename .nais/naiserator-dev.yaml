@@ -92,7 +92,7 @@ spec:
     - name: REDIS_HOST
       value: "isdialogmote-redis.teamsykefravr.svc.cluster.local"
     - name: DIALOGMOTE_ARBEIDSTAKER_URL
-      value: "https://www-gcp.dev.nav.no/syk/dialogmote"
+      value: "https://www-gcp.dev.nav.no/syk/dialogmoter/sykmeldt"
     - name: DOKARKIV_CLIENT_ID
       value: "dev-fss.teamdokumenthandtering.dokarkiv-q1"
     - name: DOKARKIV_URL
