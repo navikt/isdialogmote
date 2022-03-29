@@ -1,5 +1,6 @@
 package no.nav.syfo.dialogmelding.kafka
 
+import no.nav.syfo.dialogmelding.COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_MISSING_FORESPORSEL
 import no.nav.syfo.dialogmelding.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import java.time.LocalDateTime
@@ -43,24 +44,45 @@ data class TypeForesp(
     val v: String
 )
 
-fun KafkaDialogmeldingDTO.toDialogmeldingSvar(): DialogmeldingSvar = DialogmeldingSvar(
-    conversationRef = this.conversationRef,
-    parentRef = this.parentRef,
-    arbeidstakerPersonIdent = PersonIdentNumber(this.personIdentPasient),
-    behandlerPersonIdent = PersonIdentNumber(this.personIdentBehandler),
-    innkallingDialogmoteSvar = this.dialogmelding.innkallingMoterespons?.toInnkallingDialogmoteSvar()
-)
+fun KafkaDialogmeldingDTO.toDialogmeldingSvarAlternativer(): List<DialogmeldingSvar> {
+    val list = this.dialogmelding.innkallingMoterespons?.toInnkallingDialogmeldingSvarAlternativer() ?: emptyList()
+    return list.map { innkallingDialogmoteSvar ->
+        DialogmeldingSvar(
+            conversationRef = this.conversationRef,
+            parentRef = this.parentRef,
+            arbeidstakerPersonIdent = PersonIdentNumber(this.personIdentPasient),
+            behandlerPersonIdent = PersonIdentNumber(this.personIdentBehandler),
+            innkallingDialogmoteSvar = innkallingDialogmoteSvar,
+        )
+    }
+}
 
-private fun InnkallingMoterespons.toInnkallingDialogmoteSvar(): InnkallingDialogmoteSvar? {
+private fun InnkallingMoterespons.toInnkallingDialogmeldingSvarAlternativer(): List<InnkallingDialogmoteSvar> {
     val foresporselType = this.foresporsel?.typeForesp?.toForesporselType()
     val svarType = this.temaKode.toSvarType()
     return if (svarType != null && foresporselType != null) {
-        InnkallingDialogmoteSvar(
-            foresporselType = foresporselType,
-            svarType = svarType,
-            svarTekst = this.tekstNotatInnhold,
+        listOf(
+            InnkallingDialogmoteSvar(
+                foresporselType = foresporselType,
+                svarType = svarType,
+                svarTekst = this.tekstNotatInnhold,
+            ),
         )
-    } else null
+    } else if (svarType != null) {
+        COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_MISSING_FORESPORSEL.increment()
+        listOf(
+            InnkallingDialogmoteSvar(
+                foresporselType = ForesporselType.ENDRING,
+                svarType = svarType,
+                svarTekst = this.tekstNotatInnhold,
+            ),
+            InnkallingDialogmoteSvar(
+                foresporselType = ForesporselType.INNKALLING,
+                svarType = svarType,
+                svarTekst = this.tekstNotatInnhold,
+            ),
+        )
+    } else emptyList()
 }
 
 fun TypeForesp.toForesporselType(): ForesporselType? {

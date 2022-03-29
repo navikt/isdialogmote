@@ -9,7 +9,7 @@ data class DialogmeldingSvar(
     val parentRef: String?,
     val arbeidstakerPersonIdent: PersonIdentNumber,
     val behandlerPersonIdent: PersonIdentNumber,
-    val innkallingDialogmoteSvar: InnkallingDialogmoteSvar?,
+    val innkallingDialogmoteSvar: InnkallingDialogmoteSvar,
 )
 
 data class InnkallingDialogmoteSvar(

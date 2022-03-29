@@ -4,7 +4,7 @@ import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.dialogmelding.domain.getDialogmoteSvarType
 import no.nav.syfo.dialogmelding.domain.getVarselType
 import no.nav.syfo.dialogmelding.kafka.KafkaDialogmeldingDTO
-import no.nav.syfo.dialogmelding.kafka.toDialogmeldingSvar
+import no.nav.syfo.dialogmelding.kafka.toDialogmeldingSvarAlternativer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -12,15 +12,14 @@ class DialogmeldingService(private val behandlerVarselService: BehandlerVarselSe
 
     fun handleDialogmelding(dialogmeldingDTO: KafkaDialogmeldingDTO) {
         if (dialogmeldingDTO.msgType == DIALOGMELDING_TYPE_SVAR) {
-            val dialogmeldingSvar = dialogmeldingDTO.toDialogmeldingSvar()
-            dialogmeldingSvar.innkallingDialogmoteSvar?.let { innkallingSvar ->
+            dialogmeldingDTO.toDialogmeldingSvarAlternativer().find { dialogmeldingSvar ->
                 log.info("Received innkalling dialogmote svar with msgId: ${dialogmeldingDTO.msgId}")
-                behandlerVarselService.opprettVarselSvar(
+                behandlerVarselService.finnBehandlerVarselOgOpprettSvar(
                     arbeidstakerPersonIdent = dialogmeldingSvar.arbeidstakerPersonIdent,
                     behandlerPersonIdent = dialogmeldingSvar.behandlerPersonIdent,
-                    varseltype = innkallingSvar.foresporselType.getVarselType(),
-                    svarType = innkallingSvar.svarType.getDialogmoteSvarType(),
-                    svarTekst = innkallingSvar.svarTekst,
+                    varseltype = dialogmeldingSvar.innkallingDialogmoteSvar.foresporselType.getVarselType(),
+                    svarType = dialogmeldingSvar.innkallingDialogmoteSvar.svarType.getDialogmoteSvarType(),
+                    svarTekst = dialogmeldingSvar.innkallingDialogmoteSvar.svarTekst,
                     conversationRef = dialogmeldingSvar.conversationRef,
                     parentRef = dialogmeldingSvar.parentRef,
                     msgId = dialogmeldingDTO.msgId,

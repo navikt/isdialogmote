@@ -30,7 +30,7 @@ fun generateKafkaDialogmeldingDTO(
 )
 
 fun generateInnkallingMoterespons(
-    foresporselType: ForesporselType,
+    foresporselType: ForesporselType?,
     svarType: SvarType,
     svarTekst: String?,
 ): InnkallingMoterespons = InnkallingMoterespons(
@@ -40,13 +40,15 @@ fun generateInnkallingMoterespons(
         v = svarType.toKodeverdi(),
     ),
     tekstNotatInnhold = svarTekst,
-    foresporsel = Foresporsel(
-        TypeForesp(
-            dn = "",
-            s = Kodeverk.ForesporselInnkallingDialogmote.KODE,
-            v = foresporselType.toKodeverdi(),
+    foresporsel = foresporselType?.let {
+        Foresporsel(
+            TypeForesp(
+                dn = "",
+                s = Kodeverk.ForesporselInnkallingDialogmote.KODE,
+                v = it.toKodeverdi(),
+            )
         )
-    )
+    }
 )
 
 private fun SvarType.toKodeverdi(): String {
