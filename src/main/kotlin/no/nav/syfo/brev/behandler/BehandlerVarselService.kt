@@ -45,7 +45,7 @@ class BehandlerVarselService(
         )
     }
 
-    fun opprettVarselSvar(
+    fun finnBehandlerVarselOgOpprettSvar(
         arbeidstakerPersonIdent: PersonIdentNumber,
         behandlerPersonIdent: PersonIdentNumber,
         varseltype: MotedeltakerVarselType,
@@ -54,7 +54,7 @@ class BehandlerVarselService(
         conversationRef: String?,
         parentRef: String?,
         msgId: String,
-    ) {
+    ): Boolean {
         log.info("Received svar $svarType på varsel $varseltype with conversationRef $conversationRef, parentRef $parentRef and msgId $msgId")
         val pMotedeltakerBehandlerVarsel = getBehandlerVarselForSvar(
             varseltype = varseltype,
@@ -63,7 +63,7 @@ class BehandlerVarselService(
             conversationRef = conversationRef,
             parentRef = parentRef,
         )
-        if (pMotedeltakerBehandlerVarsel != null) {
+        return if (pMotedeltakerBehandlerVarsel != null) {
             try {
                 log.info("Found varsel with uuid ${pMotedeltakerBehandlerVarsel.uuid}")
                 database.createMotedeltakerBehandlerVarselSvar(
@@ -74,12 +74,15 @@ class BehandlerVarselService(
                 )
                 log.info("Created svar $svarType på varsel $varseltype with uuid ${pMotedeltakerBehandlerVarsel.uuid}")
                 COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_SUCCESS.increment()
+                true
             } catch (ex: SQLException) {
                 log.error("Could not create svar for varsel", ex)
                 COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_FAIL.increment()
+                false
             }
         } else {
             log.warn("Could not find varsel for conversationRef $conversationRef, parentRef $parentRef and msgId $msgId - Did not create svar")
+            false
         }
     }
 

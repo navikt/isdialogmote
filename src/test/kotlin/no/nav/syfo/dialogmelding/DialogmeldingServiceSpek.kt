@@ -205,6 +205,42 @@ class DialogmeldingServiceSpek : Spek({
                         varselSvarDTO.tekst shouldBeEqualTo svarTekst
                     }
                 }
+                it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker og mangler foresporsel") {
+                    val svarTekst = "Fastlegen kan ikke komme og mangler foresporsel"
+                    val innkallingMoterespons = generateInnkallingMoterespons(
+                        foresporselType = null,
+                        svarType = SvarType.KAN_IKKE_KOMME,
+                        svarTekst = svarTekst,
+                    )
+                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                        msgType = "DIALOG_SVAR",
+                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                        conversationRef = null,
+                        parentRef = null,
+                        innkallingMoterespons = innkallingMoterespons,
+                    )
+                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMoter) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                        val innkallingVarsel = dialogmoteList.first().behandler!!.varselList.first()
+                        innkallingVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
+                        val varselSvarDTO = innkallingVarsel.svar.first()
+                        varselSvarDTO.uuid shouldNotBe null
+                        varselSvarDTO.createdAt shouldNotBe null
+                        varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER_IKKE.name
+                        varselSvarDTO.tekst shouldBeEqualTo svarTekst
+                    }
+                }
                 it("Oppretter ikke varsel-svar når dialogmelding inneholder annen arbeidstaker og conversationRef refererer til innkalling-varsel") {
                     val svarTekst = "Fastlegen kommer ei"
                     val innkallingMoterespons = generateInnkallingMoterespons(
@@ -472,6 +508,42 @@ class DialogmeldingServiceSpek : Spek({
                     val svarTekst = "Fastlegen kommer ikke"
                     val innkallingMoterespons = generateInnkallingMoterespons(
                         foresporselType = ForesporselType.ENDRING,
+                        svarType = SvarType.KAN_IKKE_KOMME,
+                        svarTekst = svarTekst,
+                    )
+                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                        msgType = "DIALOG_SVAR",
+                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                        conversationRef = null,
+                        parentRef = null,
+                        innkallingMoterespons = innkallingMoterespons,
+                    )
+                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMoter) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+
+                        val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
+                        endringVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.NYTT_TID_STED.name
+                        val varselSvarDTO = endringVarsel.svar.first()
+                        varselSvarDTO.uuid shouldNotBe null
+                        varselSvarDTO.createdAt shouldNotBe null
+                        varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER_IKKE.name
+                        varselSvarDTO.tekst shouldBeEqualTo svarTekst
+                    }
+                }
+                it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker, men parentRef, conversationRef og foresporsel mangler") {
+                    val svarTekst = "Fastlegen kommer ikke endring uten foresporsel"
+                    val innkallingMoterespons = generateInnkallingMoterespons(
+                        foresporselType = null,
                         svarType = SvarType.KAN_IKKE_KOMME,
                         svarTekst = svarTekst,
                     )
