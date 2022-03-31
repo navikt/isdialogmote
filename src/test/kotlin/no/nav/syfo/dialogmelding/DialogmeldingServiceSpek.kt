@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.mockk.justRun
-import io.mockk.mockk
+import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
@@ -54,6 +53,7 @@ class DialogmeldingServiceSpek : Spek({
 
             database.dropData()
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+            justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
             justRun { mqSenderMock.sendMQMessage(any(), any()) }
 
@@ -67,6 +67,7 @@ class DialogmeldingServiceSpek : Spek({
             describe("Håndterer dialogmelding-svar fra behandler på innkalling til dialogmøte") {
                 val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
                 lateinit var createdBehandlerVarselInnkallingUuid: String
+                lateinit var createdDialogmoteUUID: String
 
                 beforeGroup {
                     with(
@@ -90,6 +91,7 @@ class DialogmeldingServiceSpek : Spek({
 
                         val behandlerVarselDTO = dialogmoteList.first().behandler!!.varselList.first()
                         createdBehandlerVarselInnkallingUuid = behandlerVarselDTO.uuid
+                        createdDialogmoteUUID = dialogmoteList.first().uuid
                     }
                 }
 
@@ -328,6 +330,48 @@ class DialogmeldingServiceSpek : Spek({
 
                         val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
                         val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
+                        svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
+                    }
+                }
+                it("Oppretter ikke varsel-svar når dialogmelding mangler conversationRef og møtet er avlyst") {
+                    val urlMoteUUIDAvlys = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                    val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(avlysDialogMoteDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    val svarTekst = "Svar på avlyst møte"
+                    val innkallingMoterespons = generateInnkallingMoterespons(
+                        foresporselType = ForesporselType.INNKALLING,
+                        svarType = SvarType.KOMMER,
+                        svarTekst = svarTekst,
+                    )
+                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                        msgType = "DIALOG_SVAR",
+                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                        conversationRef = null,
+                        parentRef = null,
+                        innkallingMoterespons = innkallingMoterespons,
+                    )
+                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMoter) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val svarList = dialogmoteList.first().behandler!!.varselList.find { it.varselType == MotedeltakerVarselType.INNKALT.name }!!.svar
                         svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
                     }
                 }

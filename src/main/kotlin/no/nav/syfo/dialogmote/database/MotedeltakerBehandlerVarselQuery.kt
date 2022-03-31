@@ -153,7 +153,7 @@ const val queryGetMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler =
     """
         SELECT MOTEDELTAKER_BEHANDLER_VARSEL.*
         FROM MOTEDELTAKER_BEHANDLER_VARSEL INNER JOIN MOTEDELTAKER_BEHANDLER ON (MOTEDELTAKER_BEHANDLER.id = MOTEDELTAKER_BEHANDLER_VARSEL.motedeltaker_behandler_id)
-                                           INNER JOIN MOTE ON (MOTE.id = MOTEDELTAKER_BEHANDLER.mote_id)        
+                                           INNER JOIN MOTE ON (MOTE.id = MOTEDELTAKER_BEHANDLER.mote_id AND MOTE.status IN ('INNKALT', 'NYTT_TID_STED'))        
                                            INNER JOIN MOTEDELTAKER_ARBEIDSTAKER ON (MOTE.id = MOTEDELTAKER_ARBEIDSTAKER.mote_id)
         WHERE MOTEDELTAKER_BEHANDLER_VARSEL.varseltype = ?
         AND MOTEDELTAKER_ARBEIDSTAKER.personident = ?
