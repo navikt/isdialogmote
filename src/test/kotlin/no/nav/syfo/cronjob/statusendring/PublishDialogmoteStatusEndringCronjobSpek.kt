@@ -11,6 +11,7 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
+import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
@@ -37,6 +38,9 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
+            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
+            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
+
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(dialogmelding = any()) }
 
@@ -55,6 +59,7 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
+                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
             )
 

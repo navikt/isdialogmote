@@ -8,6 +8,7 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
@@ -40,11 +41,13 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
             val mqSenderMock = mockk<MQSenderInterface>()
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
+                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
             )
 
@@ -62,6 +65,8 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                     justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                     clearMocks(mqSenderMock)
                     justRun { mqSenderMock.sendMQMessage(any(), any()) }
+                    clearMocks(dineSykmeldteVarselProducer)
+                    justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
                 }
 
                 afterEachTest {

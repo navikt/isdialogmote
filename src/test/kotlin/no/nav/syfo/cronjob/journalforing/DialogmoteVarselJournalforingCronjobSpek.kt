@@ -11,6 +11,7 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
+import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.ereg.EregClient
@@ -47,6 +48,9 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
+            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
+            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
+
             val mqSenderMock = mockk<MQSenderInterface>()
             justRun { mqSenderMock.sendMQMessage(any(), any()) }
 
@@ -61,6 +65,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
+                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
             )
 

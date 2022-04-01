@@ -11,6 +11,7 @@ import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProduc
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
+import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmelding.DialogmeldingService
 import no.nav.syfo.dialogmelding.domain.ForesporselType
@@ -43,10 +44,16 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+
+            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
+            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
+
             val mqSenderMock = mockk<MQSenderInterface>(relaxed = true)
             justRun { mqSenderMock.sendMQMessage(any(), any()) }
+
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+
             val behandlerVarselService = BehandlerVarselService(
                 database = database,
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
@@ -59,6 +66,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
+                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
             )
 
@@ -69,6 +77,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
             beforeEachTest {
                 justRun { mqSenderMock.sendMQMessage(any(), any()) }
                 justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
             }
 
@@ -226,9 +235,12 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            verify(exactly = 1) { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
                             verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                             clearMocks(behandlerDialogmeldingProducer)
                             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                            clearMocks(dineSykmeldteVarselProducer)
+                            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
                         }
 
                         with(
@@ -301,6 +313,12 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                                     any()
                                 )
                             }
+                            verify(exactly = 1) {
+                                dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(
+                                    any(),
+                                    any()
+                                )
+                            }
                         }
 
                         val createdDialogmote: DialogmoteDTO
@@ -341,6 +359,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                         clearAllMocks()
                         justRun { mqSenderMock.sendMQMessage(any(), any()) }
                         justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                        justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
                         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
 
                         // Ny endring, etter svar fra behandler
@@ -372,6 +391,12 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             verify(exactly = 1) {
                                 mqSenderMock.sendMQMessage(
                                     MotedeltakerVarselType.NYTT_TID_STED,
+                                    any()
+                                )
+                            }
+                            verify(exactly = 1) {
+                                dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(
+                                    any(),
                                     any()
                                 )
                             }

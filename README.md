@@ -112,6 +112,7 @@ This application produces the following topic(s):
 
 * isdialogmote-dialogmote-statusendring
 * isdialogmelding-behandler-dialogmelding-bestilling
+* teamsykmelding.dinesykmeldte-hendelser-v2
 
 This application consumes the following topic(s):
 

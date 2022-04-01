@@ -10,6 +10,7 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
+import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.domain.*
@@ -41,11 +42,15 @@ class ArbeidstakerBrevApiSpek : Spek({
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 
+            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
+            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
+
             val mqSenderMock = mockk<MQSenderInterface>(relaxed = true)
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
+                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
             )
 

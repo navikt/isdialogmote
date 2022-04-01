@@ -9,6 +9,7 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
+import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.dialogmelding.domain.ForesporselType
 import no.nav.syfo.dialogmelding.domain.SvarType
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
@@ -34,6 +35,7 @@ class DialogmeldingServiceSpek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             val mqSenderMock = mockk<MQSenderInterface>()
             val behandlerVarselService = BehandlerVarselService(
@@ -48,6 +50,7 @@ class DialogmeldingServiceSpek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
+                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
             )
 
@@ -56,6 +59,7 @@ class DialogmeldingServiceSpek : Spek({
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
             justRun { mqSenderMock.sendMQMessage(any(), any()) }
+            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
 
             val urlMoter = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
             val validToken = generateJWT(
