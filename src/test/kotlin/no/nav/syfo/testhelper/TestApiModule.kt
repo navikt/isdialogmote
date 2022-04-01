@@ -39,6 +39,6 @@ fun Application.testApiModule(
         wellKnownVeilederV2 = externalMockEnvironment.wellKnownVeilederV2,
         cache = cache,
         altinnSoapClient = altinnMock,
-        dineSykmeldteVarselProducer = dineSykmeldteVarselProducer
+        dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
     )
 }

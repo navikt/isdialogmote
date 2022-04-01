@@ -62,7 +62,7 @@ class NarmesteLederVarselService(
             ferdigstillHendelse = null
         )
 
-        dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(UUID.randomUUID().toString(), dineSykmeldteHendelse)
+        dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(dineSykmeldteHendelse.id, dineSykmeldteHendelse)
     }
 
     private fun opprettServiceMelding(
