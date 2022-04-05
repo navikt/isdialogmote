@@ -58,7 +58,7 @@ fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerBrevDTO(
     uuid = this.uuid.toString(),
     deltakerUuid = deltakerUuid.toString(),
     createdAt = this.createdAt,
-    brevType = this.varselType.name,
+    brevType = this.varselType.toBrevType().name,
     digitalt = this.digitalt,
     lestDato = this.lestDatoArbeidstaker,
     fritekst = this.fritekst,
