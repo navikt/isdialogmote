@@ -9,10 +9,10 @@ object Versions {
     const val brukernotifikasjonAvro = "2.5.1"
     const val isdialogmoteSchema = "1.0.5"
     const val confluent = "6.2.2"
-    const val flyway = "8.5.4"
+    const val flyway = "8.5.6"
     const val hikari = "5.0.1"
     const val jackson = "2.13.1"
-    const val jedis = "4.2.0"
+    const val jedis = "4.2.1"
     const val kafka = "2.8.1"
     const val kafkaEmbedded = "2.8.1"
     const val ktor = "1.6.8"
@@ -38,7 +38,7 @@ object Versions {
 }
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.6.20"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.jlleitschuh.gradle.ktlint") version "10.2.1"
 }
