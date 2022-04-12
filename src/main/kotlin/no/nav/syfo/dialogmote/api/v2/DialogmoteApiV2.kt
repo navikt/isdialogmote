@@ -5,6 +5,7 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
 import no.nav.syfo.dialogmote.domain.toDialogmoteDTO
@@ -19,6 +20,8 @@ private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 const val dialogmoteApiV2Basepath = "/api/v2/dialogmote"
 
 const val dialogmoteApiPersonIdentUrlPath = "/personident"
+
+const val dialogmoteApiVeilederIdentUrlPath = "/veilderident"
 
 fun Route.registerDialogmoteApiV2(
     dialogmoteService: DialogmoteService,
@@ -43,6 +46,27 @@ fun Route.registerDialogmoteApiV2(
                 call.respond(dialogmoteDTOList)
             }
         }
+        get(dialogmoteApiVeilederIdentUrlPath) {
+            val callId = getCallId()
+            val token = getBearerHeader()
+                ?: throw IllegalArgumentException("No Authorization header supplied")
+
+            val dialogmoteList =
+                dialogmoteService.getDialogmoteUnfinishedListForVeilederIdent(getNAVIdentFromToken(token))
+
+            val personListWithVeilederAccess = dialogmoteTilgangService.hasAccessToDialogmotePersonList(
+                personIdentNumberList = dialogmoteList.map { it.arbeidstaker.personIdent },
+                token = token,
+                callId = callId,
+            ).toHashSet()
+
+            val dialogmoteDTOList =
+                dialogmoteList.filter { dialogmote -> personListWithVeilederAccess.contains(dialogmote.arbeidstaker.personIdent) }
+                    .map { dialogmote -> dialogmote.toDialogmoteDTO() }
+
+            call.respond(dialogmoteDTOList)
+        }
+
         post(dialogmoteApiPersonIdentUrlPath) {
             val callId = getCallId()
             val token = getBearerHeader()

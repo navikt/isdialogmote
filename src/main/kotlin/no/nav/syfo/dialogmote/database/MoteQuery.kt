@@ -94,6 +94,23 @@ fun DatabaseInterface.getDialogmoteUnfinishedList(enhetNr: EnhetNr): List<PDialo
     }
 }
 
+const val queryGetDialogmoteUnfinishedListForVeilederIdent =
+    """
+        SELECT *
+        FROM MOTE
+        WHERE tildelt_veileder_ident = ? AND status IN ('INNKALT', 'NYTT_TID_STED')
+        ORDER BY MOTE.created_at DESC
+    """
+
+fun DatabaseInterface.getDialogmoteUnfinishedListForVeilederIdent(veilederIdent: String): List<PDialogmote> {
+    return connection.use { connection ->
+        connection.prepareStatement(queryGetDialogmoteUnfinishedListForVeilederIdent).use {
+            it.setString(1, veilederIdent)
+            it.executeQuery().toList { toPDialogmote() }
+        }
+    }
+}
+
 const val queryCreateDialogmote =
     """
     INSERT INTO MOTE (

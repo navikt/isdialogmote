@@ -58,6 +58,12 @@ class DialogmoteService(
         }
     }
 
+    fun getDialogmoteUnfinishedListForVeilederIdent(veilederIdent: String): List<Dialogmote> {
+        return database.getDialogmoteUnfinishedListForVeilederIdent(veilederIdent).map { pDialogmote ->
+            extendDialogmoteRelations(pDialogmote)
+        }
+    }
+
     private fun extendDialogmoteRelations(
         pDialogmote: PDialogmote,
     ): Dialogmote {
