@@ -21,7 +21,7 @@ const val dialogmoteApiV2Basepath = "/api/v2/dialogmote"
 
 const val dialogmoteApiPersonIdentUrlPath = "/personident"
 
-const val dialogmoteApiVeilederIdentUrlPath = "/veilderident"
+const val dialogmoteApiVeilederIdentUrlPath = "/veilederident"
 
 fun Route.registerDialogmoteApiV2(
     dialogmoteService: DialogmoteService,
