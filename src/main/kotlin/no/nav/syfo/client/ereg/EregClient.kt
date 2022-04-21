@@ -1,6 +1,7 @@
 package no.nav.syfo.client.ereg
 
-import io.ktor.client.features.*
+import io.ktor.client.call.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
@@ -29,10 +30,10 @@ class EregClient(
 
         try {
             val url = "$eregOrganisasjonUrl/${virksomhetsnummer.value}"
-            val response: EregOrganisasjonResponse = httpClient.get(url) {
+            val response = httpClient.get(url) {
                 header(HttpHeaders.Authorization, bearerHeader(systemToken))
                 accept(ContentType.Application.Json)
-            }
+            }.body<EregOrganisasjonResponse>()
             COUNT_CALL_EREG_ORGANISASJON_SUCCESS.increment()
             return response.toEregVirksomhetsnavn()
         } catch (e: ResponseException) {

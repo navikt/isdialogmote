@@ -1,10 +1,10 @@
 package no.nav.syfo.brev.narmesteleder
 
-import io.ktor.application.*
+import io.ktor.server.application.*
 import io.ktor.http.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import no.nav.syfo.application.api.authentication.personIdent
 import no.nav.syfo.brev.arbeidstaker.domain.PdfContent
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederResponsDTO

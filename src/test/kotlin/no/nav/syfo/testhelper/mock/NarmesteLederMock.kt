@@ -1,13 +1,12 @@
 package no.nav.syfo.testhelper.mock
 
-import io.ktor.application.call
+import io.ktor.server.application.call
 import io.ktor.http.HttpStatusCode
-import io.ktor.response.respond
-import io.ktor.routing.get
-import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.narmesteleder.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR

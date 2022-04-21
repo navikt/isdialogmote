@@ -1,7 +1,7 @@
 package no.nav.syfo.client.dokarkiv
 
 import io.ktor.client.call.*
-import io.ktor.client.features.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -33,9 +33,9 @@ class DokarkivClient(
                     header(HttpHeaders.Authorization, bearerHeader(token))
                     accept(ContentType.Application.Json)
                     contentType(ContentType.Application.Json)
-                    body = journalpostRequest
+                    setBody(journalpostRequest)
                 }
-                val journalpostResponse = response.receive<JournalpostResponse>()
+                val journalpostResponse = response.body<JournalpostResponse>()
                 COUNT_CALL_DOKARKIV_JOURNALPOST_SUCCESS.increment()
                 journalpostResponse
             } catch (e: ClientRequestException) {

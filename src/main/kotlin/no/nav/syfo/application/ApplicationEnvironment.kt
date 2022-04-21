@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import io.ktor.application.*
+import io.ktor.server.application.*
 
 data class Environment(
     val namespace: String = "teamsykefravr",

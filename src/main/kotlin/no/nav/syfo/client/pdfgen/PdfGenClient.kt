@@ -1,7 +1,7 @@
 package no.nav.syfo.client.pdfgen
 
 import io.ktor.client.call.*
-import io.ktor.client.features.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -83,10 +83,10 @@ class PdfGenClient(
                 header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
-                body = documentComponentDTOList
+                setBody(documentComponentDTOList)
             }
             COUNT_CALL_PDFGEN_SUCCESS.increment()
-            response.receive()
+            response.body()
         } catch (e: ClientRequestException) {
             handleUnexpectedResponseException(pdfUrl, e.response, callId)
         } catch (e: ServerResponseException) {
