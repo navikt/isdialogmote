@@ -1,7 +1,7 @@
 package no.nav.syfo.client.veiledertilgang
 
 import io.ktor.client.call.*
-import io.ktor.client.features.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -19,7 +19,7 @@ import java.time.Duration
 class VeilederTilgangskontrollClient(
     private val azureAdV2Client: AzureAdV2Client,
     private val syfotilgangskontrollClientId: String,
-    private val tilgangskontrollBaseUrl: String,
+    tilgangskontrollBaseUrl: String,
 ) {
     private val httpClient = httpClientDefault()
 
@@ -50,10 +50,10 @@ class VeilederTilgangskontrollClient(
                 header(NAV_CALL_ID_HEADER, value = callId)
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
-                body = personIdentStringList
+                setBody(personIdentStringList)
             }
             COUNT_CALL_TILGANGSKONTROLL_PERSONS_SUCCESS.increment()
-            response.receive<List<String>>().map { personIdent -> PersonIdentNumber(personIdent) }
+            response.body<List<String>>().map { personIdent -> PersonIdentNumber(personIdent) }
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_CALL_TILGANGSKONTROLL_PERSONS_FORBIDDEN.increment()
@@ -92,7 +92,7 @@ class VeilederTilgangskontrollClient(
                 accept(ContentType.Application.Json)
             }
             COUNT_CALL_TILGANGSKONTROLL_ENHET_SUCCESS.increment()
-            response.receive<Tilgang>().harTilgang
+            response.body<Tilgang>().harTilgang
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_CALL_TILGANGSKONTROLL_ENHET_FORBIDDEN.increment()

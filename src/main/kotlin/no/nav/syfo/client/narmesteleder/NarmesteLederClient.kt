@@ -1,6 +1,7 @@
 package no.nav.syfo.client.narmesteleder
 
-import io.ktor.client.features.*
+import io.ktor.client.call.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -37,16 +38,16 @@ class NarmesteLederClient(
         )?.accessToken ?: throw RuntimeException("Failed to request active leader: Failed to get OBO token")
 
         return try {
-            val narmesteLederRelasjon: List<NarmesteLederRelasjonDTO> =
+            val narmesteLederRelasjon =
                 httpClient.get(narmesteLederPath) {
                     header(HttpHeaders.Authorization, bearerHeader(oboToken))
                     header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
                     header(NAV_CALL_ID_HEADER, callId)
                     accept(ContentType.Application.Json)
-                }
+                }.body<List<NarmesteLederRelasjonDTO>>()
             COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.increment()
             narmesteLederRelasjon.filter { it.virksomhetsnummer == virksomhetsnummer.value }
-                .filter { it.status == NarmesteLederRelasjonStatus.INNMELDT_AKTIV.name }.firstOrNull()
+                .firstOrNull { it.status == NarmesteLederRelasjonStatus.INNMELDT_AKTIV.name }
         } catch (e: ClientRequestException) {
             handleUnexpectedResponseException(e.response, callId)
             null
@@ -71,13 +72,13 @@ class NarmesteLederClient(
             )?.accessToken ?: throw RuntimeException("Could not get AktiveAnsatte: Failed to get System token")
 
             try {
-                val narmesteLedere: List<NarmesteLederRelasjonDTO> =
+                val narmesteLedere =
                     httpClient.get(ansatteNarmesteLederPath) {
                         header(HttpHeaders.Authorization, bearerHeader(systemToken))
                         header(NAV_PERSONIDENT_HEADER, narmesteLederIdent.value)
                         header(NAV_CALL_ID_HEADER, callId)
                         accept(ContentType.Application.Json)
-                    }
+                    }.body<List<NarmesteLederRelasjonDTO>>()
                 COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.increment()
                 COUNT_CALL_NARMESTE_LEDER_CACHE_MISS.increment()
                 cache.setObject(

@@ -1,9 +1,8 @@
 package no.nav.syfo.application.api
 
-import io.ktor.application.call
-import io.ktor.response.*
-import io.ktor.routing.Routing
-import io.ktor.routing.get
+import io.ktor.server.application.call
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import no.nav.syfo.metric.METRICS_REGISTRY
 
 fun Routing.registerPrometheusApi() {

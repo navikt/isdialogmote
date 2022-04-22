@@ -1,16 +1,19 @@
 package no.nav.syfo.testhelper.mock
 
-import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.http.*
+import io.ktor.serialization.jackson.*
+import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import no.nav.syfo.application.api.authentication.installContentNegotiation
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.AVLYSNING_PATH
 import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.ENDRING_TIDSTED_PATH
 import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.INNKALLING_PATH
 import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.REFERAT_PATH
 import no.nav.syfo.testhelper.getRandomPort
+import no.nav.syfo.util.configure
 
 class IsdialogmotepdfgenMock {
     private val port = getRandomPort()
@@ -33,7 +36,11 @@ class IsdialogmotepdfgenMock {
             factory = Netty,
             port = port
         ) {
-            installContentNegotiation()
+            install(ContentNegotiation) {
+                jackson(ContentType.Any) {
+                    configure()
+                }
+            }
             routing {
                 post(AVLYSNING_PATH) {
                     call.respond(pdfAvlysning)

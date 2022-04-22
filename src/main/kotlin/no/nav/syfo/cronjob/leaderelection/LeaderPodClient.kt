@@ -17,7 +17,9 @@ import java.net.InetAddress
 class LeaderPodClient(
     private val environment: Environment,
 ) {
-    private val httpClient = HttpClient(CIO) {}
+    private val httpClient = HttpClient(CIO) {
+        expectSuccess = true
+    }
 
     private val objectMapper: ObjectMapper = configuredJacksonMapper()
 
@@ -31,7 +33,7 @@ class LeaderPodClient(
                     accept(ContentType.Text.Plain)
                 }
                 val leaderPodDTO: LeaderPodDTO = objectMapper.readValue(
-                    response.receive<String>()
+                    response.bodyAsText()
                 )
                 val hostname: String = InetAddress.getLocalHost().hostName
 

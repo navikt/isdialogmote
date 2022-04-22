@@ -1,6 +1,7 @@
 package no.nav.syfo.client.journalpostdistribusjon
 
-import io.ktor.client.features.*
+import io.ktor.client.call.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -30,12 +31,12 @@ class JournalpostdistribusjonClient(
             dokumentProdApp = DOKUMENTPRODUSERENDE_APP
         )
         try {
-            val response = httpClient.post<JournalpostdistribusjonResponse>(distribuerJournalpostUrl) {
+            val response = httpClient.post(distribuerJournalpostUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(accessToken))
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
-                body = request
-            }
+                setBody(request)
+            }.body<JournalpostdistribusjonResponse>()
             COUNT_CALL_JOURNALPOSTDISTRIBUSJON_SUCCESS.increment()
             return response
         } catch (e: ClientRequestException) {

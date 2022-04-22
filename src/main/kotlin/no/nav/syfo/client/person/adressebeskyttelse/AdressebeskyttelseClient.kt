@@ -1,6 +1,6 @@
 package no.nav.syfo.client.person.adressebeskyttelse
 
-import io.ktor.client.features.*
+import io.ktor.client.plugins.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import net.logstash.logback.argument.StructuredArguments

@@ -1,6 +1,6 @@
 package no.nav.syfo.cronjob
 
-import io.ktor.application.*
+import io.ktor.server.application.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.cache.RedisStore

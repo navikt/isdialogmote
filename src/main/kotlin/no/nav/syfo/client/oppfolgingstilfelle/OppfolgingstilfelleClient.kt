@@ -1,7 +1,7 @@
 package no.nav.syfo.client.oppfolgingstilfelle
 
 import io.ktor.client.call.*
-import io.ktor.client.features.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -38,7 +38,7 @@ class OppfolgingstilfelleClient(
                 header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
                 accept(ContentType.Application.Json)
             }
-            val oppfolgingstilfellePerson = response.receive<OppfolgingstilfellePersonDTO>()
+            val oppfolgingstilfellePerson = response.body<OppfolgingstilfellePersonDTO>()
                 .toLatestOppfolgingstilfelle()
             COUNT_CALL_OPPFOLGINGSTILFELLE_PERSON_SUCCESS.increment()
             oppfolgingstilfellePerson

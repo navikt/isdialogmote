@@ -1,6 +1,6 @@
 package no.nav.syfo.testhelper
 
-import io.ktor.application.*
+import io.ktor.server.application.*
 import io.mockk.mockk
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.api.apiModule
