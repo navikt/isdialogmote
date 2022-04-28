@@ -1,10 +1,11 @@
 package no.nav.syfo.application.api.authentication
 
 import com.auth0.jwk.JwkProviderBuilder
+import com.auth0.jwt.JWT
 import io.ktor.client.plugins.*
-import io.ktor.server.application.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
+import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.metrics.micrometer.*
@@ -68,8 +69,16 @@ fun hasExpectedAudience(credentials: JWTCredential, expectedAudience: List<Strin
 }
 
 fun ApplicationCall.personIdent(): PersonIdentNumber? {
-    val principal: JWTPrincipal? = this.authentication.principal()
-    return principal?.payload?.subject?.let { PersonIdentNumber(it) }
+    val token = this.getBearerHeader()
+    val decodedJWT = JWT.decode(token)
+    val pid = decodedJWT.claims["pid"]
+
+    return if (pid == null) {
+        val principal: JWTPrincipal? = this.authentication.principal()
+        principal?.payload?.subject?.let { PersonIdentNumber(it) }
+    } else {
+        pid.asString()?.let { PersonIdentNumber(it) }
+    }
 }
 
 fun Application.installMetrics() {

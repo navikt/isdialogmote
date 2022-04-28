@@ -72,7 +72,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                 database.dropData()
             }
 
-            val validToken = generateJWT(
+            val validToken = generateJWTNavIdent(
                 externalMockEnvironment.environment.aadAppClient,
                 externalMockEnvironment.wellKnownVeilederV2.issuer,
                 UserConstants.VEILEDER_IDENT,

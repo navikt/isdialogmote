@@ -62,7 +62,7 @@ class DialogmeldingServiceSpek : Spek({
             justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
 
             val urlMoter = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
-            val validToken = generateJWT(
+            val validToken = generateJWTNavIdent(
                 externalMockEnvironment.environment.aadAppClient,
                 externalMockEnvironment.wellKnownVeilederV2.issuer,
                 UserConstants.VEILEDER_IDENT,

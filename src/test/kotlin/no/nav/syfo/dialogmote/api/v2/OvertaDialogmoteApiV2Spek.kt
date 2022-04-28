@@ -61,12 +61,12 @@ class OvertaDialogmoteApiV2Spek : Spek({
             }
 
             describe("Overta Dialogmoter") {
-                val validTokenV2 = generateJWT(
+                val validTokenV2 = generateJWTNavIdent(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     UserConstants.VEILEDER_IDENT,
                 )
-                val validTokenV2AnnenVeileder = generateJWT(
+                val validTokenV2AnnenVeileder = generateJWTNavIdent(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     UserConstants.VEILEDER_IDENT_2,

@@ -67,7 +67,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
             }
 
             describe("Ferdigstill Dialogmote") {
-                val validToken = generateJWT(
+                val validToken = generateJWTNavIdent(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     VEILEDER_IDENT,

@@ -64,7 +64,7 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                 val urlEnhetAccess = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR.value}"
                 val urlEnhetAccessIncludeHistoriske = "$urlEnhetAccess?inkluderHistoriske=true"
                 val urlEnhetNoAccess = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR_NO_ACCESS.value}"
-                val validTokenV2 = generateJWT(
+                val validTokenV2 = generateJWTNavIdent(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     VEILEDER_IDENT,

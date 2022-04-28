@@ -17,22 +17,46 @@ import java.util.*
 
 const val keyId = "localhost-signer"
 
-/* Utsteder en Bearer-token (En slik vi ber AzureAd om). OBS: Det er viktig at KeyId matcher kid i jwkset.json
- */
-fun generateJWT(
+fun generateJWTNavIdent(
     audience: String,
     issuer: String,
-    navIdent: String? = null,
-    subject: String? = null,
+    navIdent: String,
     expiry: LocalDateTime? = LocalDateTime.now().plusHours(1)
+): String = generateJwt(
+    audience = audience,
+    claimValueMap = mapOf(
+        JWT_CLAIM_AZP to UserConstants.JWT_AZP,
+        JWT_CLAIM_NAVIDENT to navIdent,
+    ),
+    issuer = issuer,
+    expiry = expiry,
+)
+
+fun generateJWTIdporten(
+    audience: String,
+    issuer: String,
+    pid: String? = "pid",
+    expiry: LocalDateTime? = LocalDateTime.now().plusHours(1)
+): String = generateJwt(
+    audience = audience,
+    claimValueMap = mapOf(
+        "pid" to pid,
+    ),
+    issuer = issuer,
+    expiry = expiry,
+)
+
+/* Utsteder en Bearer-token (En slik vi ber AzureAd om). OBS: Det er viktig at KeyId matcher kid i jwkset.json  */
+private fun generateJwt(
+    audience: String,
+    claimValueMap: Map<String, String?>,
+    issuer: String,
+    expiry: LocalDateTime? = LocalDateTime.now().plusHours(1),
 ): String {
     val now = Date()
-    val key = getDefaultRSAKey()
-    val alg = Algorithm.RSA256(key.toRSAPublicKey(), key.toRSAPrivateKey())
 
-    return JWT.create()
+    val baseJwtBuilder = JWT.create()
         .withKeyId(keyId)
-        .withSubject(subject ?: "subject")
         .withIssuer(issuer)
         .withAudience(audience)
         .withJWTId(UUID.randomUUID().toString())
@@ -42,9 +66,15 @@ fun generateJWT(
         .withClaim("nbf", now)
         .withClaim("iat", now)
         .withClaim("exp", Date.from(expiry?.atZone(ZoneId.systemDefault())?.toInstant()))
-        .withClaim(JWT_CLAIM_AZP, UserConstants.JWT_AZP)
-        .withClaim(JWT_CLAIM_NAVIDENT, navIdent)
-        .sign(alg)
+
+    claimValueMap.entries.forEach { claimKeyValue ->
+        baseJwtBuilder.withClaim(claimKeyValue.key, claimKeyValue.value)
+    }
+
+    val key = getDefaultRSAKey()
+    val alg = Algorithm.RSA256(key.toRSAPublicKey(), key.toRSAPrivateKey())
+
+    return baseJwtBuilder.sign(alg)
 }
 
 private fun getDefaultRSAKey(): RSAKey {

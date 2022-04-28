@@ -82,7 +82,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
             }
 
             describe("Post DialogmoteTidSted") {
-                val validToken = generateJWT(
+                val validToken = generateJWTNavIdent(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     VEILEDER_IDENT,
