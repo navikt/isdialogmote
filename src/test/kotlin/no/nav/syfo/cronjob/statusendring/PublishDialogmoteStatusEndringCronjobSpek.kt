@@ -77,7 +77,7 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
             }
 
             describe("Publish DialogmoteStatusEndring for types of StatusEndret") {
-                val validToken = generateJWT(
+                val validToken = generateJWTNavIdent(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     UserConstants.VEILEDER_IDENT,

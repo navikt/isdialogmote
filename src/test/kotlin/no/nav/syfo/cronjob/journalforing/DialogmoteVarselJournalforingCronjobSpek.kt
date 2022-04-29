@@ -110,7 +110,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             }
 
             describe("Journalfor ArbeidstakerVarsel with type Innkalling") {
-                val validToken = generateJWT(
+                val validToken = generateJWTNavIdent(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     UserConstants.VEILEDER_IDENT,

@@ -83,7 +83,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
             }
 
             describe("Ferdigstill Dialogmote") {
-                val validToken = generateJWT(
+                val validToken = generateJWTNavIdent(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     VEILEDER_IDENT,
@@ -648,7 +648,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                     }
                 }
                 describe("Happy path: ferdigstilling gjøres av annen bruker enn den som gjør innkalling") {
-                    val validToken2 = generateJWT(
+                    val validToken2 = generateJWTNavIdent(
                         externalMockEnvironment.environment.aadAppClient,
                         externalMockEnvironment.wellKnownVeilederV2.issuer,
                         VEILEDER_IDENT_2,

@@ -67,20 +67,20 @@ object NarmesteLederBrevSpek : Spek({
                     virksomhetsnummer = UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value
                 )
                 val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
-                val validTokenSelvbetjening = generateJWT(
+                val validTokenSelvbetjening = generateJWTIdporten(
                     audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
                     issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
-                    subject = UserConstants.NARMESTELEDER_FNR.value,
+                    pid = UserConstants.NARMESTELEDER_FNR.value,
                 )
-                val validTokenVeileder = generateJWT(
+                val validTokenVeileder = generateJWTNavIdent(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     UserConstants.VEILEDER_IDENT,
                 )
-                val incorrectTokenSelvbetjening = generateJWT(
+                val incorrectTokenSelvbetjening = generateJWTIdporten(
                     audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
                     issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
-                    subject = UserConstants.NARMESTELEDER_FNR_2.value,
+                    pid = UserConstants.NARMESTELEDER_FNR_2.value,
                 )
 
                 it("Should return OK when les and response") {
@@ -446,10 +446,10 @@ object NarmesteLederBrevSpek : Spek({
             }
             describe("Error handling") {
                 it("Return BAD REQUEST when $NAV_PERSONIDENT_HEADER is missing") {
-                    val validTokenSelvbetjening = generateJWT(
+                    val validTokenSelvbetjening = generateJWTIdporten(
                         audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
                         issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
-                        subject = UserConstants.NARMESTELEDER_FNR.value,
+                        pid = UserConstants.NARMESTELEDER_FNR.value,
                     )
                     with(
                         handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {

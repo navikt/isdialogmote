@@ -54,7 +54,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
             val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
 
             describe("Create Dialogmote for PersonIdent payload") {
-                val validToken = generateJWT(
+                val validToken = generateJWTNavIdent(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     VEILEDER_IDENT,

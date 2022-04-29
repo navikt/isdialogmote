@@ -76,7 +76,7 @@ class PostDialogmoteApiV2Spek : Spek({
             }
 
             describe("Create Dialogmote for PersonIdent payload") {
-                val validToken = generateJWT(
+                val validToken = generateJWTNavIdent(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     VEILEDER_IDENT,

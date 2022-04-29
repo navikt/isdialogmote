@@ -8,7 +8,7 @@ import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.AZUREAD_TOKEN
 import no.nav.syfo.testhelper.UserConstants.JWT_AZP
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.generateJWT
+import no.nav.syfo.testhelper.generateJWTNavIdent
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -85,7 +85,7 @@ class AzureAdClientSpek : Spek({
                 verify(exactly = 1) { cacheMock.get(systemTokenCacheKey) }
                 verify(exactly = 1) { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
             }
-            val validToken = generateJWT(
+            val validToken = generateJWTNavIdent(
                 externalMockEnvironment.environment.aadAppClient,
                 externalMockEnvironment.wellKnownVeilederV2.issuer,
                 VEILEDER_IDENT,

@@ -60,12 +60,12 @@ class ArbeidstakerBrevApiSpek : Spek({
             }
 
             describe("Les og respons ArbeidstakerBrev") {
-                val validTokenSelvbetjening = generateJWT(
+                val validTokenSelvbetjening = generateJWTIdporten(
                     audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
                     issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
-                    subject = ARBEIDSTAKER_FNR.value,
+                    pid = ARBEIDSTAKER_FNR.value,
                 )
-                val validTokenVeileder = generateJWT(
+                val validTokenVeileder = generateJWTNavIdent(
                     externalMockEnvironment.environment.aadAppClient,
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     UserConstants.VEILEDER_IDENT,
@@ -470,10 +470,10 @@ class ArbeidstakerBrevApiSpek : Spek({
                     val newDialogmoteInnkalt =
                         generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted", LocalDateTime.now().plusDays(30))
 
-                    val validTokenSelvbetjeningAnnenPerson = generateJWT(
+                    val validTokenSelvbetjeningAnnenPerson = generateJWTIdporten(
                         audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
                         issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
-                        subject = ARBEIDSTAKER_ANNEN_FNR.value,
+                        pid = ARBEIDSTAKER_ANNEN_FNR.value,
                     )
 
                     val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
