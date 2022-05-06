@@ -32,3 +32,6 @@ spec:
     - team: teamsykefravr
       application: isdialogmotekandidat
       access: read
+    - team: teamsykefravr
+      application: syfooversiktsrv
+      access: read
