@@ -31,15 +31,12 @@ class DialogmoteJournalpostDistribusjonCronjob(
                 try {
                     val bestillingsId =
                         journalpostdistribusjonClient.distribuerJournalpost(arbeidstakerVarsel.journalpostId!!)?.bestillingsId
-                    bestillingsId?.let { it ->
-                        dialogmotedeltakerVarselJournalpostService.updateBestillingsId(
-                            arbeidstakerVarsel,
-                            it
-                        )
-                        result.updated++
-                        COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE.increment()
-                    }
-                        ?: throw RuntimeException("Failed to bestille journalpost-distribusjon for ArbeidstakerVarsel: response missing bestillingsId")
+                    dialogmotedeltakerVarselJournalpostService.updateBestillingsId(
+                        dialogmotedeltakerArbeidstakerVarsel = arbeidstakerVarsel,
+                        bestillingsId = bestillingsId,
+                    )
+                    result.updated++
+                    COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE.increment()
                 } catch (e: Exception) {
                     log.error("Exception caught in ArbeidstakerVarsel-journalpost-distribusjon", e)
                     result.failed++
@@ -61,15 +58,12 @@ class DialogmoteJournalpostDistribusjonCronjob(
                 try {
                     val bestillingsId =
                         journalpostdistribusjonClient.distribuerJournalpost(referatJournalpostId!!)?.bestillingsId
-                    bestillingsId?.let { it ->
-                        referatJournalpostService.updateBestillingsId(
-                            referatId,
-                            it
-                        )
-                        result.updated++
-                        COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE.increment()
-                    }
-                        ?: throw RuntimeException("Failed to bestille journalpost-distribusjon for Referat: response missing bestillingsId")
+                    referatJournalpostService.updateBestillingsId(
+                        referatId = referatId,
+                        bestillingsId = bestillingsId,
+                    )
+                    result.updated++
+                    COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE.increment()
                 } catch (e: Exception) {
                     log.error("Exception caught in Referat-journalpost-distribusjon", e)
                     result.failed++

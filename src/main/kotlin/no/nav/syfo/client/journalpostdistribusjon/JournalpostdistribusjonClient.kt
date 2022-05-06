@@ -5,7 +5,6 @@ import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.util.bearerHeader
@@ -30,7 +29,7 @@ class JournalpostdistribusjonClient(
             bestillendeFagsystem = BESTILLENDE_FAGSYSTEM,
             dokumentProdApp = DOKUMENTPRODUSERENDE_APP
         )
-        try {
+        return try {
             val response = httpClient.post(distribuerJournalpostUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(accessToken))
                 accept(ContentType.Application.Json)
@@ -38,25 +37,25 @@ class JournalpostdistribusjonClient(
                 setBody(request)
             }.body<JournalpostdistribusjonResponse>()
             COUNT_CALL_JOURNALPOSTDISTRIBUSJON_SUCCESS.increment()
-            return response
+            response
         } catch (e: ClientRequestException) {
-            handleUnexpectedResponseException(e.response, e.message)
+            // HttpStatusCode.Gone brukes når mottaker er død og dødsbo har ukjent adresse
+            if (e.response.status != HttpStatusCode.Gone) {
+                throw getUnexpectedResponseException(e.response, e.message)
+            } else null
         } catch (e: ServerResponseException) {
-            handleUnexpectedResponseException(e.response, e.message)
+            throw getUnexpectedResponseException(e.response, e.message)
         }
-        return null
     }
 
-    private fun handleUnexpectedResponseException(
+    private fun getUnexpectedResponseException(
         response: HttpResponse,
         message: String?
-    ) {
-        log.error(
-            "Error while requesting Journalpost distribution from dokdistFordeling with {}, {}",
-            StructuredArguments.keyValue("statusCode", response.status.value.toString()),
-            StructuredArguments.keyValue("message", message),
-        )
+    ): RuntimeException {
         COUNT_CALL_JOURNALPOSTDISTRIBUSJON_FAIL.increment()
+        return RuntimeException(
+            "Error while requesting Journalpost distribution from dokdistFordeling with status ${response.status.value} and message $message"
+        )
     }
 
     companion object {

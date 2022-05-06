@@ -148,7 +148,7 @@ const val queryGetMotedeltakerArbeidstakerVarselForFysiskBrevUtsending =
         FROM MOTEDELTAKER_ARBEIDSTAKER_VARSEL
         WHERE digitalt IS FALSE 
               AND journalpost_id IS NOT NULL
-              AND brev_bestilling_id IS NULL
+              AND brev_bestilt_tidspunkt IS NULL
     """
 
 fun DatabaseInterface.getMotedeltakerArbeidstakerVarselForFysiskBrevUtsending(): List<PMotedeltakerArbeidstakerVarsel> {
@@ -168,7 +168,7 @@ const val queryUpdateMotedeltakerArbeidstakerBrevBestillingsId =
 
 fun DatabaseInterface.updateMotedeltakerArbeidstakerBrevBestillingsId(
     motedeltakerArbeidstakerVarselId: Int,
-    brevBestillingsId: String,
+    brevBestillingsId: String?,
 ) {
     this.connection.use { connection ->
         connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerBrevBestillingsId).use {

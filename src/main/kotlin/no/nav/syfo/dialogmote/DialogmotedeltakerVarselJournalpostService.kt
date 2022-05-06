@@ -89,7 +89,7 @@ class DialogmotedeltakerVarselJournalpostService(
 
     fun updateBestillingsId(
         dialogmotedeltakerArbeidstakerVarsel: DialogmotedeltakerArbeidstakerVarsel,
-        bestillingsId: String,
+        bestillingsId: String?,
     ) {
         database.updateMotedeltakerArbeidstakerBrevBestillingsId(
             motedeltakerArbeidstakerVarselId = dialogmotedeltakerArbeidstakerVarsel.id,
