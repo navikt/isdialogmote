@@ -181,6 +181,50 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                             }
                     }
                 }
+                it("Distribuerer journalført innkalling med respons 410") {
+                    with(
+                        handleRequest(HttpMethod.Post, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+                    val varselUuids: List<String>
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dialogmoteDTO = dialogmoteList.first()
+                        varselUuids = dialogmoteDTO.arbeidstaker.varselList.map { it.uuid }
+                        dialogmoteDTO.arbeidstaker.varselList.first().brevBestiltTidspunkt.shouldBeNull()
+                    }
+
+                    varselUuids.forEach { database.setMotedeltakerArbeidstakerVarselJournalfort(it, UserConstants.JOURNALPOST_ID_MOTTAKER_GONE) }
+
+                    runBlocking {
+                        val result = journalpostDistribusjonCronjob.dialogmoteVarselJournalpostDistribusjon()
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 1
+                    }
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dialogmoteDTO = dialogmoteList.first()
+                        dialogmoteDTO.arbeidstaker.varselList.first().brevBestiltTidspunkt.shouldNotBeNull()
+                    }
+                }
 
                 it("Ikke distribuer innkalling og referat som ikke er journalført") {
                     val createdDialogmoteUUID: String

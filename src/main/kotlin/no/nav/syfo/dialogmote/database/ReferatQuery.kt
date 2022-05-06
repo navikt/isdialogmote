@@ -415,7 +415,7 @@ const val queryGetReferatForFysiskBrevUtsending =
         FROM MOTE_REFERAT 
         WHERE digitalt IS FALSE
               AND journalpost_id IS NOT NULL
-              AND brev_bestilling_id IS NULL
+              AND brev_bestilt_tidspunkt IS NULL
     """
 
 fun DatabaseInterface.getReferatForFysiskBrevUtsending(): List<PReferat> {
@@ -435,7 +435,7 @@ const val queryUpdateReferatBrevBestillingsId =
 
 fun DatabaseInterface.updateReferatBrevBestillingsId(
     referatId: Int,
-    brevBestillingsId: String,
+    brevBestillingsId: String?,
 ) {
     this.connection.use { connection ->
         connection.prepareStatement(queryUpdateReferatBrevBestillingsId).use {

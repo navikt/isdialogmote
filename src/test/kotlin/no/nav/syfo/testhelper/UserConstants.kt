@@ -35,6 +35,8 @@ object UserConstants {
     val VIRKSOMHETSNUMMER_HAS_NARMESTELEDER = Virksomhetsnummer("912345678")
     val OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER = Virksomhetsnummer("922222222")
 
+    val JOURNALPOST_ID_MOTTAKER_GONE = 129
+
     val AZUREAD_TOKEN = "tokenReturnedByAzureAd"
 
     val JWT_AZP = "syfomodiaperson"
