@@ -158,6 +158,7 @@ fun Application.apiModule(
         pdfGenClient = pdfGenClient,
         kontaktinformasjonClient = kontaktinformasjonClient,
         varselService = varselService,
+        pdlClient = pdlClient
     )
 
     val narmesteLederTilgangService = NarmesteLederAccessService(
