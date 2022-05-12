@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig
 
 import com.zaxxer.hikari.HikariDataSource
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory
+import no.nav.syfo.metric.METRICS_REGISTRY
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 import java.sql.ResultSet
@@ -12,7 +13,7 @@ data class DatabaseConfig(
     val jdbcUrl: String,
     val password: String,
     val username: String,
-    val poolSize: Int = 4
+    val poolSize: Int = 6
 )
 
 class Database(
@@ -31,7 +32,7 @@ class Database(
             minimumIdle = 1
             isAutoCommit = false
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
-            metricsTrackerFactory = PrometheusMetricsTrackerFactory()
+            metricsTrackerFactory = PrometheusMetricsTrackerFactory(METRICS_REGISTRY.prometheusRegistry)
             validate()
         }
     )
