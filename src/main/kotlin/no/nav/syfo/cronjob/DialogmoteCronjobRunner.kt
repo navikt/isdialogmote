@@ -1,8 +1,6 @@
 package no.nav.syfo.cronjob
 
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
@@ -26,7 +24,7 @@ class DialogmoteCronjobRunner(
         delay(initialDelay)
 
         while (applicationState.ready) {
-            val job = launch { run(cronjob) }
+            val job = launch() { run(cronjob) }
             delay(intervalDelay)
             if (job.isActive) {
                 log.info("Waiting for job to finish")
