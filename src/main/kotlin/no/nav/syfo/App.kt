@@ -113,7 +113,11 @@ fun main() {
 
     applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) {
         applicationState.ready = true
-        logger.info("Application is ready, running Java VM ${Runtime.version()}")
+        logger.info(
+            "Application is ready, running Java VM ${Runtime.version()} on this number of processors: ${
+            Runtime.getRuntime().availableProcessors()
+            }"
+        )
         val dialogmeldingService = DialogmeldingService(
             behandlerVarselService = behandlerVarselService,
         )
@@ -131,7 +135,11 @@ fun main() {
     val server = embeddedServer(
         factory = Netty,
         environment = applicationEngineEnvironment,
-    )
+    ) {
+        connectionGroupSize = 8
+        workerGroupSize = 8
+        callGroupSize = 16
+    }
 
     Runtime.getRuntime().addShutdownHook(
         Thread {
