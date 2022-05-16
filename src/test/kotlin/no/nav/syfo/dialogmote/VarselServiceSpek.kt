@@ -82,12 +82,14 @@ object VarselServiceSpek : Spek({
         it("Send brev to Altinn when no nærmeste leder") {
             val virksomhetsbrevId = UUID.randomUUID()
             val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
+
             varselService.sendVarsel(
                 tidspunktForVarsel = LocalDateTime.now(),
                 varselType = MotedeltakerVarselType.INNKALT,
                 moteTidspunkt = LocalDateTime.now(),
                 isDigitalVarselEnabledForArbeidstaker = false,
                 arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
+                arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
                 arbeidstakerId = UUID.randomUUID(),
                 arbeidstakerbrevId = UUID.randomUUID(),
                 narmesteLeder = null,
@@ -107,7 +109,9 @@ object VarselServiceSpek : Spek({
                 virksomhetsbrevId,
                 VIRKSOMHETSNUMMER_NO_NARMESTELEDER,
                 virksomhetsPdf,
-                MotedeltakerVarselType.INNKALT
+                MotedeltakerVarselType.INNKALT,
+                arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
+                arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
             )
 
             verify(exactly = 1) {

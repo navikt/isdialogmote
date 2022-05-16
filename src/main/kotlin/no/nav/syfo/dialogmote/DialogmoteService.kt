@@ -8,6 +8,7 @@ import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.client.oppfolgingstilfelle.*
 import no.nav.syfo.client.pdfgen.PdfGenClient
+import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.*
@@ -27,6 +28,7 @@ class DialogmoteService(
     private val pdfGenClient: PdfGenClient,
     private val kontaktinformasjonClient: KontaktinformasjonClient,
     private val varselService: VarselService,
+    private val pdlClient: PdlClient
 ) {
     fun getDialogmote(
         moteUUID: UUID
@@ -113,6 +115,8 @@ class DialogmoteService(
             token = token,
         )
 
+        val arbeidstakernavn = getArbeidstakernavnIfNarmesteLederIsNull(narmesteLeder, personIdentNumber)
+
         val behandlendeEnhet = behandlendeEnhetClient.getEnhet(
             callId = callId,
             personIdentNumber = personIdentNumber,
@@ -176,6 +180,7 @@ class DialogmoteService(
                 connection = connection,
                 arbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdPair.first,
                 arbeidstakerUuid = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdPair.second,
+                arbeidstakernavn = arbeidstakernavn,
                 arbeidsgiverId = createdDialogmoteIdentifiers.motedeltakerArbeidsgiverIdPair.first,
                 behandlerId = createdDialogmoteIdentifiers.motedeltakerBehandlerIdPair?.first,
                 behandlerRef = newDialogmote.behandler?.behandlerRef,
@@ -244,6 +249,9 @@ class DialogmoteService(
             callId = callId,
             token = token,
         )
+
+        val arbeidstakernavn = getArbeidstakernavnIfNarmesteLederIsNull(narmesteLeder, dialogmote.arbeidstaker.personIdent)
+
         val digitalVarsling = isDigitalVarselEnabled(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             token = token,
@@ -265,6 +273,7 @@ class DialogmoteService(
                 connection = connection,
                 arbeidstakerId = dialogmote.arbeidstaker.id,
                 arbeidstakerUuid = dialogmote.arbeidstaker.uuid,
+                arbeidstakernavn = arbeidstakernavn,
                 arbeidsgiverId = dialogmote.arbeidsgiver.id,
                 behandlerId = dialogmote.behandler?.id,
                 behandlerRef = dialogmote.behandler?.behandlerRef,
@@ -332,6 +341,8 @@ class DialogmoteService(
             token = token,
         )
 
+        val arbeidstakernavn = getArbeidstakernavnIfNarmesteLederIsNull(narmesteLeder, dialogmote.arbeidstaker.personIdent)
+
         val digitalVarsling = isDigitalVarselEnabled(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
             token = token,
@@ -364,6 +375,7 @@ class DialogmoteService(
                 behandlerParentVarselId = dialogmote.behandler?.findParentVarselId(),
                 behandlerInnkallingUuid = dialogmote.behandler?.findInnkallingVarselUuid(),
                 arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
+                arbeidstakernavn = arbeidstakernavn,
                 pdfArbeidstaker = pdfEndringArbeidstaker,
                 pdfArbeidsgiver = pdfEndringArbeidsgiver,
                 pdfBehandler = pdfEndringBehandler,
@@ -393,6 +405,7 @@ class DialogmoteService(
         behandlerParentVarselId: String?,
         behandlerInnkallingUuid: UUID?,
         arbeidstakerPersonIdent: PersonIdentNumber,
+        arbeidstakernavn: String? = null,
         pdfArbeidstaker: ByteArray,
         pdfArbeidsgiver: ByteArray,
         pdfBehandler: ByteArray?,
@@ -462,6 +475,7 @@ class DialogmoteService(
                 moteTidspunkt = moteTidspunkt,
                 isDigitalVarselEnabledForArbeidstaker = digitalArbeidstakerVarsling,
                 arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                arbeidstakernavn = arbeidstakernavn,
                 arbeidstakerId = arbeidstakerUuid,
                 arbeidstakerbrevId = varselArbeidstakerId,
                 narmesteLeder = narmesteLeder,
@@ -568,6 +582,8 @@ class DialogmoteService(
             token = token,
         )
 
+        val arbeidstakernavn = getArbeidstakernavnIfNarmesteLederIsNull(narmesteLeder, dialogmote.arbeidstaker.personIdent)
+
         val pdfReferat = pdfGenClient.pdfReferat(
             callId = callId,
             documentComponentDTOList = referat.document,
@@ -646,6 +662,7 @@ class DialogmoteService(
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
                 arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
                 arbeidstakerId = dialogmote.arbeidstaker.uuid,
+                arbeidstakernavn = arbeidstakernavn,
                 arbeidstakerbrevId = referatUuid,
                 narmesteLeder = narmesteLeder,
                 virksomhetsbrevId = referatUuid,
@@ -684,6 +701,8 @@ class DialogmoteService(
             callId = callId,
             token = token,
         )
+
+        val arbeidstakernavn = getArbeidstakernavnIfNarmesteLederIsNull(narmesteLeder, dialogmote.arbeidstaker.personIdent)
 
         val pdfReferat = pdfGenClient.pdfReferat(
             callId = callId,
@@ -751,6 +770,7 @@ class DialogmoteService(
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
                 arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
                 arbeidstakerId = dialogmote.arbeidstaker.uuid,
+                arbeidstakernavn = arbeidstakernavn,
                 arbeidstakerbrevId = referatUuid,
                 narmesteLeder = narmesteLeder,
                 virksomhetsbrevId = referatUuid,
@@ -895,6 +915,10 @@ class DialogmoteService(
         }
 
         return moteDeltagerArbeidsgiverVarsel ?: ferdigReferat!!
+    }
+
+    private suspend fun getArbeidstakernavnIfNarmesteLederIsNull(narmesteLeder: NarmesteLederRelasjonDTO?, arbeidstakerPersonIdent: PersonIdentNumber): String? {
+        return if (narmesteLeder === null) pdlClient.navn(arbeidstakerPersonIdent) else null
     }
 
     private suspend fun isDigitalVarselEnabled(

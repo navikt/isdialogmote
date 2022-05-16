@@ -1,6 +1,7 @@
 package no.nav.syfo.client.altinn
 
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.util.*
 
@@ -103,12 +104,15 @@ fun createAltinnMelding(
     reference: UUID,
     virksomhetsnummer: Virksomhetsnummer,
     file: ByteArray,
-    varseltype: MotedeltakerVarselType
+    varseltype: MotedeltakerVarselType,
+    arbeidstakerPersonIdent: PersonIdentNumber,
+    arbeidstakernavn: String? = null,
+
 ): AltinnMelding {
     return AltinnMelding(
         reference = reference,
         virksomhetsnummer = virksomhetsnummer,
-        title = toMessageTitle(varseltype),
+        title = toMessageTitle(varseltype, arbeidstakerPersonIdent, arbeidstakernavn),
         body = toMessageBody(varseltype),
         emailTitle = toEmailTitle(varseltype),
         emailBody = toEmailBody(varseltype),
@@ -120,7 +124,7 @@ fun createAltinnMelding(
     )
 }
 
-private fun toMessageTitle(varseltype: MotedeltakerVarselType): String {
+private fun toVarselTypeTitle(varseltype: MotedeltakerVarselType): String {
     return when (varseltype) {
         MotedeltakerVarselType.INNKALT -> TITTEL_INNKALT
         MotedeltakerVarselType.NYTT_TID_STED -> TITTEL_NYTT_TID_STED
@@ -129,8 +133,18 @@ private fun toMessageTitle(varseltype: MotedeltakerVarselType): String {
     }
 }
 
+private fun toMessageTitle(
+    varseltype: MotedeltakerVarselType,
+    personIdentNumber: PersonIdentNumber,
+    navn: String?
+): String {
+    val varseltypeTitle = toVarselTypeTitle(varseltype)
+
+    return if (navn.isNullOrEmpty()) varseltypeTitle else "$varseltypeTitle - $navn (${personIdentNumber.value})"
+}
+
 private fun toDisplayFilename(varseltype: MotedeltakerVarselType): String {
-    return toMessageTitle(varseltype)
+    return toVarselTypeTitle(varseltype)
 }
 
 private fun toFilename(varseltype: MotedeltakerVarselType): String {
