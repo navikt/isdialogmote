@@ -15,7 +15,7 @@ object Versions {
     const val jedis = "4.2.2"
     const val kafka = "3.1.0"
     const val kafkaEmbedded = "3.1.0"
-    const val ktor = "2.0.0"
+    const val ktor = "2.0.1"
     const val jaxbApi = "2.3.1"
     const val jaxbRuntime = "2.3.6"
     const val kluent = "1.68"
