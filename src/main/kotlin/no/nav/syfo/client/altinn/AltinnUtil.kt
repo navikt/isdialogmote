@@ -22,14 +22,12 @@ private const val NOTIFICATION_TYPE = "TokenTextOnly"
 fun mapToInsertCorrespondenceV2WS(
     altinnMelding: AltinnMelding,
 ): InsertCorrespondenceV2 {
-
-    return InsertCorrespondenceV2()
+    val insertCorrespondenceV2 = InsertCorrespondenceV2()
         .withAllowForwarding(FALSE)
         .withReportee(altinnMelding.virksomhetsnummer.value)
         .withMessageSender(AVSENDER_NAV)
         .withServiceCode(DIALOGMOTE_TJENESTEKODE)
         .withServiceEdition(DIALOGMOTE_TJENESTEVERSJON)
-        .withNotifications(createNotifications(altinnMelding))
         .withContent(
             ExternalContentV2()
                 .withLanguageCode(NORSK_BOKMAL)
@@ -51,6 +49,12 @@ fun mapToInsertCorrespondenceV2WS(
                         )
                 )
         ).withArchiveReference(null)
+
+    if (!altinnMelding.hasNarmesteLeder) {
+        insertCorrespondenceV2.withNotifications(createNotifications(altinnMelding))
+    }
+
+    return insertCorrespondenceV2
 }
 
 fun createNotifications(altinnMelding: AltinnMelding): NotificationBEList {

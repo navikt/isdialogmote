@@ -10,6 +10,11 @@ private const val TITTEL_NYTT_TID_STED = "Endring av dialogmøte"
 private const val TITTEL_AVLYST = "Avlysning av dialogmøte"
 private const val TITTEL_REFERAT = "Referat fra dialogmøte"
 
+private const val TITTEL_INNKALT_COPY = "Innkalling til dialogmøte (kopi)"
+private const val TITTEL_NYTT_TID_STED_COPY = "Endring av dialogmøte (kopi)"
+private const val TITTEL_AVLYST_COPY = "Avlysning av dialogmøte (kopi)"
+private const val TITTEL_REFERAT_COPY = "Referat fra dialogmøte (kopi)"
+
 private const val FILNAVN_INNKALT = "Innkalling.pdf"
 private const val FILNAVN_NYTT_TID_STED = "Endring.pdf"
 private const val FILNAVN_AVLYST = "Avlysning.pdf"
@@ -19,6 +24,9 @@ private const val BODY_FERDIGSTILL = ""
 private const val BODY_KREVER_HANDLING = """
     Det er ikke registrert en nærmeste leder for denne arbeidstakeren. For å svare på innkallingen må det registreres
     en leder, og deretter kan lederen gå inn på Dine Sykmeldte hos NAV.
+"""
+private const val BODY_DUPLICATE_BREV = """
+    Dette er en kopi av et brev som er tilgjengelig for nærmeste leder på Dine Sykmeldte hos NAV.
 """
 
 private const val EMAIL_TITTEL_INNKALT = "Ny innkalling til dialogmøte i Altinn"
@@ -97,7 +105,8 @@ data class AltinnMelding(
     val smsSender: String,
     val file: ByteArray,
     val filename: String,
-    val displayFilename: String
+    val displayFilename: String,
+    val hasNarmesteLeder: Boolean,
 )
 
 fun createAltinnMelding(
@@ -106,14 +115,14 @@ fun createAltinnMelding(
     file: ByteArray,
     varseltype: MotedeltakerVarselType,
     arbeidstakerPersonIdent: PersonIdentNumber,
-    arbeidstakernavn: String? = null,
-
+    arbeidstakernavn: String,
+    hasNarmesteLeder: Boolean,
 ): AltinnMelding {
     return AltinnMelding(
         reference = reference,
         virksomhetsnummer = virksomhetsnummer,
-        title = toMessageTitle(varseltype, arbeidstakerPersonIdent, arbeidstakernavn),
-        body = toMessageBody(varseltype),
+        title = toMessageTitle(varseltype, arbeidstakerPersonIdent, arbeidstakernavn, hasNarmesteLeder),
+        body = toMessageBody(varseltype, hasNarmesteLeder),
         emailTitle = toEmailTitle(varseltype),
         emailBody = toEmailBody(varseltype),
         smsBody = toSMSBody(varseltype),
@@ -121,30 +130,30 @@ fun createAltinnMelding(
         file = file,
         filename = toFilename(varseltype),
         displayFilename = toDisplayFilename(varseltype),
+        hasNarmesteLeder = hasNarmesteLeder
     )
 }
 
-private fun toVarselTypeTitle(varseltype: MotedeltakerVarselType): String {
+private fun toVarselTypeTitle(varseltype: MotedeltakerVarselType, isCopy: Boolean): String {
     return when (varseltype) {
-        MotedeltakerVarselType.INNKALT -> TITTEL_INNKALT
-        MotedeltakerVarselType.NYTT_TID_STED -> TITTEL_NYTT_TID_STED
-        MotedeltakerVarselType.AVLYST -> TITTEL_AVLYST
-        MotedeltakerVarselType.REFERAT -> TITTEL_REFERAT
+        MotedeltakerVarselType.INNKALT -> TITTEL_INNKALT_COPY.takeIf { isCopy } ?: TITTEL_INNKALT
+        MotedeltakerVarselType.NYTT_TID_STED -> TITTEL_NYTT_TID_STED_COPY.takeIf { isCopy } ?: TITTEL_NYTT_TID_STED
+        MotedeltakerVarselType.AVLYST -> TITTEL_AVLYST_COPY.takeIf { isCopy } ?: TITTEL_AVLYST
+        MotedeltakerVarselType.REFERAT -> TITTEL_REFERAT_COPY.takeIf { isCopy } ?: TITTEL_REFERAT
     }
 }
 
 private fun toMessageTitle(
     varseltype: MotedeltakerVarselType,
     personIdentNumber: PersonIdentNumber,
-    navn: String?
+    navn: String?,
+    isCopy: Boolean,
 ): String {
-    val varseltypeTitle = toVarselTypeTitle(varseltype)
-
-    return if (navn.isNullOrEmpty()) varseltypeTitle else "$varseltypeTitle - $navn (${personIdentNumber.value})"
+    return "${toVarselTypeTitle(varseltype, isCopy)} - $navn (${personIdentNumber.value})"
 }
 
 private fun toDisplayFilename(varseltype: MotedeltakerVarselType): String {
-    return toVarselTypeTitle(varseltype)
+    return toVarselTypeTitle(varseltype, false)
 }
 
 private fun toFilename(varseltype: MotedeltakerVarselType): String {
@@ -156,7 +165,11 @@ private fun toFilename(varseltype: MotedeltakerVarselType): String {
     }
 }
 
-private fun toMessageBody(varseltype: MotedeltakerVarselType): String {
+private fun toMessageBody(varseltype: MotedeltakerVarselType, isCopy: Boolean): String {
+    if (isCopy) {
+        return BODY_DUPLICATE_BREV
+    }
+
     return when (varseltype) {
         MotedeltakerVarselType.INNKALT -> BODY_KREVER_HANDLING
         MotedeltakerVarselType.NYTT_TID_STED -> BODY_KREVER_HANDLING
