@@ -6,7 +6,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.azuread.AzureAdV2Token
-import no.nav.syfo.client.httpClientDefault
+import no.nav.syfo.client.httpClientWithRetry
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.metric.COUNT_CALL_PDL_FAIL
 import no.nav.syfo.metric.COUNT_CALL_PDL_SUCCESS
@@ -18,7 +18,7 @@ class PdlClient(
     private val pdlClientId: String,
     private val pdlUrl: String,
 ) {
-    private val httpClient = httpClientDefault()
+    private val httpClient = httpClientWithRetry()
 
     suspend fun navn(
         personIdent: PersonIdentNumber,

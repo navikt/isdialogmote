@@ -3,6 +3,7 @@ package no.nav.syfo.client
 import io.ktor.client.*
 import io.ktor.client.engine.apache.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.jackson.*
 import no.nav.syfo.util.configure
@@ -12,6 +13,20 @@ import java.net.ProxySelector
 fun httpClientDefault() = HttpClient(CIO) {
     install(ContentNegotiation) {
         jackson { configure() }
+    }
+    expectSuccess = true
+}
+
+fun httpClientWithRetry(
+    numberOfRetries: Int = 2,
+    delayMilliseconds: Long = 500L,
+) = HttpClient(CIO) {
+    install(ContentNegotiation) {
+        jackson { configure() }
+    }
+    install(HttpRequestRetry) {
+        retryOnException(numberOfRetries)
+        constantDelay(delayMilliseconds)
     }
     expectSuccess = true
 }
