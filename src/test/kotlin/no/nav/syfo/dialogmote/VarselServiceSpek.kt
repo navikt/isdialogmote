@@ -74,7 +74,7 @@ object VarselServiceSpek : Spek({
 
             val altinnMelding = createAltinnMelding(
                 virksomhetsbrevId,
-                VIRKSOMHETSNUMMER_NO_NARMESTELEDER,
+                VIRKSOMHETSNUMMER_HAS_NARMESTELEDER,
                 virksomhetsPdf,
                 MotedeltakerVarselType.INNKALT,
                 arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,

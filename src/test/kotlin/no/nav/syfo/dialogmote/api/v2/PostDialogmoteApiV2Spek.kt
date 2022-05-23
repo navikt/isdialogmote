@@ -96,13 +96,7 @@ class PostDialogmoteApiV2Spek : Spek({
                     justRun { mqSenderMock.sendMQMessage(any(), any()) }
                     clearMocks(altinnMock)
                     every {
-                        altinnMock.insertCorrespondenceBasicV2(
-                            any(),
-                            any(),
-                            any(),
-                            any(),
-                            any()
-                        )
+                        altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
                     } returns altinnResponse
                 }
 
@@ -143,7 +137,7 @@ class PostDialogmoteApiV2Spek : Spek({
                             xml.shouldContain("<parameterListe><key>navn</key><value>narmesteLederNavn</value></parameterListe>")
                             xml.shouldContain("<parameterListe><key>tidspunkt</key><value>$moteTidspunktString</value></parameterListe>")
                             clearMocks(mqSenderMock)
-                            verify(exactly = 0) {
+                            verify(exactly = 1) {
                                 altinnMock.insertCorrespondenceBasicV2(
                                     any(),
                                     any(),
