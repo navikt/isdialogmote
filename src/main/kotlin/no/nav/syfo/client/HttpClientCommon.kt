@@ -14,19 +14,11 @@ fun httpClientDefault() = HttpClient(CIO) {
     install(ContentNegotiation) {
         jackson { configure() }
     }
-    expectSuccess = true
-}
-
-fun httpClientWithRetry(
-    numberOfRetries: Int = 2,
-    delayMilliseconds: Long = 500L,
-) = HttpClient(CIO) {
-    install(ContentNegotiation) {
-        jackson { configure() }
-    }
     install(HttpRequestRetry) {
-        retryOnException(numberOfRetries)
-        constantDelay(delayMilliseconds)
+        retryOnExceptionIf(2) { _, cause ->
+            cause !is ClientRequestException
+        }
+        constantDelay(500L)
     }
     expectSuccess = true
 }
@@ -34,6 +26,12 @@ fun httpClientWithRetry(
 val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
     install(ContentNegotiation) {
         jackson { configure() }
+    }
+    install(HttpRequestRetry) {
+        retryOnExceptionIf(2) { _, cause ->
+            cause !is ClientRequestException
+        }
+        constantDelay(500L)
     }
     expectSuccess = true
     engine {
