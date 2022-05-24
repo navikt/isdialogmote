@@ -9,7 +9,7 @@ class PublishDialogmoteStatusEndringCronjob(
 ) : DialogmoteCronjob {
 
     override val initialDelayMinutes: Long = 2
-    override val intervalDelayMinutes: Long = 60
+    override val intervalDelayMinutes: Long = 1
 
     override suspend fun run() {
         dialogmoteStatusEndringPublishJob()

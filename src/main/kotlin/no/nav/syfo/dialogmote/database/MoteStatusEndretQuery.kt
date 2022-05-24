@@ -59,16 +59,17 @@ fun Connection.createMoteStatusEndring(
     return Pair(moteStatusEndringIdList.first(), moteStatusEndringUuid)
 }
 
-const val queryMoteStatusEndretWihtoutPublished =
+const val queryMoteStatusEndretNotPublished =
     """
         SELECT *
         FROM MOTE_STATUS_ENDRET
         WHERE published_at IS NULL
+        ORDER BY created_at ASC LIMIT 100
     """
 
 fun DatabaseInterface.getMoteStatusEndretNotPublished(): List<PMoteStatusEndret> {
     return this.connection.use { connection ->
-        connection.prepareStatement(queryMoteStatusEndretWihtoutPublished).use {
+        connection.prepareStatement(queryMoteStatusEndretNotPublished).use {
             it.executeQuery().toList { toPMoteStatusEndret() }
         }
     }
