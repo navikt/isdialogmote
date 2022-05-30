@@ -121,7 +121,7 @@ class DialogmoteService(
             callId = callId,
             personIdentNumber = personIdentNumber,
             token = token,
-        ) ?: throw RuntimeException("Failed to request BehandlendeEnhet of Person")
+        ) ?: throw RuntimeException("Failed to request (or missing) BehandlendeEnhet of Person")
 
         val newDialogmote = newDialogmoteDTO.toNewDialogmote(
             requestByNAVIdent = getNAVIdentFromToken(token),

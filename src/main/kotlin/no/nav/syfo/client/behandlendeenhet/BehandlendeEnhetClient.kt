@@ -43,7 +43,11 @@ class BehandlendeEnhetClient(
                 accept(ContentType.Application.Json)
             }
             COUNT_CALL_BEHANDLENDEENHET_SUCCESS.increment()
-            response.body()
+            when (response.status) {
+                HttpStatusCode.OK -> response.body()
+                HttpStatusCode.NoContent -> null
+                else -> handleUnexpectedResponseException(response, callId)
+            }
         } catch (e: ClientRequestException) {
             handleUnexpectedResponseException(e.response, callId)
         } catch (e: ServerResponseException) {
