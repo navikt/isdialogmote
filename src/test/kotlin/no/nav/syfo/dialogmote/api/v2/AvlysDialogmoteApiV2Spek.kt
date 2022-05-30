@@ -6,6 +6,9 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
+import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
@@ -47,12 +50,17 @@ class AvlysDialogmoteApiV2Spek : Spek({
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
             )
 
+            val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
+            val altinnResponse = ReceiptExternal()
+            altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
+
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
+                altinnMock = altinnMock,
             )
 
             beforeEachTest {
@@ -65,6 +73,10 @@ class AvlysDialogmoteApiV2Spek : Spek({
                 justRun { mqSenderMock.sendMQMessage(any(), any()) }
                 clearMocks(dineSykmeldteVarselProducer)
                 justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
+                clearMocks(altinnMock)
+                every {
+                    altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
+                } returns altinnResponse
             }
 
             afterEachTest {

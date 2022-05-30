@@ -115,7 +115,7 @@ class DialogmoteService(
             token = token,
         )
 
-        val arbeidstakernavn = getArbeidstakernavnIfNarmesteLederIsNull(narmesteLeder, personIdentNumber)
+        val arbeidstakernavn = pdlClient.navn(personIdentNumber)
 
         val behandlendeEnhet = behandlendeEnhetClient.getEnhet(
             callId = callId,
@@ -250,7 +250,7 @@ class DialogmoteService(
             token = token,
         )
 
-        val arbeidstakernavn = getArbeidstakernavnIfNarmesteLederIsNull(narmesteLeder, dialogmote.arbeidstaker.personIdent)
+        val arbeidstakernavn = pdlClient.navn(dialogmote.arbeidstaker.personIdent)
 
         val digitalVarsling = isDigitalVarselEnabled(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
@@ -341,7 +341,7 @@ class DialogmoteService(
             token = token,
         )
 
-        val arbeidstakernavn = getArbeidstakernavnIfNarmesteLederIsNull(narmesteLeder, dialogmote.arbeidstaker.personIdent)
+        val arbeidstakernavn = pdlClient.navn(dialogmote.arbeidstaker.personIdent)
 
         val digitalVarsling = isDigitalVarselEnabled(
             personIdentNumber = dialogmote.arbeidstaker.personIdent,
@@ -405,7 +405,7 @@ class DialogmoteService(
         behandlerParentVarselId: String?,
         behandlerInnkallingUuid: UUID?,
         arbeidstakerPersonIdent: PersonIdentNumber,
-        arbeidstakernavn: String? = null,
+        arbeidstakernavn: String,
         pdfArbeidstaker: ByteArray,
         pdfArbeidsgiver: ByteArray,
         pdfBehandler: ByteArray?,
@@ -582,7 +582,7 @@ class DialogmoteService(
             token = token,
         )
 
-        val arbeidstakernavn = getArbeidstakernavnIfNarmesteLederIsNull(narmesteLeder, dialogmote.arbeidstaker.personIdent)
+        val arbeidstakernavn = pdlClient.navn(dialogmote.arbeidstaker.personIdent)
 
         val pdfReferat = pdfGenClient.pdfReferat(
             callId = callId,
@@ -702,7 +702,7 @@ class DialogmoteService(
             token = token,
         )
 
-        val arbeidstakernavn = getArbeidstakernavnIfNarmesteLederIsNull(narmesteLeder, dialogmote.arbeidstaker.personIdent)
+        val arbeidstakernavn = pdlClient.navn(dialogmote.arbeidstaker.personIdent)
 
         val pdfReferat = pdfGenClient.pdfReferat(
             callId = callId,
@@ -915,10 +915,6 @@ class DialogmoteService(
         }
 
         return moteDeltagerArbeidsgiverVarsel ?: ferdigReferat!!
-    }
-
-    private suspend fun getArbeidstakernavnIfNarmesteLederIsNull(narmesteLeder: NarmesteLederRelasjonDTO?, arbeidstakerPersonIdent: PersonIdentNumber): String? {
-        return if (narmesteLeder === null) pdlClient.navn(arbeidstakerPersonIdent) else null
     }
 
     private suspend fun isDigitalVarselEnabled(

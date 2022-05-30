@@ -4,9 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.mockk.clearMocks
+import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
+import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
@@ -46,11 +51,16 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             val mqSenderMock = mockk<MQSenderInterface>()
             justRun { mqSenderMock.sendMQMessage(any(), any()) }
 
+            val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
+            val altinnResponse = ReceiptExternal()
+            altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
+
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
+                altinnMock = altinnMock,
             )
 
             val dialogmotedeltakerVarselJournalpostService =
@@ -67,6 +77,13 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                 referatJournalpostService = referatJournalpostService,
                 journalpostdistribusjonClient = journalpostdistribusjonClient
             )
+
+            beforeEachTest {
+                clearMocks(altinnMock)
+                every {
+                    altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
+                } returns altinnResponse
+            }
 
             afterEachTest {
                 database.dropData()

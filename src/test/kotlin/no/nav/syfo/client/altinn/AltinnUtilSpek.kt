@@ -25,6 +25,7 @@ object AltinnUtilSpek : Spek({
                 MotedeltakerVarselType.INNKALT,
                 UserConstants.ARBEIDSTAKER_FNR,
                 UserConstants.ARBEIDSTAKERNAVN,
+                false
             )
 
             val mappedObject = mapToInsertCorrespondenceV2WS(

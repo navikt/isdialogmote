@@ -5,6 +5,9 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
+import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
@@ -46,13 +49,25 @@ object NarmesteLederBrevSpek : Spek({
             justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
 
             val mqSenderMock = mockk<MQSenderInterface>(relaxed = true)
+            val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
+                altinnMock = altinnMock,
             )
+
+            beforeEachTest {
+                val altinnResponse = ReceiptExternal()
+                altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
+
+                clearMocks(altinnMock)
+                every {
+                    altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
+                } returns altinnResponse
+            }
 
             afterEachTest {
                 database.dropData()

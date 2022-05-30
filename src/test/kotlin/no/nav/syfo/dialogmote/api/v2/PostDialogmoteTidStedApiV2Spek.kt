@@ -6,6 +6,9 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
+import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
@@ -62,12 +65,17 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                 behandlerVarselService = behandlerVarselService
             )
 
+            val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
+            val altinnResponse = ReceiptExternal()
+            altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
+
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
+                altinnMock = altinnMock,
             )
 
             afterEachTest {
@@ -79,6 +87,10 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                 justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                 justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                clearMocks(altinnMock)
+                every {
+                    altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
+                } returns altinnResponse
             }
 
             describe("Post DialogmoteTidSted") {
@@ -361,6 +373,10 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                         justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
                         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                        clearMocks(altinnMock)
+                        every {
+                            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
+                        } returns altinnResponse
 
                         // Ny endring, etter svar fra behandler
                         val innkallingMoterespons = generateInnkallingMoterespons(

@@ -4,9 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.mockk.clearMocks
+import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
+import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
@@ -50,6 +55,8 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
             val dialogmoteStatusEndringProducer = mockk<DialogmoteStatusEndringProducer>()
             justRun { dialogmoteStatusEndringProducer.sendDialogmoteStatusEndring(any()) }
 
+            val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
+
             val behandlerVarselService = BehandlerVarselService(
                 database = database,
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
@@ -61,6 +68,7 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
+                altinnMock = altinnMock,
             )
 
             val publishDialogmoteStatusEndringService = PublishDialogmoteStatusEndringService(
@@ -71,6 +79,16 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
             val publishDialogmoteStatusEndringCronjob = PublishDialogmoteStatusEndringCronjob(
                 publishDialogmoteStatusEndringService = publishDialogmoteStatusEndringService,
             )
+
+            beforeEachTest {
+                val altinnResponse = ReceiptExternal()
+                altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
+
+                clearMocks(altinnMock)
+                every {
+                    altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
+                } returns altinnResponse
+            }
 
             afterEachTest {
                 database.dropData()

@@ -26,7 +26,7 @@ class VarselService(
         moteTidspunkt: LocalDateTime,
         isDigitalVarselEnabledForArbeidstaker: Boolean,
         arbeidstakerPersonIdent: PersonIdentNumber,
-        arbeidstakernavn: String? = null,
+        arbeidstakernavn: String,
         arbeidstakerId: UUID,
         arbeidstakerbrevId: UUID,
         narmesteLeder: NarmesteLederRelasjonDTO?,
@@ -42,17 +42,26 @@ class VarselService(
         behandlerbrevParentId: String?,
         behandlerInnkallingUuid: UUID?,
     ) {
+        val altinnMelding = createAltinnMelding(
+            virksomhetsbrevId,
+            virksomhetsnummer,
+            virksomhetsPdf,
+            varselType,
+            arbeidstakerPersonIdent,
+            arbeidstakernavn,
+            narmesteLeder != null,
+        )
+
+        altinnClient.sendToVirksomhet(
+            altinnMelding = altinnMelding,
+        )
+
         if (narmesteLeder != null) {
             narmesteLederVarselService.sendVarsel(
                 createdAt = tidspunktForVarsel,
                 moteTidspunkt = moteTidspunkt,
                 narmesteLeder = narmesteLeder,
                 varseltype = varselType,
-            )
-        } else {
-            val altinnMelding = createAltinnMelding(virksomhetsbrevId, virksomhetsnummer, virksomhetsPdf, varselType, arbeidstakerPersonIdent, arbeidstakernavn)
-            altinnClient.sendToVirksomhet(
-                altinnMelding = altinnMelding,
             )
         }
 

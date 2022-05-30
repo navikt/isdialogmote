@@ -49,12 +49,14 @@ object VarselServiceSpek : Spek({
             val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
             val tidspunktForVarsel = LocalDateTime.now()
             val moteTidspunkt = LocalDateTime.now()
+
             varselService.sendVarsel(
                 tidspunktForVarsel = tidspunktForVarsel,
                 varselType = MotedeltakerVarselType.INNKALT,
                 moteTidspunkt = moteTidspunkt,
                 isDigitalVarselEnabledForArbeidstaker = false,
                 arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
+                arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
                 arbeidstakerId = UUID.randomUUID(),
                 arbeidstakerbrevId = UUID.randomUUID(),
                 narmesteLeder = narmesteLeder,
@@ -70,7 +72,17 @@ object VarselServiceSpek : Spek({
                 behandlerInnkallingUuid = null
             )
 
-            verify(exactly = 0) { altinnClient.sendToVirksomhet(any()) }
+            val altinnMelding = createAltinnMelding(
+                virksomhetsbrevId,
+                VIRKSOMHETSNUMMER_HAS_NARMESTELEDER,
+                virksomhetsPdf,
+                MotedeltakerVarselType.INNKALT,
+                arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
+                arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
+                true
+            )
+
+            verify(exactly = 1) { altinnClient.sendToVirksomhet(altinnMelding) }
 
             verify(exactly = 1) {
                 narmesteLederVarselService.sendVarsel(
@@ -112,6 +124,7 @@ object VarselServiceSpek : Spek({
                 MotedeltakerVarselType.INNKALT,
                 arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
                 arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
+                false
             )
 
             verify(exactly = 1) {

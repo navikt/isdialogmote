@@ -6,6 +6,9 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
+import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
@@ -43,12 +46,14 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
             val mqSenderMock = mockk<MQSenderInterface>()
+            val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
+                altinnMock = altinnMock,
             )
 
             val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
@@ -61,12 +66,19 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                 )
 
                 beforeEachTest {
+                    val altinnResponse = ReceiptExternal()
+                    altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
+
                     clearMocks(brukernotifikasjonProducer)
                     justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                     clearMocks(mqSenderMock)
                     justRun { mqSenderMock.sendMQMessage(any(), any()) }
                     clearMocks(dineSykmeldteVarselProducer)
                     justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
+                    clearMocks(altinnMock)
+                    every {
+                        altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
+                    } returns altinnResponse
                 }
 
                 afterEachTest {
