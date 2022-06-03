@@ -39,7 +39,7 @@ object VarselServiceSpek : Spek({
             clearMocks(altinnClient)
 
             justRun { arbeidstakerVarselService.sendVarsel(any(), any(), any(), any(), any()) }
-            justRun { narmesteLederVarselService.sendVarsel(any(), any(), any(), any()) }
+            justRun { narmesteLederVarselService.sendVarsel(any(), any()) }
             justRun { behandlerVarselService.sendVarsel(any(), any(), any(), any(), any(), any(), any(), any()) }
             justRun { altinnClient.sendToVirksomhet(any()) }
         }
@@ -53,7 +53,6 @@ object VarselServiceSpek : Spek({
             varselService.sendVarsel(
                 tidspunktForVarsel = tidspunktForVarsel,
                 varselType = MotedeltakerVarselType.INNKALT,
-                moteTidspunkt = moteTidspunkt,
                 isDigitalVarselEnabledForArbeidstaker = false,
                 arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
                 arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
@@ -86,7 +85,7 @@ object VarselServiceSpek : Spek({
 
             verify(exactly = 1) {
                 narmesteLederVarselService.sendVarsel(
-                    tidspunktForVarsel, moteTidspunkt, narmesteLeder, MotedeltakerVarselType.INNKALT
+                    narmesteLeder, MotedeltakerVarselType.INNKALT
                 )
             }
         }
@@ -98,7 +97,6 @@ object VarselServiceSpek : Spek({
             varselService.sendVarsel(
                 tidspunktForVarsel = LocalDateTime.now(),
                 varselType = MotedeltakerVarselType.INNKALT,
-                moteTidspunkt = LocalDateTime.now(),
                 isDigitalVarselEnabledForArbeidstaker = false,
                 arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
                 arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
@@ -133,7 +131,7 @@ object VarselServiceSpek : Spek({
                 )
             }
 
-            verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), any(), any()) }
+            verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any()) }
         }
     }
 })

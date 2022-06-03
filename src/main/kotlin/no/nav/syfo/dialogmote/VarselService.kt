@@ -23,7 +23,6 @@ class VarselService(
     fun sendVarsel(
         tidspunktForVarsel: LocalDateTime,
         varselType: MotedeltakerVarselType,
-        moteTidspunkt: LocalDateTime,
         isDigitalVarselEnabledForArbeidstaker: Boolean,
         arbeidstakerPersonIdent: PersonIdentNumber,
         arbeidstakernavn: String,
@@ -58,8 +57,6 @@ class VarselService(
 
         if (narmesteLeder != null) {
             narmesteLederVarselService.sendVarsel(
-                createdAt = tidspunktForVarsel,
-                moteTidspunkt = moteTidspunkt,
                 narmesteLeder = narmesteLeder,
                 varseltype = varselType,
             )
