@@ -67,7 +67,8 @@ fun testEnvironment(
     altinnUsername = "username",
     altinnPassword = "password",
     dokdistFordelingClientId = "dokdistFordelingClientId",
-    dokdistFordelingUrl = "http://dokdistfordeling"
+    dokdistFordelingUrl = "http://dokdistfordeling",
+    altinnSendingEnabled = true,
 )
 
 fun testAppState() = ApplicationState(
