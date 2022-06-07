@@ -29,7 +29,8 @@ object AltinnUtilSpek : Spek({
             )
 
             val mappedObject = mapToInsertCorrespondenceV2WS(
-                altinnMelding
+                altinnMelding = altinnMelding,
+                isAltinnNotificationEnabled = true,
             )
 
             mappedObject.reportee shouldBeEqualTo virksomhetsnummer.value

@@ -140,6 +140,7 @@ fun Application.apiModule(
         username = environment.altinnUsername,
         password = environment.altinnPassword,
         altinnSoapClient = altinnSoapClient,
+        isAltinnNotificationEnabled = environment.altinnNotificationEnabled
     )
 
     val varselService = VarselService(
