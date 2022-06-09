@@ -8,7 +8,6 @@ class AltinnClient(
     private val altinnSoapClient: ICorrespondenceAgencyExternalBasic,
     private val username: String,
     private val password: String,
-    private val isAltinnNotificationEnabled: Boolean,
 ) {
     private val SYSTEM_USER_CODE = "NAV_DIGISYFO"
     private val log = LoggerFactory.getLogger(AltinnClient::class.java)
@@ -20,7 +19,7 @@ class AltinnClient(
                 password,
                 SYSTEM_USER_CODE,
                 altinnMelding.reference.toString(),
-                mapToInsertCorrespondenceV2WS(altinnMelding, isAltinnNotificationEnabled)
+                mapToInsertCorrespondenceV2WS(altinnMelding)
             )
             if (receiptWS.receiptStatusCode != ReceiptStatusEnum.OK) {
                 log.error(

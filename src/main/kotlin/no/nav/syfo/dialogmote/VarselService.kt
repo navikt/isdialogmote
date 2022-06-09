@@ -18,6 +18,7 @@ class VarselService(
     private val narmesteLederVarselService: NarmesteLederVarselService,
     private val behandlerVarselService: BehandlerVarselService,
     private val altinnClient: AltinnClient,
+    private val isAltinnSendingEnabled: Boolean,
 ) {
 
     fun sendVarsel(
@@ -52,9 +53,11 @@ class VarselService(
             narmesteLeder != null,
         )
 
-        altinnClient.sendToVirksomhet(
-            altinnMelding = altinnMelding,
-        )
+        if (isAltinnSendingEnabled) {
+            altinnClient.sendToVirksomhet(
+                altinnMelding = altinnMelding,
+            )
+        }
 
         if (narmesteLeder != null) {
             narmesteLederVarselService.sendVarsel(

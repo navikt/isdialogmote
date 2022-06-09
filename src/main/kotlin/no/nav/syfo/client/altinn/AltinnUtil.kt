@@ -21,7 +21,6 @@ private const val NOTIFICATION_TYPE = "TokenTextOnly"
 
 fun mapToInsertCorrespondenceV2WS(
     altinnMelding: AltinnMelding,
-    isAltinnNotificationEnabled: Boolean
 ): InsertCorrespondenceV2 {
     val insertCorrespondenceV2 = InsertCorrespondenceV2()
         .withAllowForwarding(FALSE)
@@ -51,7 +50,7 @@ fun mapToInsertCorrespondenceV2WS(
                 )
         ).withArchiveReference(null)
 
-    if (!altinnMelding.hasNarmesteLeder && isAltinnNotificationEnabled) {
+    if (!altinnMelding.hasNarmesteLeder) {
         insertCorrespondenceV2.withNotifications(createNotifications(altinnMelding))
     }
 

@@ -30,6 +30,7 @@ object VarselServiceSpek : Spek({
             narmesteLederVarselService = narmesteLederVarselService,
             behandlerVarselService = behandlerVarselService,
             altinnClient = altinnClient,
+            isAltinnSendingEnabled = true
         )
 
         beforeEachTest {

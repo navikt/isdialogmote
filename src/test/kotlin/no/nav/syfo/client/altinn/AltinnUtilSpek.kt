@@ -28,10 +28,7 @@ object AltinnUtilSpek : Spek({
                 false
             )
 
-            val mappedObject = mapToInsertCorrespondenceV2WS(
-                altinnMelding = altinnMelding,
-                isAltinnNotificationEnabled = true,
-            )
+            val mappedObject = mapToInsertCorrespondenceV2WS(altinnMelding)
 
             mappedObject.reportee shouldBeEqualTo virksomhetsnummer.value
             mappedObject.content.attachments.binaryAttachments.binaryAttachmentV2.first().sendersReference shouldBeEqualTo "$brevId.pdf"
