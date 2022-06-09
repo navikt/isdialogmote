@@ -18,11 +18,11 @@ import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR_2
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewReferatDTO
 import no.nav.syfo.util.*
@@ -31,10 +31,10 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDateTime
 
-object NarmesteLederBrevSpek : Spek({
+object NarmesteLederBrevSpekV1 : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
 
-    describe(NarmesteLederBrevSpek::class.java.simpleName) {
+    describe(NarmesteLederBrevSpekV1::class.java.simpleName) {
         with(TestApplicationEngine()) {
             start()
 
@@ -83,9 +83,9 @@ object NarmesteLederBrevSpek : Spek({
                     virksomhetsnummer = OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value
                 )
                 val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
-                val validTokenSelvbetjening = generateJWTTokenx(
-                    audience = externalMockEnvironment.environment.tokenxClientId,
-                    issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
+                val validTokenSelvbetjening = generateJWTIdporten(
+                    audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
+                    issuer = externalMockEnvironment.wellKnownSelvbetjeningV1.issuer,
                     pid = NARMESTELEDER_FNR.value,
                 )
                 val validTokenVeileder = generateJWTNavIdent(
@@ -93,8 +93,8 @@ object NarmesteLederBrevSpek : Spek({
                     externalMockEnvironment.wellKnownVeilederV2.issuer,
                     VEILEDER_IDENT,
                 )
-                val incorrectTokenSelvbetjening = generateJWTTokenx(
-                    audience = externalMockEnvironment.environment.tokenxClientId,
+                val incorrectTokenSelvbetjening = generateJWTIdporten(
+                    audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
                     issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
                     pid = NARMESTELEDER_FNR_2.value,
                 )
@@ -131,7 +131,7 @@ object NarmesteLederBrevSpek : Spek({
                     }
 
                     with(
-                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePathV1) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(
                                 HttpHeaders.ContentType,
@@ -153,7 +153,7 @@ object NarmesteLederBrevSpek : Spek({
                     }
 
                     val urlNarmesteLederBrevUUIDLes =
-                        "$narmesteLederBrevApiBasePath/$uuid$narmesteLederBrevApiLesPath"
+                        "$narmesteLederBrevApiBasePathV1/$uuid$narmesteLederBrevApiLesPathV1"
 
                     with(
                         handleRequest(HttpMethod.Post, urlNarmesteLederBrevUUIDLes) {
@@ -172,7 +172,7 @@ object NarmesteLederBrevSpek : Spek({
                     }
 
                     with(
-                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePathV1) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(
                                 HttpHeaders.ContentType,
@@ -191,7 +191,7 @@ object NarmesteLederBrevSpek : Spek({
                         narmesteLederBrevDTO.lestDato.shouldNotBeNull()
                     }
                     val urlNarmesteLederBrevUUIDRespons =
-                        "$narmesteLederBrevApiBasePath/$uuid$narmesteLederBrevApiResponsPath"
+                        "$narmesteLederBrevApiBasePathV1/$uuid$narmesteLederBrevApiResponsPathV1"
 
                     with(
                         handleRequest(HttpMethod.Post, urlNarmesteLederBrevUUIDRespons) {
@@ -210,7 +210,7 @@ object NarmesteLederBrevSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                     }
                     with(
-                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePathV1) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                             addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
@@ -259,7 +259,7 @@ object NarmesteLederBrevSpek : Spek({
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                     }
-                    val pdfUrl = "$narmesteLederBrevApiBasePath/$uuid$narmesteLederBrevApiPdfPath"
+                    val pdfUrl = "$narmesteLederBrevApiBasePathV1/$uuid$narmesteLederBrevApiPdfPathV1"
                     with(
                         handleRequest(HttpMethod.Get, pdfUrl) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
@@ -284,7 +284,7 @@ object NarmesteLederBrevSpek : Spek({
 
                     val createdReferatArbeidsgiverBrevUUID: String
                     with(
-                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePathV1) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
                         }
@@ -307,7 +307,7 @@ object NarmesteLederBrevSpek : Spek({
                         createdReferatArbeidsgiverBrevUUID = arbeidsgiverBrevDTO.uuid
                     }
                     val urlReferatUUIDLes =
-                        "$narmesteLederBrevApiBasePath/$createdReferatArbeidsgiverBrevUUID$narmesteLederBrevApiLesPath"
+                        "$narmesteLederBrevApiBasePathV1/$createdReferatArbeidsgiverBrevUUID$narmesteLederBrevApiLesPathV1"
                     with(
                         handleRequest(HttpMethod.Post, urlReferatUUIDLes) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
@@ -317,7 +317,7 @@ object NarmesteLederBrevSpek : Spek({
                     }
                     val arbeidsgiverBrevDTO: NarmesteLederBrevDTO?
                     with(
-                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePathV1) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
                         }
@@ -340,7 +340,7 @@ object NarmesteLederBrevSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                     }
                     with(
-                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePathV1) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
                         }
@@ -356,7 +356,7 @@ object NarmesteLederBrevSpek : Spek({
                         arbeidstakerBrevUpdatedDTO.lestDato shouldBeEqualTo arbeidsgiverBrevDTO!!.lestDato
                     }
                     val urlPdfForReferatNedlasting =
-                        "$narmesteLederBrevApiBasePath/$createdReferatArbeidsgiverBrevUUID$narmesteLederBrevApiPdfPath"
+                        "$narmesteLederBrevApiBasePathV1/$createdReferatArbeidsgiverBrevUUID$narmesteLederBrevApiPdfPathV1"
                     with(
                         handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
@@ -382,7 +382,7 @@ object NarmesteLederBrevSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                     }
                     with(
-                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePathV1) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
                         }
@@ -423,7 +423,7 @@ object NarmesteLederBrevSpek : Spek({
                     }
 
                     with(
-                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePathV1) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(
                                 HttpHeaders.ContentType,
@@ -444,7 +444,7 @@ object NarmesteLederBrevSpek : Spek({
                 }
                 it("Return OK when no brev exists") {
                     with(
-                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePathV1) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(
                                 HttpHeaders.ContentType,
@@ -462,13 +462,13 @@ object NarmesteLederBrevSpek : Spek({
             }
             describe("Error handling") {
                 it("Return BAD REQUEST when $NAV_PERSONIDENT_HEADER is missing") {
-                    val validTokenSelvbetjening = generateJWTTokenx(
-                        audience = externalMockEnvironment.environment.tokenxClientId,
+                    val validTokenSelvbetjening = generateJWTIdporten(
+                        audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
                         issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
                         pid = NARMESTELEDER_FNR.value,
                     )
                     with(
-                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePathV1) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
                             addHeader(
                                 HttpHeaders.ContentType,
