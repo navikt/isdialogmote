@@ -326,7 +326,7 @@ class PostDialogmoteApiV2Spek : Spek({
                                 Instant.ofEpochMilli(oppgaveInput.getTidspunkt()).atOffset(ZoneOffset.UTC)
                                     .toLocalDateTime()
                             oppgaveTidspunkt shouldBeBefore createdAt // Since oppgaveTidspunkt is UTC
-                            oppgaveInput.getTekst() shouldBeEqualTo "Du har mottatt et brev om innkalling til dialogmøte"
+                            oppgaveInput.getTekst() shouldBeEqualTo "Du er innkalt til dialogmøte - vi trenger svaret ditt"
 
                             val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
                             verify(exactly = 1) {
