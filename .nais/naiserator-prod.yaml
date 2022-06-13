@@ -141,3 +141,5 @@ spec:
       value: "https://dokdistfordeling.prod-fss-pub.nais.io"
     - name: DOKDIST_FORDELING_CLIENT_ID
       value: "prod-fss.teamdokumenthandtering.saf"
+    - name: ALTINN_SENDING_ENABLED
+      value: "true"

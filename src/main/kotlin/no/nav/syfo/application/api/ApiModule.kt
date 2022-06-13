@@ -147,6 +147,7 @@ fun Application.apiModule(
         narmesteLederVarselService = narmesteLederVarselService,
         behandlerVarselService = behandlerVarselService,
         altinnClient = altinnClient,
+        isAltinnSendingEnabled = environment.altinnSendingEnabled
     )
 
     val dialogmoteService = DialogmoteService(
