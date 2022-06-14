@@ -27,10 +27,10 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDateTime
 
-class ArbeidstakerBrevApiSpek : Spek({
+class ArbeidstakerBrevApiSpekV1 : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
 
-    describe(ArbeidstakerBrevApiSpek::class.java.simpleName) {
+    describe(ArbeidstakerBrevApiSpekV1::class.java.simpleName) {
 
         with(TestApplicationEngine()) {
             start()
@@ -74,9 +74,9 @@ class ArbeidstakerBrevApiSpek : Spek({
             }
 
             describe("Les og respons ArbeidstakerBrev") {
-                val validTokenSelvbetjening = generateJWTTokenx(
-                    audience = externalMockEnvironment.environment.tokenxClientId,
-                    issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
+                val validTokenSelvbetjeningV1 = generateJWTIdporten(
+                    audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
+                    issuer = externalMockEnvironment.wellKnownSelvbetjeningV1.issuer,
                     pid = ARBEIDSTAKER_FNR.value,
                 )
                 val validTokenVeileder = generateJWTNavIdent(
@@ -87,7 +87,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                 describe("Happy path") {
                     val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
                     val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
-                    val urlArbeidstakerMoterList = arbeidstakerBrevApiPath
+                    val urlArbeidstakerMoterList = arbeidstakerBrevApiPathV1
 
                     it("should return OK if request is successful") {
                         val createdArbeidstakerBrevUUID: String
@@ -106,7 +106,7 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                         with(
                             handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -125,11 +125,11 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
 
                         val urlArbeidstakerBrevUUIDLes =
-                            "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
+                            "$arbeidstakerBrevApiPathV1/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPathV1"
 
                         with(
                             handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -138,7 +138,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         var arbeidstakerBrevDTO: ArbeidstakerBrevDTO?
                         with(
                             handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -162,7 +162,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
                         with(
                             handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -170,7 +170,7 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                         with(
                             handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -185,11 +185,11 @@ class ArbeidstakerBrevApiSpek : Spek({
                             verify(exactly = 1) { brukernotifikasjonProducer.sendDone(any(), any()) }
                         }
                         val urlArbeidstakerBrevUUIDRespons =
-                            "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiResponsPath"
+                            "$arbeidstakerBrevApiPathV1/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiResponsPathV1"
 
                         with(
                             handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDRespons) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(
                                     objectMapper.writeValueAsString(
@@ -205,7 +205,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
                         with(
                             handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -238,7 +238,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         // Repeated invocation should fail
                         with(
                             handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDRespons) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(
                                     objectMapper.writeValueAsString(
@@ -316,8 +316,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
                         val createdArbeidstakerBrevUUID: String
                         with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPathV1) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -337,19 +337,19 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
 
                         val urlArbeidstakerBrevUUIDLes =
-                            "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
+                            "$arbeidstakerBrevApiPathV1/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPathV1"
 
                         with(
                             handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                         }
 
                         with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPathV1) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -387,8 +387,8 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                         val createdReferatArbeidstakerBrevUUID: String
                         with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPathV1) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -410,18 +410,18 @@ class ArbeidstakerBrevApiSpek : Spek({
                             createdReferatArbeidstakerBrevUUID = arbeidstakerBrevDTO.uuid
                         }
                         val urlReferatUUIDLes =
-                            "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
+                            "$arbeidstakerBrevApiPathV1/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiLesPathV1"
                         with(
                             handleRequest(HttpMethod.Post, urlReferatUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                         }
                         var arbeidstakerBrevDTO: ArbeidstakerBrevDTO?
                         with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPathV1) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -436,14 +436,14 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
                         with(
                             handleRequest(HttpMethod.Post, urlReferatUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                         }
                         with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPathV1) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -457,10 +457,10 @@ class ArbeidstakerBrevApiSpek : Spek({
                             arbeidstakerBrevUpdatedDTO.lestDato shouldBeEqualTo arbeidstakerBrevDTO!!.lestDato
                         }
                         val urlPdfForInnkallingNedlasting =
-                            "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
+                            "$arbeidstakerBrevApiPathV1/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPathV1"
                         with(
                             handleRequest(HttpMethod.Get, urlPdfForInnkallingNedlasting) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -468,10 +468,10 @@ class ArbeidstakerBrevApiSpek : Spek({
                             pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkalling
                         }
                         val urlPdfForReferatNedlasting =
-                            "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
+                            "$arbeidstakerBrevApiPathV1/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPathV1"
                         with(
                             handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -484,8 +484,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                     val newDialogmoteInnkalt =
                         generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted", LocalDateTime.now().plusDays(30))
 
-                    val validTokenSelvbetjeningAnnenPerson = generateJWTTokenx(
-                        audience = externalMockEnvironment.environment.tokenxClientId,
+                    val validTokenSelvbetjeningAnnenPerson = generateJWTIdporten(
+                        audience = externalMockEnvironment.environment.loginserviceIdportenAudience.first(),
                         issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
                         pid = ARBEIDSTAKER_ANNEN_FNR.value,
                     )
@@ -519,8 +519,8 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                         val createdArbeidstakerBrevUUID: String
                         with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPathV1) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -535,7 +535,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
 
                         val urlArbeidstakerVarselUUIDLes =
-                            "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
+                            "$arbeidstakerBrevApiPathV1/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPathV1"
                         with(
                             handleRequest(HttpMethod.Post, urlArbeidstakerVarselUUIDLes) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
@@ -545,7 +545,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
 
                         with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
+                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPathV1) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
                             }
                         ) {
@@ -571,8 +571,8 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                         val createdReferatArbeidstakerBrevUUID: String
                         with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPathV1) {
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -586,7 +586,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                             createdReferatArbeidstakerBrevUUID = arbeidstakerBrevDTO.uuid
                         }
                         val urlReferatUUIDLes =
-                            "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
+                            "$arbeidstakerBrevApiPathV1/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiLesPathV1"
                         with(
                             handleRequest(HttpMethod.Post, urlReferatUUIDLes) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
@@ -596,7 +596,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
 
                         val urlPdfForInnkallingNedlasting =
-                            "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
+                            "$arbeidstakerBrevApiPathV1/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPathV1"
                         with(
                             handleRequest(HttpMethod.Get, urlPdfForInnkallingNedlasting) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
@@ -606,7 +606,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
                         with(
                             handleRequest(HttpMethod.Get, urlPdfForInnkallingNedlasting) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -615,7 +615,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
 
                         val urlPdfForReferatNedlasting =
-                            "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
+                            "$arbeidstakerBrevApiPathV1/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPathV1"
                         with(
                             handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
                                 addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
@@ -625,7 +625,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         }
                         with(
                             handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
+                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningV1))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK

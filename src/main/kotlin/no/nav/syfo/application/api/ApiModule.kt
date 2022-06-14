@@ -10,14 +10,11 @@ import no.nav.syfo.application.api.authentication.*
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.mq.MQSenderInterface
-import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
+import no.nav.syfo.brev.arbeidstaker.*
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
 import no.nav.syfo.brev.behandler.BehandlerVarselService
-import no.nav.syfo.brev.narmesteleder.NarmesteLederAccessService
-import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
+import no.nav.syfo.brev.narmesteleder.*
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
-import no.nav.syfo.brev.narmesteleder.registerNarmestelederBrevApi
 import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
@@ -40,6 +37,7 @@ fun Application.apiModule(
     dineSykmeldteVarselProducer: DineSykmeldteVarselProducer,
     mqSender: MQSenderInterface,
     environment: Environment,
+    wellKnownSelvbetjeningV1: WellKnown,
     wellKnownSelvbetjening: WellKnown,
     wellKnownVeilederV2: WellKnown,
     cache: RedisStore,
@@ -52,6 +50,11 @@ fun Application.apiModule(
         jwtIssuerList = listOf(
             JwtIssuer(
                 acceptedAudienceList = environment.loginserviceIdportenAudience,
+                jwtIssuerType = JwtIssuerType.SELVBETJENING_V1,
+                wellKnown = wellKnownSelvbetjeningV1,
+            ),
+            JwtIssuer(
+                acceptedAudienceList = listOf(environment.tokenxClientId),
                 jwtIssuerType = JwtIssuerType.SELVBETJENING,
                 wellKnown = wellKnownSelvbetjening,
             ),
@@ -183,6 +186,19 @@ fun Application.apiModule(
             registerDialogmoteActionsApiV2(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService
+            )
+        }
+        authenticate(JwtIssuerType.SELVBETJENING_V1.name) {
+            registerArbeidstakerBrevApiV1(
+                dialogmoteService = dialogmoteService,
+                dialogmotedeltakerService = dialogmotedeltakerService,
+                pdfService = pdfService,
+            )
+            registerNarmestelederBrevApiV1(
+                dialogmoteService = dialogmoteService,
+                dialogmotedeltakerService = dialogmotedeltakerService,
+                narmesteLederAccessService = narmesteLederTilgangService,
+                pdfService = pdfService,
             )
         }
         authenticate(JwtIssuerType.SELVBETJENING.name) {
