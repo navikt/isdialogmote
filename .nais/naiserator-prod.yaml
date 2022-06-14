@@ -85,6 +85,8 @@ spec:
       claims:
         extra:
           - "NAVident"
+  tokenx:
+    enabled: true
   envFrom:
     - configmap: loginservice-idporten
     - secret: isdialogmote-serviceuser
