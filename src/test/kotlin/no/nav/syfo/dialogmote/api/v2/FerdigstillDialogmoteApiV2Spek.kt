@@ -29,8 +29,7 @@ import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT_2
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import no.nav.syfo.util.*
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldNotBeEqualTo
+import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.util.*
@@ -195,7 +194,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Conflict
-                            response.content shouldBeEqualTo "Failed to Ferdigstille Dialogmote, already Ferdigstilt"
+                            response.content!! shouldContain "Failed to Ferdigstille Dialogmote, already Ferdigstilt"
                         }
 
                         val urlMoteUUIDAvlys =
@@ -209,7 +208,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Conflict
-                            response.content shouldBeEqualTo "Failed to Avlys Dialogmote: already Ferdigstilt"
+                            response.content!! shouldContain "Failed to Avlys Dialogmote: already Ferdigstilt"
                         }
 
                         val urlMoteUUIDPostTidSted =
@@ -223,7 +222,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Conflict
-                            response.content shouldBeEqualTo "Failed to change tid/sted, already Ferdigstilt"
+                            response.content!! shouldContain "Failed to change tid/sted, already Ferdigstilt"
                         }
                     }
                 }

@@ -523,7 +523,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                            response.content shouldBeEqualTo "Failed to change tid/sted: missing behandler"
+                            response.content!! shouldContain "Failed to change tid/sted: missing behandler"
                         }
                     }
                 }
