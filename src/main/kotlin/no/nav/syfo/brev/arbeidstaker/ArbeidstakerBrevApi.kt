@@ -19,7 +19,7 @@ import java.util.*
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 
-const val arbeidstakerBrevApiPath = "/api/v1/arbeidstaker/brev"
+const val arbeidstakerBrevApiPath = "/api/v2/arbeidstaker/brev"
 const val arbeidstakerBrevApiBrevParam = "brevuuid"
 const val arbeidstakerBrevApiLesPath = "/les"
 const val arbeidstakerBrevApiResponsPath = "/respons"

@@ -54,9 +54,10 @@ fun AuthenticationConfig.configureJwt(
                 JWTPrincipal(credential.payload)
             } else {
                 log.warn(
-                    "Auth: Unexpected audience for jwt {}, {}",
+                    "Auth: Unexpected audience for jwt {}, {}, {}",
                     StructuredArguments.keyValue("issuer", credential.payload.issuer),
-                    StructuredArguments.keyValue("audience", credential.payload.audience)
+                    StructuredArguments.keyValue("credential audience", credential.payload.audience),
+                    StructuredArguments.keyValue("expected audience", jwtIssuer.acceptedAudienceList),
                 )
                 null
             }

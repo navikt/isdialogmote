@@ -56,6 +56,12 @@ spec:
         - application: syfomoteoversikt
           namespace: teamsykefravr
           cluster: prod-fss
+        - application: flex-gateway
+          namespace: flex
+          cluster: prod-gcp
+        - application: dialogmote-frontend
+          namespace: team-esyfo
+          cluster: prod-gcp
     outbound:
       external:
         - host: "kafka-schema-registry.nais.adeo.no"
@@ -79,6 +85,8 @@ spec:
       claims:
         extra:
           - "NAVident"
+  tokenx:
+    enabled: true
   envFrom:
     - configmap: loginservice-idporten
     - secret: isdialogmote-serviceuser

@@ -9,13 +9,13 @@ object Versions {
     const val brukernotifikasjonAvro = "2.5.1"
     const val isdialogmoteSchema = "1.0.5"
     const val confluent = "7.1.1"
-    const val flyway = "8.5.9"
+    const val flyway = "8.5.11"
     const val hikari = "5.0.1"
-    const val jackson = "2.13.1"
-    const val jedis = "4.2.2"
+    const val jackson = "2.13.3"
+    const val jedis = "4.2.3"
     const val kafka = "3.2.0"
-    const val kafkaEmbedded = "3.1.4"
-    const val ktor = "2.0.1"
+    const val kafkaEmbedded = "3.1.6"
+    const val ktor = "2.0.2"
     const val jaxbApi = "2.3.1"
     const val jaxbRuntime = "2.3.6"
     const val kluent = "1.68"
@@ -30,7 +30,7 @@ object Versions {
     const val spek = "2.0.18"
     const val mq = "9.2.5.0"
     const val tjenesteSpesifikasjonerGithub = "1.2020.06.11-19.53-1cad83414166"
-    const val micrometerRegistry = "1.8.5"
+    const val micrometerRegistry = "1.9.0"
     const val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
     const val cxfVersion = "3.5.2"
     const val jaxsWsApiVersion = "2.3.1"
@@ -38,7 +38,7 @@ object Versions {
 }
 
 plugins {
-    kotlin("jvm") version "1.6.20"
+    kotlin("jvm") version "1.7.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.jlleitschuh.gradle.ktlint") version "10.2.1"
 }

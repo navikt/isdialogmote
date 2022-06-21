@@ -19,19 +19,19 @@ import java.util.*
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
 
-const val narmesteLederBrevApiBasePath = "/api/v2/narmesteleder/brev"
-const val narmesteLederBrevApiLesPath = "/les"
-const val narmesteLederBrevApiPdfPath = "/pdf"
-const val narmesteLederBrevApiResponsPath = "/respons"
-const val narmesteLederBrevApiBrevParam = "brevuuid"
+const val narmesteLederBrevApiBasePathV1 = "/api/v1/narmesteleder/brev"
+const val narmesteLederBrevApiLesPathV1 = "/les"
+const val narmesteLederBrevApiPdfPathV1 = "/pdf"
+const val narmesteLederBrevApiResponsPathV1 = "/respons"
+const val narmesteLederBrevApiBrevParamV1 = "brevuuid"
 
-fun Route.registerNarmestelederBrevApi(
+fun Route.registerNarmestelederBrevApiV1(
     dialogmoteService: DialogmoteService,
     dialogmotedeltakerService: DialogmotedeltakerService,
     narmesteLederAccessService: NarmesteLederAccessService,
     pdfService: PdfService,
 ) {
-    route(narmesteLederBrevApiBasePath) {
+    route(narmesteLederBrevApiBasePathV1) {
         get {
             val callId = getCallId()
             try {
@@ -56,14 +56,14 @@ fun Route.registerNarmestelederBrevApi(
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }
         }
-        get("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiPdfPath") {
+        get("/{$narmesteLederBrevApiBrevParamV1}$narmesteLederBrevApiPdfPathV1") {
             val callId = getCallId()
 
             try {
                 val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
-                val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
+                val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParamV1])
 
                 val brev = dialogmoteService.getNarmesteLederBrevFromUuid(brevUuid)
 
@@ -87,13 +87,13 @@ fun Route.registerNarmestelederBrevApi(
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }
         }
-        post("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiLesPath") {
+        post("/{$narmesteLederBrevApiBrevParamV1}$narmesteLederBrevApiLesPathV1") {
             val callId = getCallId()
             try {
                 val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
-                val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
+                val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParamV1])
 
                 val brev = dialogmoteService.getNarmesteLederBrevFromUuid(brevUuid)
 
@@ -123,12 +123,12 @@ fun Route.registerNarmestelederBrevApi(
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }
         }
-        post("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiResponsPath") {
+        post("/{$narmesteLederBrevApiBrevParamV1}$narmesteLederBrevApiResponsPathV1") {
             val callId = getCallId()
             try {
                 val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
-                val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
+                val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParamV1])
                 val responsDTO = call.receive<NarmesteLederResponsDTO>()
 
                 val brev = dialogmoteService.getNarmesteLederBrevFromUuid(brevUuid)
