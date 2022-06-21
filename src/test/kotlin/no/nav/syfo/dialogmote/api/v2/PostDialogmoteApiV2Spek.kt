@@ -37,7 +37,6 @@ import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.*
-import java.time.format.DateTimeFormatter
 
 class PostDialogmoteApiV2Spek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -111,7 +110,6 @@ class PostDialogmoteApiV2Spek : Spek({
 
                     it("should return OK if request is successful") {
                         val moteTidspunkt = LocalDateTime.now().plusDays(30)
-                        val moteTidspunktString = moteTidspunkt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
                         val newDialogmoteDTO = generateNewDialogmoteDTO(
                             personIdentNumber = ARBEIDSTAKER_FNR,
                             dato = moteTidspunkt,
@@ -136,7 +134,6 @@ class PostDialogmoteApiV2Spek : Spek({
                             xml.shouldContain("<kanal>EPOST</kanal><kontaktinformasjon>narmesteLederNavn@gmail.com</kontaktinformasjon>")
                             xml.shouldContain("<orgnummer>912345678</orgnummer>")
                             xml.shouldContain("<parameterListe><key>navn</key><value>narmesteLederNavn</value></parameterListe>")
-                            xml.shouldContain("<parameterListe><key>tidspunkt</key><value>$moteTidspunktString</value></parameterListe>")
                             clearMocks(mqSenderMock)
                             verify(exactly = 1) {
                                 altinnMock.insertCorrespondenceBasicV2(
