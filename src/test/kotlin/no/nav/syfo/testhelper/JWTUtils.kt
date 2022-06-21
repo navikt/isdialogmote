@@ -46,6 +46,20 @@ fun generateJWTIdporten(
     expiry = expiry,
 )
 
+fun generateJWTTokenx(
+    audience: String,
+    issuer: String,
+    pid: String? = "pid",
+    expiry: LocalDateTime? = LocalDateTime.now().plusHours(1)
+): String = generateJwt(
+    audience = audience,
+    claimValueMap = mapOf(
+        "pid" to pid,
+    ),
+    issuer = issuer,
+    expiry = expiry,
+)
+
 /* Utsteder en Bearer-token (En slik vi ber AzureAd om). OBS: Det er viktig at KeyId matcher kid i jwkset.json  */
 private fun generateJwt(
     audience: String,

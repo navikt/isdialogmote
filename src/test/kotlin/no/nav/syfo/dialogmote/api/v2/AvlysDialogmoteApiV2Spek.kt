@@ -197,7 +197,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Conflict
-                            response.content shouldBeEqualTo "Failed to Avlys Dialogmote: already Avlyst"
+                            response.content!! shouldContain "Failed to Avlys Dialogmote: already Avlyst"
                         }
 
                         val urlMoteUUIDFerdigstill =
@@ -212,7 +212,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Conflict
-                            response.content shouldBeEqualTo "Failed to Ferdigstille Dialogmote, already Avlyst"
+                            response.content!! shouldContain "Failed to Ferdigstille Dialogmote, already Avlyst"
                         }
 
                         val urlMoteUUIDPostTidSted =
@@ -227,7 +227,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Conflict
-                            response.content shouldBeEqualTo "Failed to change tid/sted, already Avlyst"
+                            response.content!! shouldContain "Failed to change tid/sted, already Avlyst"
                         }
                     }
                 }
@@ -366,7 +366,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                            response.content shouldBeEqualTo "Failed to Avlys Dialogmote: missing behandler"
+                            response.content!! shouldContain "Failed to Avlys Dialogmote: missing behandler"
                         }
                     }
                 }
