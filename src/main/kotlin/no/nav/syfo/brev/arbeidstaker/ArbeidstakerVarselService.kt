@@ -31,7 +31,7 @@ class ArbeidstakerVarselService(
         )
         val tekst = when (type) {
             MotedeltakerVarselType.INNKALT -> {
-                "Du har mottatt et brev om innkalling til dialogmøte"
+                "Du er innkalt til dialogmøte - vi trenger svaret ditt"
             }
             MotedeltakerVarselType.AVLYST -> {
                 "Du har mottatt et brev om avlyst dialogmøte"
