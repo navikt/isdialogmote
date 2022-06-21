@@ -472,7 +472,6 @@ class DialogmoteService(
             varselService.sendVarsel(
                 tidspunktForVarsel = now,
                 varselType = varselType,
-                moteTidspunkt = moteTidspunkt,
                 isDigitalVarselEnabledForArbeidstaker = digitalArbeidstakerVarsling,
                 arbeidstakerPersonIdent = arbeidstakerPersonIdent,
                 arbeidstakernavn = arbeidstakernavn,
@@ -658,7 +657,6 @@ class DialogmoteService(
             varselService.sendVarsel(
                 tidspunktForVarsel = now,
                 varselType = MotedeltakerVarselType.REFERAT,
-                moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
                 arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
                 arbeidstakerId = dialogmote.arbeidstaker.uuid,
@@ -766,7 +764,6 @@ class DialogmoteService(
             varselService.sendVarsel(
                 tidspunktForVarsel = LocalDateTime.now(),
                 varselType = MotedeltakerVarselType.REFERAT,
-                moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
                 arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
                 arbeidstakerId = dialogmote.arbeidstaker.uuid,

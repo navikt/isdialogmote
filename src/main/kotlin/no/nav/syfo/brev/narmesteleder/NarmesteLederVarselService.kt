@@ -9,9 +9,7 @@ import no.nav.syfo.brev.narmesteleder.domain.OpprettHendelse
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.dialogmote.domain.toDineSykmeldteVarselTekst
 import java.io.StringWriter
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
@@ -21,18 +19,10 @@ class NarmesteLederVarselService(
     private val dineSykmeldteVarselProducer: DineSykmeldteVarselProducer,
 ) {
     fun sendVarsel(
-        createdAt: LocalDateTime,
-        moteTidspunkt: LocalDateTime,
         narmesteLeder: NarmesteLederRelasjonDTO,
         varseltype: MotedeltakerVarselType
     ) {
         val parameterListe: MutableList<WSParameter> = ArrayList()
-        parameterListe.add(createParameter("createdAt", createdAt.format(DateTimeFormatter.ISO_DATE_TIME)))
-        parameterListe.add(
-            createParameter(
-                "tidspunkt", moteTidspunkt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
-            )
-        )
         parameterListe.add(createParameter("navn", narmesteLeder.narmesteLederNavn ?: "nærmeste leder"))
 
         val melding = opprettServiceMelding(narmesteLeder, varseltype, parameterListe)
