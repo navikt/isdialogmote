@@ -9,7 +9,7 @@ object Versions {
     const val brukernotifikasjonAvro = "2.5.1"
     const val isdialogmoteSchema = "1.0.5"
     const val confluent = "7.1.1"
-    const val flyway = "8.5.11"
+    const val flyway = "8.5.13"
     const val hikari = "5.0.1"
     const val jackson = "2.13.3"
     const val jedis = "4.2.3"
@@ -20,9 +20,9 @@ object Versions {
     const val jaxbRuntime = "2.3.6"
     const val kluent = "1.68"
     const val logback = "1.2.11"
-    const val logstashEncoder = "7.1.1"
-    const val mockk = "1.12.3"
-    const val nimbusjosejwt = "9.22"
+    const val logstashEncoder = "7.2"
+    const val mockk = "1.12.4"
+    const val nimbusjosejwt = "9.23"
     const val postgresEmbedded = "0.13.4"
     const val postgres = "42.3.4"
     const val redisEmbedded = "0.7.3"
@@ -30,7 +30,7 @@ object Versions {
     const val spek = "2.0.18"
     const val mq = "9.2.5.0"
     const val tjenesteSpesifikasjonerGithub = "1.2020.06.11-19.53-1cad83414166"
-    const val micrometerRegistry = "1.9.0"
+    const val micrometerRegistry = "1.9.1"
     const val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
     const val cxfVersion = "3.5.2"
     const val jaxsWsApiVersion = "2.3.1"
@@ -40,7 +40,7 @@ object Versions {
 plugins {
     kotlin("jvm") version "1.7.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("org.jlleitschuh.gradle.ktlint") version "10.2.1"
+    id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
 }
 
 val githubUser: String by project
