@@ -47,9 +47,7 @@ fun Application.cronjobModule(
         pdlUrl = environment.pdlUrl,
     )
     val eregClient = EregClient(
-        azureAdClient = azureAdV2Client,
-        isproxyClientId = environment.isproxyClientId,
-        baseUrl = environment.isproxyUrl,
+        baseUrl = environment.eregUrl,
     )
     val pdfService = PdfService(
         database = database,

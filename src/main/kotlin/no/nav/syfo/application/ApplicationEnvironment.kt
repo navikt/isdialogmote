@@ -38,8 +38,7 @@ data class Environment(
     val isoppfolgingstilfelleClientId: String = getEnvVar("ISOPPFOLGINGSTILFELLE_CLIENT_ID"),
     val isoppfolgingstilfelleUrl: String = getEnvVar("ISOPPFOLGINGSTILFELLE_URL"),
 
-    val isproxyUrl: String = getEnvVar("ISPROXY_URL"),
-    val isproxyClientId: String = getEnvVar("ISPROXY_CLIENT_ID"),
+    val eregUrl: String = getEnvVar("EREG_URL"),
     val sidecarInitialDelay: Long = getEnvVar("SIDECAR_INITIAL_DELAY", "30000").toLong(),
     val dialogmoteArbeidstakerUrl: String = getEnvVar("DIALOGMOTE_ARBEIDSTAKER_URL"),
     val dokarkivUrl: String = getEnvVar("DOKARKIV_URL"),
