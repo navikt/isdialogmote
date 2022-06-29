@@ -135,7 +135,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             xml.shouldContain("<orgnummer>912345678</orgnummer>")
                             xml.shouldContain("<parameterListe><key>navn</key><value>narmesteLederNavn</value></parameterListe>")
                             clearMocks(mqSenderMock)
-                            verify(exactly = 1) {
+                            // TODO Revert when Altinn can receive messages again
+                            verify(exactly = 0) {
                                 altinnMock.insertCorrespondenceBasicV2(
                                     any(),
                                     any(),
