@@ -82,7 +82,8 @@ object VarselServiceSpek : Spek({
                 true
             )
 
-            verify(exactly = 1) { altinnClient.sendToVirksomhet(altinnMelding) }
+            // TODO Revert when Altinn can receive messages again
+            verify(exactly = 0) { altinnClient.sendToVirksomhet(altinnMelding) }
 
             verify(exactly = 1) {
                 narmesteLederVarselService.sendVarsel(

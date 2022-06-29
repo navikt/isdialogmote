@@ -52,7 +52,8 @@ class VarselService(
             narmesteLeder != null,
         )
 
-        if (isAltinnSendingEnabled) {
+        // TODO Revert when Altinn can receive messages again
+        if (isAltinnSendingEnabled && narmesteLeder == null) {
             altinnClient.sendToVirksomhet(
                 altinnMelding = altinnMelding,
             )
