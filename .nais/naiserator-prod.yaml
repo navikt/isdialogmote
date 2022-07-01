@@ -67,7 +67,7 @@ spec:
         - host: "kafka-schema-registry.nais.adeo.no"
         - host: "login.microsoftonline.com"
         - host: "syfo-tilgangskontroll.prod-fss-pub.nais.io"
-        - host: "isproxy.prod-fss-pub.nais.io"
+        - host: "ereg-services.prod-fss-pub.nais.io"
         - host: "pdl-api.prod-fss-pub.nais.io"
         - host: "dokdistfordeling.prod-fss-pub.nais.io"
       rules:
@@ -109,10 +109,8 @@ spec:
       value: "prod-gcp.teamsykefravr.isoppfolgingstilfelle"
     - name: ISOPPFOLGINGSTILFELLE_URL
       value: "https://isoppfolgingstilfelle.intern.nav.no"
-    - name: ISPROXY_CLIENT_ID
-      value: "prod-fss.teamsykefravr.isproxy"
-    - name: ISPROXY_URL
-      value: "https://isproxy.prod-fss-pub.nais.io"
+    - name: EREG_URL
+      value: "https://ereg-services.prod-fss-pub.nais.io"
     - name: KRR_CLIENT_ID
       value: "prod-gcp.team-rocket.digdir-krr-proxy"
     - name: KRR_URL

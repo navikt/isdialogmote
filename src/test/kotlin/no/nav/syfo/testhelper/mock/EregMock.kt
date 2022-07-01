@@ -12,10 +12,10 @@ import no.nav.syfo.client.ereg.EregOrganisasjonResponse
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.getRandomPort
 
-class IsproxyMock {
+class EregMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
-    val name = "isproxy"
+    val name = "ereg"
 
     val server = embeddedServer(
         factory = Netty,

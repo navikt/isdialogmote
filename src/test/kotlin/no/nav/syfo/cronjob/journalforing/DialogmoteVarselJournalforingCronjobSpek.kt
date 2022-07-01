@@ -95,9 +95,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                 pdlUrl = externalMockEnvironment.pdlMock.url,
             )
             val eregClient = EregClient(
-                azureAdClient = azureAdV2Client,
-                isproxyClientId = externalMockEnvironment.environment.isproxyClientId,
-                baseUrl = externalMockEnvironment.environment.isproxyUrl,
+                baseUrl = externalMockEnvironment.environment.eregUrl,
             )
             val pdfService = PdfService(
                 database = database,

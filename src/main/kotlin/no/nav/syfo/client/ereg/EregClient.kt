@@ -5,15 +5,11 @@ import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.domain.Virksomhetsnummer
-import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 
 class EregClient(
-    private val azureAdClient: AzureAdV2Client,
-    private val isproxyClientId: String,
     baseUrl: String,
 ) {
     private val httpClient = httpClientDefault()
@@ -23,15 +19,9 @@ class EregClient(
     suspend fun organisasjonVirksomhetsnavn(
         virksomhetsnummer: Virksomhetsnummer,
     ): EregVirksomhetsnavn? {
-        val systemToken = azureAdClient.getSystemToken(
-            scopeClientId = isproxyClientId,
-        )?.accessToken
-            ?: throw RuntimeException("Failed to request Organisasjon from Isproxy-Ereg: Failed to get system token from AzureAD")
-
         try {
             val url = "$eregOrganisasjonUrl/${virksomhetsnummer.value}"
             val response = httpClient.get(url) {
-                header(HttpHeaders.Authorization, bearerHeader(systemToken))
                 accept(ContentType.Application.Json)
             }.body<EregOrganisasjonResponse>()
             COUNT_CALL_EREG_ORGANISASJON_SUCCESS.increment()
@@ -66,7 +56,7 @@ class EregClient(
     }
 
     companion object {
-        const val EREG_PATH = "/api/v1/ereg/organisasjon"
+        const val EREG_PATH = "/ereg/api/v1/organisasjon"
         private val log = LoggerFactory.getLogger(EregClient::class.java)
     }
 }
