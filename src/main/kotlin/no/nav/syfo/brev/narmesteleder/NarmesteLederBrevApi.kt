@@ -35,6 +35,7 @@ fun Route.registerNarmestelederBrevApi(
         get {
             val callId = getCallId()
             try {
+                val token = this.getBearerHeader()
                 val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
@@ -48,6 +49,7 @@ fun Route.registerNarmestelederBrevApi(
                     callId = callId,
                     moteList = moteList,
                     narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
+                    tokenx = token,
                 )
                 call.respond(narmesteLederMoter.toNarmesteLederBrevDTOList())
             } catch (e: IllegalArgumentException) {
@@ -60,6 +62,7 @@ fun Route.registerNarmestelederBrevApi(
             val callId = getCallId()
 
             try {
+                val token = this.getBearerHeader()
                 val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
@@ -70,6 +73,7 @@ fun Route.registerNarmestelederBrevApi(
                 val hasAccessToBrev = narmesteLederAccessService.hasAccessToBrev(
                     brev = brev,
                     callId = callId,
+                    tokenx = token,
                     narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
                 )
 
@@ -90,6 +94,7 @@ fun Route.registerNarmestelederBrevApi(
         post("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiLesPath") {
             val callId = getCallId()
             try {
+                val token = this.getBearerHeader()
                 val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
@@ -100,6 +105,7 @@ fun Route.registerNarmestelederBrevApi(
                 val hasAccessToBrev = narmesteLederAccessService.hasAccessToBrev(
                     brev = brev,
                     callId = callId,
+                    tokenx = token,
                     narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
                 )
 
@@ -126,6 +132,7 @@ fun Route.registerNarmestelederBrevApi(
         post("/{$narmesteLederBrevApiBrevParam}$narmesteLederBrevApiResponsPath") {
             val callId = getCallId()
             try {
+                val token = this.getBearerHeader()
                 val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
                 val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
@@ -136,6 +143,7 @@ fun Route.registerNarmestelederBrevApi(
                 val hasAccessToBrev = narmesteLederAccessService.hasAccessToBrev(
                     brev = brev,
                     callId = callId,
+                    tokenx = token,
                     narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
                 )
                 if (hasAccessToBrev) {

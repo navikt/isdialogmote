@@ -91,7 +91,7 @@ private fun generateJwt(
     return baseJwtBuilder.sign(alg)
 }
 
-private fun getDefaultRSAKey(): RSAKey {
+fun getDefaultRSAKey(): RSAKey {
     return getJWKSet().getKeyByKeyId(keyId) as RSAKey
 }
 
