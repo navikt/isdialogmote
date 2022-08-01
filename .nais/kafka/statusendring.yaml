@@ -38,3 +38,6 @@ spec:
     - team: teamsykefravr
       application: syfooversiktsrv
       access: read
+    - team: disykefravar
+      application: dvh-syfo-isdialogmote-konsument
+      access: read
