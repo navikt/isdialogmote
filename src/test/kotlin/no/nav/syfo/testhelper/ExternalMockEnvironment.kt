@@ -9,8 +9,8 @@ class ExternalMockEnvironment private constructor() {
     val applicationState: ApplicationState = testAppState()
     val database = TestDatabase()
     val embeddedEnvironment: KafkaEnvironment = testKafka()
-
     val azureAdV2Mock = AzureAdV2Mock()
+    val tokendingsMock = TokendingsMock()
     val dokarkivMock = DokarkivMock()
     val pdlMock = PdlMock()
     val isdialogmotepdfgenMock = IsdialogmotepdfgenMock()
@@ -24,6 +24,7 @@ class ExternalMockEnvironment private constructor() {
 
     val externalApplicationMockMap = hashMapOf(
         azureAdV2Mock.name to azureAdV2Mock.server,
+        tokendingsMock.name to tokendingsMock.server,
         dokarkivMock.name to dokarkivMock.server,
         isdialogmotepdfgenMock.name to isdialogmotepdfgenMock.server,
         isoppfolgingstilfelleMock.name to isoppfolgingstilfelleMock.server,
@@ -39,6 +40,7 @@ class ExternalMockEnvironment private constructor() {
     var environment = testEnvironment(
         kafkaBootstrapServers = embeddedEnvironment.brokersURL,
         azureTokenEndpoint = azureAdV2Mock.url,
+        tokenxEndpoint = tokendingsMock.url,
         dokarkivUrl = dokarkivMock.url,
         isdialogmotepdfgenUrl = isdialogmotepdfgenMock.url,
         isoppfolgingstilfelleUrl = isoppfolgingstilfelleMock.url,

@@ -16,6 +16,7 @@ class NarmesteLederAccessService(
         callId: String,
         moteList: List<Dialogmote>,
         narmesteLederPersonIdentNumber: PersonIdentNumber,
+        tokenx: String? = null,
     ): List<Dialogmote> {
         return if (moteList.isEmpty()) {
             moteList
@@ -25,6 +26,7 @@ class NarmesteLederAccessService(
                     arbeidstakerPersonIdentNumber = arbeidstakerPersonIdentNumber,
                     callId = callId,
                     narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
+                    tokenx = tokenx,
                 )
             moteList.filter { virksomhetnummerListWhereNarmesteLederOfArbeidstaker.contains(it.arbeidsgiver.virksomhetsnummer) }
         }
@@ -33,6 +35,7 @@ class NarmesteLederAccessService(
     suspend fun hasAccessToBrev(
         brev: NarmesteLederBrev,
         callId: String,
+        tokenx: String? = null,
         narmesteLederPersonIdentNumber: PersonIdentNumber,
     ): Boolean {
         val dialogmoteDeltagerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(
@@ -46,6 +49,7 @@ class NarmesteLederAccessService(
         val virksomhetnummerListWhereNarmesteLederOfArbeidstaker = getVirksomhetnummerListWhereNarmesteLederOfArbeidstaker(
             arbeidstakerPersonIdentNumber = arbeidstakerPersonIdent,
             callId = callId,
+            tokenx = tokenx,
             narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
         )
         return virksomhetnummerListWhereNarmesteLederOfArbeidstaker.contains(dialogmoteDeltagerArbeidsgiver.virksomhetsnummer)
@@ -55,8 +59,13 @@ class NarmesteLederAccessService(
         arbeidstakerPersonIdentNumber: PersonIdentNumber,
         callId: String,
         narmesteLederPersonIdentNumber: PersonIdentNumber,
+        tokenx: String? = null,
     ): List<Virksomhetsnummer> {
-        val aktiveAnsatteRelasjoner = narmesteLederClient.getAktiveAnsatte(narmesteLederPersonIdentNumber, callId)
+        val aktiveAnsatteRelasjoner = narmesteLederClient.getAktiveAnsatte(
+            narmesteLederIdent = narmesteLederPersonIdentNumber,
+            tokenx = tokenx,
+            callId = callId,
+        )
         return aktiveAnsatteRelasjoner.filter { nlrelasjon ->
             nlrelasjon.arbeidstakerPersonIdentNumber == arbeidstakerPersonIdentNumber.value
         }.map { relasjon ->

@@ -24,6 +24,7 @@ import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.api.v2.*
@@ -72,6 +73,11 @@ fun Application.apiModule(
         aadAppSecret = environment.aadAppSecret,
         aadTokenEndpoint = environment.aadTokenEndpoint,
         redisStore = cache,
+    )
+    val tokendingsClient = TokendingsClient(
+        tokenxClientId = environment.tokenxClientId,
+        tokenxEndpoint = environment.tokenxEndpoint,
+        tokenxPrivateJWK = environment.tokenxPrivateJWK,
     )
     val pdlClient = PdlClient(
         azureAdV2Client = azureAdV2Client,
@@ -133,6 +139,7 @@ fun Application.apiModule(
         narmesteLederBaseUrl = environment.narmestelederUrl,
         narmestelederClientId = environment.narmestelederClientId,
         azureAdV2Client = azureAdV2Client,
+        tokendingsClient = tokendingsClient,
         cache = cache,
     )
     val pdfService = PdfService(

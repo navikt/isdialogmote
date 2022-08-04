@@ -2,12 +2,12 @@ package no.nav.syfo.testhelper
 
 import no.nav.syfo.application.*
 import java.net.ServerSocket
-import java.util.*
 
 fun testEnvironment(
     kafkaBootstrapServers: String,
     dokarkivUrl: String = "http://dokarkiv",
     azureTokenEndpoint: String = "azureTokenEndpoint",
+    tokenxEndpoint: String = "tokenxEndpoint",
     isdialogmotepdfgenUrl: String? = null,
     isoppfolgingstilfelleUrl: String = "isoppfolgingstilfelle",
     eregUrl: String = "ereg",
@@ -22,7 +22,8 @@ fun testEnvironment(
     aadTokenEndpoint = azureTokenEndpoint,
     azureAppWellKnownUrl = "wellknown",
     tokenxClientId = "tokenx-client-id",
-    tokenxEndpoint = "tokenxEndpoint",
+    tokenxEndpoint = tokenxEndpoint,
+    tokenxPrivateJWK = getDefaultRSAKey().toJSONString(),
     tokenxWellKnownUrl = "tokenx-wellknown",
     dokarkivClientId = "dokarkiv-client-id",
     isoppfolgingstilfelleClientId = "isoppfolgingstilfelle-client-id",
@@ -80,9 +81,4 @@ fun testAppState() = ApplicationState(
 
 fun getRandomPort() = ServerSocket(0).use {
     it.localPort
-}
-
-fun Properties.overrideForTest(): Properties = apply {
-    remove("security.protocol")
-    remove("sasl.mechanism")
 }

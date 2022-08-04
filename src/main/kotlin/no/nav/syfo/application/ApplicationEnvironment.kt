@@ -12,6 +12,7 @@ data class Environment(
     val tokenxClientId: String = getEnvVar("TOKEN_X_CLIENT_ID"),
     val tokenxEndpoint: String = getEnvVar("TOKEN_X_TOKEN_ENDPOINT"),
     val tokenxWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
+    val tokenxPrivateJWK: String = getEnvVar("TOKEN_X_PRIVATE_JWK"),
     val dokarkivClientId: String = getEnvVar("DOKARKIV_CLIENT_ID"),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),

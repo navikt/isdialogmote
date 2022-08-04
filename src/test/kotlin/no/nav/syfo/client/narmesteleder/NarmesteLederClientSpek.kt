@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.azuread.AzureAdV2Token
+import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
@@ -30,11 +31,13 @@ class NarmesteLederClientSpek : Spek({
 
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val azureAdV2ClientMock = mockk<AzureAdV2Client>()
+            val tokendingsClientMock = mockk<TokendingsClient>()
             val cacheMock = mockk<RedisStore>()
             val client = NarmesteLederClient(
                 narmesteLederBaseUrl = externalMockEnvironment.environment.narmestelederUrl,
                 narmestelederClientId = externalMockEnvironment.environment.narmestelederClientId,
                 azureAdV2Client = azureAdV2ClientMock,
+                tokendingsClient = tokendingsClientMock,
                 cache = cacheMock,
             )
             val cacheKey =
