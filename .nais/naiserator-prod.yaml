@@ -62,6 +62,9 @@ spec:
         - application: dialogmote-frontend
           namespace: team-esyfo
           cluster: prod-gcp
+        - application: ditt-sykefravaer
+          namespace: flex
+          cluster: prod-gcp
     outbound:
       external:
         - host: "kafka-schema-registry.nais.adeo.no"
