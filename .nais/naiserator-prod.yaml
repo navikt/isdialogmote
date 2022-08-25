@@ -56,9 +56,6 @@ spec:
         - application: syfomoteoversikt
           namespace: teamsykefravr
           cluster: prod-fss
-        - application: flex-gateway
-          namespace: flex
-          cluster: prod-gcp
         - application: dialogmote-frontend
           namespace: team-esyfo
           cluster: prod-gcp
