@@ -14,8 +14,8 @@ object Versions {
     const val jackson = "2.13.3"
     const val jedis = "4.2.3"
     const val kafka = "3.2.0"
-    const val kafkaEmbedded = "3.1.6"
-    const val ktor = "2.0.3"
+    const val kafkaEmbedded = "3.2.1"
+    const val ktor = "2.1.0"
     const val jaxbApi = "2.3.1"
     const val jaxbRuntime = "2.3.6"
     const val kluent = "1.68"
@@ -120,6 +120,14 @@ dependencies {
         }
     }
     testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded}", excludeLog4j)
+    constraints {
+        implementation("org.eclipse.jetty.http2:http2-server") {
+            because("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-2048/")
+            version {
+                require("9.4.48.v20220622")
+            }
+        }
+    }
 
     // MQ
     implementation("com.ibm.mq:com.ibm.mq.allclient:${Versions.mq}")
