@@ -15,8 +15,6 @@ data class Environment(
     val tokenxPrivateJWK: String = getEnvVar("TOKEN_X_PRIVATE_JWK"),
     val dokarkivClientId: String = getEnvVar("DOKARKIV_CLIENT_ID"),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
-    val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
-    val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
     val kafka: ApplicationEnvironmentKafka = ApplicationEnvironmentKafka(
         aivenBootstrapServers = getEnvVar("KAFKA_BROKERS"),
         aivenSchemaRegistryUrl = getEnvVar("KAFKA_SCHEMA_REGISTRY"),

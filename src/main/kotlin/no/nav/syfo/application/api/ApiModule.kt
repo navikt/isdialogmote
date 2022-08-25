@@ -38,7 +38,6 @@ fun Application.apiModule(
     dineSykmeldteVarselProducer: DineSykmeldteVarselProducer,
     mqSender: MQSenderInterface,
     environment: Environment,
-    wellKnownSelvbetjeningV1: WellKnown,
     wellKnownSelvbetjening: WellKnown,
     wellKnownVeilederV2: WellKnown,
     cache: RedisStore,
@@ -49,11 +48,6 @@ fun Application.apiModule(
     installContentNegotiation()
     installJwtAuthentication(
         jwtIssuerList = listOf(
-            JwtIssuer(
-                acceptedAudienceList = environment.loginserviceIdportenAudience,
-                jwtIssuerType = JwtIssuerType.SELVBETJENING_V1,
-                wellKnown = wellKnownSelvbetjeningV1,
-            ),
             JwtIssuer(
                 acceptedAudienceList = listOf(environment.tokenxClientId),
                 jwtIssuerType = JwtIssuerType.SELVBETJENING,
@@ -193,19 +187,6 @@ fun Application.apiModule(
             registerDialogmoteActionsApiV2(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService
-            )
-        }
-        authenticate(JwtIssuerType.SELVBETJENING_V1.name) {
-            registerArbeidstakerBrevApiV1(
-                dialogmoteService = dialogmoteService,
-                dialogmotedeltakerService = dialogmotedeltakerService,
-                pdfService = pdfService,
-            )
-            registerNarmestelederBrevApiV1(
-                dialogmoteService = dialogmoteService,
-                dialogmotedeltakerService = dialogmotedeltakerService,
-                narmesteLederAccessService = narmesteLederTilgangService,
-                pdfService = pdfService,
             )
         }
         authenticate(JwtIssuerType.SELVBETJENING.name) {

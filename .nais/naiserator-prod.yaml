@@ -91,7 +91,6 @@ spec:
   tokenx:
     enabled: true
   envFrom:
-    - configmap: loginservice-idporten
     - secret: isdialogmote-serviceuser
     - secret: isdialogmote-redis-password
     - secret: isdialogmote-altinnuser

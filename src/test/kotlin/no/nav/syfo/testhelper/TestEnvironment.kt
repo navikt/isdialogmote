@@ -30,8 +30,6 @@ fun testEnvironment(
     isoppfolgingstilfelleUrl = isoppfolgingstilfelleUrl,
     eregUrl = eregUrl,
     electorPath = "electorPath",
-    loginserviceIdportenDiscoveryUrl = "",
-    loginserviceIdportenAudience = listOf("idporten"),
     kafka = ApplicationEnvironmentKafka(
         aivenBootstrapServers = kafkaBootstrapServers,
         aivenSchemaRegistryUrl = "http://kafka-schema-registry.tpa.svc.nais.local:8081",
