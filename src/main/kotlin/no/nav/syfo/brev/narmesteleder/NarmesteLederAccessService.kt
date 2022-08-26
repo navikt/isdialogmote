@@ -16,7 +16,7 @@ class NarmesteLederAccessService(
         callId: String,
         moteList: List<Dialogmote>,
         narmesteLederPersonIdentNumber: PersonIdentNumber,
-        tokenx: String? = null,
+        tokenx: String,
     ): List<Dialogmote> {
         return if (moteList.isEmpty()) {
             moteList
@@ -35,7 +35,7 @@ class NarmesteLederAccessService(
     suspend fun hasAccessToBrev(
         brev: NarmesteLederBrev,
         callId: String,
-        tokenx: String? = null,
+        tokenx: String,
         narmesteLederPersonIdentNumber: PersonIdentNumber,
     ): Boolean {
         val dialogmoteDeltagerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(
@@ -59,7 +59,7 @@ class NarmesteLederAccessService(
         arbeidstakerPersonIdentNumber: PersonIdentNumber,
         callId: String,
         narmesteLederPersonIdentNumber: PersonIdentNumber,
-        tokenx: String? = null,
+        tokenx: String,
     ): List<Virksomhetsnummer> {
         val aktiveAnsatteRelasjoner = narmesteLederClient.getAktiveAnsatte(
             narmesteLederIdent = narmesteLederPersonIdentNumber,

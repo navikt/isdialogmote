@@ -23,7 +23,6 @@ class NarmesteLederClient(
     private val cache: RedisStore,
 ) {
     private val narmesteLederPath = "$narmesteLederBaseUrl$CURRENT_NARMESTELEDER_PATH"
-    private val ansatteNarmesteLederSystemPath = "$narmesteLederBaseUrl$NARMESTELEDERE_SYSTEM_PATH"
     private val ansatteNarmesteLederSelvbetjeningPath = "$narmesteLederBaseUrl$NARMESTELEDERE_SELVBETJENING_PATH"
 
     private val httpClient = httpClientDefault()
@@ -62,7 +61,7 @@ class NarmesteLederClient(
 
     suspend fun getAktiveAnsatte(
         narmesteLederIdent: PersonIdentNumber,
-        tokenx: String? = null,
+        tokenx: String,
         callId: String,
     ): List<NarmesteLederRelasjonDTO> {
         val cacheKey = "$CACHE_NARMESTE_LEDER_AKTIVE_ANSATTE_KEY_PREFIX${narmesteLederIdent.value}"
@@ -71,17 +70,13 @@ class NarmesteLederClient(
             COUNT_CALL_NARMESTE_LEDER_CACHE_HIT.increment()
             cachedNarmesteLedere
         } else {
-            val token = tokenx?.let {
-                tokendingsClient.getOnBehalfOfToken(
-                    scopeClientId = narmestelederClientId,
-                    token = it,
-                ).accessToken
-            } ?: azureAdV2Client.getSystemToken(narmestelederClientId)?.accessToken
-                ?: throw RuntimeException("Could not get AktiveAnsatte: Failed to get azureAD system token")
+            val token = tokendingsClient.getOnBehalfOfToken(
+                scopeClientId = narmestelederClientId,
+                token = tokenx,
+            ).accessToken
 
-            val path = if (tokenx != null) ansatteNarmesteLederSelvbetjeningPath else ansatteNarmesteLederSystemPath
             try {
-                val narmesteLedere = httpClient.get(path) {
+                val narmesteLedere = httpClient.get(ansatteNarmesteLederSelvbetjeningPath) {
                     header(HttpHeaders.Authorization, bearerHeader(token))
                     header(NAV_PERSONIDENT_HEADER, narmesteLederIdent.value)
                     header(NAV_CALL_ID_HEADER, callId)
@@ -123,7 +118,6 @@ class NarmesteLederClient(
         const val CACHE_NARMESTE_LEDER_EXPIRE_SECONDS = 3600L
 
         const val CURRENT_NARMESTELEDER_PATH = "/api/v1/narmestelederrelasjon/personident"
-        const val NARMESTELEDERE_SYSTEM_PATH = "/api/system/v1/narmestelederrelasjoner"
         const val NARMESTELEDERE_SELVBETJENING_PATH = "/api/selvbetjening/v1/narmestelederrelasjoner"
     }
 }

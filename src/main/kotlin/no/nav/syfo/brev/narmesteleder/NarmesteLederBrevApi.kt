@@ -36,6 +36,7 @@ fun Route.registerNarmestelederBrevApi(
             val callId = getCallId()
             try {
                 val token = this.getBearerHeader()
+                    ?: throw IllegalArgumentException("No token found")
                 val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
@@ -63,6 +64,7 @@ fun Route.registerNarmestelederBrevApi(
 
             try {
                 val token = this.getBearerHeader()
+                    ?: throw IllegalArgumentException("No token found")
                 val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
@@ -95,6 +97,7 @@ fun Route.registerNarmestelederBrevApi(
             val callId = getCallId()
             try {
                 val token = this.getBearerHeader()
+                    ?: throw IllegalArgumentException("No token found")
                 val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
@@ -133,6 +136,7 @@ fun Route.registerNarmestelederBrevApi(
             val callId = getCallId()
             try {
                 val token = this.getBearerHeader()
+                    ?: throw IllegalArgumentException("No token found")
                 val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
                 val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
