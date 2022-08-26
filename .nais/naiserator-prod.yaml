@@ -56,9 +56,6 @@ spec:
         - application: syfomoteoversikt
           namespace: teamsykefravr
           cluster: prod-fss
-        - application: flex-gateway
-          namespace: flex
-          cluster: prod-gcp
         - application: dialogmote-frontend
           namespace: team-esyfo
           cluster: prod-gcp
@@ -91,7 +88,6 @@ spec:
   tokenx:
     enabled: true
   envFrom:
-    - configmap: loginservice-idporten
     - secret: isdialogmote-serviceuser
     - secret: isdialogmote-redis-password
     - secret: isdialogmote-altinnuser

@@ -97,7 +97,6 @@ fun main() {
                 dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSender = mqSender,
                 environment = environment,
-                wellKnownSelvbetjeningV1 = getWellKnown(environment.loginserviceIdportenDiscoveryUrl),
                 wellKnownSelvbetjening = getWellKnown(environment.tokenxWellKnownUrl),
                 wellKnownVeilederV2 = getWellKnown(environment.azureAppWellKnownUrl),
                 cache = cache,
