@@ -65,7 +65,7 @@ fun Route.registerDialogmoteEnhetApiV2(
                         call.respond(dialogmoteDTOList)
                     }
                     else -> {
-                        val accessDeniedMessage = "Denied Veileder access to Dialogmoter for EnhetNr"
+                        val accessDeniedMessage = "Denied Veileder access to Dialogmoter for EnhetNr $enhetNr"
                         log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
                         call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
                     }
