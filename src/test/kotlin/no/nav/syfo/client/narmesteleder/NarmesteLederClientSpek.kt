@@ -7,6 +7,7 @@ import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.azuread.AzureAdV2Token
 import no.nav.syfo.client.tokendings.TokendingsClient
+import no.nav.syfo.client.tokendings.TokenendingsToken
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
@@ -67,6 +68,13 @@ class NarmesteLederClientSpek : Spek({
                 expires = LocalDateTime.now().plusDays(1)
             )
 
+            coEvery {
+                tokendingsClientMock.getOnBehalfOfToken(externalMockEnvironment.environment.narmestelederClientId, anyToken)
+            } returns TokenendingsToken(
+                accessToken = anyToken,
+                expires = LocalDateTime.now().plusDays(1)
+            )
+
             beforeEachTest {
                 clearMocks(cacheMock)
             }
@@ -78,6 +86,7 @@ class NarmesteLederClientSpek : Spek({
                 runBlocking {
                     client.getAktiveAnsatte(
                         narmesteLederIdent = NARMESTELEDER_FNR,
+                        tokenx = anyToken,
                         callId = anyCallId,
                     ).size shouldBeEqualTo 1
                 }
@@ -94,6 +103,7 @@ class NarmesteLederClientSpek : Spek({
                     runBlocking {
                         client.getAktiveAnsatte(
                             narmesteLederIdent = NARMESTELEDER_FNR,
+                            tokenx = anyToken,
                             callId = anyCallId,
                         ).size shouldBeEqualTo 2
                     }
