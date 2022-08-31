@@ -14,11 +14,20 @@ data class OppfolgingstilfelleDTO(
     val virksomhetsnummerList: List<String>,
 )
 
-fun OppfolgingstilfellePersonDTO.toLatestOppfolgingstilfelle(): Oppfolgingstilfelle? =
-    this.oppfolgingstilfelleList.maxByOrNull { oppfolgingstilfelle -> oppfolgingstilfelle.start }
-        ?.let { oppfolgingstilfelleDTO ->
-            Oppfolgingstilfelle(
-                start = oppfolgingstilfelleDTO.start,
-                end = oppfolgingstilfelleDTO.end,
-            )
-        }
+fun OppfolgingstilfellePersonDTO.toLatestOppfolgingstilfelle(): Oppfolgingstilfelle? {
+    val latestTilfelleStartDate =
+        this.oppfolgingstilfelleList.maxByOrNull { oppfolgingstilfelle -> oppfolgingstilfelle.start }?.start
+
+    val allTilfellerWithLatestStart =
+        this.oppfolgingstilfelleList.filter { oppfolgingstilfelle -> oppfolgingstilfelle.start == latestTilfelleStartDate }
+
+    val latestTilfelleWithLatestEnd =
+        allTilfellerWithLatestStart.maxByOrNull { oppfolgingstilfelle -> oppfolgingstilfelle.end }
+
+    return latestTilfelleWithLatestEnd?.let { oppfolgingstilfelleDTO ->
+        Oppfolgingstilfelle(
+            start = oppfolgingstilfelleDTO.start,
+            end = oppfolgingstilfelleDTO.end,
+        )
+    }
+}
