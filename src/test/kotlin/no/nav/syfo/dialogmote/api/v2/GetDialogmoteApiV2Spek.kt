@@ -201,7 +201,7 @@ class GetDialogmoteApiV2Spek : Spek({
                     }
                 }
 
-                it("should return status OK for person with Adressbeskyttese") {
+                it("should return status OK for person with Adressebeskyttelse") {
                     with(
                         handleRequest(HttpMethod.Get, urlMote) {
                             addHeader(Authorization, bearerHeader(validToken))

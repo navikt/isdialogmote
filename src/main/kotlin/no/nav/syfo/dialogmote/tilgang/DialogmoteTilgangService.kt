@@ -28,12 +28,13 @@ class DialogmoteTilgangService(
         token: String,
         callId: String,
     ): List<PersonIdentNumber> {
-        return veilederTilgangskontrollClient.hasAccessToPersonList(
+        val personIdentList = veilederTilgangskontrollClient.hasAccessToPersonList(
             personIdentNumberList = personIdentNumberList,
             token = token,
             callId = callId,
-        ).filter { personIdentNumber ->
-            kode6Enabled || !adressebeskyttelseClient.hasAdressebeskyttelse(personIdentNumber, callId)
+        )
+        return if (kode6Enabled) personIdentList else personIdentList.filter { personIdentNumber ->
+            !adressebeskyttelseClient.hasAdressebeskyttelse(personIdentNumber, callId)
         }
     }
 }
