@@ -10,6 +10,7 @@ import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.oppfolgingstilfelle.*
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
@@ -52,6 +53,7 @@ class IsoppfolgingstilfelleMock {
             get(ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH) {
                 when (getPersonIdentHeader()) {
                     ARBEIDSTAKER_FNR.value -> call.respond(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_FNR))
+                    ARBEIDSTAKER_ADRESSEBESKYTTET.value -> call.respond(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_ADRESSEBESKYTTET))
                     ARBEIDSTAKER_ANNEN_FNR.value -> call.respond(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_ANNEN_FNR))
                     ARBEIDSTAKER_NO_JOURNALFORING.value -> call.respond(
                         oppfolgingstilfellePersonDTO(

@@ -9,6 +9,7 @@ import io.ktor.server.routing.*
 import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient.Companion.PERSON_V2_ENHET_PATH
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetDTO
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
@@ -47,6 +48,7 @@ class SyfobehandlendeenhetMock {
                     val personIdent = getPersonIdentHeader()
                     if (
                         personIdent == ARBEIDSTAKER_FNR.value ||
+                        personIdent == ARBEIDSTAKER_ADRESSEBESKYTTET.value ||
                         personIdent == ARBEIDSTAKER_ANNEN_FNR.value ||
                         personIdent == ARBEIDSTAKER_NO_JOURNALFORING.value ||
                         personIdent == ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE.value ||
