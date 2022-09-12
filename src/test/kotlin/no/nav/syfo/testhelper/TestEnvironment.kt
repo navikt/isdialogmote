@@ -70,6 +70,7 @@ fun testEnvironment(
     dokdistFordelingClientId = "dokdistFordelingClientId",
     dokdistFordelingUrl = "http://dokdistfordeling",
     altinnSendingEnabled = true,
+    kode6Enabled = true,
 )
 
 fun testAppState() = ApplicationState(

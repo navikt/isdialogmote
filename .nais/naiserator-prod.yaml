@@ -148,3 +148,5 @@ spec:
       value: "prod-fss.teamdokumenthandtering.saf"
     - name: ALTINN_SENDING_ENABLED
       value: "true"
+    - name: KODE6_ENABLED
+      value: "false"

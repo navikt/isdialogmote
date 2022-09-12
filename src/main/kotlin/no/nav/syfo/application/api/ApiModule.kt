@@ -110,6 +110,7 @@ fun Application.apiModule(
     val dialogmoteTilgangService = DialogmoteTilgangService(
         adressebeskyttelseClient = adressebeskyttelseClient,
         veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+        kode6Enabled = environment.kode6Enabled,
     )
 
     val arbeidstakerVarselService = ArbeidstakerVarselService(

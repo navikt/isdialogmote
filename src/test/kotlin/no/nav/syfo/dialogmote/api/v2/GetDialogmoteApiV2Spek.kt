@@ -201,6 +201,18 @@ class GetDialogmoteApiV2Spek : Spek({
                     }
                 }
 
+                it("should return status OK for person with Adressebeskyttelse") {
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_ADRESSEBESKYTTET.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
+                    }
+                }
+
                 describe("Unhappy paths") {
                     beforeEachTest {
                         clearMocks(mqSenderMock)
@@ -279,18 +291,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             handleRequest(HttpMethod.Get, urlMote) {
                                 addHeader(Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_VEILEDER_NO_ACCESS.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                        }
-                    }
-
-                    it("should return status Forbidden if denied person has Adressbeskyttese") {
-                        with(
-                            handleRequest(HttpMethod.Get, urlMote) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_ADRESSEBESKYTTET.value)
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden

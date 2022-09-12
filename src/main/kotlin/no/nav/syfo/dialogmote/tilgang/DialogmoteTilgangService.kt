@@ -7,6 +7,7 @@ import no.nav.syfo.domain.PersonIdentNumber
 class DialogmoteTilgangService(
     private val adressebeskyttelseClient: AdressebeskyttelseClient,
     private val veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
+    private val kode6Enabled: Boolean,
 ) {
     suspend fun hasAccessToAllDialogmotePersons(
         personIdentNumberList: List<PersonIdentNumber>,
@@ -27,11 +28,12 @@ class DialogmoteTilgangService(
         token: String,
         callId: String,
     ): List<PersonIdentNumber> {
-        return veilederTilgangskontrollClient.hasAccessToPersonList(
+        val personIdentList = veilederTilgangskontrollClient.hasAccessToPersonList(
             personIdentNumberList = personIdentNumberList,
             token = token,
             callId = callId,
-        ).filter { personIdentNumber ->
+        )
+        return if (kode6Enabled) personIdentList else personIdentList.filter { personIdentNumber ->
             !adressebeskyttelseClient.hasAdressebeskyttelse(personIdentNumber, callId)
         }
     }

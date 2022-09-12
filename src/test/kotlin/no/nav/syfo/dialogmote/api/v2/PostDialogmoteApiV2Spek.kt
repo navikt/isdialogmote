@@ -342,6 +342,20 @@ class PostDialogmoteApiV2Spek : Spek({
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
                         }
                     }
+                    it("should return status OK if denied person has Adressbeskyttese") {
+                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_ADRESSEBESKYTTET)
+                        val urlMotePersonIdent = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
+                        with(
+                            handleRequest(HttpMethod.Post, urlMotePersonIdent) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(any(), any()) }
+                        }
+                    }
 
                     it("should return OK if request is successful: does not have a leader for Virksomhet") {
                         val newDialogmoteDTO =
@@ -381,21 +395,6 @@ class PostDialogmoteApiV2Spek : Spek({
 
                     it("should return status Forbidden if denied access to person") {
                         val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_VEILEDER_NO_ACCESS)
-                        val urlMotePersonIdent = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
-                        with(
-                            handleRequest(HttpMethod.Post, urlMotePersonIdent) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
-                        }
-                    }
-
-                    it("should return status Forbidden if denied person has Adressbeskyttese") {
-                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_ADRESSEBESKYTTET)
                         val urlMotePersonIdent = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
                         with(
                             handleRequest(HttpMethod.Post, urlMotePersonIdent) {

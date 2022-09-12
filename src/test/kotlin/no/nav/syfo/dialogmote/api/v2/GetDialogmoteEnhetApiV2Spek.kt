@@ -131,15 +131,21 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
 
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
-                            dialogmoteList.size shouldBeEqualTo 1
+                            dialogmoteList.size shouldBeEqualTo 2
 
-                            val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.tildeltEnhet shouldBeEqualTo ENHET_NR.value
-                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
-                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                            val dialogmoteDTO_0 = dialogmoteList[0]
+                            dialogmoteDTO_0.tildeltEnhet shouldBeEqualTo ENHET_NR.value
+                            dialogmoteDTO_0.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteAdressebeskyttet.arbeidstaker.personIdent.value
+                            dialogmoteDTO_0.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteAdressebeskyttet.arbeidsgiver.virksomhetsnummer.value
+                            dialogmoteDTO_0.sted shouldBeEqualTo newDialogmoteAdressebeskyttet.tidSted.sted
+                            dialogmoteDTO_0.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
 
-                            dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
-                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+                            val dialogmoteDTO_1 = dialogmoteList[1]
+                            dialogmoteDTO_1.tildeltEnhet shouldBeEqualTo ENHET_NR.value
+                            dialogmoteDTO_1.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
+                            dialogmoteDTO_1.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                            dialogmoteDTO_1.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            dialogmoteDTO_1.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
                         }
                     }
 
@@ -187,7 +193,7 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
 
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
-                            dialogmoteList.size shouldBeEqualTo 3
+                            dialogmoteList.size shouldBeEqualTo 4
                             dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.status == DialogmoteStatus.INNKALT.name } shouldBeEqualTo true
                             dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.status == DialogmoteStatus.AVLYST.name } shouldBeEqualTo true
                             dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.status == DialogmoteStatus.FERDIGSTILT.name } shouldBeEqualTo true
