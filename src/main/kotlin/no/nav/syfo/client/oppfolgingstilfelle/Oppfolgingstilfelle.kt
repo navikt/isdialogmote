@@ -8,6 +8,3 @@ data class Oppfolgingstilfelle(
     val start: LocalDate,
     val end: LocalDate,
 )
-
-fun Oppfolgingstilfelle.isInactive(): Boolean =
-    LocalDate.now().isAfter(this.end.plusDays(ARBEIDSGIVERPERIODE_DAYS))
