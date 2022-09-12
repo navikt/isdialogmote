@@ -6,7 +6,7 @@ import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
-import no.nav.syfo.client.oppfolgingstilfelle.*
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
@@ -128,16 +128,6 @@ class DialogmoteService(
             navEnhet = EnhetNr(behandlendeEnhet.enhetId),
         )
 
-        val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfelle(
-            callId = callId,
-            personIdentNumber = personIdentNumber,
-            token = token,
-        ) ?: throw RuntimeException("Cannot create Dialogmote: No Oppfolgingstilfelle was found")
-
-        if (tilfelle.isInactive()) {
-            throw RuntimeException("Cannot create Dialogmote: Dialogmoteinnkalling for person with inactive Oppfolgingstilfelle is not allowed")
-        }
-
         val pdfInnkallingArbeidstaker = pdfGenClient.pdfInnkalling(
             callId = callId,
             documentComponentDTOList = newDialogmoteDTO.arbeidstaker.innkalling,
@@ -169,12 +159,14 @@ class DialogmoteService(
                 newDialogmote = newDialogmote,
             )
             createMoteStatusEndring(
+                callId = callId,
                 connection = connection,
                 dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
                 dialogmoteStatus = newDialogmote.status,
                 isBehandlerMotedeltaker = newDialogmote.behandler != null,
                 opprettetAv = newDialogmote.opprettetAv,
-                tilfelle = tilfelle,
+                personIdentNumber = personIdentNumber,
+                token = token,
             )
             createAndSendVarsel(
                 connection = connection,
@@ -797,35 +789,39 @@ class DialogmoteService(
         personIdentNumber: PersonIdentNumber,
         token: String,
     ) {
-        val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfelle(
-            callId = callId,
-            personIdentNumber = personIdentNumber,
-            token = token,
-        ) ?: throw RuntimeException("Cannot update MoteStatusEndring: No Oppfolgingstilfelle was found")
-
         connection.updateMoteStatus(
             commit = false,
             moteId = dialogmoteId,
             moteStatus = newDialogmoteStatus,
         )
         createMoteStatusEndring(
+            callId = callId,
             connection = connection,
             dialogmoteId = dialogmoteId,
             dialogmoteStatus = newDialogmoteStatus,
             isBehandlerMotedeltaker = isBehandlerMotedeltaker,
             opprettetAv = opprettetAv,
-            tilfelle = tilfelle,
+            personIdentNumber = personIdentNumber,
+            token = token,
         )
     }
 
-    private fun createMoteStatusEndring(
+    private suspend fun createMoteStatusEndring(
+        callId: String,
         connection: Connection,
         dialogmoteId: Int,
         dialogmoteStatus: DialogmoteStatus,
         isBehandlerMotedeltaker: Boolean,
         opprettetAv: String,
-        tilfelle: Oppfolgingstilfelle,
+        personIdentNumber: PersonIdentNumber,
+        token: String,
     ) {
+        val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfelle(
+            callId = callId,
+            personIdentNumber = personIdentNumber,
+            token = token,
+        ) ?: throw RuntimeException("Cannot update MoteStatusEndring: No Oppfolgingstilfelle was found")
+
         connection.createMoteStatusEndring(
             commit = false,
             moteId = dialogmoteId,

@@ -380,6 +380,20 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         }
                     }
+                    it("should return OK if requesting to create Dialogmote for PersonIdent with inactive Oppfolgingstilfelle") {
+                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE)
+                        with(
+                            handleRequest(HttpMethod.Post, urlMote) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            clearMocks(mqSenderMock)
+                        }
+                    }
                 }
 
                 describe("Unhappy paths") {
@@ -436,20 +450,6 @@ class PostDialogmoteApiV2Spek : Spek({
                         }
                     }
 
-                    it("should return InternalServerError if requesting to create Dialogmote for PersonIdent with inactive Oppfolgingstilfelle") {
-                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE)
-                        with(
-                            handleRequest(HttpMethod.Post, url) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
-                        }
-                    }
                     it("should return InternalServerError if requesting to create Dialogmote for PersonIdent no behandlende enhet") {
                         val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_NO_BEHANDLENDE_ENHET)
                         with(
