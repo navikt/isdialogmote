@@ -152,6 +152,7 @@ fun Application.apiModule(
         narmesteLederVarselService = narmesteLederVarselService,
         behandlerVarselService = behandlerVarselService,
         altinnClient = altinnClient,
+        oppfolgingstilfelleClient = oppfolgingstilfelleClient,
         isAltinnSendingEnabled = environment.altinnSendingEnabled
     )
 

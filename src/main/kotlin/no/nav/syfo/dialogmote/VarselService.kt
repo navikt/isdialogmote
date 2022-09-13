@@ -6,6 +6,8 @@ import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.altinn.createAltinnMelding
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.client.oppfolgingstilfelle.isInactive
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.domain.PersonIdentNumber
@@ -18,10 +20,11 @@ class VarselService(
     private val narmesteLederVarselService: NarmesteLederVarselService,
     private val behandlerVarselService: BehandlerVarselService,
     private val altinnClient: AltinnClient,
+    private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     private val isAltinnSendingEnabled: Boolean,
 ) {
 
-    fun sendVarsel(
+    suspend fun sendVarsel(
         tidspunktForVarsel: LocalDateTime,
         varselType: MotedeltakerVarselType,
         isDigitalVarselEnabledForArbeidstaker: Boolean,
@@ -41,6 +44,8 @@ class VarselService(
         behandlerbrevId: UUID?,
         behandlerbrevParentId: String?,
         behandlerInnkallingUuid: UUID?,
+        token: String,
+        callId: String,
     ) {
         val altinnMelding = createAltinnMelding(
             virksomhetsbrevId,
@@ -52,13 +57,21 @@ class VarselService(
             narmesteLeder != null,
         )
 
+        val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfelle(
+            callId = callId,
+            personIdentNumber = arbeidstakerPersonIdent,
+            token = token,
+        ) ?: throw RuntimeException("Cannot create Dialogmote: No Oppfolgingstilfelle was found")
+
+        val hasActiveTilfelle = !tilfelle.isInactive()
+
         if (isAltinnSendingEnabled) {
             altinnClient.sendToVirksomhet(
                 altinnMelding = altinnMelding,
             )
         }
 
-        if (narmesteLeder != null) {
+        if (narmesteLeder != null && hasActiveTilfelle) {
             narmesteLederVarselService.sendVarsel(
                 narmesteLeder = narmesteLeder,
                 varseltype = varselType,

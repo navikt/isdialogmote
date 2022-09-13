@@ -192,7 +192,9 @@ class DialogmoteService(
                 documentBehandler = newDialogmoteDTO.behandler?.innkalling ?: emptyList(),
                 moteTidspunkt = newDialogmoteDTO.tidSted.tid,
                 digitalArbeidstakerVarsling = digitalVarsling,
-                virksomhetsnummer = virksomhetsnummer
+                virksomhetsnummer = virksomhetsnummer,
+                token = token,
+                callId = callId,
             )
 
             connection.commit()
@@ -285,6 +287,8 @@ class DialogmoteService(
                 moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
                 digitalArbeidstakerVarsling = digitalVarsling,
                 virksomhetsnummer = virksomhetsnummer,
+                token = token,
+                callId = callId,
             )
             connection.commit()
         }
@@ -381,13 +385,15 @@ class DialogmoteService(
                 moteTidspunkt = endreDialogmoteTidSted.tid,
                 digitalArbeidstakerVarsling = digitalVarsling,
                 virksomhetsnummer = virksomhetsnummer,
+                token = token,
+                callId = callId,
             )
 
             connection.commit()
         }
     }
 
-    private fun createAndSendVarsel(
+    private suspend fun createAndSendVarsel(
         connection: Connection,
         arbeidstakerUuid: UUID,
         arbeidstakerId: Int,
@@ -412,6 +418,8 @@ class DialogmoteService(
         moteTidspunkt: LocalDateTime,
         digitalArbeidstakerVarsling: Boolean,
         virksomhetsnummer: Virksomhetsnummer,
+        token: String,
+        callId: String,
     ) {
         val (pdfArbeidstakerId, _) = connection.createPdf(
             commit = false,
@@ -479,7 +487,9 @@ class DialogmoteService(
                 behandlerPdf = pdfBehandler,
                 behandlerbrevId = behandlerVarselIdPair?.second,
                 behandlerbrevParentId = behandlerParentVarselId,
-                behandlerInnkallingUuid = behandlerInnkallingUuid
+                behandlerInnkallingUuid = behandlerInnkallingUuid,
+                token = token,
+                callId = callId,
             )
         }
     }
@@ -666,6 +676,8 @@ class DialogmoteService(
                 behandlerbrevId = referatUuid,
                 behandlerbrevParentId = behandler?.findParentVarselId(),
                 behandlerInnkallingUuid = behandler?.findInnkallingVarselUuid(),
+                token = token,
+                callId = callId,
             )
 
             connection.commit()
@@ -773,6 +785,8 @@ class DialogmoteService(
                 behandlerbrevId = referatUuid,
                 behandlerbrevParentId = behandler?.findParentVarselId(),
                 behandlerInnkallingUuid = behandler?.findInnkallingVarselUuid(),
+                token = token,
+                callId = callId,
             )
 
             connection.commit()
