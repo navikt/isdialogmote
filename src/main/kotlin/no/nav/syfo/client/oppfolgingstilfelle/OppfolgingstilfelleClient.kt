@@ -5,6 +5,7 @@ import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.util.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault

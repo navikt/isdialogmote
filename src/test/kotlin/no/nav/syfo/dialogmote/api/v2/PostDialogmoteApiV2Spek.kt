@@ -390,7 +390,7 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                             clearMocks(mqSenderMock)
                         }
                     }
