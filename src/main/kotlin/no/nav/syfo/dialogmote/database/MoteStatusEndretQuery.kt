@@ -5,8 +5,7 @@ import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PMoteStatusEndret
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import java.sql.*
-import java.time.Instant
-import java.time.LocalDate
+import java.time.*
 import java.util.*
 
 const val queryCreateMoteStatusEndring =
@@ -29,10 +28,11 @@ fun Connection.createMoteStatusEndring(
     moteId: Int,
     opprettetAv: String,
     status: DialogmoteStatus,
-    tilfelleStart: LocalDate,
+    tilfelleStart: LocalDate?,
     isBehandlerMotedeltaker: Boolean,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
+    val startDate = tilfelleStart ?: LocalDate.EPOCH
 
     val moteStatusEndringUuid = UUID.randomUUID()
 
@@ -43,7 +43,7 @@ fun Connection.createMoteStatusEndring(
         it.setInt(4, moteId)
         it.setString(5, status.name)
         it.setString(6, opprettetAv)
-        it.setTimestamp(7, Timestamp.valueOf(tilfelleStart.atStartOfDay()))
+        it.setTimestamp(7, Timestamp.valueOf(startDate.atStartOfDay()))
         it.setBoolean(8, isBehandlerMotedeltaker)
         it.executeQuery().toList { getInt("id") }
     }

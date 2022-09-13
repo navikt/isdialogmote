@@ -17,6 +17,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_BEHANDLENDE_ENHET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR_NO_ACCESS
@@ -61,6 +62,7 @@ class VeilederTilgangskontrollMock {
                             ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value,
                             ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE.value,
                             ARBEIDSTAKER_NO_BEHANDLENDE_ENHET.value,
+                            ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE.value,
                         )
                     )
                 }

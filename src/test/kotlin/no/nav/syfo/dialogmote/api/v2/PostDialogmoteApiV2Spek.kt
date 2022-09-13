@@ -26,6 +26,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_BEHANDLENDE_ENHET
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
@@ -393,6 +394,28 @@ class PostDialogmoteApiV2Spek : Spek({
                             verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                             clearMocks(mqSenderMock)
                         }
+                    }
+
+                    it("return OK when creating dialogmote for innbygger without Oppfolgingstilfelle") {
+                        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE)
+                        with(
+                            handleRequest(HttpMethod.Post, urlMote) {
+                                addHeader(Authorization, bearerHeader(validToken))
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            clearMocks(mqSenderMock)
+                        }
+
+                        val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
+                        moteStatusEndretList.size shouldBeEqualTo 1
+
+                        moteStatusEndretList.first().status.name shouldBeEqualTo DialogmoteStatus.INNKALT.name
+                        moteStatusEndretList.first().opprettetAv shouldBeEqualTo VEILEDER_IDENT
+                        moteStatusEndretList.first().tilfelleStart shouldBeEqualTo LocalDate.EPOCH
                     }
                 }
 
