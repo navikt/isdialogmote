@@ -61,9 +61,9 @@ class VarselService(
             callId = callId,
             personIdentNumber = arbeidstakerPersonIdent,
             token = token,
-        ) ?: throw RuntimeException("Cannot create Dialogmote: No Oppfolgingstilfelle was found")
+        )
 
-        val hasActiveTilfelle = !tilfelle.isInactive()
+        val hasActiveTilfelle = tilfelle != null && !tilfelle.isInactive()
 
         if (isAltinnSendingEnabled) {
             altinnClient.sendToVirksomhet(

@@ -57,10 +57,18 @@ object VarselServiceSpek : Spek({
                 start = LocalDate.MIN,
                 end = LocalDate.MAX,
             )
-
             val virksomhetsbrevId = UUID.randomUUID()
             val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
             val tidspunktForVarsel = LocalDateTime.now()
+            val altinnMelding = createAltinnMelding(
+                virksomhetsbrevId,
+                VIRKSOMHETSNUMMER_HAS_NARMESTELEDER,
+                virksomhetsPdf,
+                MotedeltakerVarselType.INNKALT,
+                arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
+                arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
+                true
+            )
 
             GlobalScope.launch(Dispatchers.Unbounded) {
                 varselService.sendVarsel(
@@ -86,18 +94,7 @@ object VarselServiceSpek : Spek({
                     callId = "callId",
                 )
 
-                val altinnMelding = createAltinnMelding(
-                    virksomhetsbrevId,
-                    VIRKSOMHETSNUMMER_HAS_NARMESTELEDER,
-                    virksomhetsPdf,
-                    MotedeltakerVarselType.INNKALT,
-                    arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
-                    arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
-                    true
-                )
-
                 verify(exactly = 1) { altinnClient.sendToVirksomhet(altinnMelding) }
-
                 verify(exactly = 1) {
                     narmesteLederVarselService.sendVarsel(
                         narmesteLeder, MotedeltakerVarselType.INNKALT
@@ -113,6 +110,15 @@ object VarselServiceSpek : Spek({
             )
             val virksomhetsbrevId = UUID.randomUUID()
             val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
+            val altinnMelding = createAltinnMelding(
+                virksomhetsbrevId,
+                VIRKSOMHETSNUMMER_NO_NARMESTELEDER,
+                virksomhetsPdf,
+                MotedeltakerVarselType.INNKALT,
+                arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
+                arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
+                false
+            )
 
             GlobalScope.launch(Dispatchers.Unbounded) {
                 varselService.sendVarsel(
@@ -138,22 +144,11 @@ object VarselServiceSpek : Spek({
                     callId = "callId",
                 )
 
-                val altinnMelding = createAltinnMelding(
-                    virksomhetsbrevId,
-                    VIRKSOMHETSNUMMER_NO_NARMESTELEDER,
-                    virksomhetsPdf,
-                    MotedeltakerVarselType.INNKALT,
-                    arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
-                    arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
-                    false
-                )
-
                 verify(exactly = 1) {
                     altinnClient.sendToVirksomhet(
                         altinnMelding
                     )
                 }
-
                 verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any()) }
             }
         }
@@ -165,6 +160,15 @@ object VarselServiceSpek : Spek({
             )
             val virksomhetsbrevId = UUID.randomUUID()
             val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
+            val altinnMelding = createAltinnMelding(
+                virksomhetsbrevId,
+                VIRKSOMHETSNUMMER_NO_NARMESTELEDER,
+                virksomhetsPdf,
+                MotedeltakerVarselType.INNKALT,
+                arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
+                arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
+                false
+            )
 
             GlobalScope.launch(Dispatchers.Unbounded) {
                 varselService.sendVarsel(
@@ -190,14 +194,51 @@ object VarselServiceSpek : Spek({
                     callId = "callId",
                 )
 
-                val altinnMelding = createAltinnMelding(
-                    virksomhetsbrevId,
-                    VIRKSOMHETSNUMMER_NO_NARMESTELEDER,
-                    virksomhetsPdf,
-                    MotedeltakerVarselType.INNKALT,
+                verify(exactly = 1) {
+                    altinnClient.sendToVirksomhet(
+                        altinnMelding
+                    )
+                }
+                verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any()) }
+            }
+        }
+
+        it("Send brev to Altinn, and not varsel to nærmeste leder when no oppfolgingstilfelle exists") {
+            coEvery { oppfolgingstilfelleClient.oppfolgingstilfelle(any(), any(), any()) } returns null
+            val virksomhetsbrevId = UUID.randomUUID()
+            val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
+            val altinnMelding = createAltinnMelding(
+                virksomhetsbrevId,
+                VIRKSOMHETSNUMMER_NO_NARMESTELEDER,
+                virksomhetsPdf,
+                MotedeltakerVarselType.INNKALT,
+                arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
+                arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
+                false
+            )
+
+            GlobalScope.launch(Dispatchers.Unbounded) {
+                varselService.sendVarsel(
+                    tidspunktForVarsel = LocalDateTime.now(),
+                    varselType = MotedeltakerVarselType.INNKALT,
+                    isDigitalVarselEnabledForArbeidstaker = false,
                     arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
                     arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
-                    false
+                    arbeidstakerId = UUID.randomUUID(),
+                    arbeidstakerbrevId = UUID.randomUUID(),
+                    narmesteLeder = null,
+                    virksomhetsbrevId = virksomhetsbrevId,
+                    virksomhetsPdf = virksomhetsPdf,
+                    virksomhetsnummer = VIRKSOMHETSNUMMER_NO_NARMESTELEDER,
+                    behandlerId = null,
+                    behandlerRef = null,
+                    behandlerDocument = emptyList(),
+                    behandlerPdf = byteArrayOf(0x2E, 0x38),
+                    behandlerbrevId = null,
+                    behandlerbrevParentId = null,
+                    behandlerInnkallingUuid = null,
+                    token = "token",
+                    callId = "callId",
                 )
 
                 verify(exactly = 1) {
@@ -205,7 +246,6 @@ object VarselServiceSpek : Spek({
                         altinnMelding
                     )
                 }
-
                 verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any()) }
             }
         }

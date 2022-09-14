@@ -834,7 +834,7 @@ class DialogmoteService(
             callId = callId,
             personIdentNumber = personIdentNumber,
             token = token,
-        ) ?: throw RuntimeException("Cannot update MoteStatusEndring: No Oppfolgingstilfelle was found")
+        )
 
         connection.createMoteStatusEndring(
             commit = false,
@@ -842,7 +842,7 @@ class DialogmoteService(
             opprettetAv = opprettetAv,
             isBehandlerMotedeltaker = isBehandlerMotedeltaker,
             status = dialogmoteStatus,
-            tilfelleStart = tilfelle.start,
+            tilfelleStart = tilfelle?.start,
         )
     }
 

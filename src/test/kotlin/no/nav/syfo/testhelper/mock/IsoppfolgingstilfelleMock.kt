@@ -16,6 +16,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.getRandomPort
@@ -37,6 +38,13 @@ fun oppfolgingstilfellePersonDTO(
             ),
         ),
     ),
+)
+
+fun oppfolgingstilfellePersonDTONoTilfelle(
+    personIdent: PersonIdentNumber,
+) = OppfolgingstilfellePersonDTO(
+    personIdent = personIdent.value,
+    oppfolgingstilfelleList = emptyList()
 )
 
 class IsoppfolgingstilfelleMock {
@@ -68,6 +76,7 @@ class IsoppfolgingstilfelleMock {
                         )
                     )
                     ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value -> call.respond(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER))
+                    ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE.value -> call.respond(oppfolgingstilfellePersonDTONoTilfelle(ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE))
                     else -> call.respond(HttpStatusCode.InternalServerError, "")
                 }
             }
