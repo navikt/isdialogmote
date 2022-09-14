@@ -134,7 +134,7 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                             val xml = xmlStringSlot.captured
                             xml.shouldContain("<kanal>EPOST</kanal><kontaktinformasjon>narmesteLederNavn@gmail.com</kontaktinformasjon>")
-                            xml.shouldContain("<orgnummer>$VIRKSOMHETSNUMMER_HAS_NARMESTELEDER</orgnummer>")
+                            xml.shouldContain("<orgnummer>${VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value}</orgnummer>")
                             xml.shouldContain("<parameterListe><key>navn</key><value>narmesteLederNavn</value></parameterListe>")
                             clearMocks(mqSenderMock)
                             verify(exactly = 1) {
