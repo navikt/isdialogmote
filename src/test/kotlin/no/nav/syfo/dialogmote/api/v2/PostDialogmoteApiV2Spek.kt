@@ -31,6 +31,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import no.nav.syfo.util.*
@@ -133,7 +134,7 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                             val xml = xmlStringSlot.captured
                             xml.shouldContain("<kanal>EPOST</kanal><kontaktinformasjon>narmesteLederNavn@gmail.com</kontaktinformasjon>")
-                            xml.shouldContain("<orgnummer>912345678</orgnummer>")
+                            xml.shouldContain("<orgnummer>${VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value}</orgnummer>")
                             xml.shouldContain("<parameterListe><key>navn</key><value>narmesteLederNavn</value></parameterListe>")
                             clearMocks(mqSenderMock)
                             verify(exactly = 1) {

@@ -15,7 +15,7 @@ object AltinnUtilSpek : Spek({
         it("Gives correct output from given input") {
             val brevId = UUID.randomUUID()
             val brev = byteArrayOf(0x2E, 0x38)
-            val virksomhetsnummer = Virksomhetsnummer("123456789")
+            val virksomhetsnummer = Virksomhetsnummer("123456785")
             val expectedInnkallingstittel = "Innkalling til dialogmøte - ${UserConstants.ARBEIDSTAKERNAVN} (${UserConstants.ARBEIDSTAKER_FNR.value})"
 
             val altinnMelding = createAltinnMelding(
