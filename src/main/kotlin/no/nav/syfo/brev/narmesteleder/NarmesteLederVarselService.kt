@@ -20,7 +20,8 @@ class NarmesteLederVarselService(
 ) {
     fun sendVarsel(
         narmesteLeder: NarmesteLederRelasjonDTO,
-        varseltype: MotedeltakerVarselType
+        varseltype: MotedeltakerVarselType,
+        sendToDineSykmeldte: Boolean = true,
     ) {
         val parameterListe: MutableList<WSParameter> = ArrayList()
         parameterListe.add(createParameter("navn", narmesteLeder.narmesteLederNavn ?: "nærmeste leder"))
@@ -29,7 +30,9 @@ class NarmesteLederVarselService(
         val xmlString = marshallServiceMelding(ObjectFactory().createServicemelding(melding))
         mqSender.sendMQMessage(varseltype, xmlString)
 
-        sendVarselTilDineSykmeldte(narmesteLeder, varseltype)
+        if (sendToDineSykmeldte) {
+            sendVarselTilDineSykmeldte(narmesteLeder, varseltype)
+        }
     }
 
     private fun sendVarselTilDineSykmeldte(

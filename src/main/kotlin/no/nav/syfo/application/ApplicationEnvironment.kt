@@ -67,6 +67,7 @@ data class Environment(
     val dokdistFordelingClientId: String = getEnvVar("DOKDIST_FORDELING_CLIENT_ID"),
     val altinnSendingEnabled: Boolean = getEnvVar("ALTINN_SENDING_ENABLED").toBoolean(),
     val kode6Enabled: Boolean = getEnvVar("KODE6_ENABLED").toBoolean(),
+    val resendNarmesteLederVarselEnabled: Boolean = getEnvVar("RESEND_NARMESTELEDERVARSEL_ENABLED").toBoolean(),
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$isdialogmoteDbHost:$isdialogmoteDbPort/$isdialogmoteDbName"
