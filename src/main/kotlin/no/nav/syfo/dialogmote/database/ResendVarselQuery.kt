@@ -54,7 +54,7 @@ fun DatabaseInterface.getMotedeltakerArbeidsgiverReferatVarsel(
         connection.prepareStatement(queryGetMotedeltakerArbeidsgiverReferatVarselStartEndDate).use {
             it.setTimestamp(1, Timestamp.valueOf(startDateTime))
             it.setTimestamp(2, Timestamp.valueOf(endDateTime))
-            it.executeQuery().toList { toTriple() }
+            it.executeQuery().toList { toReferatResult() }
         }
     }
 }
