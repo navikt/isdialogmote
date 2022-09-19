@@ -71,7 +71,6 @@ fun testEnvironment(
     dokdistFordelingUrl = "http://dokdistfordeling",
     altinnSendingEnabled = true,
     kode6Enabled = true,
-    resendNarmesteLederVarselEnabled = false,
 )
 
 fun testAppState() = ApplicationState(
