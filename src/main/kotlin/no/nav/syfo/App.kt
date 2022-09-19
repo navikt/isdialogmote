@@ -17,10 +17,10 @@ import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProduc
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.kafkaBrukernotifikasjonProducerConfig
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.*
-import no.nav.syfo.client.altinn.createPort
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.kafkaDineSykmeldteVarselProducerConfig
 import no.nav.syfo.brev.narmesteleder.domain.DineSykmeldteHendelse
+import no.nav.syfo.client.altinn.createPort
 import no.nav.syfo.cronjob.cronjobModule
 import no.nav.syfo.dialogmelding.DialogmeldingService
 import no.nav.syfo.dialogmelding.kafka.DialogmeldingConsumerService
@@ -107,6 +107,8 @@ fun main() {
                 database = applicationDatabase,
                 environment = environment,
                 cache = cache,
+                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
+                mqSender = mqSender,
             )
         }
     }
