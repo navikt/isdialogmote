@@ -150,5 +150,3 @@ spec:
       value: "true"
     - name: KODE6_ENABLED
       value: "false"
-    - name: RESEND_NARMESTELEDERVARSEL_ENABLED
-      value: "true"

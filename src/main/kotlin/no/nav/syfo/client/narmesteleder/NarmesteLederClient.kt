@@ -14,7 +14,6 @@ import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
-import java.util.*
 
 class NarmesteLederClient(
     narmesteLederBaseUrl: String,
@@ -24,7 +23,6 @@ class NarmesteLederClient(
     private val cache: RedisStore,
 ) {
     private val narmesteLederPath = "$narmesteLederBaseUrl$CURRENT_NARMESTELEDER_PATH"
-    private val narmesteLederSystemPath = "$narmesteLederBaseUrl$CURRENT_NARMESTELEDER_SYSTEM_PATH"
     private val ansatteNarmesteLederSelvbetjeningPath = "$narmesteLederBaseUrl$NARMESTELEDERE_SELVBETJENING_PATH"
 
     private val httpClient = httpClientDefault()
@@ -51,40 +49,6 @@ class NarmesteLederClient(
                 }.body<List<NarmesteLederRelasjonDTO>>()
             COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.increment()
             narmesteLederRelasjon.filter { it.virksomhetsnummer == virksomhetsnummer.value }
-                .firstOrNull { it.status == NarmesteLederRelasjonStatus.INNMELDT_AKTIV.name }
-        } catch (e: ClientRequestException) {
-            handleUnexpectedResponseException(e.response, callId)
-            null
-        } catch (e: ServerResponseException) {
-            handleUnexpectedResponseException(e.response, callId)
-            null
-        }
-    }
-
-    suspend fun activeLederSystemToken(
-        personIdentNumber: PersonIdentNumber,
-        virksomhetsnummer: Virksomhetsnummer,
-    ): NarmesteLederRelasjonDTO? {
-
-        val token = azureAdV2Client.getSystemToken(
-            scopeClientId = narmestelederClientId,
-        )?.accessToken ?: throw RuntimeException("Failed to request active leader: Failed to get system token")
-
-        val callId = UUID.randomUUID().toString()
-
-        return try {
-            val narmesteLederRelasjon =
-                httpClient.get(narmesteLederSystemPath) {
-                    header(HttpHeaders.Authorization, bearerHeader(token))
-                    header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
-                    header(NAV_CALL_ID_HEADER, callId)
-                    accept(ContentType.Application.Json)
-                }.body<List<NarmesteLederRelasjonDTO>>()
-            COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.increment()
-            narmesteLederRelasjon.filter { it.virksomhetsnummer == virksomhetsnummer.value }
-                // Systemendepunktet returnerer både ledere og ansatte for den gitte personidenten,
-                //  derfor må vi finne alle innslag der vår ident er arbeidstaker
-                .filter { it.arbeidstakerPersonIdentNumber == personIdentNumber.value }
                 .firstOrNull { it.status == NarmesteLederRelasjonStatus.INNMELDT_AKTIV.name }
         } catch (e: ClientRequestException) {
             handleUnexpectedResponseException(e.response, callId)
@@ -154,7 +118,6 @@ class NarmesteLederClient(
         const val CACHE_NARMESTE_LEDER_EXPIRE_SECONDS = 3600L
 
         const val CURRENT_NARMESTELEDER_PATH = "/api/v1/narmestelederrelasjon/personident"
-        const val CURRENT_NARMESTELEDER_SYSTEM_PATH = "/api/system/v1/narmestelederrelasjoner"
         const val NARMESTELEDERE_SELVBETJENING_PATH = "/api/selvbetjening/v1/narmestelederrelasjoner"
     }
 }
