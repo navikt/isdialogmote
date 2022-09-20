@@ -85,6 +85,17 @@ class KontaktinformasjonClientSpek : Spek({
                 }
                 verify(exactly = 1) { cacheMock.setObject(digitalKontaktInfoCacheKey, digitalKontaktInfo, 600) }
             }
+            it("handles errors from dkif") {
+                every {
+                    cacheMock.getObject<DigitalKontaktinfoBolk>(
+                        digitalKontaktInfoCacheKey
+                    )
+                } returns null
+
+                runBlocking {
+                    client.isDigitalVarselEnabled(UserConstants.ARBEIDSTAKER_DKIF_FEIL, anyToken, anyCallId) shouldBeEqualTo false
+                }
+            }
         }
     }
 })

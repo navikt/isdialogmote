@@ -10,6 +10,7 @@ object UserConstants {
     val ARBEIDSTAKER_NO_JOURNALFORING = PersonIdentNumber(ARBEIDSTAKER_FNR.value.replace("2", "3"))
     val ARBEIDSTAKER_ADRESSEBESKYTTET = PersonIdentNumber(ARBEIDSTAKER_FNR.value.replace("2", "6"))
     val ARBEIDSTAKER_IKKE_VARSEL = PersonIdentNumber(ARBEIDSTAKER_FNR.value.replace("2", "7"))
+    val ARBEIDSTAKER_DKIF_FEIL = PersonIdentNumber(ARBEIDSTAKER_FNR.value.replace("2", "8"))
     val ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER = PersonIdentNumber(ARBEIDSTAKER_FNR.value.replace("2", "8"))
     val ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE = PersonIdentNumber(ARBEIDSTAKER_FNR.value.replace("2", "9"))
     val ARBEIDSTAKER_NO_BEHANDLENDE_ENHET = PersonIdentNumber(ARBEIDSTAKER_FNR.value.replace("3", "1"))

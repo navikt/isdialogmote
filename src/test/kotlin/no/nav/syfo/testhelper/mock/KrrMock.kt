@@ -39,6 +39,10 @@ val digitalKontaktinfoBolkKanVarslesFalse = DigitalKontaktinfoBolk(
     )
 )
 
+val digitalKontaktinfoBolkFeil = DigitalKontaktinfoBolk(
+    feil = mapOf(UserConstants.ARBEIDSTAKER_DKIF_FEIL.value to "det skjedde en feil")
+)
+
 class KrrMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
@@ -53,6 +57,8 @@ class KrrMock {
                 val krrRequestBodyPersonIdent = call.receive<DigitalKontaktinfoBolkRequestBody>().personidenter.first()
                 if (krrRequestBodyPersonIdent == UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value) {
                     call.respond(digitalKontaktinfoBolkKanVarslesFalse)
+                } else if (krrRequestBodyPersonIdent == UserConstants.ARBEIDSTAKER_DKIF_FEIL.value) {
+                    call.respond(digitalKontaktinfoBolkFeil)
                 } else {
                     call.respond(digitalKontaktinfoBolkKanVarslesTrue(krrRequestBodyPersonIdent))
                 }
