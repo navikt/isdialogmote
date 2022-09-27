@@ -11,26 +11,26 @@ object Versions {
     const val confluent = "7.2.1"
     const val flyway = "8.5.13"
     const val hikari = "5.0.1"
-    const val jackson = "2.13.3"
+    const val jackson = "2.13.4"
     const val jedis = "4.2.3"
     const val kafka = "3.2.0"
     const val kafkaEmbedded = "3.2.1"
-    const val ktor = "2.1.0"
+    const val ktor = "2.1.1"
     const val jaxbApi = "2.3.1"
     const val jaxbRuntime = "2.3.6"
     const val kluent = "1.68"
     const val logback = "1.2.11"
     const val logstashEncoder = "7.2"
     const val mockk = "1.12.4"
-    const val nimbusjosejwt = "9.23"
+    const val nimbusjosejwt = "9.25.1"
     const val postgresEmbedded = "0.13.4"
     const val postgres = "42.4.1"
     const val redisEmbedded = "0.7.3"
-    const val scala = "2.13.7"
+    const val scala = "2.13.9"
     const val spek = "2.0.18"
     const val mq = "9.2.5.0"
     const val tjenesteSpesifikasjonerGithub = "1.2020.06.11-19.53-1cad83414166"
-    const val micrometerRegistry = "1.9.2"
+    const val micrometerRegistry = "1.9.4"
     const val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
     const val cxfVersion = "3.5.2"
     const val jaxsWsApiVersion = "2.3.1"
@@ -112,6 +112,20 @@ dependencies {
     implementation("org.apache.kafka:kafka_2.13:${Versions.kafka}", excludeLog4j)
     implementation("io.confluent:kafka-avro-serializer:${Versions.confluent}", excludeLog4j)
     implementation("io.confluent:kafka-schema-registry:${Versions.confluent}", excludeLog4j)
+    constraints {
+        implementation("org.yaml:snakeyaml") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-25857/")
+            version {
+                require("1.31")
+            }
+        }
+        implementation("org.glassfish:jakarta.el") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2021-28170/")
+            version {
+                require("3.0.4")
+            }
+        }
+    }
     implementation("com.github.navikt:brukernotifikasjon-schemas:${Versions.brukernotifikasjonAvro}")
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
     implementation("org.scala-lang:scala-library") {
