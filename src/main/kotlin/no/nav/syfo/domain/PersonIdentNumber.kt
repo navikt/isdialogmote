@@ -1,5 +1,6 @@
 package no.nav.syfo.domain
 
+// TODO: fjern Number, det er overflødig
 data class PersonIdentNumber(val value: String) {
     private val elevenDigits = Regex("^\\d{11}\$")
 

@@ -11,11 +11,16 @@ import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.ereg.EregClient
 import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
 import no.nav.syfo.client.pdl.PdlClient
+import no.nav.syfo.cronjob.dialogmotesvar.DialogmotesvarProducer
+import no.nav.syfo.cronjob.dialogmotesvar.PublishDialogmotesvarCronjob
+import no.nav.syfo.cronjob.dialogmotesvar.PublishDialogmotesvarService
+import no.nav.syfo.cronjob.dialogmotesvar.kafkaDialogmotesvarProducerConfig
 import no.nav.syfo.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
 import no.nav.syfo.cronjob.journalpostdistribusjon.DialogmoteJournalpostDistribusjonCronjob
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
 import no.nav.syfo.cronjob.statusendring.*
 import no.nav.syfo.dialogmote.*
+import no.nav.syfo.dialogmote.api.domain.KDialogmotesvar
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import org.apache.kafka.clients.producer.KafkaProducer
 
@@ -74,13 +79,24 @@ fun Application.cronjobModule(
     val kafkaDialogmoteStatusEndringProducer = KafkaProducer<String, KDialogmoteStatusEndring>(
         kafkaDialogmoteStatusEndringProducerProperties
     )
+    val kafkaDialogmotesvarProducerProperties = kafkaDialogmotesvarProducerConfig(environment.kafka)
 
+    val kafkaDialogmotesvarProducer = KafkaProducer<String, KDialogmotesvar>(
+        kafkaDialogmotesvarProducerProperties
+    )
     val dialogmoteStatusEndringProducer = DialogmoteStatusEndringProducer(
         kafkaDialogmoteStatusEndringProducer = kafkaDialogmoteStatusEndringProducer,
+    )
+    val dialogmotesvarProducer = DialogmotesvarProducer(
+        kafkaDialogmotesvarProducer = kafkaDialogmotesvarProducer,
     )
     val publishDialogmoteStatusEndringService = PublishDialogmoteStatusEndringService(
         database = database,
         dialogmoteStatusEndringProducer = dialogmoteStatusEndringProducer,
+    )
+    val publishDialogmotesvarService = PublishDialogmotesvarService(
+        database = database,
+        dialogmotesvarProducer = dialogmotesvarProducer,
     )
     val publishDialogmoteStatusEndringCronjob = PublishDialogmoteStatusEndringCronjob(
         publishDialogmoteStatusEndringService = publishDialogmoteStatusEndringService,
@@ -93,6 +109,9 @@ fun Application.cronjobModule(
         dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
         referatJournalpostService = referatJournalpostService,
         journalpostdistribusjonClient = journalpostdistribusjonClient
+    )
+    val publishDialogmotesvarCronjob = PublishDialogmotesvarCronjob(
+        publishDialogmotesvarService = publishDialogmotesvarService
     )
 
     launchBackgroundTask(
@@ -109,5 +128,12 @@ fun Application.cronjobModule(
         applicationState = applicationState
     ) {
         cronjobRunner.start(cronjob = journalpostDistribusjonCronjob)
+    }
+    if (environment.publishDialogmotesvarEnabled) {
+        launchBackgroundTask(
+            applicationState = applicationState
+        ) {
+            cronjobRunner.start(cronjob = publishDialogmotesvarCronjob)
+        }
     }
 }

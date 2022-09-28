@@ -30,6 +30,7 @@ const val queryCreateMotedeltakerVarselArbeidsgiver =
 
 private val mapper = configuredJacksonMapper()
 
+// TODO: Fjern sendAltinn boolean (altinn_sent_at skal alltid settes til now)
 fun Connection.createMotedeltakerVarselArbeidsgiver(
     commit: Boolean = true,
     motedeltakerArbeidsgiverId: Int,

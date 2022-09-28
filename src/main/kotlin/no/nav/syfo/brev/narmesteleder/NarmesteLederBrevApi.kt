@@ -140,7 +140,7 @@ fun Route.registerNarmestelederBrevApi(
                 val narmesteLederPersonIdentNumber = call.personIdent()
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
                 val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
-                val responsDTO = call.receive<NarmesteLederResponsDTO>()
+                val responsDTO = call.receive<NarmesteLederResponsDTO>() // TODO: bytt navn, dette er en post request (med et svar i)
 
                 val brev = dialogmoteService.getNarmesteLederBrevFromUuid(brevUuid)
 
