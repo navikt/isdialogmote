@@ -149,4 +149,4 @@ spec:
     - name: ALTINN_SENDING_ENABLED
       value: "true"
     - name: KODE6_ENABLED
-      value: "false"
+      value: "true"
