@@ -1,0 +1,26 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  annotations:
+    dcat.data.nav.no/title: "Svar på dialogmøteinnkalling"
+    dcat.data.nav.no/description: >-
+      Topic inneholder svar på innkallinger til dialogmøte.
+  namespace: teamsykefravr
+  labels:
+    team: teamsykefravr
+spec:
+  pool: {{ kafkaPool }}
+  config:
+    cleanupPolicy: delete
+    minimumInSyncReplicas: 1
+    partitions: 1
+    replication: 3
+    retentionBytes: -1  # -1 means unlimited
+    retentionHours: -1  # -1 means unlimited
+  acl:
+    - team: teamsykefravr
+      application: isdialogmote
+      access: write
+    - team: teamsykefravr
+      application: ispersonoppgave
+      access: read
