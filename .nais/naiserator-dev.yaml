@@ -150,3 +150,5 @@ spec:
       value: "false"
     - name: KODE6_ENABLED
       value: "true"
+    - name: PUBLISH_DIALOGMOTESVAR_ENABLED
+      value: "false"
