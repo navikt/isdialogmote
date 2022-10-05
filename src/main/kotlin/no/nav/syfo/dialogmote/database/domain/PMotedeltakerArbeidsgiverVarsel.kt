@@ -2,6 +2,7 @@ package no.nav.syfo.dialogmote.database.domain
 
 import no.nav.syfo.dialogmote.domain.*
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 data class PMotedeltakerArbeidsgiverVarsel(
@@ -19,6 +20,7 @@ data class PMotedeltakerArbeidsgiverVarsel(
     val svarType: String?,
     val svarTekst: String?,
     val svarTidspunkt: LocalDateTime?,
+    val svarPublishedToKafkaAt: OffsetDateTime?,
 )
 
 fun PMotedeltakerArbeidsgiverVarsel.toDialogmotedeltakerArbeidsgiver() =
