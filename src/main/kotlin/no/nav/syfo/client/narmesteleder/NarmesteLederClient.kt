@@ -65,10 +65,10 @@ class NarmesteLederClient(
         callId: String,
     ): List<NarmesteLederRelasjonDTO> {
         val cacheKey = "$CACHE_NARMESTE_LEDER_AKTIVE_ANSATTE_KEY_PREFIX${narmesteLederIdent.value}"
-        val cachedNarmesteLedere = cache.getListObject<NarmesteLederRelasjonDTO>(cacheKey)
-        return if (cachedNarmesteLedere != null) {
+        val cachedAktiveAnsatte = cache.getListObject<NarmesteLederRelasjonDTO>(cacheKey)
+        return if (cachedAktiveAnsatte != null) {
             COUNT_CALL_NARMESTE_LEDER_CACHE_HIT.increment()
-            cachedNarmesteLedere
+            cachedAktiveAnsatte
         } else {
             val token = tokendingsClient.getOnBehalfOfToken(
                 scopeClientId = narmestelederClientId,
@@ -76,7 +76,7 @@ class NarmesteLederClient(
             ).accessToken
 
             try {
-                val narmesteLedere = httpClient.get(ansatteNarmesteLederSelvbetjeningPath) {
+                val ansatte = httpClient.get(ansatteNarmesteLederSelvbetjeningPath) {
                     header(HttpHeaders.Authorization, bearerHeader(token))
                     header(NAV_PERSONIDENT_HEADER, narmesteLederIdent.value)
                     header(NAV_CALL_ID_HEADER, callId)
@@ -84,12 +84,16 @@ class NarmesteLederClient(
                 }.body<List<NarmesteLederRelasjonDTO>>()
                 COUNT_CALL_PERSON_NARMESTE_LEDER_CURRENT_SUCCESS.increment()
                 COUNT_CALL_NARMESTE_LEDER_CACHE_MISS.increment()
+                val aktiveAnsatte = ansatte.filter {
+                    it.narmesteLederPersonIdentNumber == narmesteLederIdent.value &&
+                        it.status == NarmesteLederRelasjonStatus.INNMELDT_AKTIV.name
+                }
                 cache.setObject(
                     cacheKey,
-                    narmesteLedere,
+                    aktiveAnsatte,
                     CACHE_NARMESTE_LEDER_EXPIRE_SECONDS,
                 )
-                narmesteLedere.filter { it.narmesteLederPersonIdentNumber == narmesteLederIdent.value }
+                aktiveAnsatte
             } catch (e: ClientRequestException) {
                 handleUnexpectedResponseException(e.response, callId)
                 emptyList()
