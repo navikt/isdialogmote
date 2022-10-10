@@ -1,14 +1,16 @@
 package no.nav.syfo.brev.narmesteleder
 
-import io.ktor.server.application.*
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.application.api.authentication.personIdent
 import no.nav.syfo.brev.arbeidstaker.domain.PdfContent
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederResponsDTO
-import no.nav.syfo.dialogmote.*
+import no.nav.syfo.dialogmote.DialogmoteService
+import no.nav.syfo.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.dialogmote.PdfService
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.toNarmesteLederBrevDTOList
 import no.nav.syfo.domain.PersonIdent
@@ -52,7 +54,16 @@ fun Route.registerNarmestelederBrevApi(
                     narmesteLederPersonIdent = narmesteLederPersonIdent,
                     tokenx = token,
                 )
-                call.respond(narmesteLederMoter.toNarmesteLederBrevDTOList())
+
+                val removedExpiredBrev = narmesteLederAccessService.removeExpiredBrevInDialogmoter(
+                    moteList = narmesteLederMoter,
+                    narmesteLederPersonIdentNumber = narmesteLederPersonIdent,
+                    arbeidstakerPersonIdentNumber = arbeidstakerPersonIdent,
+                    tokenx = token,
+                    callId = callId
+                )
+
+                call.respond(removedExpiredBrev.toNarmesteLederBrevDTOList())
             } catch (e: IllegalArgumentException) {
                 val illegalArgumentMessage = "Could not retrieve BrevList"
                 log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
@@ -79,7 +90,14 @@ fun Route.registerNarmestelederBrevApi(
                     narmesteLederPersonIdent = narmesteLederPersonIdent,
                 )
 
-                if (hasAccessToBrev && brev.pdfId != null) {
+                val isBrevExpired = narmesteLederAccessService.isBrevExpired(
+                    brev = brev,
+                    callId = callId,
+                    tokenx = token,
+                    narmesteLederPersonIdentNumber = narmesteLederPersonIdent
+                )
+
+                if (hasAccessToBrev && brev.pdfId != null && !isBrevExpired) {
                     val pdf = pdfService.getPdf(brev.pdfId!!)
                     call.respond(PdfContent(pdf))
                 } else {

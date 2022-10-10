@@ -10,24 +10,32 @@ import no.nav.syfo.application.api.authentication.*
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.mq.MQSenderInterface
-import no.nav.syfo.brev.arbeidstaker.*
+import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
 import no.nav.syfo.brev.behandler.BehandlerVarselService
-import no.nav.syfo.brev.narmesteleder.*
+import no.nav.syfo.brev.narmesteleder.NarmesteLederAccessService
+import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
+import no.nav.syfo.brev.narmesteleder.registerNarmestelederBrevApi
 import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
-import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.dialogmote.*
-import no.nav.syfo.dialogmote.api.v2.*
+import no.nav.syfo.dialogmote.DialogmoteService
+import no.nav.syfo.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.dialogmote.PdfService
+import no.nav.syfo.dialogmote.VarselService
+import no.nav.syfo.dialogmote.api.v2.registerDialogmoteActionsApiV2
+import no.nav.syfo.dialogmote.api.v2.registerDialogmoteApiV2
+import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 
 fun Application.apiModule(
@@ -80,7 +88,7 @@ fun Application.apiModule(
     )
     val adressebeskyttelseClient = AdressebeskyttelseClient(
         pdlClient = pdlClient,
-        cache = cache
+        cache = cache,
     )
     val behandlendeEnhetClient = BehandlendeEnhetClient(
         azureAdV2Client = azureAdV2Client,
@@ -95,8 +103,10 @@ fun Application.apiModule(
     )
     val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
         azureAdV2Client = azureAdV2Client,
+        tokendingsClient = tokendingsClient,
         isoppfolgingstilfelleBaseUrl = environment.isoppfolgingstilfelleUrl,
         isoppfolgingstilfelleClientId = environment.isoppfolgingstilfelleClientId,
+        cache = cache,
     )
     val pdfGenClient = PdfGenClient(
         pdfGenBaseUrl = environment.isdialogmotepdfgenUrl
@@ -153,7 +163,7 @@ fun Application.apiModule(
         behandlerVarselService = behandlerVarselService,
         altinnClient = altinnClient,
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
-        isAltinnSendingEnabled = environment.altinnSendingEnabled
+        isAltinnSendingEnabled = environment.altinnSendingEnabled,
     )
 
     val dialogmoteService = DialogmoteService(
@@ -165,12 +175,13 @@ fun Application.apiModule(
         pdfGenClient = pdfGenClient,
         kontaktinformasjonClient = kontaktinformasjonClient,
         varselService = varselService,
-        pdlClient = pdlClient
+        pdlClient = pdlClient,
     )
 
     val narmesteLederTilgangService = NarmesteLederAccessService(
         dialogmotedeltakerService = dialogmotedeltakerService,
         narmesteLederClient = narmesteLederClient,
+        oppfolgingstilfelleClient = oppfolgingstilfelleClient,
     )
 
     routing {
