@@ -4,7 +4,7 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.sql.*
 import java.time.Instant
@@ -24,7 +24,7 @@ const val queryCreateMotedeltakerArbeidstaker =
 fun Connection.createMotedeltakerArbeidstaker(
     commit: Boolean = true,
     moteId: Int,
-    personIdentNumber: PersonIdentNumber,
+    personIdent: PersonIdent,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
     val motedeltakerUuid = UUID.randomUUID()
@@ -33,7 +33,7 @@ fun Connection.createMotedeltakerArbeidstaker(
         it.setTimestamp(2, now)
         it.setTimestamp(3, now)
         it.setInt(4, moteId)
-        it.setString(5, personIdentNumber.value)
+        it.setString(5, personIdent.value)
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -98,7 +98,7 @@ fun ResultSet.toPMotedeltakerArbeidstaker(): PMotedeltakerArbeidstaker =
         createdAt = getTimestamp("created_at").toLocalDateTime(),
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         moteId = getInt("mote_id"),
-        personIdent = PersonIdentNumber(getString("personident")),
+        personIdent = PersonIdent(getString("personident")),
     )
 
 const val queryCreateMotedeltakerBehandler =
@@ -219,7 +219,7 @@ fun ResultSet.toPMotedeltakerBehandler(): PMotedeltakerBehandler =
         createdAt = getTimestamp("created_at").toLocalDateTime(),
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         moteId = getInt("mote_id"),
-        personIdent = getString("personident")?.let { PersonIdentNumber(it) },
+        personIdent = getString("personident")?.let { PersonIdent(it) },
         behandlerRef = getString("behandler_ref"),
         behandlerNavn = getString("behandler_navn"),
         behandlerKontor = getString("behandler_kontor"),

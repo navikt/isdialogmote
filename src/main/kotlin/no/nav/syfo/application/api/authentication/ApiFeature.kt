@@ -16,7 +16,7 @@ import io.ktor.server.response.*
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.exception.ConflictException
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.metric.METRICS_REGISTRY
 import no.nav.syfo.util.*
 import org.slf4j.Logger
@@ -69,16 +69,16 @@ fun hasExpectedAudience(credentials: JWTCredential, expectedAudience: List<Strin
     return expectedAudience.any { credentials.payload.audience.contains(it) }
 }
 
-fun ApplicationCall.personIdent(): PersonIdentNumber? {
+fun ApplicationCall.personIdent(): PersonIdent? {
     val token = this.getBearerHeader()
     val decodedJWT = JWT.decode(token)
     val pid = decodedJWT.claims["pid"]
 
     return if (pid == null) {
         val principal: JWTPrincipal? = this.authentication.principal()
-        principal?.payload?.subject?.let { PersonIdentNumber(it) }
+        principal?.payload?.subject?.let { PersonIdent(it) }
     } else {
-        pid.asString()?.let { PersonIdentNumber(it) }
+        pid.asString()?.let { PersonIdent(it) }
     }
 }
 

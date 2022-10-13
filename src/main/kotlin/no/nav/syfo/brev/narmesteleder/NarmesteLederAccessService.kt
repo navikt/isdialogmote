@@ -4,7 +4,7 @@ import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.domain.Dialogmote
 import no.nav.syfo.dialogmote.domain.NarmesteLederBrev
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 
 class NarmesteLederAccessService(
@@ -12,10 +12,10 @@ class NarmesteLederAccessService(
     private val narmesteLederClient: NarmesteLederClient,
 ) {
     suspend fun filterMoterByNarmesteLederAccess(
-        arbeidstakerPersonIdentNumber: PersonIdentNumber,
+        arbeidstakerPersonIdent: PersonIdent,
         callId: String,
         moteList: List<Dialogmote>,
-        narmesteLederPersonIdentNumber: PersonIdentNumber,
+        narmesteLederPersonIdent: PersonIdent,
         tokenx: String,
     ): List<Dialogmote> {
         return if (moteList.isEmpty()) {
@@ -23,9 +23,9 @@ class NarmesteLederAccessService(
         } else {
             val virksomhetnummerListWhereNarmesteLederOfArbeidstaker =
                 getVirksomhetnummerListWhereNarmesteLederOfArbeidstaker(
-                    arbeidstakerPersonIdentNumber = arbeidstakerPersonIdentNumber,
+                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
                     callId = callId,
-                    narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
+                    narmesteLederPersonIdent = narmesteLederPersonIdent,
                     tokenx = tokenx,
                 )
             moteList.filter { virksomhetnummerListWhereNarmesteLederOfArbeidstaker.contains(it.arbeidsgiver.virksomhetsnummer) }
@@ -36,7 +36,7 @@ class NarmesteLederAccessService(
         brev: NarmesteLederBrev,
         callId: String,
         tokenx: String,
-        narmesteLederPersonIdentNumber: PersonIdentNumber,
+        narmesteLederPersonIdent: PersonIdent,
     ): Boolean {
         val dialogmoteDeltagerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(
             motedeltakerArbeidsgiverId = brev.motedeltakerArbeidsgiverId,
@@ -47,27 +47,27 @@ class NarmesteLederAccessService(
         ).personIdent
 
         val virksomhetnummerListWhereNarmesteLederOfArbeidstaker = getVirksomhetnummerListWhereNarmesteLederOfArbeidstaker(
-            arbeidstakerPersonIdentNumber = arbeidstakerPersonIdent,
+            arbeidstakerPersonIdent = arbeidstakerPersonIdent,
             callId = callId,
             tokenx = tokenx,
-            narmesteLederPersonIdentNumber = narmesteLederPersonIdentNumber,
+            narmesteLederPersonIdent = narmesteLederPersonIdent,
         )
         return virksomhetnummerListWhereNarmesteLederOfArbeidstaker.contains(dialogmoteDeltagerArbeidsgiver.virksomhetsnummer)
     }
 
     suspend fun getVirksomhetnummerListWhereNarmesteLederOfArbeidstaker(
-        arbeidstakerPersonIdentNumber: PersonIdentNumber,
+        arbeidstakerPersonIdent: PersonIdent,
         callId: String,
-        narmesteLederPersonIdentNumber: PersonIdentNumber,
+        narmesteLederPersonIdent: PersonIdent,
         tokenx: String,
     ): List<Virksomhetsnummer> {
         val aktiveAnsatteRelasjoner = narmesteLederClient.getAktiveAnsatte(
-            narmesteLederIdent = narmesteLederPersonIdentNumber,
+            narmesteLederIdent = narmesteLederPersonIdent,
             tokenx = tokenx,
             callId = callId,
         )
         return aktiveAnsatteRelasjoner.filter { nlrelasjon ->
-            nlrelasjon.arbeidstakerPersonIdentNumber == arbeidstakerPersonIdentNumber.value
+            nlrelasjon.arbeidstakerPersonIdent == arbeidstakerPersonIdent.value
         }.map { relasjon ->
             Virksomhetsnummer(relasjon.virksomhetsnummer)
         }.distinctBy { it.value }

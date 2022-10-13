@@ -1,7 +1,7 @@
 package no.nav.syfo.dialogmote.database.domain
 
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -11,7 +11,7 @@ data class PMotedeltakerArbeidstaker(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val moteId: Int,
-    val personIdent: PersonIdentNumber,
+    val personIdent: PersonIdent,
 )
 
 fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(

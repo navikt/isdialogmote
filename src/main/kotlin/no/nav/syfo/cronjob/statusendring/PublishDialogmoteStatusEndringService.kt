@@ -5,7 +5,7 @@ import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.*
 
@@ -45,7 +45,7 @@ fun createKDialogmoteStatusEndring(
     dialogmoteStatusEndret: DialogmoteStatusEndret,
     dialogmoteTidStedList: List<DialogmoteTidSted>,
     pDialogmote: PDialogmote,
-    personIdent: PersonIdentNumber,
+    personIdent: PersonIdent,
     virksomhetsnummer: Virksomhetsnummer,
 ): KDialogmoteStatusEndring {
     val kDialogmoteStatusEndring = KDialogmoteStatusEndring()

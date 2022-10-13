@@ -4,7 +4,7 @@ import no.nav.brukernotifikasjon.schemas.builders.*
 import no.nav.brukernotifikasjon.schemas.input.*
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import java.net.URL
 import java.time.*
 import java.util.*
@@ -17,7 +17,7 @@ class ArbeidstakerVarselService(
 ) {
     fun sendVarsel(
         createdAt: LocalDateTime,
-        personIdent: PersonIdentNumber,
+        personIdent: PersonIdent,
         type: MotedeltakerVarselType,
         motedeltakerArbeidstakerUuid: UUID,
         varselUuid: UUID,
@@ -67,7 +67,7 @@ class ArbeidstakerVarselService(
     }
 
     fun lesVarsel(
-        personIdent: PersonIdentNumber,
+        personIdent: PersonIdent,
         motedeltakerArbeidstakerUuid: UUID,
         varselUuid: UUID,
     ) {
@@ -90,7 +90,7 @@ class ArbeidstakerVarselService(
 fun createBrukernotifikasjonNokkel(
     varselUuid: UUID,
     grupperingsId: UUID,
-    personIdent: PersonIdentNumber,
+    personIdent: PersonIdent,
     namespace: String,
     appname: String,
 ): NokkelInput = NokkelInputBuilder()

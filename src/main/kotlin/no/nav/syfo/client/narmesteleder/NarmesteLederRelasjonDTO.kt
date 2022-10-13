@@ -4,10 +4,10 @@ import java.time.*
 
 data class NarmesteLederRelasjonDTO(
     val uuid: String,
-    val arbeidstakerPersonIdentNumber: String,
+    val arbeidstakerPersonIdent: String,
     val virksomhetsnavn: String?,
     val virksomhetsnummer: String,
-    val narmesteLederPersonIdentNumber: String,
+    val narmesteLederPersonIdent: String,
     val narmesteLederTelefonnummer: String,
     val narmesteLederEpost: String,
     val narmesteLederNavn: String?,

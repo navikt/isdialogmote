@@ -1,7 +1,7 @@
 package no.nav.syfo.dialogmote.database.domain
 
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -15,7 +15,7 @@ data class PMotedeltakerBehandler(
     val behandlerNavn: String,
     val behandlerKontor: String,
     val behandlerType: String,
-    val personIdent: PersonIdentNumber?,
+    val personIdent: PersonIdent?,
     val mottarReferat: Boolean,
     val deltatt: Boolean,
 )

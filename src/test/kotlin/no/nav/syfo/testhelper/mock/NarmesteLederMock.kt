@@ -23,8 +23,8 @@ import java.util.UUID
 
 val narmesteLeder = NarmesteLederRelasjonDTO(
     uuid = UUID.randomUUID().toString(),
-    arbeidstakerPersonIdentNumber = ARBEIDSTAKER_FNR.value,
-    narmesteLederPersonIdentNumber = NARMESTELEDER_FNR.value,
+    arbeidstakerPersonIdent = ARBEIDSTAKER_FNR.value,
+    narmesteLederPersonIdent = NARMESTELEDER_FNR.value,
     virksomhetsnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
     virksomhetsnavn = "Virksomhetsnavn",
     narmesteLederEpost = "narmesteLederNavn@gmail.com",

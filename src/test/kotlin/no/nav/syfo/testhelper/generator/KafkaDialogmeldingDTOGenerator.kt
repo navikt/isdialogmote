@@ -2,15 +2,15 @@ package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.dialogmelding.domain.*
 import no.nav.syfo.dialogmelding.kafka.*
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import java.time.LocalDateTime
 import java.util.*
 
 fun generateKafkaDialogmeldingDTO(
     msgId: String? = null,
     msgType: String,
-    personIdentPasient: PersonIdentNumber,
-    personIdentBehandler: PersonIdentNumber,
+    personIdentPasient: PersonIdent,
+    personIdentBehandler: PersonIdent,
     conversationRef: String?,
     parentRef: String?,
     innkallingMoterespons: InnkallingMoterespons?

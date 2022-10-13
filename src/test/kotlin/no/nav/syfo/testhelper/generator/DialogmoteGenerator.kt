@@ -1,7 +1,7 @@
 package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import java.time.LocalDateTime
@@ -13,9 +13,9 @@ fun generateNewDialogmoteTidSted() = NewDialogmoteTidSted(
 )
 
 fun generateMotedeltakerArbeidstaker(
-    personIdentNumber: PersonIdentNumber,
+    personIdent: PersonIdent,
 ) = NewDialogmotedeltakerArbeidstaker(
-    personIdent = personIdentNumber,
+    personIdent = personIdent,
     fritekstInnkalling = "Ipsum lorum arbeidstaker"
 )
 
@@ -32,27 +32,27 @@ fun generateMotedeltakerBehandler() = NewDialogmotedeltakerBehandler(
 )
 
 fun generateNewDialogmote(
-    personIdentNumber: PersonIdentNumber,
+    personIdent: PersonIdent,
     status: DialogmoteStatus = DialogmoteStatus.INNKALT,
 ): NewDialogmote = NewDialogmote(
     status = status,
     opprettetAv = UserConstants.VEILEDER_IDENT,
     tildeltVeilederIdent = UserConstants.VEILEDER_IDENT,
     tildeltEnhet = UserConstants.ENHET_NR.value,
-    arbeidstaker = generateMotedeltakerArbeidstaker(personIdentNumber),
+    arbeidstaker = generateMotedeltakerArbeidstaker(personIdent),
     arbeidsgiver = generateMotedeltakerArbeidsgiver(),
     tidSted = generateNewDialogmoteTidSted()
 )
 
 fun generateNewDialogmoteWithBehandler(
-    personIdentNumber: PersonIdentNumber,
+    personIdent: PersonIdent,
     status: DialogmoteStatus = DialogmoteStatus.INNKALT,
 ): NewDialogmote = NewDialogmote(
     status = status,
     opprettetAv = UserConstants.VEILEDER_IDENT,
     tildeltVeilederIdent = UserConstants.VEILEDER_IDENT,
     tildeltEnhet = UserConstants.ENHET_NR.value,
-    arbeidstaker = generateMotedeltakerArbeidstaker(personIdentNumber),
+    arbeidstaker = generateMotedeltakerArbeidstaker(personIdent),
     arbeidsgiver = generateMotedeltakerArbeidsgiver(),
     tidSted = generateNewDialogmoteTidSted(),
     behandler = generateMotedeltakerBehandler(),

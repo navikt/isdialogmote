@@ -5,15 +5,15 @@ import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.DialogmotedeltakerBehandler
 import no.nav.syfo.dialogmote.domain.Referat
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 
 class ReferatJournalpostService(
     private val database: DatabaseInterface
 ) {
-    fun getDialogmoteReferatJournalforingListArbeidstaker(): List<Pair<PersonIdentNumber, Referat>> {
-        return database.getFerdigstilteReferatWithoutJournalpostArbeidstakerList().map { (personIdentNumber, pReferat) ->
+    fun getDialogmoteReferatJournalforingListArbeidstaker(): List<Pair<PersonIdent, Referat>> {
+        return database.getFerdigstilteReferatWithoutJournalpostArbeidstakerList().map { (personIdent, pReferat) ->
             val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id).map {
                 it.toDialogmoteDeltakerAnnen()
             }
@@ -21,7 +21,7 @@ class ReferatJournalpostService(
             val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
 
             Pair(
-                first = personIdentNumber,
+                first = personIdent,
                 second = pReferat.toReferat(
                     andreDeltakere = andreDeltakere,
                     motedeltakerArbeidstakerId = motedeltakerArbeidstakerId,
@@ -31,7 +31,7 @@ class ReferatJournalpostService(
         }
     }
 
-    fun getDialogmoteReferatJournalforingListArbeidsgiver(): List<Triple<Virksomhetsnummer, PersonIdentNumber, Referat>> {
+    fun getDialogmoteReferatJournalforingListArbeidsgiver(): List<Triple<Virksomhetsnummer, PersonIdent, Referat>> {
         return database.getFerdigstilteReferatWithoutJournalpostArbeidsgiverList().map { (virksomhetsnummer, pReferat) ->
             val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id).map {
                 it.toDialogmoteDeltakerAnnen()
@@ -51,7 +51,7 @@ class ReferatJournalpostService(
         }
     }
 
-    fun getDialogmoteReferatJournalforingListBehandler(): List<Triple<PersonIdentNumber, DialogmotedeltakerBehandler, Referat>> {
+    fun getDialogmoteReferatJournalforingListBehandler(): List<Triple<PersonIdent, DialogmotedeltakerBehandler, Referat>> {
         return database.getFerdigstilteReferatWithoutJournalpostBehandlerList().map { pReferat ->
             val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id).map {
                 it.toDialogmoteDeltakerAnnen()
