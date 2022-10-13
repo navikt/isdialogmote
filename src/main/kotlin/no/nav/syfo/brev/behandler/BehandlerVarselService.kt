@@ -8,7 +8,7 @@ import no.nav.syfo.dialogmelding.COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDL
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.PersonIdentNumber
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.SQLException
@@ -22,7 +22,7 @@ class BehandlerVarselService(
 ) {
     fun sendVarsel(
         behandlerRef: String,
-        arbeidstakerPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: PersonIdentNumber,
         document: List<DocumentComponentDTO>,
         pdf: ByteArray,
         varseltype: MotedeltakerVarselType,
@@ -46,8 +46,8 @@ class BehandlerVarselService(
     }
 
     fun finnBehandlerVarselOgOpprettSvar(
-        arbeidstakerPersonIdent: PersonIdent,
-        behandlerPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: PersonIdentNumber,
+        behandlerPersonIdent: PersonIdentNumber,
         varseltype: MotedeltakerVarselType,
         svarType: DialogmoteSvarType,
         svarTekst: String?,
@@ -88,8 +88,8 @@ class BehandlerVarselService(
 
     private fun getBehandlerVarselForSvar(
         varseltype: MotedeltakerVarselType,
-        arbeidstakerPersonIdent: PersonIdent,
-        behandlerPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: PersonIdentNumber,
+        behandlerPersonIdent: PersonIdentNumber,
         conversationRef: String?,
         parentRef: String?,
     ): PMotedeltakerBehandlerVarsel? {
@@ -110,8 +110,8 @@ class BehandlerVarselService(
     }
 
     private fun getBehandlerVarselInnkalling(
-        arbeidstakerPersonIdent: PersonIdent,
-        behandlerPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: PersonIdentNumber,
+        behandlerPersonIdent: PersonIdentNumber,
         conversationRef: String?,
     ): PMotedeltakerBehandlerVarsel? {
         val varselInnkallingForConversationRef =
@@ -132,8 +132,8 @@ class BehandlerVarselService(
     }
 
     private fun getBehandlerVarselNyttTidSted(
-        arbeidstakerPersonIdent: PersonIdent,
-        behandlerPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: PersonIdentNumber,
+        behandlerPersonIdent: PersonIdentNumber,
         conversationRef: String?,
         parentRef: String?,
     ): PMotedeltakerBehandlerVarsel? {
@@ -163,7 +163,7 @@ class BehandlerVarselService(
     }
 
     private fun getBehandlerVarselNyttTidStedFromConversationRef(
-        arbeidstakerPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: PersonIdentNumber,
         conversationRef: String?,
     ): PMotedeltakerBehandlerVarsel? {
         val varselInnkallingForConversationRef =

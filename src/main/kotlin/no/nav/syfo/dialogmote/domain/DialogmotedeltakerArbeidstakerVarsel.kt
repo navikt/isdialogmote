@@ -1,7 +1,7 @@
 package no.nav.syfo.dialogmote.domain
 
 import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevSvarDTO
@@ -77,7 +77,7 @@ fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerBrevDTO(
 )
 
 fun DialogmotedeltakerArbeidstakerVarsel.toJournalpostRequest(
-    personIdent: PersonIdent,
+    personIdent: PersonIdentNumber,
     navn: String,
     pdf: ByteArray,
 ) = createJournalpostRequest(

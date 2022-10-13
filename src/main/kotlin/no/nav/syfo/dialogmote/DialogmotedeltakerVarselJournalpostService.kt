@@ -4,19 +4,19 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 
 class DialogmotedeltakerVarselJournalpostService(
     private val database: DatabaseInterface,
 ) {
-    fun getDialogmotedeltakerArbeidstakerVarselForJournalforingList(): List<Pair<PersonIdent, DialogmotedeltakerArbeidstakerVarsel>> {
+    fun getDialogmotedeltakerArbeidstakerVarselForJournalforingList(): List<Pair<PersonIdentNumber, DialogmotedeltakerArbeidstakerVarsel>> {
         return getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList().filter { (_, arbeidstakerVarsel) ->
             journalforingVarselTypeList.contains(arbeidstakerVarsel.varselType)
         }
     }
 
-    private fun getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList(): List<Pair<PersonIdent, DialogmotedeltakerArbeidstakerVarsel>> {
+    private fun getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList(): List<Pair<PersonIdentNumber, DialogmotedeltakerArbeidstakerVarsel>> {
         val motedeltakerArbeidtakerVarselList = database.getMotedeltakerArbeidstakerVarselWithoutJournalpost()
         return motedeltakerArbeidtakerVarselList.map {
             it.toDialogmotedeltakerArbeidstaker()
@@ -31,13 +31,13 @@ class DialogmotedeltakerVarselJournalpostService(
         }
     }
 
-    fun getDialogmotedeltakerArbeidsgiverVarselForJournalforingList(): List<Triple<Virksomhetsnummer, PersonIdent, DialogmotedeltakerArbeidsgiverVarsel>> {
+    fun getDialogmotedeltakerArbeidsgiverVarselForJournalforingList(): List<Triple<Virksomhetsnummer, PersonIdentNumber, DialogmotedeltakerArbeidsgiverVarsel>> {
         return getDialogmotedeltakerArbeidsgiverVarselWithoutJournalpostList().filter { (_, _, arbeidsgiverVarsel) ->
             journalforingVarselTypeList.contains(arbeidsgiverVarsel.varselType)
         }
     }
 
-    private fun getDialogmotedeltakerArbeidsgiverVarselWithoutJournalpostList(): List<Triple<Virksomhetsnummer, PersonIdent, DialogmotedeltakerArbeidsgiverVarsel>> {
+    private fun getDialogmotedeltakerArbeidsgiverVarselWithoutJournalpostList(): List<Triple<Virksomhetsnummer, PersonIdentNumber, DialogmotedeltakerArbeidsgiverVarsel>> {
         val motedeltakerArbeidsgiverVarselList = database.getMotedeltakerArbeidsgiverVarselWithoutJournalpost()
         return motedeltakerArbeidsgiverVarselList.map {
             it.toDialogmotedeltakerArbeidsgiver()
@@ -56,13 +56,13 @@ class DialogmotedeltakerVarselJournalpostService(
         }
     }
 
-    fun getDialogmotedeltakerBehandlerVarselForJournalforingList(): List<Triple<PersonIdent, DialogmotedeltakerBehandler, DialogmotedeltakerBehandlerVarsel>> {
+    fun getDialogmotedeltakerBehandlerVarselForJournalforingList(): List<Triple<PersonIdentNumber, DialogmotedeltakerBehandler, DialogmotedeltakerBehandlerVarsel>> {
         return getDialogmotedeltakerBehandlerVarselWithoutJournalpostList().filter { (_, _, behandlerVarsel) ->
             journalforingVarselTypeList.contains(behandlerVarsel.varselType)
         }
     }
 
-    private fun getDialogmotedeltakerBehandlerVarselWithoutJournalpostList(): List<Triple<PersonIdent, DialogmotedeltakerBehandler, DialogmotedeltakerBehandlerVarsel>> {
+    private fun getDialogmotedeltakerBehandlerVarselWithoutJournalpostList(): List<Triple<PersonIdentNumber, DialogmotedeltakerBehandler, DialogmotedeltakerBehandlerVarsel>> {
         val motedeltakerBehandlerVarselList = database.getMotedeltakerBehandlerVarselWithoutJournalpost()
         return motedeltakerBehandlerVarselList.map {
             it.toDialogmotedeltakerBehandlerVarsel(emptyList())

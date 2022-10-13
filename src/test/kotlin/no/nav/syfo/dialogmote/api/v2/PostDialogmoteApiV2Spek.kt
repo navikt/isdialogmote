@@ -113,7 +113,7 @@ class PostDialogmoteApiV2Spek : Spek({
                     it("should return OK if request is successful") {
                         val moteTidspunkt = LocalDateTime.now().plusDays(30)
                         val newDialogmoteDTO = generateNewDialogmoteDTO(
-                            personIdent = ARBEIDSTAKER_FNR,
+                            personIdentNumber = ARBEIDSTAKER_FNR,
                             dato = moteTidspunkt,
                         )
 
@@ -361,7 +361,7 @@ class PostDialogmoteApiV2Spek : Spek({
 
                     it("should return OK if request is successful: does not have a leader for Virksomhet") {
                         val newDialogmoteDTO =
-                            generateNewDialogmoteDTO(personIdent = ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
+                            generateNewDialogmoteDTO(personIdentNumber = ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
                                 addHeader(Authorization, bearerHeader(validToken))

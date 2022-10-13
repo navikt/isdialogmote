@@ -10,7 +10,7 @@ import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.oppfolgingstilfelle.isInactive
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 import java.util.*
@@ -28,7 +28,7 @@ class VarselService(
         tidspunktForVarsel: LocalDateTime,
         varselType: MotedeltakerVarselType,
         isDigitalVarselEnabledForArbeidstaker: Boolean,
-        arbeidstakerPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: PersonIdentNumber,
         arbeidstakernavn: String,
         arbeidstakerId: UUID,
         arbeidstakerbrevId: UUID,
@@ -59,7 +59,7 @@ class VarselService(
 
         val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfelle(
             callId = callId,
-            personIdent = arbeidstakerPersonIdent,
+            personIdentNumber = arbeidstakerPersonIdent,
             token = token,
         )
 

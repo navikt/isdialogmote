@@ -46,10 +46,10 @@ class NarmesteLederClientSpek : Spek({
             val cachedValue = listOf(
                 NarmesteLederRelasjonDTO(
                     uuid = UUID.randomUUID().toString(),
-                    arbeidstakerPersonIdent = ARBEIDSTAKER_FNR.value,
+                    arbeidstakerPersonIdentNumber = ARBEIDSTAKER_FNR.value,
                     virksomhetsnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
                     virksomhetsnavn = "",
-                    narmesteLederPersonIdent = NARMESTELEDER_FNR.value,
+                    narmesteLederPersonIdentNumber = NARMESTELEDER_FNR.value,
                     narmesteLederTelefonnummer = "",
                     narmesteLederEpost = "",
                     aktivFom = LocalDate.now(),

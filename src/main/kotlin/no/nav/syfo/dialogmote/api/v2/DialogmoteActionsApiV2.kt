@@ -171,7 +171,7 @@ fun Route.registerDialogmoteActionsApiV2(
 
                 val dialogmoter = dialogmoteUuids.map { dialogmoteService.getDialogmote(UUID.fromString(it)) }
                 if (dialogmoteTilgangService.hasAccessToAllDialogmotePersons(
-                        personIdentList = dialogmoter.map { it.arbeidstaker.personIdent },
+                        personIdentNumberList = dialogmoter.map { it.arbeidstaker.personIdent },
                         token,
                         callId
                     )

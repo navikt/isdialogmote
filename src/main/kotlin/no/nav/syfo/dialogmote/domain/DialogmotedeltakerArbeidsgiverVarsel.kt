@@ -5,7 +5,7 @@ import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevSvarDTO
 import no.nav.syfo.client.dokarkiv.domain.DialogmoteDeltakerType
 import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
 import no.nav.syfo.dialogmote.api.domain.*
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 import java.util.UUID
@@ -70,7 +70,7 @@ fun DialogmotedeltakerArbeidsgiverVarsel.toNarmesteLederBrevDTO(
 )
 
 fun DialogmotedeltakerArbeidsgiverVarsel.toJournalpostRequest(
-    brukerPersonIdent: PersonIdent,
+    brukerPersonIdent: PersonIdentNumber,
     virksomhetsnummer: Virksomhetsnummer?,
     virksomhetsnavn: String,
     pdf: ByteArray,
