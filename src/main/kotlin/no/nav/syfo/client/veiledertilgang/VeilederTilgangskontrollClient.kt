@@ -10,7 +10,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.domain.EnhetNr
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.metric.*
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
@@ -32,10 +32,10 @@ class VeilederTilgangskontrollClient(
     }
 
     suspend fun hasAccessToPersonList(
-        personIdentList: List<PersonIdent>,
+        personIdentNumberList: List<PersonIdentNumber>,
         token: String,
         callId: String,
-    ): List<PersonIdent> {
+    ): List<PersonIdentNumber> {
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
             scopeClientId = syfotilgangskontrollClientId,
             token = token
@@ -43,7 +43,7 @@ class VeilederTilgangskontrollClient(
 
         val starttime = System.currentTimeMillis()
         return try {
-            val personIdentStringList = personIdentList.map { it.value }
+            val personIdentStringList = personIdentNumberList.map { it.value }
 
             val response: HttpResponse = httpClient.post(urlString = tilgangskontrollPersonListUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(token = oboToken))
@@ -53,7 +53,7 @@ class VeilederTilgangskontrollClient(
                 setBody(personIdentStringList)
             }
             COUNT_CALL_TILGANGSKONTROLL_PERSONS_SUCCESS.increment()
-            response.body<List<String>>().map { personIdent -> PersonIdent(personIdent) }
+            response.body<List<String>>().map { personIdent -> PersonIdentNumber(personIdent) }
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_CALL_TILGANGSKONTROLL_PERSONS_FORBIDDEN.increment()

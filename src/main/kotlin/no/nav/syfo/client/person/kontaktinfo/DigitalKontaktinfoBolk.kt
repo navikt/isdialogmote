@@ -1,6 +1,6 @@
 package no.nav.syfo.client.person.kontaktinfo
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.PersonIdentNumber
 import java.io.Serializable
 
 data class DigitalKontaktinfoBolk(
@@ -18,5 +18,5 @@ data class DigitalKontaktinfo(
 ) : Serializable
 
 fun Map<String, DigitalKontaktinfo>.isDigitalVarselEnabled(
-    personIdent: PersonIdent,
-) = this[personIdent.value]?.kanVarsles ?: false
+    personIdentNumber: PersonIdentNumber,
+) = this[personIdentNumber.value]?.kanVarsles ?: false

@@ -373,7 +373,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
 
                 describe("Møtet tilbake i tid") {
                     val newDialogmoteDTO = generateNewDialogmoteDTO(
-                        personIdent = ARBEIDSTAKER_FNR,
+                        personIdentNumber = ARBEIDSTAKER_FNR,
                         dato = LocalDateTime.now().plusDays(-30)
                     )
                     val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"

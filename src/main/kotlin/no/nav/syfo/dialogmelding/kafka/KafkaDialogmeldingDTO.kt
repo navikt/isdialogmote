@@ -2,7 +2,7 @@ package no.nav.syfo.dialogmelding.kafka
 
 import no.nav.syfo.dialogmelding.COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_MISSING_FORESPORSEL
 import no.nav.syfo.dialogmelding.domain.*
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.PersonIdentNumber
 import java.time.LocalDateTime
 
 data class KafkaDialogmeldingDTO(
@@ -50,8 +50,8 @@ fun KafkaDialogmeldingDTO.toDialogmeldingSvarAlternativer(): List<DialogmeldingS
         DialogmeldingSvar(
             conversationRef = this.conversationRef,
             parentRef = this.parentRef,
-            arbeidstakerPersonIdent = PersonIdent(this.personIdentPasient),
-            behandlerPersonIdent = PersonIdent(this.personIdentBehandler),
+            arbeidstakerPersonIdent = PersonIdentNumber(this.personIdentPasient),
+            behandlerPersonIdent = PersonIdentNumber(this.personIdentBehandler),
             innkallingDialogmoteSvar = innkallingDialogmoteSvar,
         )
     }

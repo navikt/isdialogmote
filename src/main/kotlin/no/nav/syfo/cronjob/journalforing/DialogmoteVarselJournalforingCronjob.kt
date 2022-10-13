@@ -142,14 +142,14 @@ class DialogmoteVarselJournalforingCronjob(
         journalforingResult: DialogmoteCronjobResult
     ) {
         val referatList = referatJournalpostService.getDialogmoteReferatJournalforingListArbeidstaker()
-        referatList.forEach { (personIdent, referat) ->
+        referatList.forEach { (personIdentNumber, referat) ->
             try {
-                val navn = pdlClient.navn(personIdent)
+                val navn = pdlClient.navn(personIdentNumber)
                 val pdf = pdfService.getPdf(referat.pdfId!!)
                 val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = referat.toJournalforingRequestArbeidstaker(
-                        personIdent = personIdent,
+                        personIdent = personIdentNumber,
                         navn = navn,
                         pdf = pdf,
                         moteTidspunkt = moteTidspunkt,
@@ -207,13 +207,13 @@ class DialogmoteVarselJournalforingCronjob(
         journalforingResult: DialogmoteCronjobResult
     ) {
         val referatList = referatJournalpostService.getDialogmoteReferatJournalforingListBehandler()
-        referatList.forEach { (personIdent, behandler, referat) ->
+        referatList.forEach { (personIdentNumber, behandler, referat) ->
             try {
                 val pdf = pdfService.getPdf(referat.pdfId!!)
                 val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
                 val journalpostId = dokarkivClient.journalfor(
                     journalpostRequest = referat.toJournalforingRequestBehandler(
-                        brukerPersonIdent = personIdent,
+                        brukerPersonIdent = personIdentNumber,
                         behandlerPersonIdent = behandler.personIdent,
                         behandlerNavn = behandler.behandlerNavn,
                         pdf = pdf,

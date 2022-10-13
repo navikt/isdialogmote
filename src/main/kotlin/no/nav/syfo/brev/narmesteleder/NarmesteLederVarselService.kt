@@ -37,7 +37,7 @@ class NarmesteLederVarselService(
         varseltype: MotedeltakerVarselType
     ) {
         val dineSykmeldteOpprettHendelse = OpprettHendelse(
-            ansattFnr = narmesteLeder.arbeidstakerPersonIdent,
+            ansattFnr = narmesteLeder.arbeidstakerPersonIdentNumber,
             orgnummer = narmesteLeder.virksomhetsnummer,
             oppgavetype = getDineSykmeldteOppgavetype(varseltype).name,
             tekst = varseltype.toDineSykmeldteVarselTekst(),
@@ -61,7 +61,7 @@ class NarmesteLederVarselService(
         parametere: List<WSParameter>
     ): WSServicemeldingMedKontaktinformasjon {
         return WSServicemeldingMedKontaktinformasjon().apply {
-            mottaker = personIdent(narmesteLeder.narmesteLederPersonIdent)
+            mottaker = personIdent(narmesteLeder.narmesteLederPersonIdentNumber)
             tilhoerendeOrganisasjon = organisasjon(narmesteLeder.virksomhetsnummer)
             varseltypeId = getNaermesteLederVarselType(varseltype).id
             parameterListe.addAll(parametere)

@@ -1,6 +1,6 @@
 package no.nav.syfo.client.dokarkiv.domain
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 
 const val JOURNALFORENDE_ENHET = 9999
@@ -62,8 +62,8 @@ data class JournalpostRequest private constructor(
 }
 
 fun createJournalpostRequest(
-    brukerPersonIdent: PersonIdent,
-    mottakerPersonIdent: PersonIdent? = null,
+    brukerPersonIdent: PersonIdentNumber,
+    mottakerPersonIdent: PersonIdentNumber? = null,
     mottakerVirksomhetsnummer: Virksomhetsnummer? = null,
     mottakerNavn: String,
     brevkodeType: BrevkodeType,

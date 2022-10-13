@@ -56,7 +56,7 @@ class AdressebeskyttelseClientSpek : Spek({
 
                 runBlocking {
                     client.hasAdressebeskyttelse(
-                        personIdent = arbeidstakerAdressebeskyttet,
+                        personIdentNumber = arbeidstakerAdressebeskyttet,
                         callId = anyCallId,
                     ) shouldBeEqualTo true
                 }
@@ -69,7 +69,7 @@ class AdressebeskyttelseClientSpek : Spek({
 
                 runBlocking {
                     client.hasAdressebeskyttelse(
-                        personIdent = arbeidstakerIkkeAdressebeskyttet,
+                        personIdentNumber = arbeidstakerIkkeAdressebeskyttet,
                         callId = anyCallId,
                     ) shouldBeEqualTo false
                 }
@@ -83,7 +83,7 @@ class AdressebeskyttelseClientSpek : Spek({
 
                 runBlocking {
                     client.hasAdressebeskyttelse(
-                        personIdent = arbeidstakerIkkeAdressebeskyttet,
+                        personIdentNumber = arbeidstakerIkkeAdressebeskyttet,
                         callId = anyCallId,
                     ) shouldBeEqualTo false
                 }
@@ -97,7 +97,7 @@ class AdressebeskyttelseClientSpek : Spek({
 
                 runBlocking {
                     client.hasAdressebeskyttelse(
-                        personIdent = arbeidstakerAdressebeskyttet,
+                        personIdentNumber = arbeidstakerAdressebeskyttet,
                         callId = anyCallId,
                     ) shouldBeEqualTo true
                 }

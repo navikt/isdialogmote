@@ -1,14 +1,14 @@
 package no.nav.syfo.dialogmote.api.domain
 
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.PersonIdentNumber
 import java.time.OffsetDateTime
 import java.util.*
 
 data class Dialogmotesvar(
     val moteuuid: UUID,
     val dbRef: UUID,
-    val ident: PersonIdent,
+    val ident: PersonIdentNumber,
     val svarType: DialogmoteSvarType,
     val senderType: SenderType,
     val brevSentAt: OffsetDateTime,
@@ -18,7 +18,7 @@ data class Dialogmotesvar(
 data class Arbeidsgiversvar(
     val moteuuid: UUID,
     val varseluuid: UUID,
-    val ident: PersonIdent,
+    val ident: PersonIdentNumber,
     val svarType: DialogmoteSvarType,
     val brevSentAt: OffsetDateTime,
     val svarReceivedAt: OffsetDateTime,
@@ -27,7 +27,7 @@ data class Arbeidsgiversvar(
 data class Arbeidstakersvar(
     val moteuuid: UUID,
     val varseluuid: UUID,
-    val ident: PersonIdent,
+    val ident: PersonIdentNumber,
     val svarType: DialogmoteSvarType,
     val brevSentAt: OffsetDateTime,
     val svarReceivedAt: OffsetDateTime,
@@ -36,14 +36,14 @@ data class Arbeidstakersvar(
 data class Behandlersvar(
     val moteuuid: UUID,
     val svaruuid: UUID,
-    val ident: PersonIdent,
+    val ident: PersonIdentNumber,
     val svarType: DialogmoteSvarType,
     val brevSentAt: OffsetDateTime,
     val svarReceivedAt: OffsetDateTime,
 )
 
 data class KDialogmotesvar(
-    val ident: PersonIdent,
+    val ident: PersonIdentNumber,
     val svarType: DialogmoteSvarType,
     val senderType: SenderType,
     val brevSentAt: OffsetDateTime,
