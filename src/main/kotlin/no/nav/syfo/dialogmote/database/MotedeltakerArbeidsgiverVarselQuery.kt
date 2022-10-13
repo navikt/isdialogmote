@@ -5,8 +5,7 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.util.configuredJacksonMapper
-import no.nav.syfo.util.nowUTC
+import no.nav.syfo.util.*
 import java.sql.*
 import java.time.Instant
 import java.time.LocalDateTime
@@ -205,4 +204,5 @@ fun ResultSet.toPMotedeltakerArbeidsgiverVarsel(): PMotedeltakerArbeidsgiverVars
         svarType = getString("svar_type"),
         svarTekst = getString("svar_tekst"),
         svarTidspunkt = getTimestamp("svar_tidspunkt")?.toLocalDateTime(),
+        svarPublishedToKafkaAt = getTimestamp("svar_published_to_kafka_at")?.toLocalDateTime()?.toOffsetDateTimeUTC(),
     )

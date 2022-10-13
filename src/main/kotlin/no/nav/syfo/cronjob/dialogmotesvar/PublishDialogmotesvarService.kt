@@ -1,10 +1,8 @@
 package no.nav.syfo.cronjob.dialogmotesvar
 
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.dialogmote.api.domain.Dialogmotesvar
-import no.nav.syfo.dialogmote.database.getArbeidsgiveresUnpublishedMotesvar
-import no.nav.syfo.dialogmote.database.getArbeidstakeresUnpublishedMotesvar
-import no.nav.syfo.dialogmote.database.getBehandleresUnpublishedMotesvar
+import no.nav.syfo.dialogmote.api.domain.*
+import no.nav.syfo.dialogmote.database.*
 
 class PublishDialogmotesvarService(
     private val database: DatabaseInterface,
@@ -13,13 +11,13 @@ class PublishDialogmotesvarService(
     fun getUnpublishedDialogmotesvar(): List<Dialogmotesvar> {
         val unpublishedDialogmotesvar = mutableListOf<Dialogmotesvar>()
         database.connection.use { connection ->
-            val arbeidstakeresUnpublishedMotesvar = connection.getArbeidstakeresUnpublishedMotesvar()
-            val arbeidsgiveresUnpublishedMotesvar = connection.getArbeidsgiveresUnpublishedMotesvar()
-            val behandleresUnpublishedMotesvar = connection.getBehandleresUnpublishedMotesvar()
+            val arbeidstakeresUnpublishedMotesvar = connection.getUnpublishedArbeidstakersvar()
+            val arbeidsgiveresUnpublishedMotesvar = connection.getUnpublishedArbeidsgiversvar()
+            val behandleresUnpublishedMotesvar = connection.getUnpublishedBehandlersvar()
 
-            unpublishedDialogmotesvar.addAll(arbeidstakeresUnpublishedMotesvar)
-            unpublishedDialogmotesvar.addAll(arbeidsgiveresUnpublishedMotesvar)
-            unpublishedDialogmotesvar.addAll(behandleresUnpublishedMotesvar)
+            unpublishedDialogmotesvar.addAll(arbeidstakeresUnpublishedMotesvar.map { it.toDialogmotesvar() })
+            unpublishedDialogmotesvar.addAll(arbeidsgiveresUnpublishedMotesvar.map { it.toDialogmotesvar() })
+            unpublishedDialogmotesvar.addAll(behandleresUnpublishedMotesvar.map { it.toDialogmotesvar() })
         }
 
         return unpublishedDialogmotesvar
@@ -28,15 +26,31 @@ class PublishDialogmotesvarService(
     fun publishAndUpdateDialogmotesvar(
         dialogmotesvar: Dialogmotesvar,
     ) {
-        // TODO: Publish on kafka topic
-        // val moteId = dialogmotesvar.moteuuid
-        // val kDialogmotesvar = dialogmotesvar.toKDialogmotesvar()
-        // dialogmotesvarProducer.sendDialogmotesvar(kDialogmotesvar, moteId)
+        publishDialogmotesvar(dialogmotesvar)
+        updateDialogmotesvar(dialogmotesvar)
+    }
 
-        // Sende inn en connection her?
-        // Switch på senderType, og så oppdatere på varseluuid?
-        /*database.updateMotesvarPublishedAt(
-            moteStatussvarId = dialogmotesvar.id,
-        )*/
+    private fun publishDialogmotesvar(
+        dialogmotesvar: Dialogmotesvar,
+    ) {
+        val moteId = dialogmotesvar.moteuuid
+        val kDialogmotesvar = dialogmotesvar.toKDialogmotesvar()
+        dialogmotesvarProducer.sendDialogmotesvar(kDialogmotesvar, moteId)
+    }
+
+    private fun updateDialogmotesvar(
+        dialogmotesvar: Dialogmotesvar,
+    ) {
+        when (dialogmotesvar.senderType) {
+            SenderType.ARBEIDSTAKER -> {
+                database.connection.updateArbeidstakerVarselPublishedAt(varseluuid = dialogmotesvar.dbRef)
+            }
+            SenderType.ARBEIDSGIVER -> {
+                database.connection.updateArbeidsgiverVarselPublishedAt(varseluuid = dialogmotesvar.dbRef)
+            }
+            SenderType.BEHANDLER -> {
+                database.connection.updateBehandlersvarPublishedAt(svaruuid = dialogmotesvar.dbRef)
+            }
+        }
     }
 }

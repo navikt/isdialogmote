@@ -4,6 +4,7 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerBehandlerVarselSvar
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
+import no.nav.syfo.util.toOffsetDateTimeUTC
 import java.sql.*
 import java.time.Instant
 import java.util.*
@@ -79,4 +80,5 @@ fun ResultSet.toPMotedeltakerBehandlerVarselSvar(): PMotedeltakerBehandlerVarsel
         svarType = getString("svar_type"),
         svarTekst = getString("svar_tekst"),
         msgId = getString("msg_id"),
+        svarPublishedToKafkaAt = getTimestamp("svar_published_to_kafka_at")?.toLocalDateTime()?.toOffsetDateTimeUTC(),
     )

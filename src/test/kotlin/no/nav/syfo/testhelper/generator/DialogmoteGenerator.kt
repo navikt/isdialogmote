@@ -24,6 +24,13 @@ fun generateMotedeltakerArbeidsgiver() = NewDialogmotedeltakerArbeidsgiver(
     fritekstInnkalling = "Ipsum lorum arbeidsgiver"
 )
 
+fun generateMotedeltakerBehandler() = NewDialogmotedeltakerBehandler(
+    personIdent = UserConstants.BEHANDLER_FNR,
+    behandlerRef = "1234",
+    behandlerNavn = UserConstants.BEHANDLER_NAVN,
+    behandlerKontor = UserConstants.BEHANDLER_KONTOR,
+)
+
 fun generateNewDialogmote(
     personIdentNumber: PersonIdentNumber,
     status: DialogmoteStatus = DialogmoteStatus.INNKALT,
@@ -35,4 +42,18 @@ fun generateNewDialogmote(
     arbeidstaker = generateMotedeltakerArbeidstaker(personIdentNumber),
     arbeidsgiver = generateMotedeltakerArbeidsgiver(),
     tidSted = generateNewDialogmoteTidSted()
+)
+
+fun generateNewDialogmoteWithBehandler(
+    personIdentNumber: PersonIdentNumber,
+    status: DialogmoteStatus = DialogmoteStatus.INNKALT,
+): NewDialogmote = NewDialogmote(
+    status = status,
+    opprettetAv = UserConstants.VEILEDER_IDENT,
+    tildeltVeilederIdent = UserConstants.VEILEDER_IDENT,
+    tildeltEnhet = UserConstants.ENHET_NR.value,
+    arbeidstaker = generateMotedeltakerArbeidstaker(personIdentNumber),
+    arbeidsgiver = generateMotedeltakerArbeidsgiver(),
+    tidSted = generateNewDialogmoteTidSted(),
+    behandler = generateMotedeltakerBehandler(),
 )
