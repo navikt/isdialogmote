@@ -8,7 +8,7 @@ import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
 
@@ -27,7 +27,7 @@ class BehandlendeEnhetClient(
 
     suspend fun getEnhet(
         callId: String,
-        personIdentNumber: PersonIdentNumber,
+        personIdent: PersonIdent,
         token: String,
     ): BehandlendeEnhetDTO? {
         val url = personBehandlendeEnhetV2Url
@@ -39,7 +39,7 @@ class BehandlendeEnhetClient(
             val response: HttpResponse = httpClient.get(url) {
                 header(HttpHeaders.Authorization, bearerHeader(oboToken))
                 header(NAV_CALL_ID_HEADER, callId)
-                header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
+                header(NAV_PERSONIDENT_HEADER, personIdent.value)
                 accept(ContentType.Application.Json)
             }
             COUNT_CALL_BEHANDLENDEENHET_SUCCESS.increment()

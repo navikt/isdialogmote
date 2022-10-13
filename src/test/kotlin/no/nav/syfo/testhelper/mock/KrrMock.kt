@@ -12,16 +12,16 @@ import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.getRandomPort
 
 fun digitalKontaktinfoBolkKanVarslesTrue(
-    personIdentNumber: String,
+    personIdent: String,
 ) = DigitalKontaktinfoBolk(
     personer = mapOf(
-        personIdentNumber to DigitalKontaktinfo(
+        personIdent to DigitalKontaktinfo(
             epostadresse = UserConstants.PERSON_EMAIL,
             kanVarsles = true,
             reservert = false,
             mobiltelefonnummer = UserConstants.PERSON_TLF,
             aktiv = true,
-            personident = personIdentNumber,
+            personident = personIdent,
         )
     )
 )

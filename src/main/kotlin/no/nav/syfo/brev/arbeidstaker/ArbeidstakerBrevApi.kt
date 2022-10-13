@@ -38,7 +38,7 @@ fun Route.registerArbeidstakerBrevApi(
                     ?: throw IllegalArgumentException("No PersonIdent found in token")
 
                 val arbeidstakerBrevDTOList = dialogmoteService.getDialogmoteList(
-                    personIdentNumber = requestPersonIdent,
+                    personIdent = requestPersonIdent,
                 ).toArbeidstakerBrevDTOList()
                 call.respond(arbeidstakerBrevDTOList)
             } catch (e: IllegalArgumentException) {
@@ -96,7 +96,7 @@ fun Route.registerArbeidstakerBrevApi(
                 if (hasAccessToBrev) {
                     if (brev.lestDatoArbeidstaker == null) {
                         dialogmotedeltakerService.updateArbeidstakerBrevSettSomLest(
-                            personIdentNumber = requestPersonIdent,
+                            personIdent = requestPersonIdent,
                             dialogmotedeltakerArbeidstakerUuid = motedeltakerArbeidstaker.uuid,
                             brevUuid = brevUuid,
                         )

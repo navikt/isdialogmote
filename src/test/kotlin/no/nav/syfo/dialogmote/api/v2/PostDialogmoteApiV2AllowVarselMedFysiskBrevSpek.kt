@@ -96,7 +96,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                     it("should return OK if request is successful even if ikke-varsle") {
                         val moteTidspunkt = LocalDateTime.now().plusDays(30)
                         val newDialogmoteDTO = generateNewDialogmoteDTO(
-                            personIdentNumber = ARBEIDSTAKER_IKKE_VARSEL,
+                            personIdent = ARBEIDSTAKER_IKKE_VARSEL,
                             dato = moteTidspunkt,
                         )
 

@@ -2,13 +2,13 @@ package no.nav.syfo.dialogmelding.domain
 
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 
 data class DialogmeldingSvar(
     val conversationRef: String?,
     val parentRef: String?,
-    val arbeidstakerPersonIdent: PersonIdentNumber,
-    val behandlerPersonIdent: PersonIdentNumber,
+    val arbeidstakerPersonIdent: PersonIdent,
+    val behandlerPersonIdent: PersonIdent,
     val innkallingDialogmoteSvar: InnkallingDialogmoteSvar,
 )
 

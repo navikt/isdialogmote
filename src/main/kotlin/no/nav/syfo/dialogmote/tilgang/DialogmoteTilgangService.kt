@@ -2,7 +2,7 @@ package no.nav.syfo.dialogmote.tilgang
 
 import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 
 class DialogmoteTilgangService(
     private val adressebeskyttelseClient: AdressebeskyttelseClient,
@@ -10,31 +10,31 @@ class DialogmoteTilgangService(
     private val kode6Enabled: Boolean,
 ) {
     suspend fun hasAccessToAllDialogmotePersons(
-        personIdentNumberList: List<PersonIdentNumber>,
+        personIdentList: List<PersonIdent>,
         token: String,
         callId: String
     ): Boolean {
         val personListWithVeilederAccess = hasAccessToDialogmotePersonList(
-            personIdentNumberList = personIdentNumberList,
+            personIdentList = personIdentList,
             token = token,
             callId = callId,
         )
 
-        return personListWithVeilederAccess.containsAll(personIdentNumberList)
+        return personListWithVeilederAccess.containsAll(personIdentList)
     }
 
     suspend fun hasAccessToDialogmotePersonList(
-        personIdentNumberList: List<PersonIdentNumber>,
+        personIdentList: List<PersonIdent>,
         token: String,
         callId: String,
-    ): List<PersonIdentNumber> {
+    ): List<PersonIdent> {
         val personIdentList = veilederTilgangskontrollClient.hasAccessToPersonList(
-            personIdentNumberList = personIdentNumberList,
+            personIdentList = personIdentList,
             token = token,
             callId = callId,
         )
-        return if (kode6Enabled) personIdentList else personIdentList.filter { personIdentNumber ->
-            !adressebeskyttelseClient.hasAdressebeskyttelse(personIdentNumber, callId)
+        return if (kode6Enabled) personIdentList else personIdentList.filter { personIdent ->
+            !adressebeskyttelseClient.hasAdressebeskyttelse(personIdent, callId)
         }
     }
 }
