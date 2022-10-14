@@ -5,6 +5,7 @@ metadata:
     dcat.data.nav.no/title: "Svar på dialogmøteinnkalling"
     dcat.data.nav.no/description: >-
       Topic inneholder svar på innkallinger til dialogmøte.
+  name: dialogmotesvar
   namespace: teamsykefravr
   labels:
     team: teamsykefravr
