@@ -2,13 +2,8 @@ package no.nav.syfo.cronjob.dialogmotesvar
 
 import io.mockk.*
 import no.nav.syfo.dialogmote.api.domain.*
-import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
-import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidsgiverVarsel
-import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerVarsel
-import no.nav.syfo.dialogmote.database.updateBehandlersvarPublishedAt
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.database.*
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteWithBehandler
 import org.amshove.kluent.shouldBeEqualTo
@@ -70,8 +65,17 @@ class PublishDialogmotesvarServiceSpek : Spek({
 
         describe("Get unpublished dialogmøtesvar ") {
             it("Behandler answers more than once to the same meeting") {
-                val identifiers = database.connection.createNewDialogmoteWithReferences(newDialogmote = generateNewDialogmoteWithBehandler(UserConstants.ARBEIDSTAKER_FNR, DialogmoteStatus.INNKALT))
-                val varselId = database.connection.createBehandlerVarsel(UUID.randomUUID(), MotedeltakerVarselType.INNKALT, identifiers.motedeltakerBehandlerIdPair?.first)
+                val identifiers = database.connection.createNewDialogmoteWithReferences(
+                    newDialogmote = generateNewDialogmoteWithBehandler(
+                        UserConstants.ARBEIDSTAKER_FNR,
+                        DialogmoteStatus.INNKALT,
+                    )
+                )
+                val varselId = database.connection.createBehandlerVarsel(
+                    UUID.randomUUID(),
+                    MotedeltakerVarselType.INNKALT,
+                    identifiers.motedeltakerBehandlerIdPair?.first,
+                )
                 val kommerIkkeSvarUuid = UUID.randomUUID()
                 database.connection.createBehandlerVarselSvar(
                     svarUuid = kommerIkkeSvarUuid,
@@ -93,7 +97,10 @@ class PublishDialogmotesvarServiceSpek : Spek({
 
             it("Get unpublished møtesvar from both arbeidsgiver and arbeidstaker") {
                 val identifiers = database.connection.createNewDialogmoteWithReferences(
-                    newDialogmote = generateNewDialogmoteWithBehandler(UserConstants.ARBEIDSTAKER_FNR, DialogmoteStatus.INNKALT)
+                    newDialogmote = generateNewDialogmoteWithBehandler(
+                        UserConstants.ARBEIDSTAKER_FNR,
+                        DialogmoteStatus.INNKALT,
+                    )
                 )
                 database.connection.createArbeidsgiverVarsel(
                     varselUuid = UUID.randomUUID(),
