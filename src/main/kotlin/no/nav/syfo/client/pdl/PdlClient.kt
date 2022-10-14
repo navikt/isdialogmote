@@ -7,7 +7,7 @@ import io.ktor.http.*
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.azuread.AzureAdV2Token
 import no.nav.syfo.client.httpClientDefault
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.metric.COUNT_CALL_PDL_FAIL
 import no.nav.syfo.metric.COUNT_CALL_PDL_SUCCESS
 import no.nav.syfo.util.*
@@ -21,7 +21,7 @@ class PdlClient(
     private val httpClient = httpClientDefault()
 
     suspend fun navn(
-        personIdent: PersonIdentNumber,
+        personIdent: PersonIdent,
     ): String {
         val token = azureAdV2Client.getSystemToken(pdlClientId)
             ?: throw RuntimeException("Failed to send request to PDL: No token was found")
@@ -30,7 +30,7 @@ class PdlClient(
     }
 
     suspend fun isKode6Or7(
-        personIdent: PersonIdentNumber,
+        personIdent: PersonIdent,
         callId: String,
     ): Boolean {
         val systemToken = azureAdV2Client.getSystemToken(pdlClientId)
@@ -40,7 +40,7 @@ class PdlClient(
     }
 
     private suspend fun person(
-        personIdent: PersonIdentNumber,
+        personIdent: PersonIdent,
         token: AzureAdV2Token,
         callId: String? = null,
     ): PdlHentPerson? {

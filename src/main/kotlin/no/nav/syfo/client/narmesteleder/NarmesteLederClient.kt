@@ -10,7 +10,7 @@ import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.client.tokendings.TokendingsClient
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
@@ -28,7 +28,7 @@ class NarmesteLederClient(
     private val httpClient = httpClientDefault()
 
     suspend fun activeLeder(
-        personIdentNumber: PersonIdentNumber,
+        personIdent: PersonIdent,
         virksomhetsnummer: Virksomhetsnummer,
         callId: String,
         token: String,
@@ -43,7 +43,7 @@ class NarmesteLederClient(
             val narmesteLederRelasjon =
                 httpClient.get(narmesteLederPath) {
                     header(HttpHeaders.Authorization, bearerHeader(oboToken))
-                    header(NAV_PERSONIDENT_HEADER, personIdentNumber.value)
+                    header(NAV_PERSONIDENT_HEADER, personIdent.value)
                     header(NAV_CALL_ID_HEADER, callId)
                     accept(ContentType.Application.Json)
                 }.body<List<NarmesteLederRelasjonDTO>>()
@@ -60,7 +60,7 @@ class NarmesteLederClient(
     }
 
     suspend fun getAktiveAnsatte(
-        narmesteLederIdent: PersonIdentNumber,
+        narmesteLederIdent: PersonIdent,
         tokenx: String,
         callId: String,
     ): List<NarmesteLederRelasjonDTO> {

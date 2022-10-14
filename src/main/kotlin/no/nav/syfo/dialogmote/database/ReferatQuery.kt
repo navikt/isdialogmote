@@ -6,7 +6,7 @@ import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerAnnen
 import no.nav.syfo.dialogmote.database.domain.PReferat
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.util.configuredJacksonMapper
 import no.nav.syfo.util.nowUTC
@@ -296,11 +296,11 @@ const val queryGetFerdigstilteReferatWithoutJournalpostArbeidstaker =
         LIMIT 20
     """
 
-fun DatabaseInterface.getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdentNumber, PReferat>> {
+fun DatabaseInterface.getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdent, PReferat>> {
     return this.connection.use { connection ->
         connection.prepareStatement(queryGetFerdigstilteReferatWithoutJournalpostArbeidstaker).use {
             it.executeQuery().toList {
-                Pair(PersonIdentNumber(getString(1)), toPReferat())
+                Pair(PersonIdent(getString(1)), toPReferat())
             }
         }
     }

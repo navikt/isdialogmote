@@ -5,7 +5,7 @@ import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import java.util.*
 
 class DialogmotedeltakerService(
@@ -113,7 +113,7 @@ class DialogmotedeltakerService(
     }
 
     fun updateArbeidstakerBrevSettSomLest(
-        personIdentNumber: PersonIdentNumber,
+        personIdent: PersonIdent,
         dialogmotedeltakerArbeidstakerUuid: UUID,
         brevUuid: UUID,
     ) {
@@ -131,7 +131,7 @@ class DialogmotedeltakerService(
             }
 
             arbeidstakerVarselService.lesVarsel(
-                personIdent = personIdentNumber,
+                personIdent = personIdent,
                 motedeltakerArbeidstakerUuid = dialogmotedeltakerArbeidstakerUuid,
                 varselUuid = brevUuid,
             )

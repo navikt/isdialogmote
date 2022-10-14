@@ -9,7 +9,7 @@ import io.ktor.server.routing.*
 import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.oppfolgingstilfelle.*
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -24,7 +24,7 @@ import no.nav.syfo.util.getPersonIdentHeader
 import java.time.LocalDate
 
 fun oppfolgingstilfellePersonDTO(
-    personIdent: PersonIdentNumber = ARBEIDSTAKER_FNR,
+    personIdent: PersonIdent = ARBEIDSTAKER_FNR,
     end: LocalDate = LocalDate.now().plusDays(10),
 ) = OppfolgingstilfellePersonDTO(
     personIdent = personIdent.value,
@@ -41,7 +41,7 @@ fun oppfolgingstilfellePersonDTO(
 )
 
 fun oppfolgingstilfellePersonDTONoTilfelle(
-    personIdent: PersonIdentNumber,
+    personIdent: PersonIdent,
 ) = OppfolgingstilfellePersonDTO(
     personIdent = personIdent.value,
     oppfolgingstilfelleList = emptyList()

@@ -2,7 +2,7 @@ package no.nav.syfo.dialogmote.domain
 
 import no.nav.syfo.client.dokarkiv.domain.*
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerBehandlerVarselDTO
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import java.time.LocalDateTime
 import java.util.*
 
@@ -33,8 +33,8 @@ fun DialogmotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandlerVarselDTO() =
     )
 
 fun DialogmotedeltakerBehandlerVarsel.toJournalpostRequest(
-    brukerPersonIdent: PersonIdentNumber,
-    behandlerPersonIdent: PersonIdentNumber?,
+    brukerPersonIdent: PersonIdent,
+    behandlerPersonIdent: PersonIdent?,
     behandlerNavn: String,
     pdf: ByteArray,
 ) = createJournalpostRequest(

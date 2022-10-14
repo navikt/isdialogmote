@@ -2,7 +2,7 @@ package no.nav.syfo.dialogmote.api.domain
 
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.EnhetNr
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 
@@ -50,7 +50,7 @@ fun NewDialogmoteDTO.toNewDialogmote(
         tildeltEnhet = navEnhet.value,
         opprettetAv = requestByNAVIdent,
         arbeidstaker = NewDialogmotedeltakerArbeidstaker(
-            personIdent = PersonIdentNumber(this.arbeidstaker.personIdent),
+            personIdent = PersonIdent(this.arbeidstaker.personIdent),
             fritekstInnkalling = this.arbeidstaker.fritekstInnkalling,
         ),
         arbeidsgiver = NewDialogmotedeltakerArbeidsgiver(
@@ -59,7 +59,7 @@ fun NewDialogmoteDTO.toNewDialogmote(
         ),
         behandler = this.behandler?.let {
             NewDialogmotedeltakerBehandler(
-                personIdent = it.personIdent?.let { personident -> PersonIdentNumber(personident) },
+                personIdent = it.personIdent?.let { personident -> PersonIdent(personident) },
                 behandlerRef = it.behandlerRef,
                 behandlerNavn = it.behandlerNavn,
                 behandlerKontor = it.behandlerKontor,
