@@ -6,7 +6,7 @@ import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
 import no.nav.syfo.client.dokarkiv.domain.*
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerAnnenDTO
 import no.nav.syfo.dialogmote.api.domain.ReferatDTO
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -98,7 +98,7 @@ fun DialogmotedeltakerAnnen.toDialogmotedeltakerAnnenDTO(): DialogmotedeltakerAn
 }
 
 fun Referat.toJournalforingRequestArbeidstaker(
-    personIdent: PersonIdentNumber,
+    personIdent: PersonIdent,
     navn: String,
     pdf: ByteArray,
     moteTidspunkt: LocalDateTime?,
@@ -113,7 +113,7 @@ fun Referat.toJournalforingRequestArbeidstaker(
 )
 
 fun Referat.toJournalforingRequestArbeidsgiver(
-    brukerPersonIdent: PersonIdentNumber,
+    brukerPersonIdent: PersonIdent,
     virksomhetsnummer: Virksomhetsnummer?,
     virksomhetsnavn: String,
     pdf: ByteArray,
@@ -129,8 +129,8 @@ fun Referat.toJournalforingRequestArbeidsgiver(
 )
 
 fun Referat.toJournalforingRequestBehandler(
-    brukerPersonIdent: PersonIdentNumber,
-    behandlerPersonIdent: PersonIdentNumber?,
+    brukerPersonIdent: PersonIdent,
+    behandlerPersonIdent: PersonIdent?,
     behandlerNavn: String,
     pdf: ByteArray,
     moteTidspunkt: LocalDateTime?,

@@ -3,7 +3,7 @@ package no.nav.syfo.dialogmote.database
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.util.toOffsetDateTimeUTC
 import java.sql.*
 import java.time.*
@@ -50,7 +50,7 @@ fun Connection.updateArbeidstakerVarselPublishedAt(
 
 fun ResultSet.toArbeidstakersvar(): Arbeidstakersvar = Arbeidstakersvar(
     moteuuid = UUID.fromString(getString("mote_uuid")),
-    ident = PersonIdentNumber(getString("personident")),
+    ident = PersonIdent(getString("personident")),
     svarType = DialogmoteSvarType.valueOf(getString("svar_type")),
     varseluuid = UUID.fromString(getString("varsel_uuid")),
     brevSentAt = getTimestamp("brev_sent_at").toLocalDateTime().toOffsetDateTimeUTC(),

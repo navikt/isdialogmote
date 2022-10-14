@@ -10,7 +10,7 @@ import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
 import no.nav.syfo.dialogmote.domain.toDialogmoteDTO
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.util.*
 
 const val dialogmoteApiV2Basepath = "/api/v2/dialogmote"
@@ -25,17 +25,17 @@ fun Route.registerDialogmoteApiV2(
 ) {
     route(dialogmoteApiV2Basepath) {
         get(dialogmoteApiPersonIdentUrlPath) {
-            val personIdentNumber = getPersonIdentHeader()?.let { personIdent ->
-                PersonIdentNumber(personIdent)
+            val personIdent = getPersonIdentHeader()?.let { personIdent ->
+                PersonIdent(personIdent)
             } ?: throw IllegalArgumentException("No PersonIdent supplied")
 
             validateVeilederAccess(
                 dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = personIdentNumber,
+                personIdentToAccess = personIdent,
                 action = "Read Dialogmoter for Person with PersonIdent"
             ) {
                 val dialogmoteDTOList = dialogmoteService.getDialogmoteList(
-                    personIdentNumber = personIdentNumber,
+                    personIdent = personIdent,
                 ).map { dialogmote ->
                     dialogmote.toDialogmoteDTO()
                 }
@@ -51,7 +51,7 @@ fun Route.registerDialogmoteApiV2(
                 dialogmoteService.getDialogmoteUnfinishedListForVeilederIdent(getNAVIdentFromToken(token))
 
             val personListWithVeilederAccess = dialogmoteTilgangService.hasAccessToDialogmotePersonList(
-                personIdentNumberList = dialogmoteList.map { it.arbeidstaker.personIdent },
+                personIdentList = dialogmoteList.map { it.arbeidstaker.personIdent },
                 token = token,
                 callId = callId,
             ).toHashSet()
@@ -70,11 +70,11 @@ fun Route.registerDialogmoteApiV2(
 
             val newDialogmoteDTO = call.receive<NewDialogmoteDTO>()
 
-            val personidentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
+            val personIdent = PersonIdent(newDialogmoteDTO.arbeidstaker.personIdent)
 
             validateVeilederAccess(
                 dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = personidentNumber,
+                personIdentToAccess = personIdent,
                 action = "Create new Dialogmoteinnkalling"
             ) {
                 dialogmoteService.createMoteinnkalling(

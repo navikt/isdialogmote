@@ -39,9 +39,9 @@ class DialogmoteService(
     }
 
     fun getDialogmoteList(
-        personIdentNumber: PersonIdentNumber,
+        personIdent: PersonIdent,
     ): List<Dialogmote> {
-        return database.getDialogmoteList(personIdentNumber).map { pDialogmote ->
+        return database.getDialogmoteList(personIdent).map { pDialogmote ->
             extendDialogmoteRelations(pDialogmote)
         }
     }
@@ -96,11 +96,11 @@ class DialogmoteService(
         callId: String,
         token: String,
     ) {
-        val personIdentNumber = PersonIdentNumber(newDialogmoteDTO.arbeidstaker.personIdent)
+        val personIdent = PersonIdent(newDialogmoteDTO.arbeidstaker.personIdent)
         val virksomhetsnummer = Virksomhetsnummer(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer)
 
         val anyUnfinishedDialogmote =
-            getDialogmoteList(personIdentNumber).filter {
+            getDialogmoteList(personIdent).filter {
                 it.arbeidsgiver.virksomhetsnummer == virksomhetsnummer
             }.anyUnfinished()
 
@@ -109,17 +109,17 @@ class DialogmoteService(
         }
 
         val narmesteLeder = narmesteLederClient.activeLeder(
-            personIdentNumber = personIdentNumber,
+            personIdent = personIdent,
             virksomhetsnummer = virksomhetsnummer,
             callId = callId,
             token = token,
         )
 
-        val arbeidstakernavn = pdlClient.navn(personIdentNumber)
+        val arbeidstakernavn = pdlClient.navn(personIdent)
 
         val behandlendeEnhet = behandlendeEnhetClient.getEnhet(
             callId = callId,
-            personIdentNumber = personIdentNumber,
+            personIdent = personIdent,
             token = token,
         ) ?: throw RuntimeException("Failed to request (or missing) BehandlendeEnhet of Person")
 
@@ -148,7 +148,7 @@ class DialogmoteService(
         val createdDialogmoteIdentifiers: CreatedDialogmoteIdentifiers
 
         val digitalVarsling = isDigitalVarselEnabled(
-            personIdentNumber = personIdentNumber,
+            personIdent = personIdent,
             token = token,
             callId = callId,
         )
@@ -165,7 +165,7 @@ class DialogmoteService(
                 dialogmoteStatus = newDialogmote.status,
                 isBehandlerMotedeltaker = newDialogmote.behandler != null,
                 opprettetAv = newDialogmote.opprettetAv,
-                personIdentNumber = personIdentNumber,
+                personIdent = personIdent,
                 token = token,
             )
             createAndSendVarsel(
@@ -238,7 +238,7 @@ class DialogmoteService(
         }
 
         val narmesteLeder = narmesteLederClient.activeLeder(
-            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            personIdent = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = virksomhetsnummer,
             callId = callId,
             token = token,
@@ -247,7 +247,7 @@ class DialogmoteService(
         val arbeidstakernavn = pdlClient.navn(dialogmote.arbeidstaker.personIdent)
 
         val digitalVarsling = isDigitalVarselEnabled(
-            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            personIdent = dialogmote.arbeidstaker.personIdent,
             token = token,
             callId = callId,
         )
@@ -260,7 +260,7 @@ class DialogmoteService(
                 isBehandlerMotedeltaker = avlysDialogmote.behandler != null,
                 newDialogmoteStatus = DialogmoteStatus.AVLYST,
                 opprettetAv = getNAVIdentFromToken(token),
-                personIdentNumber = dialogmote.arbeidstaker.personIdent,
+                personIdent = dialogmote.arbeidstaker.personIdent,
                 token = token,
             )
             createAndSendVarsel(
@@ -331,7 +331,7 @@ class DialogmoteService(
         }
 
         val narmesteLeder = narmesteLederClient.activeLeder(
-            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            personIdent = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = virksomhetsnummer,
             callId = callId,
             token = token,
@@ -340,7 +340,7 @@ class DialogmoteService(
         val arbeidstakernavn = pdlClient.navn(dialogmote.arbeidstaker.personIdent)
 
         val digitalVarsling = isDigitalVarselEnabled(
-            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            personIdent = dialogmote.arbeidstaker.personIdent,
             token = token,
             callId = callId,
         )
@@ -358,7 +358,7 @@ class DialogmoteService(
                 isBehandlerMotedeltaker = dialogmote.behandler != null,
                 newDialogmoteStatus = DialogmoteStatus.NYTT_TID_STED,
                 opprettetAv = getNAVIdentFromToken(token),
-                personIdentNumber = dialogmote.arbeidstaker.personIdent,
+                personIdent = dialogmote.arbeidstaker.personIdent,
                 token = token,
             )
             createAndSendVarsel(
@@ -402,7 +402,7 @@ class DialogmoteService(
         behandlerRef: String?,
         behandlerParentVarselId: String?,
         behandlerInnkallingUuid: UUID?,
-        arbeidstakerPersonIdent: PersonIdentNumber,
+        arbeidstakerPersonIdent: PersonIdent,
         arbeidstakernavn: String,
         pdfArbeidstaker: ByteArray,
         pdfArbeidsgiver: ByteArray,
@@ -577,7 +577,7 @@ class DialogmoteService(
         val virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer
 
         val narmesteLeder = narmesteLederClient.activeLeder(
-            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            personIdent = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = virksomhetsnummer,
             callId = callId,
             token = token,
@@ -593,7 +593,7 @@ class DialogmoteService(
         val now = LocalDateTime.now()
 
         val digitalVarsling = isDigitalVarselEnabled(
-            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            personIdent = dialogmote.arbeidstaker.personIdent,
             token = token,
             callId = callId,
         )
@@ -614,7 +614,7 @@ class DialogmoteService(
                 isBehandlerMotedeltaker = dialogmote.behandler != null,
                 newDialogmoteStatus = DialogmoteStatus.FERDIGSTILT,
                 opprettetAv = opprettetAv,
-                personIdentNumber = dialogmote.arbeidstaker.personIdent,
+                personIdent = dialogmote.arbeidstaker.personIdent,
                 token = token,
             )
             val (pdfId, _) = connection.createPdf(
@@ -698,7 +698,7 @@ class DialogmoteService(
         val virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer
 
         val narmesteLeder = narmesteLederClient.activeLeder(
-            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            personIdent = dialogmote.arbeidstaker.personIdent,
             virksomhetsnummer = virksomhetsnummer,
             callId = callId,
             token = token,
@@ -712,7 +712,7 @@ class DialogmoteService(
         ) ?: throw RuntimeException("Failed to request PDF - Referat")
 
         val digitalVarsling = isDigitalVarselEnabled(
-            personIdentNumber = dialogmote.arbeidstaker.personIdent,
+            personIdent = dialogmote.arbeidstaker.personIdent,
             token = token,
             callId = callId,
         )
@@ -800,7 +800,7 @@ class DialogmoteService(
         isBehandlerMotedeltaker: Boolean,
         newDialogmoteStatus: DialogmoteStatus,
         opprettetAv: String,
-        personIdentNumber: PersonIdentNumber,
+        personIdent: PersonIdent,
         token: String,
     ) {
         connection.updateMoteStatus(
@@ -815,7 +815,7 @@ class DialogmoteService(
             dialogmoteStatus = newDialogmoteStatus,
             isBehandlerMotedeltaker = isBehandlerMotedeltaker,
             opprettetAv = opprettetAv,
-            personIdentNumber = personIdentNumber,
+            personIdent = personIdent,
             token = token,
         )
     }
@@ -827,12 +827,12 @@ class DialogmoteService(
         dialogmoteStatus: DialogmoteStatus,
         isBehandlerMotedeltaker: Boolean,
         opprettetAv: String,
-        personIdentNumber: PersonIdentNumber,
+        personIdent: PersonIdent,
         token: String,
     ) {
         val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfelle(
             callId = callId,
-            personIdentNumber = personIdentNumber,
+            personIdent = personIdent,
             token = token,
         )
 
@@ -925,12 +925,12 @@ class DialogmoteService(
     }
 
     private suspend fun isDigitalVarselEnabled(
-        personIdentNumber: PersonIdentNumber,
+        personIdent: PersonIdent,
         token: String,
         callId: String,
     ): Boolean {
         return kontaktinformasjonClient.isDigitalVarselEnabled(
-            personIdentNumber = personIdentNumber,
+            personIdent = personIdent,
             token = token,
             callId = callId,
         )

@@ -1,6 +1,6 @@
 package no.nav.syfo.dialogmote.domain
 
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 
@@ -16,7 +16,7 @@ data class NewDialogmote(
 )
 
 data class NewDialogmotedeltakerArbeidstaker(
-    val personIdent: PersonIdentNumber,
+    val personIdent: PersonIdent,
     val fritekstInnkalling: String? = "",
 )
 
@@ -26,7 +26,7 @@ data class NewDialogmotedeltakerArbeidsgiver(
 )
 
 data class NewDialogmotedeltakerBehandler(
-    val personIdent: PersonIdentNumber?,
+    val personIdent: PersonIdent?,
     val behandlerRef: String,
     val behandlerNavn: String,
     val behandlerKontor: String,

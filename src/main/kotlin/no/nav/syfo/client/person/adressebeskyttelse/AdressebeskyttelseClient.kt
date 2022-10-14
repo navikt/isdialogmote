@@ -7,7 +7,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.person.*
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -18,10 +18,10 @@ class AdressebeskyttelseClient(
 ) {
 
     suspend fun hasAdressebeskyttelse(
-        personIdentNumber: PersonIdentNumber,
+        personIdent: PersonIdent,
         callId: String,
     ): Boolean {
-        val cacheKey = "$CACHE_ADRESSEBESKYTTELSE_KEY_PREFIX${personIdentNumber.value}"
+        val cacheKey = "$CACHE_ADRESSEBESKYTTELSE_KEY_PREFIX${personIdent.value}"
         val cachedAdressebeskyttelse = cache.get(cacheKey)
         return when (cachedAdressebeskyttelse) {
             null -> {
@@ -29,7 +29,7 @@ class AdressebeskyttelseClient(
                 try {
                     val hasAdressebeskyttelse = pdlClient.isKode6Or7(
                         callId = callId,
-                        personIdent = personIdentNumber,
+                        personIdent = personIdent,
                     )
                     cache.set(
                         cacheKey,

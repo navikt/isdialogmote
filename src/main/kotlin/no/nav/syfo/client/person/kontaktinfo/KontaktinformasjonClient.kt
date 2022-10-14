@@ -11,7 +11,7 @@ import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_KONTAKTINFORMASJON_SUCCESS
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
 
@@ -26,16 +26,16 @@ class KontaktinformasjonClient(
     private val httpClient = httpClientDefault()
 
     suspend fun isDigitalVarselEnabled(
-        personIdentNumber: PersonIdentNumber,
+        personIdent: PersonIdent,
         token: String,
         callId: String,
     ): Boolean {
-        val kontaktinfo = this.kontaktinformasjon(personIdentNumber, token, callId)
-        return kontaktinfo?.personer?.isDigitalVarselEnabled(personIdentNumber) ?: false
+        val kontaktinfo = this.kontaktinformasjon(personIdent, token, callId)
+        return kontaktinfo?.personer?.isDigitalVarselEnabled(personIdent) ?: false
     }
 
     private suspend fun kontaktinformasjon(
-        personIdentNumber: PersonIdentNumber,
+        personIdent: PersonIdent,
         token: String,
         callId: String,
     ): DigitalKontaktinfoBolk? {
@@ -43,13 +43,13 @@ class KontaktinformasjonClient(
             scopeClientId = clientId,
             token = token
         )?.accessToken ?: throw RuntimeException("Failed to request access to Digdir-krr-proxy: Failed to get OBO token")
-        val cacheKey = "${CACHE_KONTAKTINFORMASJON_KEY_PREFIX}${personIdentNumber.value}"
+        val cacheKey = "${CACHE_KONTAKTINFORMASJON_KEY_PREFIX}${personIdent.value}"
         val cachedKontaktinformasjon = cache.getObject<DigitalKontaktinfoBolk>(cacheKey)
         return when (cachedKontaktinformasjon) {
             null ->
                 try {
                     val request = DigitalKontaktinfoBolkRequestBody(
-                        personidenter = listOf(personIdentNumber.value),
+                        personidenter = listOf(personIdent.value),
                     )
                     val response: HttpResponse = httpClient.post(personKontaktinfoUrl) {
                         header(HttpHeaders.Authorization, bearerHeader(oboToken))
