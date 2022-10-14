@@ -14,12 +14,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: nais/deploy/actions/deploy@v1
-        env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: dev-gcp
-          RESOURCE: .nais/kafka/statusendring.yaml
-          VARS: .nais/kafka/dev.json
+
+      - name: deploy statusendring dev
+        uses: nais/deploy/actions/deploy@v1
+          env:
+            APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+            CLUSTER: dev-gcp
+            RESOURCE: .nais/kafka/statusendring.yaml
+            VARS: .nais/kafka/dev.json
+
+      - name: deploy dialogmotesvar dev
+        uses: nais/deploy/actions/deploy@v1
+          env:
+            APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+            CLUSTER: dev-gcp
+            RESOURCE: .nais/kafka/dialogmotesvar.yaml
+            VARS: .nais/kafka/dev.json
+
 
   deploy-kafka-prod:
     name: Deploy Kafka topic to NAIS prod-gcp
@@ -27,10 +38,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: nais/deploy/actions/deploy@v1
-        env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: prod-gcp
-          RESOURCE: .nais/kafka/statusendring.yaml
-          VARS: .nais/kafka/prod.json
 
+      - name: deploy statusendring prod
+        uses: nais/deploy/actions/deploy@v1
+          env:
+            APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+            CLUSTER: prod-gcp
+            RESOURCE: .nais/kafka/statusendring.yaml
+            VARS: .nais/kafka/prod.json
+
+      - name: deploy dialogmotesvar prod
+        uses: nais/deploy/actions/deploy@v1
+          env:
+            APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+            CLUSTER: dev-gcp
+            RESOURCE: .nais/kafka/dialogmotesvar.yaml
+            VARS: .nais/kafka/dev.json
