@@ -1,6 +1,7 @@
 package no.nav.syfo.application
 
 import io.ktor.server.application.*
+import java.time.LocalDate
 
 data class Environment(
     val namespace: String = "teamsykefravr",
@@ -66,6 +67,8 @@ data class Environment(
     val dokdistFordelingUrl: String = getEnvVar("DOKDIST_FORDELING_URL"),
     val dokdistFordelingClientId: String = getEnvVar("DOKDIST_FORDELING_CLIENT_ID"),
     val altinnSendingEnabled: Boolean = getEnvVar("ALTINN_SENDING_ENABLED").toBoolean(),
+    val outdatedDialogmoteCronJobEnabled: Boolean = getEnvVar("OUTDATED_DIALOGMOTE_CRONJOB_ENABLED").toBoolean(),
+    val outdatedDialogmoteCutoff: LocalDate = LocalDate.parse(getEnvVar("OUTDATED_DIALOGMOTE_CUTOFF")),
     val kode6Enabled: Boolean = getEnvVar("KODE6_ENABLED").toBoolean(),
     val publishDialogmotesvarEnabled: Boolean = getEnvVar("PUBLISH_DIALOGMOTESVAR_ENABLED").toBoolean(),
 ) {

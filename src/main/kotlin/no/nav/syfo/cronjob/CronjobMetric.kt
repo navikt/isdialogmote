@@ -9,6 +9,8 @@ const val CRONJOB_JOURNALFORING_VARSEL_UPDATE = "${CRONJOB_METRICS_BASE}_journal
 const val CRONJOB_JOURNALFORING_VARSEL_FAIL = "${CRONJOB_METRICS_BASE}_journalforing_fail_count"
 const val CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE = "${CRONJOB_METRICS_BASE}_journalpost-distribusjon_update_count"
 const val CRONJOB_JOURNALPOST_DISTRIBUSJON_FAIL = "${CRONJOB_METRICS_BASE}_journalpost-distribusjon_fail_count"
+const val CRONJOB_OUTDATED_DIALOGMOTE_UPDATE = "${CRONJOB_METRICS_BASE}_outdated_dialogmote_update_count"
+const val CRONJOB_OUTDATED_DIALOGMOTE_FAIL = "${CRONJOB_METRICS_BASE}_outdated_dialogmote_fail_count"
 const val CRONJOB_PUBLISH_STATUS_ENDRING_UPDATE = "${CRONJOB_METRICS_BASE}_publish_status_endring_update_count"
 const val CRONJOB_PUBLISH_STATUS_ENDRING_FAIL = "${CRONJOB_METRICS_BASE}_publish_status_endring_fail_count"
 
@@ -35,4 +37,12 @@ val COUNT_CRONJOB_PUBLISH_STATUS_ENDRING_UPDATE: Counter = Counter
 val COUNT_CRONJOB_PUBLISH_STATUS_ENDRING_FAIL: Counter = Counter
     .builder(CRONJOB_PUBLISH_STATUS_ENDRING_FAIL)
     .description("Counts the number of failures in Cronjob - KafkaDialogmoteStatusEndring")
+    .register(METRICS_REGISTRY)
+val COUNT_CRONJOB_OUTDATED_DIALOGMOTE_UPDATE: Counter = Counter
+    .builder(CRONJOB_OUTDATED_DIALOGMOTE_UPDATE)
+    .description("Counts the number of updates in Cronjob - DialogmoteOutdated")
+    .register(METRICS_REGISTRY)
+val COUNT_CRONJOB_OUTDATED_DIALOGMOTE_FAIL: Counter = Counter
+    .builder(CRONJOB_OUTDATED_DIALOGMOTE_FAIL)
+    .description("Counts the number of failures in Cronjob - DialogmoteOutdated")
     .register(METRICS_REGISTRY)

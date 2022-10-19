@@ -5,6 +5,7 @@ enum class DialogmoteStatus {
     AVLYST,
     FERDIGSTILT,
     NYTT_TID_STED,
+    LUKKET,
 }
 
 fun DialogmoteStatus.unfinished() = this == DialogmoteStatus.INNKALT || this == DialogmoteStatus.NYTT_TID_STED

@@ -11,6 +11,7 @@ import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.ereg.EregClient
 import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
 import no.nav.syfo.client.pdl.PdlClient
+import no.nav.syfo.cronjob.dialogmoteOutdated.DialogmoteOutdatedCronjob
 import no.nav.syfo.cronjob.dialogmotesvar.DialogmotesvarProducer
 import no.nav.syfo.cronjob.dialogmotesvar.PublishDialogmotesvarCronjob
 import no.nav.syfo.cronjob.dialogmotesvar.PublishDialogmotesvarService
@@ -113,6 +114,10 @@ fun Application.cronjobModule(
     val publishDialogmotesvarCronjob = PublishDialogmotesvarCronjob(
         publishDialogmotesvarService = publishDialogmotesvarService
     )
+    val dialogmoteOutdatedCronjob = DialogmoteOutdatedCronjob(
+        outdatedDialogmoterCutoff = environment.outdatedDialogmoteCutoff,
+        database = database,
+    )
 
     launchBackgroundTask(
         applicationState = applicationState,
@@ -134,6 +139,13 @@ fun Application.cronjobModule(
             applicationState = applicationState
         ) {
             cronjobRunner.start(cronjob = publishDialogmotesvarCronjob)
+        }
+    }
+    if (environment.outdatedDialogmoteCronJobEnabled) {
+        launchBackgroundTask(
+            applicationState = applicationState
+        ) {
+            cronjobRunner.start(cronjob = dialogmoteOutdatedCronjob)
         }
     }
 }
