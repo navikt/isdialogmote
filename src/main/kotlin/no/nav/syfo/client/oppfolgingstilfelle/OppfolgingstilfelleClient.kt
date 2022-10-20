@@ -14,6 +14,7 @@ import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
+import java.util.UUID
 
 class OppfolgingstilfelleClient(
     private val azureAdV2Client: AzureAdV2Client,
@@ -32,17 +33,14 @@ class OppfolgingstilfelleClient(
 
     suspend fun oppfolgingstilfelle(
         personIdent: PersonIdent,
-        token: String,
-        callId: String,
+        token: String? = null,
+        callId: String? = null,
     ): Oppfolgingstilfelle? {
-        val oboToken = azureAdV2Client.getOnBehalfOfToken(
-            scopeClientId = isoppfolgingstilfelleClientId,
-            token = token,
-        )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
+        val callIdToUse = callId ?: UUID.randomUUID().toString()
         return try {
             val response: HttpResponse = httpClient.get(personOppfolgingstilfelleUrl) {
-                header(HttpHeaders.Authorization, bearerHeader(oboToken))
-                header(NAV_CALL_ID_HEADER, callId)
+                header(HttpHeaders.Authorization, bearerHeader(getAzureAccessToken(token)))
+                header(NAV_CALL_ID_HEADER, callIdToUse)
                 header(NAV_PERSONIDENT_HEADER, personIdent.value)
                 accept(ContentType.Application.Json)
             }
@@ -54,7 +52,7 @@ class OppfolgingstilfelleClient(
             log.error(
                 "Error while requesting OppfolgingstilfellePerson from Isoppfolgingstilfelle with {}, {}",
                 StructuredArguments.keyValue("statusCode", responseException.response.status.value),
-                callIdArgument(callId),
+                callIdArgument(callIdToUse),
             )
             COUNT_CALL_OPPFOLGINGSTILFELLE_PERSON_FAIL.increment()
             null
@@ -71,43 +69,51 @@ class OppfolgingstilfelleClient(
         val oppfolgingstilfelleNLCacheKey =
             "$CACHE_OPPFOLGINGSTILFELLE_NL_KEY_PREFIX$narmesteLederPersonIdentNumber-$arbeidstakerPersonIdentNumber-$virksomhetsnummer"
 
-        val cachedOppfolgingstilfelle =
-            cache.getListObject<Oppfolgingstilfelle>(oppfolgingstilfelleNLCacheKey)
+        val cachedOppfolgingstilfelle = cache.getListObject<Oppfolgingstilfelle>(oppfolgingstilfelleNLCacheKey)
 
-        if (cachedOppfolgingstilfelle != null) {
-            return cachedOppfolgingstilfelle
-        }
+        return if (cachedOppfolgingstilfelle != null) {
+            cachedOppfolgingstilfelle
+        } else {
+            val exchangedToken = tokendingsClient.getOnBehalfOfToken(
+                scopeClientId = isoppfolgingstilfelleClientId,
+                token = tokenx,
+            ).accessToken
 
-        val exchangedToken = tokendingsClient.getOnBehalfOfToken(
-            scopeClientId = isoppfolgingstilfelleClientId,
-            token = tokenx,
-        ).accessToken
-
-        return try {
-            val response: HttpResponse = httpClient.get(oppfolgingstilfelleNLUrl) {
-                header(HttpHeaders.Authorization, bearerHeader(exchangedToken))
-                header(NAV_CALL_ID_HEADER, callId)
-                header(NAV_PERSONIDENT_HEADER, arbeidstakerPersonIdentNumber.value)
-                header(NAV_VIRKSOMHETSNUMMER, virksomhetsnummer.value)
-                accept(ContentType.Application.Json)
+            try {
+                val response: HttpResponse = httpClient.get(oppfolgingstilfelleNLUrl) {
+                    header(HttpHeaders.Authorization, bearerHeader(exchangedToken))
+                    header(NAV_CALL_ID_HEADER, callId)
+                    header(NAV_PERSONIDENT_HEADER, arbeidstakerPersonIdentNumber.value)
+                    header(NAV_VIRKSOMHETSNUMMER, virksomhetsnummer.value)
+                    accept(ContentType.Application.Json)
+                }
+                val parsedResponse = response.body<List<OppfolgingstilfelleDTO>>().toOppfolgingstilfelle()
+                cache.setObject(
+                    oppfolgingstilfelleNLCacheKey,
+                    parsedResponse,
+                    CACHE_NARMESTE_LEDER_EXPIRE_SECONDS
+                )
+                parsedResponse
+            } catch (responseException: ResponseException) {
+                log.error(
+                    "Error while requesting four months date from Isoppfolgingstilfelle with {}, {}",
+                    StructuredArguments.keyValue("statusCode", responseException.response.status.value),
+                    callIdArgument(callId),
+                )
+                null
             }
-            val parsedResponse = response.body<List<OppfolgingstilfelleDTO>>().toOppfolgingstilfelle()
-            cache.setObject(
-                oppfolgingstilfelleNLCacheKey,
-                parsedResponse,
-                CACHE_NARMESTE_LEDER_EXPIRE_SECONDS
-            )
-
-            parsedResponse
-        } catch (responseException: ResponseException) {
-            log.error(
-                "Error while requesting four months date from Isoppfolgingstilfelle with {}, {}",
-                StructuredArguments.keyValue("statusCode", responseException.response.status.value),
-                callIdArgument(callId),
-            )
-            null
         }
     }
+
+    private suspend fun getAzureAccessToken(token: String? = null) =
+        if (token != null) {
+            azureAdV2Client.getOnBehalfOfToken(
+                scopeClientId = isoppfolgingstilfelleClientId,
+                token = token,
+            )
+        } else {
+            azureAdV2Client.getSystemToken(isoppfolgingstilfelleClientId)
+        }?.accessToken ?: throw RuntimeException("Failed to get azure token")
 
     companion object {
         const val ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH =
