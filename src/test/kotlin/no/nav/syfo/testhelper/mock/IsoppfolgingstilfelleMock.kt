@@ -1,15 +1,18 @@
 package no.nav.syfo.testhelper.mock
 
-import io.ktor.server.application.*
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.application.api.authentication.installContentNegotiation
-import no.nav.syfo.client.oppfolgingstilfelle.*
+import no.nav.syfo.client.oppfolgingstilfelle.ARBEIDSGIVERPERIODE_DAYS
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_NARMESTELEDER_PATH
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleDTO
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfellePersonDTO
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -47,6 +50,17 @@ fun oppfolgingstilfellePersonDTONoTilfelle(
     oppfolgingstilfelleList = emptyList()
 )
 
+fun oppfolgingstilfelleDTOOverlappingOTList() = listOf(
+    OppfolgingstilfelleDTO(
+        arbeidstakerAtTilfelleEnd = true,
+        start = LocalDate.now().minusMonths(8L),
+        end = LocalDate.now().minusMonths(3L),
+        virksomhetsnummerList = listOf(
+            VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value
+        )
+    )
+)
+
 class IsoppfolgingstilfelleMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
@@ -61,13 +75,19 @@ class IsoppfolgingstilfelleMock {
             get(ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH) {
                 when (getPersonIdentHeader()) {
                     ARBEIDSTAKER_FNR.value -> call.respond(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_FNR))
-                    ARBEIDSTAKER_ADRESSEBESKYTTET.value -> call.respond(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_ADRESSEBESKYTTET))
+                    ARBEIDSTAKER_ADRESSEBESKYTTET.value -> call.respond(
+                        oppfolgingstilfellePersonDTO(
+                            ARBEIDSTAKER_ADRESSEBESKYTTET
+                        )
+                    )
+
                     ARBEIDSTAKER_ANNEN_FNR.value -> call.respond(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_ANNEN_FNR))
                     ARBEIDSTAKER_NO_JOURNALFORING.value -> call.respond(
                         oppfolgingstilfellePersonDTO(
                             ARBEIDSTAKER_NO_JOURNALFORING
                         )
                     )
+
                     ARBEIDSTAKER_IKKE_VARSEL.value -> call.respond(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_IKKE_VARSEL))
                     ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE.value -> call.respond(
                         oppfolgingstilfellePersonDTO(
@@ -75,9 +95,26 @@ class IsoppfolgingstilfelleMock {
                             end = LocalDate.now().minusDays(ARBEIDSGIVERPERIODE_DAYS + 1),
                         )
                     )
-                    ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value -> call.respond(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER))
-                    ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE.value -> call.respond(oppfolgingstilfellePersonDTONoTilfelle(ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE))
+
+                    ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value -> call.respond(
+                        oppfolgingstilfellePersonDTO(
+                            ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
+                        )
+                    )
+
+                    ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE.value -> call.respond(
+                        oppfolgingstilfellePersonDTONoTilfelle(
+                            ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE
+                        )
+                    )
+
                     else -> call.respond(HttpStatusCode.InternalServerError, "")
+                }
+            }
+            get(ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_NARMESTELEDER_PATH) {
+                when (getPersonIdentHeader()) {
+                    ARBEIDSTAKER_FNR.value -> call.respond(oppfolgingstilfelleDTOOverlappingOTList())
+                    else -> call.respond(emptyList<OppfolgingstilfelleDTO>())
                 }
             }
         }

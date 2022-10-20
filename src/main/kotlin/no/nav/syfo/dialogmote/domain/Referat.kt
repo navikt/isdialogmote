@@ -3,20 +3,21 @@ package no.nav.syfo.dialogmote.domain
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.brev.domain.BrevType
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
-import no.nav.syfo.client.dokarkiv.domain.*
+import no.nav.syfo.client.dokarkiv.domain.BrevkodeType
+import no.nav.syfo.client.dokarkiv.domain.JournalpostKanal
+import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerAnnenDTO
 import no.nav.syfo.dialogmote.api.domain.ReferatDTO
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Locale
-import java.util.UUID
+import java.util.*
 
 data class Referat(
     val id: Int,
     override val uuid: UUID,
-    val createdAt: LocalDateTime,
+    override val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val moteId: Int,
     override val motedeltakerArbeidstakerId: Int,

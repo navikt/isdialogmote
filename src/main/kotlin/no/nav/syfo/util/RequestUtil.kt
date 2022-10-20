@@ -8,7 +8,7 @@ import net.logstash.logback.argument.StructuredArguments
 const val NAV_PERSONIDENT_HEADER = "nav-personident"
 const val TEMA_HEADER = "Tema"
 const val ALLE_TEMA_HEADERVERDI = "GEN"
-
+const val NAV_VIRKSOMHETSNUMMER = "nav-virksomhetsnummer"
 const val NAV_CALL_ID_HEADER = "Nav-Call-Id"
 fun PipelineContext<out Unit, ApplicationCall>.getCallId(): String {
     return this.call.getCallId()

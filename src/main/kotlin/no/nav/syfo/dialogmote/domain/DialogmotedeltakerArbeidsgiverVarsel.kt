@@ -4,8 +4,9 @@ import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevSvarDTO
 import no.nav.syfo.client.dokarkiv.domain.DialogmoteDeltakerType
 import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
-import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerArbeidsgiverVarselDTO
+import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerArbeidsgiverVarselSvarDTO
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 import java.util.UUID
@@ -13,7 +14,7 @@ import java.util.UUID
 data class DialogmotedeltakerArbeidsgiverVarsel(
     val id: Int,
     override val uuid: UUID,
-    val createdAt: LocalDateTime,
+    override val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     override val motedeltakerArbeidsgiverId: Int,
     val varselType: MotedeltakerVarselType,
