@@ -5,7 +5,7 @@ metadata:
     dcat.data.nav.no/title: "Statusendringer for innkalte dialogmøte"
     dcat.data.nav.no/description: >-
       Topic inneholder alle statusendringer for innkalte dialogmøter.
-      En statusendring kan være en av disse typene: INNKALT, NYTT_TID_STED, AVLYST eller FERDIGSTILT
+      En statusendring kan være en av disse typene: INNKALT, NYTT_TID_STED, AVLYST, LUKKET eller FERDIGSTILT
   name: isdialogmote-dialogmote-statusendring
   namespace: teamsykefravr
   labels:
