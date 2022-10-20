@@ -2,6 +2,7 @@ package no.nav.syfo.testhelper
 
 import no.nav.syfo.application.*
 import java.net.ServerSocket
+import java.time.LocalDate
 
 fun testEnvironment(
     kafkaBootstrapServers: String,
@@ -70,6 +71,8 @@ fun testEnvironment(
     dokdistFordelingClientId = "dokdistFordelingClientId",
     dokdistFordelingUrl = "http://dokdistfordeling",
     altinnSendingEnabled = true,
+    outdatedDialogmoteCronJobEnabled = true,
+    outdatedDialogmoteCutoff = LocalDate.parse("2022-07-01"),
     kode6Enabled = true,
     publishDialogmotesvarEnabled = true,
 )
