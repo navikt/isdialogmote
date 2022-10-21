@@ -10,7 +10,9 @@ import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.ereg.EregClient
 import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.pdl.PdlClient
+import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.cronjob.dialogmoteOutdated.DialogmoteOutdatedCronjob
 import no.nav.syfo.cronjob.dialogmotesvar.DialogmotesvarProducer
 import no.nav.syfo.cronjob.dialogmotesvar.PublishDialogmotesvarCronjob
@@ -55,8 +57,23 @@ fun Application.cronjobModule(
     val eregClient = EregClient(
         baseUrl = environment.eregUrl,
     )
+    val tokendingsClient = TokendingsClient(
+        tokenxClientId = environment.tokenxClientId,
+        tokenxEndpoint = environment.tokenxEndpoint,
+        tokenxPrivateJWK = environment.tokenxPrivateJWK,
+    )
+    val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
+        azureAdV2Client = azureAdV2Client,
+        tokendingsClient = tokendingsClient,
+        isoppfolgingstilfelleClientId = environment.isoppfolgingstilfelleClientId,
+        isoppfolgingstilfelleBaseUrl = environment.isoppfolgingstilfelleUrl,
+        cache = cache,
+    )
     val pdfService = PdfService(
         database = database,
+    )
+    val dialogmotestatusService = DialogmotestatusService(
+        oppfolgingstilfelleClient = oppfolgingstilfelleClient,
     )
     val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(
         database = database,
@@ -115,6 +132,7 @@ fun Application.cronjobModule(
         publishDialogmotesvarService = publishDialogmotesvarService
     )
     val dialogmoteOutdatedCronjob = DialogmoteOutdatedCronjob(
+        dialogmotestatusService = dialogmotestatusService,
         outdatedDialogmoterCutoff = environment.outdatedDialogmoteCutoff,
         database = database,
     )
