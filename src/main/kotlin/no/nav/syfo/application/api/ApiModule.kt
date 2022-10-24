@@ -29,10 +29,7 @@ import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.dialogmote.DialogmoteService
-import no.nav.syfo.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.dialogmote.PdfService
-import no.nav.syfo.dialogmote.VarselService
+import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteActionsApiV2
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteApiV2
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
@@ -166,12 +163,16 @@ fun Application.apiModule(
         isAltinnSendingEnabled = environment.altinnSendingEnabled,
     )
 
+    val dialogmotestatusService = DialogmotestatusService(
+        oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+    )
+
     val dialogmoteService = DialogmoteService(
         database = database,
         dialogmotedeltakerService = dialogmotedeltakerService,
+        dialogmotestatusService = dialogmotestatusService,
         behandlendeEnhetClient = behandlendeEnhetClient,
         narmesteLederClient = narmesteLederClient,
-        oppfolgingstilfelleClient = oppfolgingstilfelleClient,
         pdfGenClient = pdfGenClient,
         kontaktinformasjonClient = kontaktinformasjonClient,
         varselService = varselService,

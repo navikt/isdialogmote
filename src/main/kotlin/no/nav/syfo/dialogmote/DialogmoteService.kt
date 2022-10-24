@@ -6,7 +6,6 @@ import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
-import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
@@ -22,9 +21,9 @@ import java.util.*
 class DialogmoteService(
     private val database: DatabaseInterface,
     private val dialogmotedeltakerService: DialogmotedeltakerService,
+    private val dialogmotestatusService: DialogmotestatusService,
     private val behandlendeEnhetClient: BehandlendeEnhetClient,
     private val narmesteLederClient: NarmesteLederClient,
-    private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     private val pdfGenClient: PdfGenClient,
     private val kontaktinformasjonClient: KontaktinformasjonClient,
     private val varselService: VarselService,
@@ -158,14 +157,13 @@ class DialogmoteService(
                 commit = false,
                 newDialogmote = newDialogmote,
             )
-            createMoteStatusEndring(
+            dialogmotestatusService.createMoteStatusEndring(
                 callId = callId,
                 connection = connection,
+                newDialogmote = newDialogmote,
                 dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
                 dialogmoteStatus = newDialogmote.status,
-                isBehandlerMotedeltaker = newDialogmote.behandler != null,
                 opprettetAv = newDialogmote.opprettetAv,
-                personIdent = personIdent,
                 token = token,
             )
             createAndSendVarsel(
@@ -253,14 +251,12 @@ class DialogmoteService(
         )
 
         database.connection.use { connection ->
-            updateMoteStatus(
+            dialogmotestatusService.updateMoteStatus(
                 callId = callId,
                 connection = connection,
-                dialogmoteId = dialogmote.id,
-                isBehandlerMotedeltaker = avlysDialogmote.behandler != null,
+                dialogmote = dialogmote,
                 newDialogmoteStatus = DialogmoteStatus.AVLYST,
                 opprettetAv = getNAVIdentFromToken(token),
-                personIdent = dialogmote.arbeidstaker.personIdent,
                 token = token,
             )
             createAndSendVarsel(
@@ -351,14 +347,12 @@ class DialogmoteService(
                 moteId = dialogmote.id,
                 newDialogmoteTidSted = endreDialogmoteTidSted,
             )
-            updateMoteStatus(
+            dialogmotestatusService.updateMoteStatus(
                 callId = callId,
                 connection = connection,
-                dialogmoteId = dialogmote.id,
-                isBehandlerMotedeltaker = dialogmote.behandler != null,
+                dialogmote = dialogmote,
                 newDialogmoteStatus = DialogmoteStatus.NYTT_TID_STED,
                 opprettetAv = getNAVIdentFromToken(token),
-                personIdent = dialogmote.arbeidstaker.personIdent,
                 token = token,
             )
             createAndSendVarsel(
@@ -607,14 +601,12 @@ class DialogmoteService(
                     veilederId = opprettetAv,
                 )
             }
-            updateMoteStatus(
+            dialogmotestatusService.updateMoteStatus(
                 callId = callId,
                 connection = connection,
-                dialogmoteId = dialogmote.id,
-                isBehandlerMotedeltaker = dialogmote.behandler != null,
+                dialogmote = dialogmote,
                 newDialogmoteStatus = DialogmoteStatus.FERDIGSTILT,
                 opprettetAv = opprettetAv,
-                personIdent = dialogmote.arbeidstaker.personIdent,
                 token = token,
             )
             val (pdfId, _) = connection.createPdf(
@@ -791,59 +783,6 @@ class DialogmoteService(
 
             connection.commit()
         }
-    }
-
-    private suspend fun updateMoteStatus(
-        callId: String,
-        connection: Connection,
-        dialogmoteId: Int,
-        isBehandlerMotedeltaker: Boolean,
-        newDialogmoteStatus: DialogmoteStatus,
-        opprettetAv: String,
-        personIdent: PersonIdent,
-        token: String,
-    ) {
-        connection.updateMoteStatus(
-            commit = false,
-            moteId = dialogmoteId,
-            moteStatus = newDialogmoteStatus,
-        )
-        createMoteStatusEndring(
-            callId = callId,
-            connection = connection,
-            dialogmoteId = dialogmoteId,
-            dialogmoteStatus = newDialogmoteStatus,
-            isBehandlerMotedeltaker = isBehandlerMotedeltaker,
-            opprettetAv = opprettetAv,
-            personIdent = personIdent,
-            token = token,
-        )
-    }
-
-    private suspend fun createMoteStatusEndring(
-        callId: String,
-        connection: Connection,
-        dialogmoteId: Int,
-        dialogmoteStatus: DialogmoteStatus,
-        isBehandlerMotedeltaker: Boolean,
-        opprettetAv: String,
-        personIdent: PersonIdent,
-        token: String,
-    ) {
-        val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfelle(
-            callId = callId,
-            personIdent = personIdent,
-            token = token,
-        )
-
-        connection.createMoteStatusEndring(
-            commit = false,
-            moteId = dialogmoteId,
-            opprettetAv = opprettetAv,
-            isBehandlerMotedeltaker = isBehandlerMotedeltaker,
-            status = dialogmoteStatus,
-            tilfelleStart = tilfelle?.start,
-        )
     }
 
     private fun getFerdigReferat(
