@@ -2,12 +2,14 @@ package no.nav.syfo.dialogmote.database
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
+import no.nav.syfo.cronjob.statusendring.toInstantOslo
 import no.nav.syfo.dialogmote.database.domain.PDialogmote
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
 import java.sql.*
 import java.time.Instant
+import java.time.LocalDateTime
 import java.util.*
 
 const val queryGetDialogmoteForId =
@@ -250,6 +252,27 @@ fun Connection.updateMoteStatus(
     }
     if (commit) {
         this.commit()
+    }
+}
+
+const val queryFindOutdatedMoter =
+    """
+        SELECT m.* from MOTE m 
+            INNER JOIN MOTE_STATUS_ENDRET s1 ON (m.id = s1.mote_id) 
+            INNER JOIN TID_STED t1 ON (m.id = t1.mote_id)
+        WHERE s1.created_at = (SELECT max(s2.created_at) FROM MOTE_STATUS_ENDRET s2 WHERE s2.mote_id = m.id)
+            AND t1.created_at = (SELECT max(t2.created_at) FROM TID_STED t2 WHERE t2.mote_id = m.id)
+            AND s1.status in ('INNKALT','NYTT_TID_STED')
+            AND t1.tid < ?
+        LIMIT 100
+    """
+
+fun DatabaseInterface.findOutdatedMoter(
+    cutoff: LocalDateTime,
+) = this.connection.use { connection ->
+    connection.prepareStatement(queryFindOutdatedMoter).use {
+        it.setTimestamp(1, Timestamp.from(cutoff.toInstantOslo()))
+        it.executeQuery().toList { toPDialogmote() }
     }
 }
 
