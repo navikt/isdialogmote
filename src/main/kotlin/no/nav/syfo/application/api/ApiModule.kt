@@ -167,10 +167,16 @@ fun Application.apiModule(
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
     )
 
+    val dialogmoterelasjonService = DialogmoterelasjonService(
+        dialogmotedeltakerService = dialogmotedeltakerService,
+        database = database,
+    )
+
     val dialogmoteService = DialogmoteService(
         database = database,
         dialogmotedeltakerService = dialogmotedeltakerService,
         dialogmotestatusService = dialogmotestatusService,
+        dialogmoterelasjonService = dialogmoterelasjonService,
         behandlendeEnhetClient = behandlendeEnhetClient,
         narmesteLederClient = narmesteLederClient,
         pdfGenClient = pdfGenClient,

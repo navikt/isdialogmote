@@ -22,6 +22,7 @@ class DialogmoteService(
     private val database: DatabaseInterface,
     private val dialogmotedeltakerService: DialogmotedeltakerService,
     private val dialogmotestatusService: DialogmotestatusService,
+    private val dialogmoterelasjonService: DialogmoterelasjonService,
     private val behandlendeEnhetClient: BehandlendeEnhetClient,
     private val narmesteLederClient: NarmesteLederClient,
     private val pdfGenClient: PdfGenClient,
@@ -33,7 +34,7 @@ class DialogmoteService(
         moteUUID: UUID
     ): Dialogmote {
         return database.getDialogmote(moteUUID).first().let { pDialogmote ->
-            extendDialogmoteRelations(pDialogmote)
+            dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
         }
     }
 
@@ -41,7 +42,7 @@ class DialogmoteService(
         personIdent: PersonIdent,
     ): List<Dialogmote> {
         return database.getDialogmoteList(personIdent).map { pDialogmote ->
-            extendDialogmoteRelations(pDialogmote)
+            dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
         }
     }
 
@@ -49,44 +50,19 @@ class DialogmoteService(
         enhetNr: EnhetNr,
     ): List<Dialogmote> {
         return database.getDialogmoteList(enhetNr).map { pDialogmote ->
-            extendDialogmoteRelations(pDialogmote)
+            dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
         }
     }
 
     fun getDialogmoteUnfinishedList(enhetNr: EnhetNr): List<Dialogmote> {
         return database.getDialogmoteUnfinishedList(enhetNr).map { pDialogmote ->
-            extendDialogmoteRelations(pDialogmote)
+            dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
         }
     }
 
     fun getDialogmoteUnfinishedListForVeilederIdent(veilederIdent: String): List<Dialogmote> {
         return database.getDialogmoteUnfinishedListForVeilederIdent(veilederIdent).map { pDialogmote ->
-            extendDialogmoteRelations(pDialogmote)
-        }
-    }
-
-    private fun extendDialogmoteRelations(
-        pDialogmote: PDialogmote,
-    ): Dialogmote {
-        val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(pDialogmote.id)
-        val motedeltakerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiver(pDialogmote.id)
-        val motedeltakerBehandler = dialogmotedeltakerService.getDialogmoteDeltakerBehandler(pDialogmote.id)
-        val dialogmoteTidStedList = getDialogmoteTidStedList(pDialogmote.id)
-        val referatList = getReferatForMote(pDialogmote.uuid)
-        return pDialogmote.toDialogmote(
-            dialogmotedeltakerArbeidstaker = motedeltakerArbeidstaker,
-            dialogmotedeltakerArbeidsgiver = motedeltakerArbeidsgiver,
-            dialogmotedeltakerBehandler = motedeltakerBehandler,
-            dialogmoteTidStedList = dialogmoteTidStedList,
-            referatList = referatList,
-        )
-    }
-
-    private fun getDialogmoteTidStedList(
-        moteId: Int
-    ): List<DialogmoteTidSted> {
-        return database.getTidSted(moteId).map {
-            it.toDialogmoteTidSted()
+            dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
         }
     }
 
@@ -796,7 +772,7 @@ class DialogmoteService(
         referatUUID: UUID
     ): Referat? {
         return database.getReferat(referatUUID).firstOrNull()?.let { pReferat ->
-            val andreDeltakere = getAndreDeltakere(pReferat.id)
+            val andreDeltakere = dialogmoterelasjonService.getAndreDeltakere(pReferat.id)
             val motedeltakerArbeidstakerId = database.getMoteDeltakerArbeidstaker(pReferat.moteId).id
             val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
             pReferat.toReferat(
@@ -804,30 +780,6 @@ class DialogmoteService(
                 motedeltakerArbeidstakerId = motedeltakerArbeidstakerId,
                 motedeltakerArbeidsgiverId = motedeltakerArbeidsgiverId
             )
-        }
-    }
-
-    private fun getReferatForMote(
-        moteUUID: UUID
-    ): List<Referat> {
-        return database.getReferatForMote(moteUUID).map { pReferat ->
-            val andreDeltakere = getAndreDeltakere(pReferat.id)
-            val motedeltakerArbeidstakerId = database.getMoteDeltakerArbeidstaker(pReferat.moteId).id
-            val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
-
-            pReferat.toReferat(
-                andreDeltakere = andreDeltakere,
-                motedeltakerArbeidstakerId = motedeltakerArbeidstakerId,
-                motedeltakerArbeidsgiverId = motedeltakerArbeidsgiverId
-            )
-        }
-    }
-
-    private fun getAndreDeltakere(
-        referatId: Int
-    ): List<DialogmotedeltakerAnnen> {
-        return database.getAndreDeltakereForReferatID(referatId).map { pMotedeltakerAnnen ->
-            pMotedeltakerAnnen.toDialogmoteDeltakerAnnen()
         }
     }
 

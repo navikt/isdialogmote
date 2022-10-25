@@ -107,6 +107,7 @@ fun main() {
                 database = applicationDatabase,
                 environment = environment,
                 cache = cache,
+                brukernotifikasjonProducer = brukernotifikasjonProducer,
             )
         }
     }

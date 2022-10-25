@@ -3,14 +3,16 @@ package no.nav.syfo.cronjob.dialogmoteOutdated
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.cronjob.*
+import no.nav.syfo.dialogmote.DialogmoterelasjonService
 import no.nav.syfo.dialogmote.DialogmotestatusService
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 
 class DialogmoteOutdatedCronjob(
-    dialogmotestatusService: DialogmotestatusService,
-    database: DatabaseInterface,
-    outdatedDialogmoterCutoff: LocalDate,
+    val dialogmotestatusService: DialogmotestatusService,
+    val dialogmoterelasjonService: DialogmoterelasjonService,
+    val database: DatabaseInterface,
+    val outdatedDialogmoterCutoff: LocalDate,
 ) : DialogmoteCronjob {
 
     override val initialDelayMinutes: Long = 2

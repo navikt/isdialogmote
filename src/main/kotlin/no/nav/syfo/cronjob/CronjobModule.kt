@@ -6,6 +6,8 @@ import no.nav.syfo.application.Environment
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.launchBackgroundTask
+import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
+import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.ereg.EregClient
@@ -32,6 +34,7 @@ fun Application.cronjobModule(
     database: DatabaseInterface,
     environment: Environment,
     cache: RedisStore,
+    brukernotifikasjonProducer: BrukernotifikasjonProducer,
 ) {
     val azureAdV2Client = AzureAdV2Client(
         aadAppClient = environment.aadAppClient,
@@ -72,8 +75,22 @@ fun Application.cronjobModule(
     val pdfService = PdfService(
         database = database,
     )
+    val arbeidstakerVarselService = ArbeidstakerVarselService(
+        brukernotifikasjonProducer = brukernotifikasjonProducer,
+        dialogmoteArbeidstakerUrl = environment.dialogmoteArbeidstakerUrl,
+        namespace = environment.namespace,
+        appname = environment.appname,
+    )
     val dialogmotestatusService = DialogmotestatusService(
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+    )
+    val dialogmotedeltakerService = DialogmotedeltakerService(
+        arbeidstakerVarselService = arbeidstakerVarselService,
+        database = database,
+    )
+    val dialogmoterelasjonService = DialogmoterelasjonService(
+        dialogmotedeltakerService = dialogmotedeltakerService,
+        database = database,
     )
     val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(
         database = database,
@@ -133,6 +150,7 @@ fun Application.cronjobModule(
     )
     val dialogmoteOutdatedCronjob = DialogmoteOutdatedCronjob(
         dialogmotestatusService = dialogmotestatusService,
+        dialogmoterelasjonService = dialogmoterelasjonService,
         outdatedDialogmoterCutoff = environment.outdatedDialogmoteCutoff,
         database = database,
     )
