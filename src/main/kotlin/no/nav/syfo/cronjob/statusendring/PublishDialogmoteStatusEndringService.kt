@@ -52,7 +52,7 @@ fun createKDialogmoteStatusEndring(
     kDialogmoteStatusEndring.setDialogmoteUuid(pDialogmote.uuid.toString())
     kDialogmoteStatusEndring.setDialogmoteTidspunkt(dialogmoteTidStedList.latest()!!.tid.toInstantOslo())
     kDialogmoteStatusEndring.setStatusEndringType(dialogmoteStatusEndret.status.name)
-    kDialogmoteStatusEndring.setStatusEndringTidspunkt(LocalDateTime.now().toInstantOslo())
+    kDialogmoteStatusEndring.setStatusEndringTidspunkt(dialogmoteStatusEndret.createdAt.toInstantOslo())
     kDialogmoteStatusEndring.setPersonIdent(personIdent.value)
     kDialogmoteStatusEndring.setVirksomhetsnummer(virksomhetsnummer.value)
     kDialogmoteStatusEndring.setEnhetNr(pDialogmote.tildeltEnhet)
