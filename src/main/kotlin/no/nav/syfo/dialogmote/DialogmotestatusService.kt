@@ -81,11 +81,17 @@ class DialogmotestatusService(
         callId: String? = null,
         token: String? = null,
     ) {
-        val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfelle(
-            callId = callId,
-            personIdent = arbeidstakerPersonIdent,
-            token = token,
-        )
+        val tilfelle = if (token != null) {
+            oppfolgingstilfelleClient.oppfolgingstilfellePerson(
+                personIdent = arbeidstakerPersonIdent,
+                token = token,
+                callId = callId,
+            )
+        } else {
+            oppfolgingstilfelleClient.oppfolgingstilfelleSystem(
+                personIdent = arbeidstakerPersonIdent,
+            )
+        }
 
         connection.createMoteStatusEndring(
             commit = false,

@@ -53,7 +53,7 @@ object VarselServiceSpek : Spek({
         }
 
         it("Send varsel to nærmeste leder") {
-            coEvery { oppfolgingstilfelleClient.oppfolgingstilfelle(any(), any(), any()) } returns Oppfolgingstilfelle(
+            coEvery { oppfolgingstilfelleClient.oppfolgingstilfellePerson(any(), any(), any()) } returns Oppfolgingstilfelle(
                 start = LocalDate.MIN,
                 end = LocalDate.MAX,
             )
@@ -104,7 +104,7 @@ object VarselServiceSpek : Spek({
         }
 
         it("Send brev to Altinn when no nærmeste leder") {
-            coEvery { oppfolgingstilfelleClient.oppfolgingstilfelle(any(), any(), any()) } returns Oppfolgingstilfelle(
+            coEvery { oppfolgingstilfelleClient.oppfolgingstilfellePerson(any(), any(), any()) } returns Oppfolgingstilfelle(
                 start = LocalDate.MIN,
                 end = LocalDate.MAX,
             )
@@ -154,7 +154,7 @@ object VarselServiceSpek : Spek({
         }
 
         it("Send brev to Altinn, and not varsel to nærmeste leder when no active tilfelle") {
-            coEvery { oppfolgingstilfelleClient.oppfolgingstilfelle(any(), any(), any()) } returns Oppfolgingstilfelle(
+            coEvery { oppfolgingstilfelleClient.oppfolgingstilfellePerson(any(), any(), any()) } returns Oppfolgingstilfelle(
                 start = LocalDate.MIN,
                 end = LocalDate.now().minusDays(ARBEIDSGIVERPERIODE_DAYS + 1),
             )
@@ -204,7 +204,7 @@ object VarselServiceSpek : Spek({
         }
 
         it("Send brev to Altinn, and not varsel to nærmeste leder when no oppfolgingstilfelle exists") {
-            coEvery { oppfolgingstilfelleClient.oppfolgingstilfelle(any(), any(), any()) } returns null
+            coEvery { oppfolgingstilfelleClient.oppfolgingstilfellePerson(any(), any(), any()) } returns null
             val virksomhetsbrevId = UUID.randomUUID()
             val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
             val altinnMelding = createAltinnMelding(
