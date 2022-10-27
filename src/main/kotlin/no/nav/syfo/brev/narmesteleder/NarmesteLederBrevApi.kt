@@ -11,8 +11,7 @@ import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederResponsDTO
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.PdfService
-import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
-import no.nav.syfo.dialogmote.domain.toNarmesteLederBrevDTOList
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.util.*
 import org.slf4j.Logger
@@ -46,6 +45,9 @@ fun Route.registerNarmestelederBrevApi(
                     ?: throw IllegalArgumentException("No $NAV_PERSONIDENT_HEADER provided in request header")
 
                 val moteList = dialogmoteService.getDialogmoteList(personIdent = arbeidstakerPersonIdent)
+                    .filter { dialogmote ->
+                        dialogmote.status != DialogmoteStatus.LUKKET
+                    }
 
                 val narmesteLederMoter = narmesteLederAccessService.filterMoterByNarmesteLederAccess(
                     arbeidstakerPersonIdent = arbeidstakerPersonIdent,
