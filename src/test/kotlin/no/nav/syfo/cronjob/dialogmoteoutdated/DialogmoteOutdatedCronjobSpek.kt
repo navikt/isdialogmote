@@ -272,7 +272,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
                         dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
                     }
                 }
-                it("Setter ikke status paa gammelt møte med status FERDIGSTILT til LUKKET") {
+                it("Setter ikke status paa gammelt mote med status FERDIGSTILT til LUKKET") {
                     val newDialogmoteDTO = generateNewDialogmoteDTO(
                         personIdent = UserConstants.ARBEIDSTAKER_FNR,
                         dato = LocalDateTime.now().minusDays(40),
@@ -335,7 +335,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
                         dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.FERDIGSTILT.name
                     }
                 }
-                it("Setter ikke status paa gammelt møte med status AVLYST til LUKKET") {
+                it("Setter ikke status paa gammelt mote med status AVLYST til LUKKET") {
                     val newDialogmoteDTO = generateNewDialogmoteDTO(
                         personIdent = UserConstants.ARBEIDSTAKER_FNR,
                         dato = LocalDateTime.now().minusDays(40),
