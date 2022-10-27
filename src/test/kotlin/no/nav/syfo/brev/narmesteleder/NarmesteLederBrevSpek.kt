@@ -496,7 +496,7 @@ object NarmesteLederBrevSpek : Spek({
                         narmesteLederBrevDTO.lestDato.shouldBeNull()
                     }
                 }
-                it("Return OK when no brev exists") {
+                it("Return OK and empty brevlist when no brev exists") {
                     with(
                         handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
@@ -513,7 +513,7 @@ object NarmesteLederBrevSpek : Spek({
                         nlBrevList.size shouldBeEqualTo 0
                     }
                 }
-                it("Return OK when only brev exists from lukket mote exists") {
+                it("Return OK and empty brevlist when only brev from lukket mote exists") {
                     val createdDialogmoteUUID: String
                     with(
                         handleRequest(HttpMethod.Post, urlMote) {
