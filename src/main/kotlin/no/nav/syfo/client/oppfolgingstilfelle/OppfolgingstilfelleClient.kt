@@ -25,20 +25,43 @@ class OppfolgingstilfelleClient(
 ) {
     private val personOppfolgingstilfelleUrl: String =
         "$isoppfolgingstilfelleBaseUrl$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH"
+    private val personOppfolgingstilfelleSystemUrl: String =
+        "$isoppfolgingstilfelleBaseUrl$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH"
     private val oppfolgingstilfelleNLUrl: String =
         "$isoppfolgingstilfelleBaseUrl$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_NARMESTELEDER_PATH"
     private val CACHE_OPPFOLGINGSTILFELLE_NL_KEY_PREFIX = "oppfolgingstilfelle-nl-"
 
     private val httpClient = httpClientDefault()
 
-    suspend fun oppfolgingstilfelle(
+    suspend fun oppfolgingstilfellePerson(
         personIdent: PersonIdent,
+        token: String,
+        callId: String? = null,
+    ): Oppfolgingstilfelle? =
+        oppfolgingstilfelle(
+            personIdent = personIdent,
+            path = personOppfolgingstilfelleUrl,
+            token = token,
+            callId = callId,
+        )
+
+    suspend fun oppfolgingstilfelleSystem(
+        personIdent: PersonIdent,
+    ): Oppfolgingstilfelle? =
+        oppfolgingstilfelle(
+            personIdent = personIdent,
+            path = personOppfolgingstilfelleSystemUrl,
+        )
+
+    private suspend fun oppfolgingstilfelle(
+        personIdent: PersonIdent,
+        path: String,
         token: String? = null,
         callId: String? = null,
     ): Oppfolgingstilfelle? {
         val callIdToUse = callId ?: UUID.randomUUID().toString()
         return try {
-            val response: HttpResponse = httpClient.get(personOppfolgingstilfelleUrl) {
+            val response: HttpResponse = httpClient.get(path) {
                 header(HttpHeaders.Authorization, bearerHeader(getAzureAccessToken(token)))
                 header(NAV_CALL_ID_HEADER, callIdToUse)
                 header(NAV_PERSONIDENT_HEADER, personIdent.value)
@@ -118,6 +141,8 @@ class OppfolgingstilfelleClient(
     companion object {
         const val ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH =
             "/api/internad/v1/oppfolgingstilfelle/personident"
+        const val ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH =
+            "/api/system/v1/oppfolgingstilfelle/personident"
         const val ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_NARMESTELEDER_PATH =
             "/api/v1/narmesteleder/oppfolgingstilfelle"
 

@@ -147,9 +147,9 @@ spec:
     - name: DOKDIST_FORDELING_CLIENT_ID
       value: "dev-fss.teamdokumenthandtering.saf"
     - name: OUTDATED_DIALOGMOTE_CUTOFF
-      value: "2022-07-01"
+      value: "2022-09-22"
     - name: OUTDATED_DIALOGMOTE_CRONJOB_ENABLED
-      value: "false"
+      value: "true"
     - name: ALTINN_SENDING_ENABLED
       value: "false"
     - name: KODE6_ENABLED

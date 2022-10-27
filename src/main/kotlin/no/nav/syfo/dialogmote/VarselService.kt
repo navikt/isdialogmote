@@ -57,7 +57,7 @@ class VarselService(
             narmesteLeder != null,
         )
 
-        val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfelle(
+        val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfellePerson(
             callId = callId,
             personIdent = arbeidstakerPersonIdent,
             token = token,
