@@ -5,17 +5,25 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
+import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
+import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.mq.MQSenderInterface
+import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.brev.domain.BrevType
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
+import no.nav.syfo.client.azuread.AzureAdV2Client
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.client.tokendings.TokendingsClient
+import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.*
+import no.nav.syfo.dialogmote.database.getDialogmote
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -29,7 +37,9 @@ import no.nav.syfo.util.*
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import redis.clients.jedis.*
 import java.time.LocalDateTime
+import java.util.UUID
 
 object NarmesteLederBrevSpek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -58,6 +68,50 @@ object NarmesteLederBrevSpek : Spek({
                 dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
+            )
+            val cache = RedisStore(
+                JedisPool(
+                    JedisPoolConfig(),
+                    externalMockEnvironment.environment.redisHost,
+                    externalMockEnvironment.environment.redisPort,
+                    Protocol.DEFAULT_TIMEOUT,
+                    externalMockEnvironment.environment.redisSecret
+                )
+            )
+            val tokendingsClient = TokendingsClient(
+                tokenxClientId = externalMockEnvironment.environment.tokenxClientId,
+                tokenxEndpoint = externalMockEnvironment.environment.tokenxEndpoint,
+                tokenxPrivateJWK = externalMockEnvironment.environment.tokenxPrivateJWK,
+            )
+            val azureAdV2Client = AzureAdV2Client(
+                aadAppClient = externalMockEnvironment.environment.aadAppClient,
+                aadAppSecret = externalMockEnvironment.environment.aadAppSecret,
+                aadTokenEndpoint = externalMockEnvironment.environment.aadTokenEndpoint,
+                redisStore = cache,
+            )
+            val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
+                azureAdV2Client = azureAdV2Client,
+                tokendingsClient = tokendingsClient,
+                isoppfolgingstilfelleClientId = externalMockEnvironment.environment.isoppfolgingstilfelleClientId,
+                isoppfolgingstilfelleBaseUrl = externalMockEnvironment.environment.isoppfolgingstilfelleUrl,
+                cache = cache,
+            )
+            val arbeidstakerVarselService = ArbeidstakerVarselService(
+                brukernotifikasjonProducer = brukernotifikasjonProducer,
+                dialogmoteArbeidstakerUrl = externalMockEnvironment.environment.dialogmoteArbeidstakerUrl,
+                namespace = externalMockEnvironment.environment.namespace,
+                appname = externalMockEnvironment.environment.appname,
+            )
+            val dialogmotestatusService = DialogmotestatusService(
+                oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+            )
+            val dialogmotedeltakerService = DialogmotedeltakerService(
+                arbeidstakerVarselService = arbeidstakerVarselService,
+                database = database,
+            )
+            val dialogmoterelasjonService = DialogmoterelasjonService(
+                dialogmotedeltakerService = dialogmotedeltakerService,
+                database = database,
             )
 
             beforeEachTest {
@@ -442,7 +496,61 @@ object NarmesteLederBrevSpek : Spek({
                         narmesteLederBrevDTO.lestDato.shouldBeNull()
                     }
                 }
-                it("Return OK when no brev exists") {
+                it("Return OK and empty brevlist when no brev exists") {
+                    with(
+                        handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))
+                            addHeader(
+                                HttpHeaders.ContentType,
+                                ContentType.Application.Json.toString()
+                            )
+                            addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val nlBrevList = objectMapper.readValue<List<NarmesteLederBrevDTO>>(response.content!!)
+                        nlBrevList.size shouldBeEqualTo 0
+                    }
+                }
+                it("Return OK and empty brevlist when only brev from lukket mote exists") {
+                    val createdDialogmoteUUID: String
+                    with(
+                        handleRequest(HttpMethod.Post, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenVeileder))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validTokenVeileder))
+                            addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dto = dialogmoteList.first()
+                        dto.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+                        createdDialogmoteUUID = dto.uuid
+                    }
+                    val pMote = database.getDialogmote(UUID.fromString(createdDialogmoteUUID)).first()
+                    val mote = dialogmoterelasjonService.extendDialogmoteRelations(pMote)
+                    runBlocking {
+                        database.connection.use { connection ->
+                            dialogmotestatusService.updateMoteStatus(
+                                connection = connection,
+                                dialogmote = mote,
+                                newDialogmoteStatus = DialogmoteStatus.LUKKET,
+                                opprettetAv = "system",
+                            )
+                            connection.commit()
+                        }
+                    }
+
                     with(
                         handleRequest(HttpMethod.Get, narmesteLederBrevApiBasePath) {
                             addHeader(HttpHeaders.Authorization, bearerHeader(validTokenSelvbetjening))

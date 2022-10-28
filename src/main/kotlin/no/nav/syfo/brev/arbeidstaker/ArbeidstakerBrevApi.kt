@@ -7,12 +7,11 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.application.api.authentication.personIdent
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
-import no.nav.syfo.dialogmote.domain.toArbeidstakerBrevDTOList
 import no.nav.syfo.util.callIdArgument
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.brev.arbeidstaker.domain.PdfContent
 import no.nav.syfo.dialogmote.*
-import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
+import no.nav.syfo.dialogmote.domain.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -39,7 +38,9 @@ fun Route.registerArbeidstakerBrevApi(
 
                 val arbeidstakerBrevDTOList = dialogmoteService.getDialogmoteList(
                     personIdent = requestPersonIdent,
-                ).toArbeidstakerBrevDTOList()
+                ).filter { dialogmote ->
+                    dialogmote.status != DialogmoteStatus.LUKKET
+                }.toArbeidstakerBrevDTOList()
                 call.respond(arbeidstakerBrevDTOList)
             } catch (e: IllegalArgumentException) {
                 val illegalArgumentMessage = "Could not retrieve list of brev"

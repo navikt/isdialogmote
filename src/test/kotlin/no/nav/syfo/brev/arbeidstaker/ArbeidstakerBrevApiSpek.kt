@@ -6,16 +6,23 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
+import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
+import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
+import no.nav.syfo.client.azuread.AzureAdV2Client
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.client.tokendings.TokendingsClient
+import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.*
+import no.nav.syfo.dialogmote.database.getDialogmote
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
@@ -25,7 +32,9 @@ import no.nav.syfo.util.*
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import redis.clients.jedis.*
 import java.time.LocalDateTime
+import java.util.UUID
 
 class ArbeidstakerBrevApiSpek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -55,6 +64,50 @@ class ArbeidstakerBrevApiSpek : Spek({
                 dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
                 mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
+            )
+            val cache = RedisStore(
+                JedisPool(
+                    JedisPoolConfig(),
+                    externalMockEnvironment.environment.redisHost,
+                    externalMockEnvironment.environment.redisPort,
+                    Protocol.DEFAULT_TIMEOUT,
+                    externalMockEnvironment.environment.redisSecret
+                )
+            )
+            val tokendingsClient = TokendingsClient(
+                tokenxClientId = externalMockEnvironment.environment.tokenxClientId,
+                tokenxEndpoint = externalMockEnvironment.environment.tokenxEndpoint,
+                tokenxPrivateJWK = externalMockEnvironment.environment.tokenxPrivateJWK,
+            )
+            val azureAdV2Client = AzureAdV2Client(
+                aadAppClient = externalMockEnvironment.environment.aadAppClient,
+                aadAppSecret = externalMockEnvironment.environment.aadAppSecret,
+                aadTokenEndpoint = externalMockEnvironment.environment.aadTokenEndpoint,
+                redisStore = cache,
+            )
+            val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
+                azureAdV2Client = azureAdV2Client,
+                tokendingsClient = tokendingsClient,
+                isoppfolgingstilfelleClientId = externalMockEnvironment.environment.isoppfolgingstilfelleClientId,
+                isoppfolgingstilfelleBaseUrl = externalMockEnvironment.environment.isoppfolgingstilfelleUrl,
+                cache = cache,
+            )
+            val arbeidstakerVarselService = ArbeidstakerVarselService(
+                brukernotifikasjonProducer = brukernotifikasjonProducer,
+                dialogmoteArbeidstakerUrl = externalMockEnvironment.environment.dialogmoteArbeidstakerUrl,
+                namespace = externalMockEnvironment.environment.namespace,
+                appname = externalMockEnvironment.environment.appname,
+            )
+            val dialogmotestatusService = DialogmotestatusService(
+                oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+            )
+            val dialogmotedeltakerService = DialogmotedeltakerService(
+                arbeidstakerVarselService = arbeidstakerVarselService,
+                database = database,
+            )
+            val dialogmoterelasjonService = DialogmoterelasjonService(
+                dialogmotedeltakerService = dialogmotedeltakerService,
+                database = database,
             )
 
             beforeEachTest {
@@ -255,6 +308,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                     }
                 }
                 describe("Happy path med mer enn et møte for aktuell person") {
+                    val newDialogmoteLukket =
+                        generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 0", LocalDateTime.now().plusDays(5))
                     val newDialogmoteAvlyst1 =
                         generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 1", LocalDateTime.now().plusDays(10))
                     val newDialogmoteAvlyst2 =
@@ -269,6 +324,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                     it("should return OK if request is successful") {
                         for (
                             dialogmoteDTO in listOf(
+                                newDialogmoteLukket,
                                 newDialogmoteAvlyst1,
                                 newDialogmoteAvlyst2,
                                 newDialogmoteInnkalt
@@ -298,7 +354,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                                 createdDialogmoteUUID = dto.uuid
                                 createdDialogmoteDeltakerArbeidstakerUUID = dto.arbeidstaker.uuid
                             }
-                            if (dialogmoteDTO != newDialogmoteInnkalt) {
+                            if (dialogmoteDTO != newDialogmoteInnkalt && dialogmoteDTO != newDialogmoteLukket) {
                                 val urlMoteUUIDAvlys =
                                     "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
                                 val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
@@ -311,6 +367,21 @@ class ArbeidstakerBrevApiSpek : Spek({
                                     }
                                 ) {
                                     response.status() shouldBeEqualTo HttpStatusCode.OK
+                                }
+                            }
+                            if (dialogmoteDTO == newDialogmoteLukket) {
+                                val pMote = database.getDialogmote(UUID.fromString(createdDialogmoteUUID)).first()
+                                val mote = dialogmoterelasjonService.extendDialogmoteRelations(pMote)
+                                runBlocking {
+                                    database.connection.use { connection ->
+                                        dialogmotestatusService.updateMoteStatus(
+                                            connection = connection,
+                                            dialogmote = mote,
+                                            newDialogmoteStatus = DialogmoteStatus.LUKKET,
+                                            opprettetAv = "system",
+                                        )
+                                        connection.commit()
+                                    }
                                 }
                             }
                         }
