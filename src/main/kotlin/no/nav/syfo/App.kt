@@ -139,7 +139,7 @@ fun main() {
         applicationState.ready = true
         logger.info(
             "Application is ready, running Java VM ${Runtime.version()} on this number of processors: ${
-                Runtime.getRuntime().availableProcessors()
+            Runtime.getRuntime().availableProcessors()
             }"
         )
         val dialogmeldingService = DialogmeldingService(

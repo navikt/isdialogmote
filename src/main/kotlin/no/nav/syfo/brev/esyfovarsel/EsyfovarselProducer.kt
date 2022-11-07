@@ -49,7 +49,6 @@ data class ArbeidstakerHendelse(
     val orgnummer: String?
 ) : EsyfovarselHendelse
 
-
 enum class EsyfovarselHendelseType {
     NL_DIALOGMOTE_INNKALT,
     SM_DIALOGMOTE_INNKALT,
