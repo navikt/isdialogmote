@@ -1,26 +1,40 @@
 package no.nav.syfo
 
 import com.typesafe.config.ConfigFactory
-import io.ktor.server.application.*
-import io.ktor.server.config.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import no.nav.brukernotifikasjon.schemas.input.*
-import no.nav.syfo.application.*
+import io.ktor.server.application.ApplicationStarted
+import io.ktor.server.config.HoconApplicationConfig
+import io.ktor.server.engine.applicationEngineEnvironment
+import io.ktor.server.engine.connector
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.engine.stop
+import io.ktor.server.netty.Netty
+import java.util.concurrent.TimeUnit
+import no.nav.brukernotifikasjon.schemas.input.BeskjedInput
+import no.nav.brukernotifikasjon.schemas.input.DoneInput
+import no.nav.brukernotifikasjon.schemas.input.NokkelInput
+import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
+import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.api.authentication.getWellKnown
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
+import no.nav.syfo.application.launchBackgroundTask
 import no.nav.syfo.application.mq.MQSender
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.kafkaBrukernotifikasjonProducerConfig
 import no.nav.syfo.brev.behandler.BehandlerVarselService
-import no.nav.syfo.brev.behandler.kafka.*
-import no.nav.syfo.client.altinn.createPort
+import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
+import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
+import no.nav.syfo.brev.behandler.kafka.kafkaBehandlerDialogmeldingProducerConfig
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselHendelse
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.brev.esyfovarsel.kafkaEsyfovarselConfig
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.kafkaDineSykmeldteVarselProducerConfig
 import no.nav.syfo.brev.narmesteleder.domain.DineSykmeldteHendelse
+import no.nav.syfo.client.altinn.createPort
 import no.nav.syfo.cronjob.cronjobModule
 import no.nav.syfo.dialogmelding.DialogmeldingService
 import no.nav.syfo.dialogmelding.kafka.DialogmeldingConsumerService
@@ -28,8 +42,9 @@ import no.nav.syfo.dialogmelding.kafka.kafkaDialogmeldingConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
-import redis.clients.jedis.*
-import java.util.concurrent.TimeUnit
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
+import redis.clients.jedis.Protocol
 
 const val applicationPort = 8080
 
@@ -60,6 +75,13 @@ fun main() {
         ),
     )
     val mqSender = MQSender(environment)
+
+    val esyfovarselProducer = EsyfovarselProducer(
+        kafkaEsyfovarselProducer = KafkaProducer<String, EsyfovarselHendelse>(
+            kafkaEsyfovarselConfig(environment.kafka)
+        ),
+    )
+
     val cache = RedisStore(
         JedisPool(
             JedisPoolConfig(),
@@ -93,14 +115,15 @@ fun main() {
                 applicationState = applicationState,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 behandlerVarselService = behandlerVarselService,
+                esyfovarselProducer = esyfovarselProducer,
                 database = applicationDatabase,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSender = mqSender,
                 environment = environment,
                 wellKnownSelvbetjening = getWellKnown(environment.tokenxWellKnownUrl),
                 wellKnownVeilederV2 = getWellKnown(environment.azureAppWellKnownUrl),
                 cache = cache,
                 altinnSoapClient = altinnSoapClient,
+                mqSender = mqSender,
+                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer
             )
             cronjobModule(
                 applicationState = applicationState,
@@ -116,7 +139,7 @@ fun main() {
         applicationState.ready = true
         logger.info(
             "Application is ready, running Java VM ${Runtime.version()} on this number of processors: ${
-            Runtime.getRuntime().availableProcessors()
+                Runtime.getRuntime().availableProcessors()
             }"
         )
         val dialogmeldingService = DialogmeldingService(
