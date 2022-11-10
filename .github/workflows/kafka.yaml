@@ -53,4 +53,4 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
           RESOURCE: .nais/kafka/dialogmotesvar.yaml
-          VARS: .nais/kafka/dev.json
+          VARS: .nais/kafka/prod.json
