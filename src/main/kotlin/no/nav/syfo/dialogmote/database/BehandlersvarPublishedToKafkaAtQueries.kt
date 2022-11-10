@@ -1,5 +1,6 @@
 package no.nav.syfo.dialogmote.database
 
+import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
@@ -34,19 +35,21 @@ const val queryUpdateBehandlersvarPublishedAt =
         WHERE uuid = ?
     """
 
-fun Connection.updateBehandlersvarPublishedAt(
+fun DatabaseInterface.updateBehandlersvarPublishedAt(
     svaruuid: UUID,
 ) {
     val now = Timestamp.from(Instant.now())
-    val rowCount = this.prepareStatement(queryUpdateBehandlersvarPublishedAt).use {
-        it.setTimestamp(1, now)
-        it.setString(2, svaruuid.toString())
-        it.executeUpdate()
+    connection.use { connection ->
+        val rowCount = connection.prepareStatement(queryUpdateBehandlersvarPublishedAt).use {
+            it.setTimestamp(1, now)
+            it.setString(2, svaruuid.toString())
+            it.executeUpdate()
+        }
+        if (rowCount != 1) {
+            throw SQLException("Failed to save published date for behandlers motesvar with svar uuid: $svaruuid ")
+        }
+        connection.commit()
     }
-    if (rowCount != 1) {
-        throw SQLException("Failed to save published date for behandlers motesvar with svar uuid: $svaruuid ")
-    }
-    this.commit()
 }
 
 fun ResultSet.behandlersvar(): Behandlersvar = Behandlersvar(

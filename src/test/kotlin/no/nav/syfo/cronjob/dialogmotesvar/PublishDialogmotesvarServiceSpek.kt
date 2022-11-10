@@ -82,7 +82,7 @@ class PublishDialogmotesvarServiceSpek : Spek({
                     varselId = varselId,
                     svarType = DialogmoteSvarType.KOMMER_IKKE,
                 )
-                database.connection.updateBehandlersvarPublishedAt(kommerIkkeSvarUuid)
+                database.updateBehandlersvarPublishedAt(kommerIkkeSvarUuid)
                 val kommerLikevelSvarUuid = UUID.randomUUID()
                 database.connection.createBehandlerVarselSvar(
                     svarUuid = kommerLikevelSvarUuid,

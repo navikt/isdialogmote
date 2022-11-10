@@ -1,5 +1,6 @@
 package no.nav.syfo.dialogmote.database
 
+import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
@@ -34,19 +35,21 @@ const val queryUpdateArbeidsgiverVarselPublishedAt =
         WHERE uuid = ?
     """
 
-fun Connection.updateArbeidsgiverVarselPublishedAt(
+fun DatabaseInterface.updateArbeidsgiverVarselPublishedAt(
     varseluuid: UUID,
 ) {
     val now = Timestamp.from(Instant.now())
-    val rowCount = this.prepareStatement(queryUpdateArbeidsgiverVarselPublishedAt).use {
-        it.setTimestamp(1, now)
-        it.setString(2, varseluuid.toString())
-        it.executeUpdate()
+    connection.use { connection ->
+        val rowCount = connection.prepareStatement(queryUpdateArbeidsgiverVarselPublishedAt).use {
+            it.setTimestamp(1, now)
+            it.setString(2, varseluuid.toString())
+            it.executeUpdate()
+        }
+        if (rowCount != 1) {
+            throw SQLException("Failed to save published date for arbeidsgivers motesvar with varsel uuid: $varseluuid ")
+        }
+        connection.commit()
     }
-    if (rowCount != 1) {
-        throw SQLException("Failed to save published date for arbeidsgivers motesvar with varsel uuid: $varseluuid ")
-    }
-    this.commit()
 }
 
 fun ResultSet.toArbeidsgiversvar(): Arbeidsgiversvar = Arbeidsgiversvar(

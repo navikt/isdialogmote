@@ -43,13 +43,13 @@ class PublishDialogmotesvarService(
     ) {
         when (dialogmotesvar.senderType) {
             SenderType.ARBEIDSTAKER -> {
-                database.connection.updateArbeidstakerVarselPublishedAt(varseluuid = dialogmotesvar.dbRef)
+                database.updateArbeidstakerVarselPublishedAt(varseluuid = dialogmotesvar.dbRef)
             }
             SenderType.ARBEIDSGIVER -> {
-                database.connection.updateArbeidsgiverVarselPublishedAt(varseluuid = dialogmotesvar.dbRef)
+                database.updateArbeidsgiverVarselPublishedAt(varseluuid = dialogmotesvar.dbRef)
             }
             SenderType.BEHANDLER -> {
-                database.connection.updateBehandlersvarPublishedAt(svaruuid = dialogmotesvar.dbRef)
+                database.updateBehandlersvarPublishedAt(svaruuid = dialogmotesvar.dbRef)
             }
         }
     }
