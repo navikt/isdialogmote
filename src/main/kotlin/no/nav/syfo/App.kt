@@ -25,6 +25,8 @@ import no.nav.syfo.cronjob.cronjobModule
 import no.nav.syfo.dialogmelding.DialogmeldingService
 import no.nav.syfo.dialogmelding.kafka.DialogmeldingConsumerService
 import no.nav.syfo.dialogmelding.kafka.kafkaDialogmeldingConsumerConfig
+import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
+import no.nav.syfo.identhendelse.kafka.kafkaIdenthendelseConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
@@ -127,9 +129,16 @@ fun main() {
             applicationState = applicationState,
             dialogmeldingService = dialogmeldingService
         )
+        val identhendelseConsumerService = IdenthendelseConsumerService(
+            kafkaConsumer = KafkaConsumer(kafkaIdenthendelseConsumerConfig(environment.kafka)),
+            applicationState = applicationState,
+        )
         launchBackgroundTask(applicationState = applicationState) {
             logger.info("Starting dialogmelding kafka consumer")
             dialogmeldingConsumerService.startConsumer()
+        }
+        launchBackgroundTask(applicationState = applicationState) {
+            identhendelseConsumerService.startConsumer()
         }
     }
 
