@@ -331,7 +331,7 @@ const val queryGetFerdigstilteReferatWithoutJournalpostBehandler =
         SELECT MOTE_REFERAT.*
         FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
                   INNER JOIN MOTEDELTAKER_BEHANDLER ON (MOTE.ID = MOTEDELTAKER_BEHANDLER.MOTE_ID) 
-        WHERE MOTE_REFERAT.journalpost_beh_id IS NULL AND MOTE_REFERAT.ferdigstilt = true
+        WHERE MOTE_REFERAT.journalpost_beh_id IS NULL AND MOTE_REFERAT.ferdigstilt AND MOTEDELTAKER_BEHANDLER.mottar_referat
         ORDER BY MOTE_REFERAT.created_at ASC
         LIMIT 20
     """
