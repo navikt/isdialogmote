@@ -333,6 +333,67 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                         result.updated shouldBeEqualTo 1
                     }
                 }
+                it("should not update journalpost when behandler not mottar referat") {
+                    val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
+                    val createdDialogmoteUUID: String
+                    with(
+                        handleRequest(HttpMethod.Post, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    with(
+                        handleRequest(HttpMethod.Get, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        dialogmoteList.size shouldBeEqualTo 1
+                        val dialogmoteDTO = dialogmoteList.first()
+                        dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
+                        dialogmoteDTO.behandler.shouldNotBeNull()
+                        createdDialogmoteUUID = dialogmoteDTO.uuid
+                    }
+
+                    runBlocking {
+                        val result = DialogmoteCronjobResult()
+                        dialogmoteVarselJournalforingCronjob.dialogmoteBehandlerVarselJournalforingJob(result)
+
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 1
+                    }
+                    val urlMoteUUIDFerdigstill =
+                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                    val ferdigstillDialogMoteDto = generateNewReferatDTO(
+                        behandlerOppgave = "Behandler skal gjøre sånn",
+                        behandlerMottarReferat = false,
+                    )
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMoteUUIDFerdigstill) {
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            setBody(objectMapper.writeValueAsString(ferdigstillDialogMoteDto))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    runBlocking {
+                        val result = DialogmoteCronjobResult()
+                        dialogmoteVarselJournalforingCronjob.referatJournalforingJobBehandler(result)
+
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 0
+                    }
+                }
 
                 it("should update journalpost when avlyst") {
                     val newDialogmoteDTO = generateNewDialogmoteDTO(UserConstants.ARBEIDSTAKER_FNR)
