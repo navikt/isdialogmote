@@ -14,6 +14,8 @@ import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEn
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselNarmesteLederHendelse
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
@@ -45,11 +47,9 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
-            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
-
-            val mqSenderMock = mockk<MQSenderInterface>()
-            justRun { mqSenderMock.sendMQMessage(any(), any()) }
+            val esyfovarselHendelse = mockk<EsyfovarselNarmesteLederHendelse>(relaxed = true)
+            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
             val altinnResponse = ReceiptExternal()
@@ -58,9 +58,8 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
+                esyfovarselProducer = esyfovarselProducerMock,
             )
 
             val dialogmotedeltakerVarselJournalpostService =

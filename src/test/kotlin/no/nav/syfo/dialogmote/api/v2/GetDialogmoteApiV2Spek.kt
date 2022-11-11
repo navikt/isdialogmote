@@ -41,19 +41,11 @@ class GetDialogmoteApiV2Spek : Spek({
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
-            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
-
-            val mqSenderMock = mockk<MQSenderInterface>()
-            justRun { mqSenderMock.sendMQMessage(any(), any()) }
-
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
             )
 
@@ -67,8 +59,6 @@ class GetDialogmoteApiV2Spek : Spek({
                 )
                 describe("Happy path") {
                     beforeEachTest {
-                        justRun { mqSenderMock.sendMQMessage(any(), any()) }
-                        justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
                         justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                     }
 
@@ -97,8 +87,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
                         }
 
                         with(
@@ -108,7 +96,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
 
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
@@ -134,7 +121,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                         }
 
                         with(
@@ -145,8 +131,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 2) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
                         }
 
                         with(
@@ -155,7 +139,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
 
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
@@ -174,8 +157,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
                         }
 
                         with(
@@ -185,7 +166,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
 
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
@@ -209,13 +189,11 @@ class GetDialogmoteApiV2Spek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
-                        verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                     }
                 }
 
                 describe("Unhappy paths") {
                     beforeEachTest {
-                        clearMocks(mqSenderMock)
                         clearMocks(brukernotifikasjonProducer)
                     }
 
@@ -224,7 +202,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             handleRequest(HttpMethod.Get, urlMote) {}
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -233,7 +210,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             handleRequest(HttpMethod.Get, urlMoteVeilederIdent) {}
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -256,7 +232,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
 
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
                             dialogmoteList.size shouldBeEqualTo 0
@@ -270,7 +245,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -282,7 +256,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -294,7 +267,6 @@ class GetDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
                 }

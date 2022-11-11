@@ -57,24 +57,18 @@ fun main() {
     val kafkaBrukernotifikasjonProducerProperties = kafkaBrukernotifikasjonProducerConfig(
         environment.kafka,
     )
+
     val brukernotifikasjonProducer = BrukernotifikasjonProducer(
         kafkaProducerBeskjed = KafkaProducer<NokkelInput, BeskjedInput>(kafkaBrukernotifikasjonProducerProperties),
         kafkaProducerOppgave = KafkaProducer<NokkelInput, OppgaveInput>(kafkaBrukernotifikasjonProducerProperties),
         kafkaProducerDone = KafkaProducer<NokkelInput, DoneInput>(kafkaBrukernotifikasjonProducerProperties),
     )
-    val dineSykmeldteVarselProducer = DineSykmeldteVarselProducer(
-        kafkaProducerVarsel = KafkaProducer<String, DineSykmeldteHendelse>(
-            kafkaDineSykmeldteVarselProducerConfig(
-                environment.kafka
-            )
-        ),
-    )
+
     val behandlerDialogmeldingProducer = BehandlerDialogmeldingProducer(
         kafkaProducerBehandlerDialogmeldingBestilling = KafkaProducer<String, KafkaBehandlerDialogmeldingDTO>(
             kafkaBehandlerDialogmeldingProducerConfig(environment.kafka)
         ),
     )
-    val mqSender = MQSender(environment)
 
     val esyfovarselProducer = EsyfovarselProducer(
         kafkaEsyfovarselProducer = KafkaProducer<String, EsyfovarselHendelse>(
@@ -122,8 +116,6 @@ fun main() {
                 wellKnownVeilederV2 = getWellKnown(environment.azureAppWellKnownUrl),
                 cache = cache,
                 altinnSoapClient = altinnSoapClient,
-                mqSender = mqSender,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer
             )
             cronjobModule(
                 applicationState = applicationState,

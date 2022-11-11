@@ -8,11 +8,9 @@ import io.mockk.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.dialogmelding.domain.ForesporselType
 import no.nav.syfo.dialogmelding.domain.SvarType
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
@@ -27,6 +25,8 @@ import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.util.*
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselNarmesteLederHendelse
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 
 class DialogmeldingServiceSpek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -38,9 +38,10 @@ class DialogmeldingServiceSpek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
-            val mqSenderMock = mockk<MQSenderInterface>()
+            val esyfovarselHendelse = mockk<EsyfovarselNarmesteLederHendelse>(relaxed = true)
+            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
             val behandlerVarselService = BehandlerVarselService(
                 database = database,
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
@@ -57,17 +58,15 @@ class DialogmeldingServiceSpek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
+                esyfovarselProducer = esyfovarselProducerMock,
             )
 
             database.dropData()
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-            justRun { mqSenderMock.sendMQMessage(any(), any()) }
-            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
             clearMocks(altinnMock)
             every {
                 altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())

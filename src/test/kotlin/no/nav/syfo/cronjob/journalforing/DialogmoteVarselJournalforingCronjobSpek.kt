@@ -36,6 +36,8 @@ import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDateTime
 import java.time.Month
 import java.util.*
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselNarmesteLederHendelse
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 
 class DialogmoteVarselJournalforingCronjobSpek : Spek({
 
@@ -54,11 +56,9 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
-            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
-
-            val mqSenderMock = mockk<MQSenderInterface>()
-            justRun { mqSenderMock.sendMQMessage(any(), any()) }
+            val esyfovarselHendelse = mockk<EsyfovarselNarmesteLederHendelse>(relaxed = true)
+            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(dialogmelding = any()) }
@@ -71,9 +71,8 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
+                esyfovarselProducer = esyfovarselProducerMock,
             )
 
             val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(

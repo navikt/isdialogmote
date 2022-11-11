@@ -16,6 +16,8 @@ import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselNarmesteLederHendelse
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.*
@@ -43,14 +45,12 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
-            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
-
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(dialogmelding = any()) }
 
-            val mqSenderMock = mockk<MQSenderInterface>()
-            justRun { mqSenderMock.sendMQMessage(any(), any()) }
+            val esyfovarselHendelse = mockk<EsyfovarselNarmesteLederHendelse>(relaxed = true)
+            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
             val dialogmoteStatusEndringProducer = mockk<DialogmoteStatusEndringProducer>()
             justRun { dialogmoteStatusEndringProducer.sendDialogmoteStatusEndring(any()) }
@@ -66,9 +66,8 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
+                esyfovarselProducer = esyfovarselProducerMock,
             )
 
             val publishDialogmoteStatusEndringService = PublishDialogmoteStatusEndringService(

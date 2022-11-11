@@ -9,12 +9,10 @@ import io.mockk.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.PdfService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
@@ -50,12 +48,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
-            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
-
-            val mqSenderMock = mockk<MQSenderInterface>()
-            justRun { mqSenderMock.sendMQMessage(any(), any()) }
-
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
             val behandlerVarselService = BehandlerVarselService(
@@ -72,8 +64,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
             )
 
@@ -92,9 +82,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                 clearAllMocks()
                 justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
                 justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-                justRun { mqSenderMock.sendMQMessage(any(), any()) }
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-                justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
             }
 
             describe("Ferdigstill Dialogmote") {
@@ -115,7 +103,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             objectMapper,
                         )
                         val createdDialogmoteUUID = createdDialogmote.uuid
-                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
 
                         val urlMoteUUIDFerdigstill =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
@@ -127,7 +114,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.REFERAT, any()) }
                         }
 
                         val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
@@ -242,7 +228,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             newDialogmoteDTO,
                             objectMapper,
                         )
-                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                         verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                         clearMocks(behandlerDialogmeldingProducer)
                         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -288,7 +273,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.REFERAT, any()) }
                         }
 
                         with(
@@ -340,9 +324,8 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             begrunnelseEndring = "Dette er en begrunnelse",
                         )
 
-                        clearMocks(behandlerDialogmeldingProducer, mqSenderMock)
+                        clearMocks(behandlerDialogmeldingProducer)
                         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-                        justRun { mqSenderMock.sendMQMessage(any(), any()) }
 
                         val urlMoteUUIDEndreFerdigstilt =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteEndreFerdigstiltPath"
@@ -354,7 +337,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.REFERAT, any()) }
                         }
 
                         with(
@@ -413,7 +395,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             newDialogmoteDTO,
                             objectMapper,
                         )
-                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                         verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                         clearMocks(behandlerDialogmeldingProducer)
                         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -463,7 +444,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             newDialogmoteDTO,
                             objectMapper,
                         )
-                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                         verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                         clearMocks(behandlerDialogmeldingProducer)
                         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -516,7 +496,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                         )
                         val createdDialogmoteUUID = createdDialogmote.uuid
                         val innkallingBehandlerVarselUUID = createdDialogmote.behandler?.varselList?.lastOrNull()?.uuid
-                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                         verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                         clearMocks(behandlerDialogmeldingProducer)
                         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -531,7 +510,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.REFERAT, any()) }
                         }
                         with(
                             handleRequest(HttpMethod.Get, urlMoter) {
@@ -564,7 +542,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.REFERAT, any()) }
                             verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                         }
 
@@ -626,7 +603,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             objectMapper,
                         )
                         val createdDialogmoteUUID = createdDialogmote.uuid
-                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                         verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                         clearMocks(behandlerDialogmeldingProducer)
                         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -680,7 +656,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             objectMapper,
                         )
                         val createdDialogmoteUUID = createdDialogmote.uuid
-                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                         createdDialogmote.tildeltVeilederIdent shouldBeEqualTo VEILEDER_IDENT
 
                         val urlMoteUUIDFerdigstill =

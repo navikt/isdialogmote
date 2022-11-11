@@ -44,15 +44,11 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
-            val mqSenderMock = mockk<MQSenderInterface>()
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
             )
 
@@ -71,10 +67,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
 
                     clearMocks(brukernotifikasjonProducer)
                     justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-                    clearMocks(mqSenderMock)
-                    justRun { mqSenderMock.sendMQMessage(any(), any()) }
-                    clearMocks(dineSykmeldteVarselProducer)
-                    justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
                     clearMocks(altinnMock)
                     every {
                         altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
@@ -109,17 +101,10 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             val xmlStringSlot = slot<String>()
-                            verify(exactly = 1) {
-                                mqSenderMock.sendMQMessage(
-                                    MotedeltakerVarselType.INNKALT,
-                                    capture(xmlStringSlot)
-                                )
-                            }
                             val xml = xmlStringSlot.captured
                             xml.shouldContain("<kanal>EPOST</kanal><kontaktinformasjon>narmesteLederNavn@gmail.com</kontaktinformasjon>")
                             xml.shouldContain("<orgnummer>${VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value}</orgnummer>")
                             xml.shouldContain("<parameterListe><key>navn</key><value>narmesteLederNavn</value></parameterListe>")
-                            clearMocks(mqSenderMock)
                         }
                         val varselUuid: String
                         with(
@@ -217,8 +202,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
                         }
 
                         with(

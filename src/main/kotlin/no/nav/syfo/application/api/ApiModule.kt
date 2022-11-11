@@ -54,8 +54,6 @@ fun Application.apiModule(
     esyfovarselProducer: EsyfovarselProducer,
     behandlerVarselService: BehandlerVarselService,
     database: DatabaseInterface,
-    dineSykmeldteVarselProducer: DineSykmeldteVarselProducer,
-    mqSender: MQSenderInterface,
     environment: Environment,
     wellKnownSelvbetjening: WellKnown,
     wellKnownVeilederV2: WellKnown,
@@ -142,8 +140,6 @@ fun Application.apiModule(
     )
 
     val narmesteLederVarselService = NarmesteLederVarselService(
-        mqSender = mqSender,
-        dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
         esyfovarselProducer = esyfovarselProducer,
     )
 

@@ -31,6 +31,9 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.util.*
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselHendelseType
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselNarmesteLederHendelse
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 
 class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -48,11 +51,16 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
-            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
-
-            val mqSenderMock = mockk<MQSenderInterface>()
-            justRun { mqSenderMock.sendMQMessage(any(), any()) }
+            var esyfovarselHendelse = EsyfovarselNarmesteLederHendelse(
+                type = EsyfovarselHendelseType.NL_DIALOGMOTE_INNKALT,
+                data = null,
+                narmesteLederFnr = "98765432101",
+                narmesteLederNavn = "narmesteLederNavn",
+                arbeidstakerFnr = "12345678912",
+                orgnummer = "934567897"
+            )
+            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
             val pdfService = PdfService(
                 database = database,
@@ -63,9 +71,8 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
+                esyfovarselProducer = esyfovarselProducerMock,
             )
 
             beforeEachTest {
@@ -105,7 +112,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
                         }
 
                         with(
@@ -137,7 +144,8 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.REFERAT, any()) }
+                            esyfovarselHendelse.type = EsyfovarselHendelseType.NL_DIALOGMOTE_REFERAT
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
                         }
 
                         val referatUuid: String

@@ -8,6 +8,7 @@ import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
@@ -17,9 +18,8 @@ fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
     behandlerVarselService: BehandlerVarselService = mockk(),
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
-    dineSykmeldteVarselProducer: DineSykmeldteVarselProducer,
-    mqSenderMock: MQSenderInterface,
     altinnMock: ICorrespondenceAgencyExternalBasic = mockk(),
+    esyfovarselProducer: EsyfovarselProducer = mockk(),
 ) {
     val cache = RedisStore(
         JedisPool(
@@ -35,13 +35,11 @@ fun Application.testApiModule(
         brukernotifikasjonProducer = brukernotifikasjonProducer,
         behandlerVarselService = behandlerVarselService,
         database = externalMockEnvironment.database,
-        mqSender = mqSenderMock,
         environment = externalMockEnvironment.environment,
         wellKnownSelvbetjening = externalMockEnvironment.wellKnownSelvbetjening,
         wellKnownVeilederV2 = externalMockEnvironment.wellKnownVeilederV2,
         cache = cache,
         altinnSoapClient = altinnMock,
-        dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-        esyfovarselProducer = mockk()
+        esyfovarselProducer = esyfovarselProducer,
     )
 }

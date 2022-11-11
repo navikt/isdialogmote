@@ -44,19 +44,11 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
-            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
-
-            val mqSenderMock = mockk<MQSenderInterface>()
-            justRun { mqSenderMock.sendMQMessage(any(), any()) }
-
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
             )
 
@@ -64,9 +56,7 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                 val altinnResponse = ReceiptExternal()
                 altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-                justRun { mqSenderMock.sendMQMessage(any(), any()) }
                 justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-                justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
                 clearMocks(altinnMock)
                 every {
                     altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
@@ -96,8 +86,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
                         }
 
                         val newDialogmoteAdressebeskyttet = generateNewDialogmote(ARBEIDSTAKER_ADRESSEBESKYTTET)
@@ -127,7 +115,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
 
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
@@ -158,8 +145,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
                         }
 
                         val newDialogmoteAdressebeskyttet = generateNewDialogmote(ARBEIDSTAKER_ADRESSEBESKYTTET)
@@ -189,7 +174,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
 
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
@@ -207,7 +191,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             handleRequest(HttpMethod.Get, urlEnhetAccess) {}
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -218,7 +201,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
                 }

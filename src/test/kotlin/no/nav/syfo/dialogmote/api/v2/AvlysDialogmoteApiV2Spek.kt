@@ -42,9 +42,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
-            val mqSenderMock = mockk<MQSenderInterface>()
             val behandlerVarselService = BehandlerVarselService(
                 database = database,
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
@@ -58,8 +56,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
             )
 
@@ -69,10 +65,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
                 justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                 clearMocks(behandlerDialogmeldingProducer)
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-                clearMocks(mqSenderMock)
-                justRun { mqSenderMock.sendMQMessage(any(), any()) }
-                clearMocks(dineSykmeldteVarselProducer)
-                justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
                 clearMocks(altinnMock)
                 every {
                     altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
@@ -104,7 +96,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                         }
 
                         with(
@@ -137,7 +128,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.AVLYST, any()) }
                         }
 
                         with(
@@ -246,7 +236,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                             verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                             clearMocks(behandlerDialogmeldingProducer)
                             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -282,7 +271,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.AVLYST, any()) }
                         }
 
                         with(
@@ -330,7 +318,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                             verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                             clearMocks(behandlerDialogmeldingProducer)
                             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -389,7 +376,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
                         }
 
                         with(
@@ -422,7 +408,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.AVLYST, any()) }
                         }
 
                         with(

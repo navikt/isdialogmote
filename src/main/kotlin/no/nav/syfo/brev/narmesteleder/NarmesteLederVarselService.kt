@@ -9,8 +9,6 @@ import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 
 class NarmesteLederVarselService(
-    private val mqSender: MQSenderInterface,
-    private val dineSykmeldteVarselProducer: DineSykmeldteVarselProducer,
     private val esyfovarselProducer: EsyfovarselProducer,
 ) {
     fun sendVarsel(
