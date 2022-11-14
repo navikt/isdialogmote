@@ -91,6 +91,44 @@ fun DatabaseInterface.getMotedeltakerArbeidstakerById(motedeltakerId: Int): PMot
     return pMotedeltakerArbeidstakerList.first()
 }
 
+const val queryGetMotedeltakerArbeidstakerByIdent =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_ARBEIDSTAKER
+        WHERE personident IN ?
+    """
+
+fun DatabaseInterface.getAllMotedeltakerArbeidstakerByIdenter(personidentQueryString: String): List<PMotedeltakerArbeidstaker> {
+    val pMotedeltakerArbeidstakerList = this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerArbeidstakerByIdent).use {
+            it.setString(1, personidentQueryString)
+            it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
+        }
+    }
+    return pMotedeltakerArbeidstakerList
+}
+
+const val queryUpdateMotedeltakerArbeidstakerPersonident =
+    """
+        UPDATE MOTEDELTAKER_ARBEIDSTAKER
+        SET personident = ?
+        WHERE personident IN ?
+    """
+
+fun DatabaseInterface.updateMotedeltakerArbeidstakerPersonident(nyPersonident: String, gamlePersonidenterQueryString: String): List<PMotedeltakerArbeidstaker> {
+    val pMotedeltakerArbeidstakerList = this.connection.use { connection ->
+        connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerPersonident).use {
+            it.setString(1, nyPersonident)
+            it.setString(2, gamlePersonidenterQueryString)
+            it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
+        }.also {
+            connection.commit()
+        }
+    }
+
+    return pMotedeltakerArbeidstakerList
+}
+
 fun ResultSet.toPMotedeltakerArbeidstaker(): PMotedeltakerArbeidstaker =
     PMotedeltakerArbeidstaker(
         id = getInt("id"),
