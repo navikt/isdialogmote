@@ -75,6 +75,7 @@ fun testEnvironment(
     outdatedDialogmoteCutoff = LocalDate.parse("2022-07-01"),
     kode6Enabled = true,
     publishDialogmotesvarEnabled = true,
+    pdlIdenthendelseConsumerEnabled = true,
 )
 
 fun testAppState() = ApplicationState(

@@ -129,16 +129,18 @@ fun main() {
             applicationState = applicationState,
             dialogmeldingService = dialogmeldingService
         )
-        val identhendelseConsumerService = IdenthendelseConsumerService(
-            kafkaConsumer = KafkaConsumer(kafkaIdenthendelseConsumerConfig(environment.kafka)),
-            applicationState = applicationState,
-        )
         launchBackgroundTask(applicationState = applicationState) {
             logger.info("Starting dialogmelding kafka consumer")
             dialogmeldingConsumerService.startConsumer()
         }
-        launchBackgroundTask(applicationState = applicationState) {
-            identhendelseConsumerService.startConsumer()
+        if (environment.pdlIdenthendelseConsumerEnabled) {
+            val identhendelseConsumerService = IdenthendelseConsumerService(
+                kafkaConsumer = KafkaConsumer(kafkaIdenthendelseConsumerConfig(environment.kafka)),
+                applicationState = applicationState,
+            )
+            launchBackgroundTask(applicationState = applicationState) {
+                identhendelseConsumerService.startConsumer()
+            }
         }
     }
 
