@@ -46,8 +46,8 @@ class PdlClient(
         val systemToken = azureAdV2Client.getSystemToken(pdlClientId)
             ?: throw RuntimeException("Failed to send request to PDL: No token was found")
 
-        val query = getPdlQuery("/pdl/hentIdent.graphql")
-        val request = PdlRequest(query, Variables(nyPersonIdent))
+        val query = getPdlQuery("/pdl/hentIdenter.graphql")
+        val request = PdlRequest(query, Variables(ident = nyPersonIdent))
 
         val response: HttpResponse = httpClient.post(pdlUrl) {
             setBody(request)
@@ -57,10 +57,10 @@ class PdlClient(
             header(NAV_CALL_ID_HEADER, callId)
         }
 
-        when (response.status) {
+        return when (response.status) {
             HttpStatusCode.OK -> {
                 val pdlIdenterReponse = response.body<PdlIdentResponse>()
-                return if (pdlIdenterReponse.errors != null && pdlIdenterReponse.errors.isNotEmpty()) {
+                if (!pdlIdenterReponse.errors.isNullOrEmpty()) {
                     COUNT_CALL_PDL_FAIL.increment()
                     pdlIdenterReponse.errors.forEach {
                         logger.error("Error while requesting ident from PersonDataLosningen: ${it.errorMessage()}")
@@ -73,8 +73,9 @@ class PdlClient(
             }
             else -> {
                 COUNT_CALL_PDL_FAIL.increment()
-                logger.error("Request with url: $pdlUrl failed with reponse code ${response.status.value}")
-                return null
+                val message = "Request with url: $pdlUrl failed with reponse code ${response.status.value}"
+                logger.error(message)
+                throw RuntimeException(message)
             }
         }
     }

@@ -9,7 +9,9 @@ import io.ktor.server.routing.*
 import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.pdl.Gradering
 import no.nav.syfo.client.pdl.PdlRequest
+import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
+import no.nav.syfo.testhelper.generator.generatePdlIdenter
 import no.nav.syfo.testhelper.generator.generatePdlPersonResponse
 import no.nav.syfo.testhelper.getRandomPort
 
@@ -25,8 +27,12 @@ class PdlMock {
         routing {
             post {
                 val pdlRequest = call.receive<PdlRequest>()
-                if (ARBEIDSTAKER_ADRESSEBESKYTTET.value == pdlRequest.variables.ident) {
+                if (ARBEIDSTAKER_ADRESSEBESKYTTET.value == pdlRequest.variables.ident && !pdlRequest.query.contains("hentIdenter")) {
                     call.respond(generatePdlPersonResponse(Gradering.STRENGT_FORTROLIG))
+                } else if (pdlRequest.query.contains("hentIdenter") && pdlRequest.variables.ident == UserConstants.ARBEIDSTAKER_TREDJE_FNR.value) {
+                    call.respond(generatePdlIdenter("enAnnenIdent"))
+                } else if (pdlRequest.query.contains("hentIdenter")) {
+                    call.respond(generatePdlIdenter(pdlRequest.variables.ident))
                 } else {
                     call.respond(generatePdlPersonResponse())
                 }

@@ -3,6 +3,7 @@ package no.nav.syfo.identhendelse.kafka
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.identhendelse.IdenthendelseService
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -14,6 +15,7 @@ import kotlin.time.Duration.Companion.seconds
 class IdenthendelseConsumerService(
     private val kafkaConsumer: KafkaConsumer<String, GenericRecord>,
     private val applicationState: ApplicationState,
+    private val identhendelseService: IdenthendelseService,
 ) {
     suspend fun startConsumer() = coroutineScope {
         kafkaConsumer.subscribe(listOf(PDL_AKTOR_TOPIC))
@@ -23,9 +25,7 @@ class IdenthendelseConsumerService(
                 val records = kafkaConsumer.poll(Duration.ofSeconds(POLL_DURATION_SECONDS))
                 if (records.count() > 0) {
                     records.forEach { record ->
-                        // TODO: Call service
-                        record.value().toKafkaIdenthendelseDTO()
-                        log.info("Successfully deserialized Kafka record")
+                        identhendelseService.handleIdenthendelse(record.value().toKafkaIdenthendelseDTO())
                     }
                     kafkaConsumer.commitSync()
                 }
@@ -37,7 +37,7 @@ class IdenthendelseConsumerService(
     }
 
     companion object {
-        private const val PDL_AKTOR_TOPIC = "pdl.aktor-v2"
+        const val PDL_AKTOR_TOPIC = "pdl.aktor-v2"
         private const val POLL_DURATION_SECONDS = 10L
         private const val DELAY_ON_ERROR_SECONDS = 60L
         private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.application.identhendelse")

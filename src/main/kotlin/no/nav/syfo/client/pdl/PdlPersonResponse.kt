@@ -62,7 +62,7 @@ enum class Gradering {
 data class PdlIdenter(
     val identer: List<PdlIdent>
 ) {
-    val gjeldendeIdent: String? = identer.firstOrNull {
+    val aktivIdent: String? = identer.firstOrNull {
         it.gruppe == IdentGruppe.FOLKEREGISTERIDENT && !it.historisk
     }?.ident
 }

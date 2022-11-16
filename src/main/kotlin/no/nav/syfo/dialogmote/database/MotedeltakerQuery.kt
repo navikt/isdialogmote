@@ -95,38 +95,35 @@ const val queryGetMotedeltakerArbeidstakerByIdent =
     """
         SELECT *
         FROM MOTEDELTAKER_ARBEIDSTAKER
-        WHERE personident IN ?
+        WHERE personident = ?
     """
 
-fun DatabaseInterface.getAllMotedeltakerArbeidstakerByIdenter(personidentQueryString: String): List<PMotedeltakerArbeidstaker> {
-    val pMotedeltakerArbeidstakerList = this.connection.use { connection ->
+fun DatabaseInterface.getMotedeltakerArbeidstakerByIdent(personident: String): List<PMotedeltakerArbeidstaker> {
+    return this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerArbeidstakerByIdent).use {
-            it.setString(1, personidentQueryString)
+            it.setString(1, personident)
             it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
         }
     }
-    return pMotedeltakerArbeidstakerList
 }
 
 const val queryUpdateMotedeltakerArbeidstakerPersonident =
     """
         UPDATE MOTEDELTAKER_ARBEIDSTAKER
         SET personident = ?
-        WHERE personident IN ?
+        WHERE personident = ?
     """
 
-fun DatabaseInterface.updateMotedeltakerArbeidstakerPersonident(nyPersonident: String, gamlePersonidenterQueryString: String): List<PMotedeltakerArbeidstaker> {
-    val pMotedeltakerArbeidstakerList = this.connection.use { connection ->
+fun DatabaseInterface.updateMotedeltakerArbeidstakerPersonident(nyPersonident: String, gammelPersonident: String) {
+    this.connection.use { connection ->
         connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerPersonident).use {
             it.setString(1, nyPersonident)
-            it.setString(2, gamlePersonidenterQueryString)
-            it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
+            it.setString(2, gammelPersonident)
+            it.executeUpdate()
         }.also {
             connection.commit()
         }
     }
-
-    return pMotedeltakerArbeidstakerList
 }
 
 fun ResultSet.toPMotedeltakerArbeidstaker(): PMotedeltakerArbeidstaker =
