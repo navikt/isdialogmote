@@ -24,7 +24,7 @@ class IdenthendelseService(
         * Update på de id'ene som får hit
         * Success?
         * */
-    fun handleIdenthendelse(identhendelse: KafkaIdenthendelseDTO) {
+    suspend fun handleIdenthendelse(identhendelse: KafkaIdenthendelseDTO) {
         val identer = identhendelse.identifikatorer.filter { it.type == IdentType.FOLKEREGISTERIDENT }
         if (identer.size > 1) {
             val nyIdent = identer.find { it.gjeldende }?.idnummer ?: throw IllegalStateException("Mangler gyldig ident fra PDL")
@@ -34,10 +34,18 @@ class IdenthendelseService(
             val motedeltakereMedGammelIdent = database.getAllMotedeltakerArbeidstakerByIdenter(queryString)
 
             if (motedeltakereMedGammelIdent.isNotEmpty()) {
-                // TODO: Dobbeltsjekke PDL at det har blitt oppdatert der?
+                checkThatPdlIsUpdated(nyIdent)
                 val oppdaterteMotedeltakere = database.updateMotedeltakerArbeidstakerPersonident(nyIdent, queryString)
-                log.info("Updated ${oppdaterteMotedeltakere.size} motedeltaker-rows based on Identhendelse from PDL")
+                log.info("Identhendelse: Updated ${oppdaterteMotedeltakere.size} motedeltaker-rows based on Identhendelse from PDL")
             }
+        }
+    }
+
+    // Erfaringer fra andre team tilsier at vi burde dobbeltsjekke at ting har blitt oppdatert i PDL før vi gjør endringer
+    private suspend fun checkThatPdlIsUpdated(nyIdent: String) {
+        val pdlIdenter = pdlClient.hentIdenter(nyIdent)
+        if (pdlIdenter?.gjeldendeIdent != nyIdent || pdlIdenter.identer.any { it.ident == nyIdent && it.historisk }) {
+            throw Exception("Ny ident er ikke aktiv ident i PDL")
         }
     }
 }
