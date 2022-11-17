@@ -157,4 +157,4 @@ spec:
     - name: PUBLISH_DIALOGMOTESVAR_ENABLED
       value: "true"
     - name: PDL_IDENTHENDELSE_CONSUMER_ENABLED
-      value: "false"
+      value: "true"
