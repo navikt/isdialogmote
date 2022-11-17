@@ -30,10 +30,9 @@ class IdenthendelseService(
                 checkThatPdlIsUpdated(nyIdent)
                 var numberOfUpdatedIdenter = 0
                 motedeltakereMedGammelIdent
-                    .map { it.personIdent.value }
-                    .forEach { gammelIdent ->
-                        database.updateMotedeltakerArbeidstakerPersonident(nyIdent, gammelIdent)
-                        numberOfUpdatedIdenter++
+                    .forEach { arbeidstaker ->
+                        val gammelIdent = arbeidstaker.personIdent.value
+                        numberOfUpdatedIdenter += database.updateMotedeltakerArbeidstakerPersonident(nyIdent, gammelIdent)
                     }
                 log.info("Identhendelse: Updated $numberOfUpdatedIdenter motedeltakere based on Identhendelse from PDL")
             }

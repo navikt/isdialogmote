@@ -114,9 +114,10 @@ const val queryUpdateMotedeltakerArbeidstakerPersonident =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.updateMotedeltakerArbeidstakerPersonident(nyPersonident: String, gammelPersonident: String) {
+fun DatabaseInterface.updateMotedeltakerArbeidstakerPersonident(nyPersonident: String, gammelPersonident: String): Int {
+    var updatedRows: Int
     this.connection.use { connection ->
-        connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerPersonident).use {
+        updatedRows = connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerPersonident).use {
             it.setString(1, nyPersonident)
             it.setString(2, gammelPersonident)
             it.executeUpdate()
@@ -124,6 +125,7 @@ fun DatabaseInterface.updateMotedeltakerArbeidstakerPersonident(nyPersonident: S
             connection.commit()
         }
     }
+    return updatedRows
 }
 
 fun ResultSet.toPMotedeltakerArbeidstaker(): PMotedeltakerArbeidstaker =
