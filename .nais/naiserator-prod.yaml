@@ -147,7 +147,7 @@ spec:
     - name: DOKDIST_FORDELING_CLIENT_ID
       value: "prod-fss.teamdokumenthandtering.saf"
     - name: OUTDATED_DIALOGMOTE_CUTOFF
-      value: "2000-07-01"
+      value: "2022-07-01"
     - name: OUTDATED_DIALOGMOTE_CRONJOB_ENABLED
       value: "true"
     - name: ALTINN_SENDING_ENABLED
@@ -155,4 +155,6 @@ spec:
     - name: KODE6_ENABLED
       value: "true"
     - name: PUBLISH_DIALOGMOTESVAR_ENABLED
+      value: "true"
+    - name: PDL_IDENTHENDELSE_CONSUMER_ENABLED
       value: "false"
