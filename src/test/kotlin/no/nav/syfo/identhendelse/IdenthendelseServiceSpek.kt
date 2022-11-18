@@ -8,7 +8,6 @@ import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerByIdent
 import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.identhendelse.kafka.IdentType
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.dropData
@@ -62,14 +61,11 @@ object IdenthendelseServiceSpek : Spek({
             describe("Happy path") {
                 it("Skal oppdatere database når arbeidstaker har fått ny ident") {
                     val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTOGenerator(hasOldPersonident = true)
-                    val identer = kafkaIdenthendelseDTO.identifikatorer
-                        .filter { it.type == IdentType.FOLKEREGISTERIDENT }
-
-                    val newIdent = identer.filter { it.gjeldende }.map { it.idnummer }.first()
-                    val oldIdent = identer.filter { it.idnummer != newIdent }.map { it.idnummer }.first()
+                    val newIdent = kafkaIdenthendelseDTO.activePersonident
+                    val oldIdent = kafkaIdenthendelseDTO.inactivePersonidenter.first()
 
                     // Populate database with new dialogmote using old ident for arbeidstaker
-                    val newDialogmote = generateNewDialogmote(personIdent = PersonIdent(oldIdent))
+                    val newDialogmote = generateNewDialogmote(personIdent = oldIdent)
                     database.connection.use { connection ->
                         connection.createNewDialogmoteWithReferences(
                             newDialogmote = newDialogmote,
@@ -100,11 +96,8 @@ object IdenthendelseServiceSpek : Spek({
 
                 it("Skal ikke oppdatere database når arbeidstaker ikke finnes i databasen") {
                     val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTOGenerator(hasOldPersonident = true)
-                    val identer = kafkaIdenthendelseDTO.identifikatorer
-                        .filter { it.type == IdentType.FOLKEREGISTERIDENT }
-
-                    val newIdent = identer.filter { it.gjeldende }.map { it.idnummer }.first()
-                    val oldIdent = "12333378910"
+                    val newIdent = kafkaIdenthendelseDTO.activePersonident
+                    val oldIdent = PersonIdent("12333378910")
 
                     // Check that arbeidstaker with old/current personident do not exist in db before update
                     val currentMotedeltakerArbeidstaker = database.getMotedeltakerArbeidstakerByIdent(oldIdent)
@@ -125,10 +118,7 @@ object IdenthendelseServiceSpek : Spek({
 
                 it("Skal ikke oppdatere database når arbeidstaker ikke har gamle identer") {
                     val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTOGenerator(hasOldPersonident = false)
-                    val identer = kafkaIdenthendelseDTO.identifikatorer
-                        .filter { it.type == IdentType.FOLKEREGISTERIDENT }
-
-                    val newIdent = identer.filter { it.gjeldende }.map { it.idnummer }.first()
+                    val newIdent = kafkaIdenthendelseDTO.activePersonident
 
                     // Check that arbeidstaker with new personident do not exist in db before update
                     val newMotedeltakerArbeidstaker = database.getMotedeltakerArbeidstakerByIdent(newIdent)
@@ -150,14 +140,10 @@ object IdenthendelseServiceSpek : Spek({
                         personident = UserConstants.ARBEIDSTAKER_TREDJE_FNR,
                         hasOldPersonident = true,
                     )
-                    val identer = kafkaIdenthendelseDTO.identifikatorer
-                        .filter { it.type == IdentType.FOLKEREGISTERIDENT }
-
-                    val newIdent = identer.filter { it.gjeldende }.map { it.idnummer }.first()
-                    val oldIdent = identer.filter { it.idnummer != newIdent }.map { it.idnummer }.first()
+                    val oldIdent = kafkaIdenthendelseDTO.inactivePersonidenter.first()
 
                     // Populate database with new dialogmote using old ident for arbeidstaker
-                    val newDialogmote = generateNewDialogmote(personIdent = PersonIdent(oldIdent))
+                    val newDialogmote = generateNewDialogmote(personIdent = oldIdent)
                     database.connection.use { connection ->
                         connection.createNewDialogmoteWithReferences(
                             newDialogmote = newDialogmote,

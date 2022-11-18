@@ -27,14 +27,19 @@ class PdlMock {
         routing {
             post {
                 val pdlRequest = call.receive<PdlRequest>()
-                if (ARBEIDSTAKER_ADRESSEBESKYTTET.value == pdlRequest.variables.ident && !pdlRequest.query.contains("hentIdenter")) {
-                    call.respond(generatePdlPersonResponse(Gradering.STRENGT_FORTROLIG))
-                } else if (pdlRequest.query.contains("hentIdenter") && pdlRequest.variables.ident == UserConstants.ARBEIDSTAKER_TREDJE_FNR.value) {
-                    call.respond(generatePdlIdenter("enAnnenIdent"))
-                } else if (pdlRequest.query.contains("hentIdenter")) {
-                    call.respond(generatePdlIdenter(pdlRequest.variables.ident))
+                val isHentIdenter = pdlRequest.query.contains("hentIdenter")
+                if (isHentIdenter) {
+                    if (pdlRequest.variables.ident == UserConstants.ARBEIDSTAKER_TREDJE_FNR.value) {
+                        call.respond(generatePdlIdenter("enAnnenIdent"))
+                    } else {
+                        call.respond(generatePdlIdenter(pdlRequest.variables.ident))
+                    }
                 } else {
-                    call.respond(generatePdlPersonResponse())
+                    if (pdlRequest.variables.ident == ARBEIDSTAKER_ADRESSEBESKYTTET.value) {
+                        call.respond(generatePdlPersonResponse(Gradering.STRENGT_FORTROLIG))
+                    } else {
+                        call.respond(generatePdlPersonResponse())
+                    }
                 }
             }
         }

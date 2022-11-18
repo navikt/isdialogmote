@@ -98,10 +98,10 @@ const val queryGetMotedeltakerArbeidstakerByIdent =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.getMotedeltakerArbeidstakerByIdent(personident: String): List<PMotedeltakerArbeidstaker> {
+fun DatabaseInterface.getMotedeltakerArbeidstakerByIdent(personident: PersonIdent): List<PMotedeltakerArbeidstaker> {
     return this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerArbeidstakerByIdent).use {
-            it.setString(1, personident)
+            it.setString(1, personident.value)
             it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
         }
     }
@@ -114,12 +114,12 @@ const val queryUpdateMotedeltakerArbeidstakerPersonident =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.updateMotedeltakerArbeidstakerPersonident(nyPersonident: String, gammelPersonident: String): Int {
+fun DatabaseInterface.updateMotedeltakerArbeidstakerPersonident(nyPersonident: PersonIdent, gammelPersonident: PersonIdent): Int {
     var updatedRows: Int
     this.connection.use { connection ->
         updatedRows = connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerPersonident).use {
-            it.setString(1, nyPersonident)
-            it.setString(2, gammelPersonident)
+            it.setString(1, nyPersonident.value)
+            it.setString(2, gammelPersonident.value)
             it.executeUpdate()
         }.also {
             connection.commit()
