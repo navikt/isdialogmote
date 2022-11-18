@@ -136,30 +136,29 @@ fun main() {
             logger.info("Starting dialogmelding kafka consumer")
             dialogmeldingConsumerService.startConsumer()
         }
-        if (environment.pdlIdenthendelseConsumerEnabled) {
-            val azureAdV2Client = AzureAdV2Client(
-                aadAppClient = environment.aadAppClient,
-                aadAppSecret = environment.aadAppSecret,
-                aadTokenEndpoint = environment.aadTokenEndpoint,
-                redisStore = cache,
-            )
-            val pdlClient = PdlClient(
-                azureAdV2Client = azureAdV2Client,
-                pdlClientId = environment.pdlClientId,
-                pdlUrl = environment.pdlUrl,
-            )
-            val identhendelseService = IdenthendelseService(
-                database = applicationDatabase,
-                pdlClient = pdlClient,
-            )
-            val identhendelseConsumerService = IdenthendelseConsumerService(
-                kafkaConsumer = KafkaConsumer(kafkaIdenthendelseConsumerConfig(environment.kafka)),
-                applicationState = applicationState,
-                identhendelseService = identhendelseService,
-            )
-            launchBackgroundTask(applicationState = applicationState) {
-                identhendelseConsumerService.startConsumer()
-            }
+
+        val azureAdV2Client = AzureAdV2Client(
+            aadAppClient = environment.aadAppClient,
+            aadAppSecret = environment.aadAppSecret,
+            aadTokenEndpoint = environment.aadTokenEndpoint,
+            redisStore = cache,
+        )
+        val pdlClient = PdlClient(
+            azureAdV2Client = azureAdV2Client,
+            pdlClientId = environment.pdlClientId,
+            pdlUrl = environment.pdlUrl,
+        )
+        val identhendelseService = IdenthendelseService(
+            database = applicationDatabase,
+            pdlClient = pdlClient,
+        )
+        val identhendelseConsumerService = IdenthendelseConsumerService(
+            kafkaConsumer = KafkaConsumer(kafkaIdenthendelseConsumerConfig(environment.kafka)),
+            applicationState = applicationState,
+            identhendelseService = identhendelseService,
+        )
+        launchBackgroundTask(applicationState = applicationState) {
+            identhendelseConsumerService.startConsumer()
         }
     }
 
