@@ -1,10 +1,24 @@
 package no.nav.syfo.identhendelse.kafka
 
+import no.nav.syfo.domain.PersonIdent
+
 // Basert på https://github.com/navikt/pdl/blob/master/libs/contract-pdl-avro/src/main/avro/no/nav/person/pdl/aktor/AktorV2.avdl
 
 data class KafkaIdenthendelseDTO(
     val identifikatorer: List<Identifikator>,
-)
+) {
+    val folkeregisterIdenter = identifikatorer.filter { it.type == IdentType.FOLKEREGISTERIDENT }
+
+    val activePersonident: PersonIdent = folkeregisterIdenter
+        .find { it.gjeldende }
+        ?.idnummer
+        ?.let { PersonIdent(it) }
+        ?: throw IllegalStateException("Mangler gyldig ident fra PDL")
+
+    val inactivePersonidenter: List<PersonIdent> = folkeregisterIdenter
+        .filter { !it.gjeldende }
+        .map { PersonIdent(it.idnummer) }
+}
 
 data class Identifikator(
     val idnummer: String,

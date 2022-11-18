@@ -21,10 +21,13 @@ import no.nav.syfo.client.altinn.createPort
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.brev.narmesteleder.dinesykmeldte.kafkaDineSykmeldteVarselProducerConfig
 import no.nav.syfo.brev.narmesteleder.domain.DineSykmeldteHendelse
+import no.nav.syfo.client.azuread.AzureAdV2Client
+import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.cronjob.cronjobModule
 import no.nav.syfo.dialogmelding.DialogmeldingService
 import no.nav.syfo.dialogmelding.kafka.DialogmeldingConsumerService
 import no.nav.syfo.dialogmelding.kafka.kafkaDialogmeldingConsumerConfig
+import no.nav.syfo.identhendelse.IdenthendelseService
 import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
 import no.nav.syfo.identhendelse.kafka.kafkaIdenthendelseConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -134,9 +137,25 @@ fun main() {
             dialogmeldingConsumerService.startConsumer()
         }
         if (environment.pdlIdenthendelseConsumerEnabled) {
+            val azureAdV2Client = AzureAdV2Client(
+                aadAppClient = environment.aadAppClient,
+                aadAppSecret = environment.aadAppSecret,
+                aadTokenEndpoint = environment.aadTokenEndpoint,
+                redisStore = cache,
+            )
+            val pdlClient = PdlClient(
+                azureAdV2Client = azureAdV2Client,
+                pdlClientId = environment.pdlClientId,
+                pdlUrl = environment.pdlUrl,
+            )
+            val identhendelseService = IdenthendelseService(
+                database = applicationDatabase,
+                pdlClient = pdlClient,
+            )
             val identhendelseConsumerService = IdenthendelseConsumerService(
                 kafkaConsumer = KafkaConsumer(kafkaIdenthendelseConsumerConfig(environment.kafka)),
                 applicationState = applicationState,
+                identhendelseService = identhendelseService,
             )
             launchBackgroundTask(applicationState = applicationState) {
                 identhendelseConsumerService.startConsumer()

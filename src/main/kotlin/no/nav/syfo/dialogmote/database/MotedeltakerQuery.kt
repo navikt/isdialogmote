@@ -91,6 +91,43 @@ fun DatabaseInterface.getMotedeltakerArbeidstakerById(motedeltakerId: Int): PMot
     return pMotedeltakerArbeidstakerList.first()
 }
 
+const val queryGetMotedeltakerArbeidstakerByIdent =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_ARBEIDSTAKER
+        WHERE personident = ?
+    """
+
+fun DatabaseInterface.getMotedeltakerArbeidstakerByIdent(personident: PersonIdent): List<PMotedeltakerArbeidstaker> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerArbeidstakerByIdent).use {
+            it.setString(1, personident.value)
+            it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
+        }
+    }
+}
+
+const val queryUpdateMotedeltakerArbeidstakerPersonident =
+    """
+        UPDATE MOTEDELTAKER_ARBEIDSTAKER
+        SET personident = ?
+        WHERE personident = ?
+    """
+
+fun DatabaseInterface.updateMotedeltakerArbeidstakerPersonident(nyPersonident: PersonIdent, gammelPersonident: PersonIdent): Int {
+    var updatedRows: Int
+    this.connection.use { connection ->
+        updatedRows = connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerPersonident).use {
+            it.setString(1, nyPersonident.value)
+            it.setString(2, gammelPersonident.value)
+            it.executeUpdate()
+        }.also {
+            connection.commit()
+        }
+    }
+    return updatedRows
+}
+
 fun ResultSet.toPMotedeltakerArbeidstaker(): PMotedeltakerArbeidstaker =
     PMotedeltakerArbeidstaker(
         id = getInt("id"),

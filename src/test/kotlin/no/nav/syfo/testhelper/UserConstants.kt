@@ -5,6 +5,7 @@ import no.nav.syfo.domain.*
 object UserConstants {
     val ARBEIDSTAKER_FNR = PersonIdent("12345678912")
     val ARBEIDSTAKER_ANNEN_FNR = PersonIdent("12345678913")
+    val ARBEIDSTAKER_TREDJE_FNR = PersonIdent("12345678914")
     val ARBEIDSTAKERNAVN = "Fornavn Etternavn"
     val ARBEIDSTAKER_VEILEDER_NO_ACCESS = PersonIdent(ARBEIDSTAKER_FNR.value.replace("2", "1"))
     val ARBEIDSTAKER_NO_JOURNALFORING = PersonIdent(ARBEIDSTAKER_FNR.value.replace("2", "3"))

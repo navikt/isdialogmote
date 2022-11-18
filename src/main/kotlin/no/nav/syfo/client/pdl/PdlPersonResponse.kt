@@ -7,6 +7,11 @@ data class PdlPersonResponse(
     val data: PdlHentPerson?
 )
 
+data class PdlIdentResponse(
+    val errors: List<PdlError>?,
+    val data: PdlHentIdenter?
+)
+
 data class PdlError(
     val message: String,
     val locations: List<PdlErrorLocation>,
@@ -26,6 +31,10 @@ data class PdlErrorExtension(
 
 data class PdlHentPerson(
     val hentPerson: PdlPerson?
+)
+
+data class PdlHentIdenter(
+    val hentIdenter: PdlIdenter?
 )
 
 data class PdlPerson(
@@ -48,6 +57,26 @@ enum class Gradering {
     STRENGT_FORTROLIG,
     FORTROLIG,
     UGRADERT
+}
+
+data class PdlIdenter(
+    val identer: List<PdlIdent>
+) {
+    val aktivIdent: String? = identer.firstOrNull {
+        it.gruppe == IdentGruppe.FOLKEREGISTERIDENT && !it.historisk
+    }?.ident
+}
+
+data class PdlIdent(
+    val ident: String,
+    val historisk: Boolean,
+    val gruppe: IdentGruppe,
+)
+
+enum class IdentGruppe {
+    FOLKEREGISTERIDENT,
+    AKTORID,
+    NPID,
 }
 
 fun PdlHentPerson.fullName(): String? {
