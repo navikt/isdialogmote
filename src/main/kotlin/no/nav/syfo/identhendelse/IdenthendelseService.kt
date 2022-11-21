@@ -18,22 +18,25 @@ class IdenthendelseService(
 
     suspend fun handleIdenthendelse(identhendelse: KafkaIdenthendelseDTO) {
         if (identhendelse.folkeregisterIdenter.size > 1) {
-            val activeIdent = identhendelse.activePersonident
-            val inactiveIdenter = identhendelse.inactivePersonidenter
+            val activeIdent = identhendelse.getActivePersonident()
+            if (activeIdent != null) {
+                val inactiveIdenter = identhendelse.getInactivePersonidenter()
+                val motedeltakereWithOldIdent = inactiveIdenter.flatMap { personident ->
+                    database.getMotedeltakerArbeidstakerByIdent(personident)
+                }
 
-            val motedeltakereWithOldIdent = inactiveIdenter.flatMap { personident ->
-                database.getMotedeltakerArbeidstakerByIdent(personident)
-            }
-
-            if (motedeltakereWithOldIdent.isNotEmpty()) {
-                checkThatPdlIsUpdated(activeIdent)
-                var numberOfUpdatedIdenter = 0
-                motedeltakereWithOldIdent
-                    .forEach { arbeidstaker ->
-                        val inactiveIdent = arbeidstaker.personIdent
-                        numberOfUpdatedIdenter += database.updateMotedeltakerArbeidstakerPersonident(activeIdent, inactiveIdent)
-                    }
-                log.info("Identhendelse: Updated $numberOfUpdatedIdenter motedeltakere based on Identhendelse from PDL")
+                if (motedeltakereWithOldIdent.isNotEmpty()) {
+                    checkThatPdlIsUpdated(activeIdent)
+                    var numberOfUpdatedIdenter = 0
+                    motedeltakereWithOldIdent
+                        .forEach { arbeidstaker ->
+                            val inactiveIdent = arbeidstaker.personIdent
+                            numberOfUpdatedIdenter += database.updateMotedeltakerArbeidstakerPersonident(activeIdent, inactiveIdent)
+                        }
+                    log.info("Identhendelse: Updated $numberOfUpdatedIdenter motedeltakere based on Identhendelse from PDL")
+                }
+            } else {
+                log.warn("Mangler gyldig ident fra PDL")
             }
         }
     }

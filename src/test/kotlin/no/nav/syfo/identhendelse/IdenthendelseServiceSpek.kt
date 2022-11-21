@@ -61,8 +61,8 @@ object IdenthendelseServiceSpek : Spek({
             describe("Happy path") {
                 it("Skal oppdatere database når arbeidstaker har fått ny ident") {
                     val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTOGenerator(hasOldPersonident = true)
-                    val newIdent = kafkaIdenthendelseDTO.activePersonident
-                    val oldIdent = kafkaIdenthendelseDTO.inactivePersonidenter.first()
+                    val newIdent = kafkaIdenthendelseDTO.getActivePersonident()!!
+                    val oldIdent = kafkaIdenthendelseDTO.getInactivePersonidenter().first()
 
                     // Populate database with new dialogmote using old ident for arbeidstaker
                     val newDialogmote = generateNewDialogmote(personIdent = oldIdent)
@@ -96,7 +96,7 @@ object IdenthendelseServiceSpek : Spek({
 
                 it("Skal ikke oppdatere database når arbeidstaker ikke finnes i databasen") {
                     val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTOGenerator(hasOldPersonident = true)
-                    val newIdent = kafkaIdenthendelseDTO.activePersonident
+                    val newIdent = kafkaIdenthendelseDTO.getActivePersonident()!!
                     val oldIdent = PersonIdent("12333378910")
 
                     // Check that arbeidstaker with old/current personident do not exist in db before update
@@ -118,7 +118,7 @@ object IdenthendelseServiceSpek : Spek({
 
                 it("Skal ikke oppdatere database når arbeidstaker ikke har gamle identer") {
                     val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTOGenerator(hasOldPersonident = false)
-                    val newIdent = kafkaIdenthendelseDTO.activePersonident
+                    val newIdent = kafkaIdenthendelseDTO.getActivePersonident()!!
 
                     // Check that arbeidstaker with new personident do not exist in db before update
                     val newMotedeltakerArbeidstaker = database.getMotedeltakerArbeidstakerByIdent(newIdent)
@@ -140,7 +140,7 @@ object IdenthendelseServiceSpek : Spek({
                         personident = UserConstants.ARBEIDSTAKER_TREDJE_FNR,
                         hasOldPersonident = true,
                     )
-                    val oldIdent = kafkaIdenthendelseDTO.inactivePersonidenter.first()
+                    val oldIdent = kafkaIdenthendelseDTO.getInactivePersonidenter().first()
 
                     // Populate database with new dialogmote using old ident for arbeidstaker
                     val newDialogmote = generateNewDialogmote(personIdent = oldIdent)

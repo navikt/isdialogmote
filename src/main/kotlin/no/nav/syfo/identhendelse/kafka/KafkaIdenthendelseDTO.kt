@@ -9,13 +9,12 @@ data class KafkaIdenthendelseDTO(
 ) {
     val folkeregisterIdenter = identifikatorer.filter { it.type == IdentType.FOLKEREGISTERIDENT }
 
-    val activePersonident: PersonIdent = folkeregisterIdenter
+    fun getActivePersonident(): PersonIdent? = folkeregisterIdenter
         .find { it.gjeldende }
         ?.idnummer
         ?.let { PersonIdent(it) }
-        ?: throw IllegalStateException("Mangler gyldig ident fra PDL")
 
-    val inactivePersonidenter: List<PersonIdent> = folkeregisterIdenter
+    fun getInactivePersonidenter(): List<PersonIdent> = folkeregisterIdenter
         .filter { !it.gjeldende }
         .map { PersonIdent(it.idnummer) }
 }
