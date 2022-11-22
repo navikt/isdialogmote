@@ -6,6 +6,7 @@ import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerByIdent
 import no.nav.syfo.dialogmote.database.updateMotedeltakerArbeidstakerPersonident
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.identhendelse.kafka.KafkaIdenthendelseDTO
+import no.nav.syfo.metric.COUNT_KAFKA_CONSUMER_PDL_AKTOR_UPDATES
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -34,6 +35,7 @@ class IdenthendelseService(
                             numberOfUpdatedIdenter += database.updateMotedeltakerArbeidstakerPersonident(activeIdent, inactiveIdent)
                         }
                     log.info("Identhendelse: Updated $numberOfUpdatedIdenter motedeltakere based on Identhendelse from PDL")
+                    COUNT_KAFKA_CONSUMER_PDL_AKTOR_UPDATES.increment(numberOfUpdatedIdenter.toDouble())
                 }
             } else {
                 log.warn("Mangler gyldig ident fra PDL")

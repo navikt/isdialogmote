@@ -4,6 +4,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.identhendelse.IdenthendelseService
+import no.nav.syfo.metric.COUNT_KAFKA_CONSUMER_PDL_AKTOR_TOMBSTONE
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -25,7 +26,12 @@ class IdenthendelseConsumerService(
                 val records = kafkaConsumer.poll(Duration.ofSeconds(POLL_DURATION_SECONDS))
                 if (records.count() > 0) {
                     records.forEach { record ->
-                        identhendelseService.handleIdenthendelse(record.value().toKafkaIdenthendelseDTO())
+                        if (record.value() != null) {
+                            identhendelseService.handleIdenthendelse(record.value().toKafkaIdenthendelseDTO())
+                        } else {
+                            log.warn("Identhendelse: Value of ConsumerRecord from topic $PDL_AKTOR_TOPIC is null, probably due to a tombstone. Contact the owner of the topic if an error is suspected")
+                            COUNT_KAFKA_CONSUMER_PDL_AKTOR_TOMBSTONE.increment()
+                        }
                     }
                     kafkaConsumer.commitSync()
                 }
