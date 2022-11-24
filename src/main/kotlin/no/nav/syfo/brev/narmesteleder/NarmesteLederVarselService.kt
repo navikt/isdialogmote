@@ -1,10 +1,8 @@
 package no.nav.syfo.brev.narmesteleder
 
-import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselHendelseType
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselNarmesteLederHendelse
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 

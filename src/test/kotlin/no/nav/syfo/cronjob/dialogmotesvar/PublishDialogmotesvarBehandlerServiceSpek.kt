@@ -1,18 +1,24 @@
 package no.nav.syfo.cronjob.dialogmotesvar
 
-import io.mockk.*
+import io.mockk.clearMocks
+import io.mockk.justRun
+import io.mockk.mockk
+import java.time.OffsetDateTime
+import java.util.*
 import no.nav.syfo.dialogmote.api.domain.Dialogmotesvar
 import no.nav.syfo.dialogmote.api.domain.SenderType
 import no.nav.syfo.dialogmote.database.getMotedeltakerBehandlerVarselSvar
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.ExternalMockEnvironment
+import no.nav.syfo.testhelper.UserConstants
+import no.nav.syfo.testhelper.createBehandlerVarsel
+import no.nav.syfo.testhelper.createBehandlerVarselSvar
+import no.nav.syfo.testhelper.dropData
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.OffsetDateTime
-import java.util.*
 
 class PublishDialogmotesvarBehandlerServiceSpek : Spek({
     val externalMockEnvironment = ExternalMockEnvironment.getInstance()

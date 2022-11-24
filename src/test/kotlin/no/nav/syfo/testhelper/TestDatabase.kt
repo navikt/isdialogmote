@@ -1,15 +1,24 @@
 package no.nav.syfo.testhelper
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
-import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.application.database.toList
-import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.domain.*
-import org.flywaydb.core.Flyway
 import java.sql.Connection
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
+import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.application.database.toList
+import no.nav.syfo.dialogmote.database.getDialogmote
+import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerVarsel
+import no.nav.syfo.dialogmote.database.getReferat
+import no.nav.syfo.dialogmote.database.updateMoteStatus
+import no.nav.syfo.dialogmote.database.updateMotedeltakerArbeidstakerBrevBestillingsId
+import no.nav.syfo.dialogmote.database.updateMotedeltakerArbeidstakerVarselJournalpostId
+import no.nav.syfo.dialogmote.database.updateReferatBrevBestillingsId
+import no.nav.syfo.dialogmote.database.updateReferatJournalpostIdArbeidstaker
+import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import org.flywaydb.core.Flyway
 
 class TestDatabase : DatabaseInterface {
     private val pg: EmbeddedPostgres

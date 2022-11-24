@@ -1,14 +1,25 @@
 package no.nav.syfo.dialogmote
 
-import io.mockk.*
-import kotlinx.coroutines.*
+import io.mockk.clearMocks
+import io.mockk.coEvery
+import io.mockk.justRun
+import io.mockk.mockk
+import io.mockk.verify
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import no.nav.syfo.application.Unbounded
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.altinn.createAltinnMelding
-import no.nav.syfo.client.oppfolgingstilfelle.*
+import no.nav.syfo.client.oppfolgingstilfelle.ARBEIDSGIVERPERIODE_DAYS
+import no.nav.syfo.client.oppfolgingstilfelle.Oppfolgingstilfelle
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
@@ -16,9 +27,6 @@ import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.mock.narmesteLeder
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.*
 
 object VarselServiceSpek : Spek({
 

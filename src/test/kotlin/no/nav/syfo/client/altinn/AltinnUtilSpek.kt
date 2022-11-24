@@ -1,12 +1,12 @@
 package no.nav.syfo.client.altinn
 
+import java.util.*
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.testhelper.UserConstants
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.util.*
 
 object AltinnUtilSpek : Spek({
 

@@ -1,6 +1,16 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.client.pdl.*
+import no.nav.syfo.client.pdl.Adressebeskyttelse
+import no.nav.syfo.client.pdl.Gradering
+import no.nav.syfo.client.pdl.IdentGruppe
+import no.nav.syfo.client.pdl.PdlHentIdenter
+import no.nav.syfo.client.pdl.PdlHentPerson
+import no.nav.syfo.client.pdl.PdlIdent
+import no.nav.syfo.client.pdl.PdlIdentResponse
+import no.nav.syfo.client.pdl.PdlIdenter
+import no.nav.syfo.client.pdl.PdlPerson
+import no.nav.syfo.client.pdl.PdlPersonNavn
+import no.nav.syfo.client.pdl.PdlPersonResponse
 import no.nav.syfo.testhelper.UserConstants
 
 fun generatePdlPersonResponse(gradering: Gradering? = null) = PdlPersonResponse(

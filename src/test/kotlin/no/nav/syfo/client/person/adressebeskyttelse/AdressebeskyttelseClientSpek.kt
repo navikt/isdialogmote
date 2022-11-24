@@ -1,7 +1,13 @@
 package no.nav.syfo.client.person.adressebeskyttelse
 
 import io.ktor.server.testing.TestApplicationEngine
-import io.mockk.*
+import io.mockk.clearMocks
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.justRun
+import io.mockk.mockk
+import io.mockk.verify
+import java.time.LocalDateTime
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
@@ -13,7 +19,6 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.LocalDateTime
 
 class AdressebeskyttelseClientSpek : Spek({
 

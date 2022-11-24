@@ -1,14 +1,20 @@
 package no.nav.syfo.testhelper.mock
 
-import io.ktor.server.application.call
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.call
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.server.response.respond
+import io.ktor.server.routing.get
+import io.ktor.server.routing.routing
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.*
 import no.nav.syfo.application.api.authentication.installContentNegotiation
-import no.nav.syfo.client.narmesteleder.*
+import no.nav.syfo.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
+import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonStatus
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
@@ -18,8 +24,6 @@ import no.nav.syfo.testhelper.UserConstants.PERSON_TLF
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.getRandomPort
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import java.time.*
-import java.util.UUID
 
 val narmesteLeder = NarmesteLederRelasjonDTO(
     uuid = UUID.randomUUID().toString(),

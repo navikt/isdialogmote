@@ -1,6 +1,8 @@
 package no.nav.syfo.testhelper
 
-import no.nav.syfo.domain.*
+import no.nav.syfo.domain.EnhetNr
+import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Virksomhetsnummer
 
 object UserConstants {
     val ARBEIDSTAKER_FNR = PersonIdent("12345678912")

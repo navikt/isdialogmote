@@ -1,6 +1,17 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.dialogmote.api.domain.*
+import java.time.LocalDateTime
+import no.nav.syfo.dialogmote.api.domain.AvlysDialogmoteDTO
+import no.nav.syfo.dialogmote.api.domain.AvlysningDTO
+import no.nav.syfo.dialogmote.api.domain.EndreTidStedBegrunnelseDTO
+import no.nav.syfo.dialogmote.api.domain.EndreTidStedDialogmoteDTO
+import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
+import no.nav.syfo.dialogmote.api.domain.NewDialogmoteTidStedDTO
+import no.nav.syfo.dialogmote.api.domain.NewDialogmotedeltakerAnnenDTO
+import no.nav.syfo.dialogmote.api.domain.NewDialogmotedeltakerArbeidsgiverDTO
+import no.nav.syfo.dialogmote.api.domain.NewDialogmotedeltakerArbeidstakerDTO
+import no.nav.syfo.dialogmote.api.domain.NewDialogmotedeltakerBehandlerDTO
+import no.nav.syfo.dialogmote.api.domain.NewReferatDTO
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.domain.PersonIdent
@@ -9,7 +20,6 @@ import no.nav.syfo.testhelper.UserConstants.BEHANDLER_KONTOR
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_NAVN
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_REF
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
-import java.time.LocalDateTime
 
 fun generateAvlysningDTO() =
     AvlysningDTO(

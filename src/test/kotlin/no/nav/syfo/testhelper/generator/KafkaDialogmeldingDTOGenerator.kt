@@ -1,10 +1,17 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.dialogmelding.domain.*
-import no.nav.syfo.dialogmelding.kafka.*
-import no.nav.syfo.domain.PersonIdent
 import java.time.LocalDateTime
 import java.util.*
+import no.nav.syfo.dialogmelding.domain.ForesporselType
+import no.nav.syfo.dialogmelding.domain.Kodeverk
+import no.nav.syfo.dialogmelding.domain.SvarType
+import no.nav.syfo.dialogmelding.kafka.Dialogmelding
+import no.nav.syfo.dialogmelding.kafka.Foresporsel
+import no.nav.syfo.dialogmelding.kafka.InnkallingMoterespons
+import no.nav.syfo.dialogmelding.kafka.KafkaDialogmeldingDTO
+import no.nav.syfo.dialogmelding.kafka.TemaKode
+import no.nav.syfo.dialogmelding.kafka.TypeForesp
+import no.nav.syfo.domain.PersonIdent
 
 fun generateKafkaDialogmeldingDTO(
     msgId: String? = null,

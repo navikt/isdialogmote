@@ -1,8 +1,11 @@
 package no.nav.syfo.application.api
 
-import io.ktor.http.*
-import io.ktor.server.routing.*
-import io.ktor.server.testing.*
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.isSuccess
+import io.ktor.server.routing.routing
+import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.handleRequest
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.testhelper.TestDatabase
 import no.nav.syfo.testhelper.TestDatabaseNotResponding

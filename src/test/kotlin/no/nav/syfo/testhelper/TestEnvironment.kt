@@ -1,8 +1,10 @@
 package no.nav.syfo.testhelper
 
-import no.nav.syfo.application.*
 import java.net.ServerSocket
 import java.time.LocalDate
+import no.nav.syfo.application.ApplicationEnvironmentKafka
+import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.application.Environment
 
 fun testEnvironment(
     kafkaBootstrapServers: String,
