@@ -21,7 +21,6 @@ import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
 import no.nav.syfo.application.launchBackgroundTask
-import no.nav.syfo.application.mq.MQSender
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.kafkaBrukernotifikasjonProducerConfig
 import no.nav.syfo.brev.behandler.BehandlerVarselService
@@ -31,12 +30,9 @@ import no.nav.syfo.brev.behandler.kafka.kafkaBehandlerDialogmeldingProducerConfi
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselHendelse
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.esyfovarsel.kafkaEsyfovarselConfig
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.kafkaDineSykmeldteVarselProducerConfig
-import no.nav.syfo.brev.narmesteleder.domain.DineSykmeldteHendelse
+import no.nav.syfo.client.altinn.createPort
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.pdl.PdlClient
-import no.nav.syfo.client.altinn.createPort
 import no.nav.syfo.cronjob.cronjobModule
 import no.nav.syfo.dialogmelding.DialogmeldingService
 import no.nav.syfo.dialogmelding.kafka.DialogmeldingConsumerService
