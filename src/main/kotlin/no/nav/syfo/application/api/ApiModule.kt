@@ -16,7 +16,6 @@ import no.nav.syfo.application.api.authentication.installMetrics
 import no.nav.syfo.application.api.authentication.installStatusPages
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
@@ -24,7 +23,6 @@ import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.narmesteleder.NarmesteLederAccessService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.brev.narmesteleder.registerNarmestelederBrevApi
 import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.azuread.AzureAdV2Client

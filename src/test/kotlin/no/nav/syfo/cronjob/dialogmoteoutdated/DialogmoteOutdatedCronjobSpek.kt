@@ -75,8 +75,8 @@ class DialogmoteOutdatedCronjobSpek : Spek({
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
-            val esyfovarselHendelse = mockk<EsyfovarselNarmesteLederHendelse>(relaxed=true)
-            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed=true)
+            val esyfovarselHendelse = mockk<EsyfovarselNarmesteLederHendelse>(relaxed = true)
+            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(dialogmelding = any()) }
