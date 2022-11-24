@@ -42,3 +42,30 @@ fun generatePdlHentPerson(
         )
     )
 }
+
+fun generatePdlIdenter(
+    personident: String,
+) = PdlIdentResponse(
+    data = PdlHentIdenter(
+        hentIdenter = PdlIdenter(
+            identer = listOf(
+                PdlIdent(
+                    ident = personident,
+                    historisk = false,
+                    gruppe = IdentGruppe.FOLKEREGISTERIDENT,
+                ),
+                PdlIdent(
+                    ident = personident.toFakeOldIdent(),
+                    historisk = true,
+                    gruppe = IdentGruppe.FOLKEREGISTERIDENT,
+                ),
+            ),
+        ),
+    ),
+    errors = null,
+)
+
+private fun String.toFakeOldIdent(): String {
+    val substring = this.drop(1)
+    return "9$substring"
+}

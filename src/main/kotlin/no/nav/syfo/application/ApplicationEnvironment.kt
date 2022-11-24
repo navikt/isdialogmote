@@ -71,7 +71,6 @@ data class Environment(
     val outdatedDialogmoteCutoff: LocalDate = LocalDate.parse(getEnvVar("OUTDATED_DIALOGMOTE_CUTOFF")),
     val kode6Enabled: Boolean = getEnvVar("KODE6_ENABLED").toBoolean(),
     val publishDialogmotesvarEnabled: Boolean = getEnvVar("PUBLISH_DIALOGMOTESVAR_ENABLED").toBoolean(),
-    val pdlIdenthendelseConsumerEnabled: Boolean = getEnvVar("PDL_IDENTHENDELSE_CONSUMER_ENABLED").toBoolean(),
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$isdialogmoteDbHost:$isdialogmoteDbPort/$isdialogmoteDbName"
