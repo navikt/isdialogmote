@@ -19,6 +19,7 @@ data class KafkaDialogmeldingDTO(
 
 data class Dialogmelding(
     val id: String,
+    val signaturDato: LocalDateTime,
     val innkallingMoterespons: InnkallingMoterespons?,
 )
 
@@ -53,6 +54,7 @@ fun KafkaDialogmeldingDTO.toDialogmeldingSvarAlternativer(): List<DialogmeldingS
             arbeidstakerPersonIdent = PersonIdent(this.personIdentPasient),
             behandlerPersonIdent = PersonIdent(this.personIdentBehandler),
             innkallingDialogmoteSvar = innkallingDialogmoteSvar,
+            opprettetTidspunkt = this.dialogmelding.signaturDato,
         )
     }
 }

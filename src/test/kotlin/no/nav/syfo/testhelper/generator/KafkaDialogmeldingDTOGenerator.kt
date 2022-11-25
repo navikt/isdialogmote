@@ -26,6 +26,7 @@ fun generateKafkaDialogmeldingDTO(
     dialogmelding = Dialogmelding(
         id = UUID.randomUUID().toString(),
         innkallingMoterespons = innkallingMoterespons,
+        signaturDato = LocalDateTime.now(),
     )
 )
 
