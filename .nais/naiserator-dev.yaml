@@ -76,6 +76,9 @@ spec:
         - application: isdialogmotepdfgen
         - application: isnarmesteleder
         - application: syfobehandlendeenhet
+        - application: esyfovarsel
+          namespace: team-esyfo
+          cluster: dev-gcp
   azure:
     application:
       enabled: true

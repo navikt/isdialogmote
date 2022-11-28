@@ -17,7 +17,7 @@ class EsyfovarselProducer(private val kafkaEsyfovarselProducer: KafkaProducer<St
                 )
             ).get()
         } catch (e: Exception) {
-            log.error("Exception was thrown when attempting to send KDialogmoteStatusEndring with id {}: ${e.message}")
+            log.error("Exception was thrown when attempting to send hendelse esyfovarsel: ${e.message}")
             throw e
         }
     }
