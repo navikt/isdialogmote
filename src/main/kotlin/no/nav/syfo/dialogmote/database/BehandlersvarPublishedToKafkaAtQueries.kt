@@ -19,6 +19,7 @@ const val queryGetUnpublishedBehandlersvar =
         INNER JOIN mote m ON mb.mote_id = m.id
         INNER JOIN motedeltaker_arbeidstaker ma ON m.id = ma.mote_id
         WHERE s.svar_published_to_kafka_at IS NULL
+        AND s.valid IS TRUE
         LIMIT 100;
     """
 
