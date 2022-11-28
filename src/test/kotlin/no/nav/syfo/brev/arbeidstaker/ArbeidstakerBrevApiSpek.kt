@@ -26,7 +26,6 @@ import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProduc
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselNarmesteLederHendelse
-import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.tokendings.TokendingsClient
@@ -83,8 +82,6 @@ class ArbeidstakerBrevApiSpek : Spek({
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 
             val esyfovarselHendelse = mockk<EsyfovarselNarmesteLederHendelse>(relaxed = true)
-            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
-            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
@@ -92,7 +89,6 @@ class ArbeidstakerBrevApiSpek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 altinnMock = altinnMock,
-                esyfovarselProducer = esyfovarselProducerMock
             )
             val cache = RedisStore(
                 JedisPool(

@@ -17,7 +17,7 @@ fun Application.testApiModule(
     behandlerVarselService: BehandlerVarselService = mockk(),
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
     altinnMock: ICorrespondenceAgencyExternalBasic = mockk(),
-    esyfovarselProducer: EsyfovarselProducer = mockk(),
+    esyfovarselProducer: EsyfovarselProducer = mockk(relaxed = true),
 ) {
     val cache = RedisStore(
         JedisPool(
