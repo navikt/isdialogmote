@@ -14,8 +14,8 @@ fun kafkaEsyfovarselConfig(
     return Properties().apply {
         putAll(commonKafkaAivenProducerConfig(applicationEnvironmentKafka))
 
-        this[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.canonicalName
-        this[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JacksonKafkaSerializer::class.java.canonicalName
+        this[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
+        this[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JacksonKafkaSerializer::class.java
 
         remove(SaslConfigs.SASL_MECHANISM)
         remove(SaslConfigs.SASL_JAAS_CONFIG)
