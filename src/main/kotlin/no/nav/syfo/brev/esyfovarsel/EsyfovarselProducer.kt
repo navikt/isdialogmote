@@ -1,5 +1,6 @@
 package no.nav.syfo.brev.esyfovarsel
 
+import com.fasterxml.jackson.annotation.*
 import java.io.Serializable
 import java.util.*
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -27,7 +28,7 @@ class EsyfovarselProducer(private val kafkaEsyfovarselProducer: KafkaProducer<St
         private val log = LoggerFactory.getLogger(EsyfovarselProducer::class.java)
     }
 }
-
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 sealed interface EsyfovarselHendelse : Serializable {
     val type: HendelseType
     var data: Any?
