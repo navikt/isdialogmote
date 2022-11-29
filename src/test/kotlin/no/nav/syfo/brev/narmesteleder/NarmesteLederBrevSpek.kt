@@ -26,7 +26,7 @@ import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProduc
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.brev.domain.BrevType
 import no.nav.syfo.brev.esyfovarsel.HendelseType
-import no.nav.syfo.brev.esyfovarsel.EsyfovarselNarmesteLederHendelse
+import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
 import no.nav.syfo.client.azuread.AzureAdV2Client
@@ -84,7 +84,7 @@ object NarmesteLederBrevSpek : Spek({
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 
-            val esyfovarselHendelse = mockk<EsyfovarselNarmesteLederHendelse>(relaxed = true)
+            val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
@@ -192,7 +192,7 @@ object NarmesteLederBrevSpek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
-                        val esyfovarselHendelse = EsyfovarselNarmesteLederHendelse(
+                        val esyfovarselHendelse = NarmesteLederHendelse(
                             type = HendelseType.NL_DIALOGMOTE_INNKALT,
                             data = null,
                             narmesteLederFnr = "98765432101",
@@ -494,7 +494,7 @@ object NarmesteLederBrevSpek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
-                        val esyfovarselHendelse = EsyfovarselNarmesteLederHendelse(
+                        val esyfovarselHendelse = NarmesteLederHendelse(
                             type = HendelseType.NL_DIALOGMOTE_INNKALT,
                             data = null,
                             narmesteLederFnr = "98765432101",
@@ -514,7 +514,7 @@ object NarmesteLederBrevSpek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
-                        val esyfovarselHendelse = EsyfovarselNarmesteLederHendelse(
+                        val esyfovarselHendelse = NarmesteLederHendelse(
                             type = HendelseType.NL_DIALOGMOTE_INNKALT,
                             data = null,
                             narmesteLederFnr = "98765432101",

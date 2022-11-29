@@ -1,7 +1,7 @@
 package no.nav.syfo.brev.narmesteleder
 
 import no.nav.syfo.brev.esyfovarsel.HendelseType
-import no.nav.syfo.brev.esyfovarsel.EsyfovarselNarmesteLederHendelse
+import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
@@ -13,7 +13,7 @@ class NarmesteLederVarselService(
         narmesteLeder: NarmesteLederRelasjonDTO,
         varseltype: MotedeltakerVarselType
     ) {
-        val hendelse = EsyfovarselNarmesteLederHendelse(
+        val hendelse = NarmesteLederHendelse(
             getNaermesteLederVarselType(varseltype),
             null,
             narmesteLeder.narmesteLederPersonIdentNumber,

@@ -34,7 +34,7 @@ sealed interface EsyfovarselHendelse : Serializable {
     var data: Any?
 }
 
-data class EsyfovarselNarmesteLederHendelse(
+data class NarmesteLederHendelse(
     override var type: HendelseType,
     override var data: Any?,
     val narmesteLederFnr: String,
