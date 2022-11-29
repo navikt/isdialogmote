@@ -29,7 +29,7 @@ import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProduc
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
-import no.nav.syfo.brev.esyfovarsel.EsyfovarselHendelseType
+import no.nav.syfo.brev.esyfovarsel.HendelseType
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselNarmesteLederHendelse
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
@@ -83,7 +83,7 @@ class PostDialogmoteApiV2Spek : Spek({
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
 
             val esyfovarselHendelse = EsyfovarselNarmesteLederHendelse(
-                type = EsyfovarselHendelseType.NL_DIALOGMOTE_INNKALT,
+                type = HendelseType.NL_DIALOGMOTE_INNKALT,
                 data = null,
                 narmesteLederFnr = "98765432101",
                 narmesteLederNavn = "narmesteLederNavn",

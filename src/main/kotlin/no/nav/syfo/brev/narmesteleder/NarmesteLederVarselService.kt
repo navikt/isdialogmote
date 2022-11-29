@@ -1,6 +1,6 @@
 package no.nav.syfo.brev.narmesteleder
 
-import no.nav.syfo.brev.esyfovarsel.EsyfovarselHendelseType
+import no.nav.syfo.brev.esyfovarsel.HendelseType
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselNarmesteLederHendelse
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
@@ -24,12 +24,12 @@ class NarmesteLederVarselService(
         esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
     }
 
-    private fun getNaermesteLederVarselType(motedeltakerVarselType: MotedeltakerVarselType): EsyfovarselHendelseType {
+    private fun getNaermesteLederVarselType(motedeltakerVarselType: MotedeltakerVarselType): HendelseType {
         return when (motedeltakerVarselType) {
-            MotedeltakerVarselType.INNKALT -> EsyfovarselHendelseType.NL_DIALOGMOTE_INNKALT
-            MotedeltakerVarselType.AVLYST -> EsyfovarselHendelseType.NL_DIALOGMOTE_AVLYST
-            MotedeltakerVarselType.NYTT_TID_STED -> EsyfovarselHendelseType.NL_DIALOGMOTE_NYTT_TID_STED
-            MotedeltakerVarselType.REFERAT -> EsyfovarselHendelseType.NL_DIALOGMOTE_REFERAT
+            MotedeltakerVarselType.INNKALT -> HendelseType.NL_DIALOGMOTE_INNKALT
+            MotedeltakerVarselType.AVLYST -> HendelseType.NL_DIALOGMOTE_AVLYST
+            MotedeltakerVarselType.NYTT_TID_STED -> HendelseType.NL_DIALOGMOTE_NYTT_TID_STED
+            MotedeltakerVarselType.REFERAT -> HendelseType.NL_DIALOGMOTE_REFERAT
         }
     }
 }

@@ -29,12 +29,12 @@ class EsyfovarselProducer(private val kafkaEsyfovarselProducer: KafkaProducer<St
 }
 
 sealed interface EsyfovarselHendelse : Serializable {
-    val type: EsyfovarselHendelseType
+    val type: HendelseType
     var data: Any?
 }
 
 data class EsyfovarselNarmesteLederHendelse(
-    override var type: EsyfovarselHendelseType,
+    override var type: HendelseType,
     override var data: Any?,
     val narmesteLederFnr: String,
     val narmesteLederNavn: String?,
@@ -43,13 +43,13 @@ data class EsyfovarselNarmesteLederHendelse(
 ) : EsyfovarselHendelse
 
 data class ArbeidstakerHendelse(
-    override val type: EsyfovarselHendelseType,
+    override val type: HendelseType,
     override var data: Any?,
     val arbeidstakerFnr: String,
     val orgnummer: String?
 ) : EsyfovarselHendelse
 
-enum class EsyfovarselHendelseType {
+enum class HendelseType {
     NL_DIALOGMOTE_INNKALT,
     SM_DIALOGMOTE_INNKALT,
     NL_DIALOGMOTE_AVLYST,
