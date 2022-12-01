@@ -380,7 +380,6 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            // TODO: ANY() --> MOCKK, TYPE-- TYPE
                             verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
                             clearMocks(esyfovarselProducerMock)
                         }
