@@ -28,6 +28,7 @@ class EsyfovarselProducer(private val kafkaEsyfovarselProducer: KafkaProducer<St
         private val log = LoggerFactory.getLogger(EsyfovarselProducer::class.java)
     }
 }
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 sealed interface EsyfovarselHendelse : Serializable {
     val type: HendelseType

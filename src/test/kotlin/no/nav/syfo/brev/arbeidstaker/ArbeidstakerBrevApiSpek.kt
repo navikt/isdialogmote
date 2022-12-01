@@ -10,11 +10,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.mockk.clearMocks
-import io.mockk.every
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 import java.time.LocalDateTime
 import java.util.*
 import kotlinx.coroutines.runBlocking
@@ -25,6 +21,7 @@ import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
@@ -41,18 +38,12 @@ import no.nav.syfo.dialogmote.database.getDialogmote
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.testhelper.ExternalMockEnvironment
-import no.nav.syfo.testhelper.UserConstants
+import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
-import no.nav.syfo.testhelper.addDummyDeltakere
-import no.nav.syfo.testhelper.dropData
-import no.nav.syfo.testhelper.generateJWTNavIdent
-import no.nav.syfo.testhelper.generateJWTTokenx
 import no.nav.syfo.testhelper.generator.generateAvlysDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewReferatDTO
-import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
@@ -81,7 +72,9 @@ class ArbeidstakerBrevApiSpek : Spek({
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 
+            val esyfovarselProducer = mockk<EsyfovarselProducer>(relaxed = true)
             val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
+            justRun { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
@@ -178,8 +171,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-//                            ve rify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-//                            clearMocks(mqSenderMock)
+                            verify(exactly = 1) { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            clearMocks(esyfovarselProducer)
                         }
 
                         with(
@@ -348,12 +341,12 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                     it("should return OK if request is successful") {
                         for (
-                            dialogmoteDTO in listOf(
-                                newDialogmoteLukket,
-                                newDialogmoteAvlyst1,
-                                newDialogmoteAvlyst2,
-                                newDialogmoteInnkalt
-                            )
+                        dialogmoteDTO in listOf(
+                            newDialogmoteLukket,
+                            newDialogmoteAvlyst1,
+                            newDialogmoteAvlyst2,
+                            newDialogmoteInnkalt
+                        )
                         ) {
                             with(
                                 handleRequest(HttpMethod.Post, urlMote) {
