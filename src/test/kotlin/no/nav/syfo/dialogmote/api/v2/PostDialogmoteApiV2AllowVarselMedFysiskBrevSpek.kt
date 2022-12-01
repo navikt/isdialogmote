@@ -21,6 +21,7 @@ import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.esyfovarsel.*
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
@@ -59,11 +60,23 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
+            val esyfovarselHendelse = NarmesteLederHendelse(
+                type = HendelseType.NL_DIALOGMOTE_INNKALT,
+                narmesteLederFnr = "98765432101",
+                narmesteLederNavn = "narmesteLederNavn",
+                arbeidstakerFnr = "12345678912",
+                orgnummer = "934567897",
+                data = null
+            )
+
+            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
                 altinnMock = altinnMock,
+                esyfovarselProducer = esyfovarselProducerMock,
             )
 
             val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
@@ -114,12 +127,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            // todo: Fix lateinit property captured has not been initialized kotlin.UninitializedPropertyAccessException: lateinit property captured has not been initialized
-/*                            val xmlStringSlot = slot<String>()
-                            val xml = xmlStringSlot.captured
-                            xml.shouldContain("<kanal>EPOST</kanal><kontaktinformasjon>narmesteLederNavn@gmail.com</kontaktinformasjon>")
-                            xml.shouldContain("<orgnummer>${VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value}</orgnummer>")
-                            xml.shouldContain("<parameterListe><key>navn</key><value>narmesteLederNavn</value></parameterListe>")*/
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
                         }
                         val varselUuid: String
                         with(
