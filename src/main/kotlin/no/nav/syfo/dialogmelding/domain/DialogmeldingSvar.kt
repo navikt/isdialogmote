@@ -3,6 +3,7 @@ package no.nav.syfo.dialogmelding.domain
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.domain.PersonIdent
+import java.time.LocalDateTime
 
 data class DialogmeldingSvar(
     val conversationRef: String?,
@@ -10,6 +11,7 @@ data class DialogmeldingSvar(
     val arbeidstakerPersonIdent: PersonIdent,
     val behandlerPersonIdent: PersonIdent,
     val innkallingDialogmoteSvar: InnkallingDialogmoteSvar,
+    val opprettetTidspunkt: LocalDateTime,
 )
 
 data class InnkallingDialogmoteSvar(
@@ -43,3 +45,5 @@ fun ForesporselType.getVarselType(): MotedeltakerVarselType {
         ForesporselType.ENDRING -> MotedeltakerVarselType.NYTT_TID_STED
     }
 }
+
+infix fun DialogmeldingSvar.happenedBefore(tidspunkt: LocalDateTime) = opprettetTidspunkt.isBefore(tidspunkt)

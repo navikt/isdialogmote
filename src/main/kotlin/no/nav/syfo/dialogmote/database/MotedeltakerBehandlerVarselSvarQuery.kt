@@ -28,7 +28,7 @@ fun DatabaseInterface.createMotedeltakerBehandlerVarselSvar(
     type: DialogmoteSvarType,
     tekst: String?,
     msgId: String,
-    valid: Boolean = true,
+    valid: Boolean,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
     val svarUUID = UUID.randomUUID()
@@ -84,4 +84,5 @@ fun ResultSet.toPMotedeltakerBehandlerVarselSvar(): PMotedeltakerBehandlerVarsel
         svarTekst = getString("svar_tekst"),
         msgId = getString("msg_id"),
         svarPublishedToKafkaAt = getTimestamp("svar_published_to_kafka_at")?.toLocalDateTime()?.toOffsetDateTimeUTC(),
+        valid = getBoolean("valid"),
     )

@@ -4,6 +4,7 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.cronjob.statusendring.toInstantOslo
 import no.nav.syfo.dialogmote.database.domain.PDialogmote
+import no.nav.syfo.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
@@ -273,6 +274,24 @@ fun DatabaseInterface.findOutdatedMoter(
     connection.prepareStatement(queryFindOutdatedMoter).use {
         it.setTimestamp(1, Timestamp.from(cutoff.toInstantOslo()))
         it.executeQuery().toList { toPDialogmote() }
+    }
+}
+
+const val queryGetMoteByBehandlerVarselUuid =
+    """
+        SELECT m.*
+        FROM mote m
+            INNER JOIN motedeltaker_behandler mb on m.id = mb.mote_id
+            INNER JOIN motedeltaker_behandler_varsel mbv on mb.id = mbv.motedeltaker_behandler_id
+        WHERE mbv.uuid = ?;
+    """
+
+fun DatabaseInterface.getMote(
+    behandlerVarsel: PMotedeltakerBehandlerVarsel,
+) = this.connection.use { connection ->
+    connection.prepareStatement(queryGetMoteByBehandlerVarselUuid).use {
+        it.setString(1, behandlerVarsel.uuid.toString())
+        it.executeQuery().toList { toPDialogmote() }.firstOrNull()
     }
 }
 
