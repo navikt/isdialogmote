@@ -1,7 +1,7 @@
 package no.nav.syfo.identhendelse
 
-import io.ktor.server.testing.TestApplicationEngine
-import kotlinx.coroutines.runBlocking
+import io.ktor.server.testing.*
+import kotlinx.coroutines.*
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.pdl.PdlClient

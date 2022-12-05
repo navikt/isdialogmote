@@ -1,10 +1,7 @@
 package no.nav.syfo.client.person.kontaktinfo
 
-import io.ktor.server.testing.TestApplicationEngine
-import io.mockk.clearMocks
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.ktor.server.testing.*
+import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client

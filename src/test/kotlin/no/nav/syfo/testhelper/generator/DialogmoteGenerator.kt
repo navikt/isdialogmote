@@ -1,25 +1,11 @@
 package no.nav.syfo.testhelper.generator
 
-import java.time.LocalDateTime
-import java.util.*
-import no.nav.syfo.dialogmote.domain.Dialogmote
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
-import no.nav.syfo.dialogmote.domain.DialogmoteTidSted
-import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidsgiver
-import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidsgiverVarsel
-import no.nav.syfo.dialogmote.domain.DialogmotedeltakerArbeidstaker
-import no.nav.syfo.dialogmote.domain.DialogmotedeltakerType
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.dialogmote.domain.NewDialogmote
-import no.nav.syfo.dialogmote.domain.NewDialogmoteTidSted
-import no.nav.syfo.dialogmote.domain.NewDialogmotedeltakerArbeidsgiver
-import no.nav.syfo.dialogmote.domain.NewDialogmotedeltakerArbeidstaker
-import no.nav.syfo.dialogmote.domain.NewDialogmotedeltakerBehandler
-import no.nav.syfo.dialogmote.domain.Referat
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
+import java.time.LocalDateTime
+import java.util.*
 
 fun generateNewDialogmoteTidSted() = NewDialogmoteTidSted(
     sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",

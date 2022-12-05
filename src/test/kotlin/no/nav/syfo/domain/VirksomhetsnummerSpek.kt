@@ -1,8 +1,8 @@
 package no.nav.syfo.domain
 
-import org.amshove.kluent.internal.assertFailsWith
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import org.amshove.kluent.internal.assertFailsWith
 
 object VirksomhetsnummerSpek : Spek({
 

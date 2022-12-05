@@ -1,22 +1,9 @@
 package no.nav.syfo.testhelper
 
-import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.server.netty.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.testhelper.mock.AzureAdV2Mock
-import no.nav.syfo.testhelper.mock.DokarkivMock
-import no.nav.syfo.testhelper.mock.DokdistFordelingMock
-import no.nav.syfo.testhelper.mock.EregMock
-import no.nav.syfo.testhelper.mock.IsdialogmotepdfgenMock
-import no.nav.syfo.testhelper.mock.IsoppfolgingstilfelleMock
-import no.nav.syfo.testhelper.mock.KrrMock
-import no.nav.syfo.testhelper.mock.NarmesteLederMock
-import no.nav.syfo.testhelper.mock.PdlMock
-import no.nav.syfo.testhelper.mock.SyfobehandlendeenhetMock
-import no.nav.syfo.testhelper.mock.TokendingsMock
-import no.nav.syfo.testhelper.mock.VeilederTilgangskontrollMock
-import no.nav.syfo.testhelper.mock.wellKnownSelvbetjeningMock
-import no.nav.syfo.testhelper.mock.wellKnownVeilederV2Mock
+import no.nav.syfo.testhelper.mock.*
 
 class ExternalMockEnvironment private constructor() {
     val applicationState: ApplicationState = testAppState()

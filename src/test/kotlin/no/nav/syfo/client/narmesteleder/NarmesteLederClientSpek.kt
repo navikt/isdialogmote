@@ -1,15 +1,7 @@
 package no.nav.syfo.client.narmesteleder
 
 import io.ktor.server.testing.TestApplicationEngine
-import io.mockk.clearMocks
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.verify
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.*
+import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
@@ -24,6 +16,8 @@ import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.*
+import java.util.UUID
 
 class NarmesteLederClientSpek : Spek({
 

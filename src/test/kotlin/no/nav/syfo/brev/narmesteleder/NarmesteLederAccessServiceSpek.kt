@@ -1,10 +1,9 @@
 package no.nav.syfo.brev.narmesteleder
 
-import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.*
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
-import java.time.LocalDate
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.oppfolgingstilfelle.Oppfolgingstilfelle
@@ -19,6 +18,7 @@ import no.nav.syfo.testhelper.generator.generateReferat
 import org.amshove.kluent.shouldBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 
 object NarmesteLederAccessServiceSpek : Spek({
     describe(NarmesteLederAccessServiceSpek::class.java.simpleName) {

@@ -1,10 +1,10 @@
 package no.nav.syfo.client.oppfolgingstilfelle
 
-import java.time.LocalDate
 import no.nav.syfo.testhelper.UserConstants
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 
 class OppfolgingstilfellePersonDTOSpek : Spek({
     describe("DTO class for oppfølgingstilfelle with function for finding latest tilfelle") {

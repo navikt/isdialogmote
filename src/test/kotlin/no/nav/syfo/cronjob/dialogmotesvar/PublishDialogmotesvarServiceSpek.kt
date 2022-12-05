@@ -1,33 +1,17 @@
 package no.nav.syfo.cronjob.dialogmotesvar
 
-import io.mockk.clearMocks
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.verify
-import java.time.OffsetDateTime
-import java.util.*
-import no.nav.syfo.dialogmote.api.domain.Dialogmotesvar
-import no.nav.syfo.dialogmote.api.domain.KDialogmotesvar
-import no.nav.syfo.dialogmote.api.domain.SenderType
-import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
-import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidsgiverVarsel
-import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerVarsel
-import no.nav.syfo.dialogmote.database.updateBehandlersvarPublishedAt
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.testhelper.ExternalMockEnvironment
-import no.nav.syfo.testhelper.UserConstants
-import no.nav.syfo.testhelper.createArbeidsgiverVarsel
-import no.nav.syfo.testhelper.createArbeidstakerVarsel
-import no.nav.syfo.testhelper.createBehandlerVarsel
-import no.nav.syfo.testhelper.createBehandlerVarselSvar
-import no.nav.syfo.testhelper.dropData
+import io.mockk.*
+import no.nav.syfo.dialogmote.api.domain.*
+import no.nav.syfo.dialogmote.database.*
+import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteWithBehandler
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.OffsetDateTime
+import java.util.*
 
 class PublishDialogmotesvarServiceSpek : Spek({
     describe("Publish and update dialogmøtesvar") {
