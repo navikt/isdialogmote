@@ -18,8 +18,9 @@ const val queryCreateMotedeltakerBehandlerVarselSvar =
             motedeltaker_behandler_varsel_id,
             svar_type,                       
             svar_tekst,
-            msg_id
-        ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?) RETURNING id
+            msg_id,
+            valid
+        ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
 fun DatabaseInterface.createMotedeltakerBehandlerVarselSvar(
@@ -27,6 +28,7 @@ fun DatabaseInterface.createMotedeltakerBehandlerVarselSvar(
     type: DialogmoteSvarType,
     tekst: String?,
     msgId: String,
+    valid: Boolean,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
     val svarUUID = UUID.randomUUID()
@@ -39,6 +41,7 @@ fun DatabaseInterface.createMotedeltakerBehandlerVarselSvar(
             it.setString(4, type.name)
             it.setString(5, tekst.orEmpty())
             it.setString(6, msgId)
+            it.setBoolean(7, valid)
             it.executeQuery().toList { getInt("id") }
         }
 
@@ -81,4 +84,5 @@ fun ResultSet.toPMotedeltakerBehandlerVarselSvar(): PMotedeltakerBehandlerVarsel
         svarTekst = getString("svar_tekst"),
         msgId = getString("msg_id"),
         svarPublishedToKafkaAt = getTimestamp("svar_published_to_kafka_at")?.toLocalDateTime()?.toOffsetDateTimeUTC(),
+        valid = getBoolean("valid"),
     )

@@ -5,6 +5,10 @@ import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.dialogmelding.COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_FAIL
 import no.nav.syfo.dialogmelding.COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_SUCCESS
+import no.nav.syfo.dialogmelding.domain.DialogmeldingSvar
+import no.nav.syfo.dialogmelding.domain.getDialogmoteSvarType
+import no.nav.syfo.dialogmelding.domain.getVarselType
+import no.nav.syfo.dialogmelding.domain.happenedBefore
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
 import no.nav.syfo.dialogmote.domain.*
@@ -46,15 +50,17 @@ class BehandlerVarselService(
     }
 
     fun finnBehandlerVarselOgOpprettSvar(
-        arbeidstakerPersonIdent: PersonIdent,
-        behandlerPersonIdent: PersonIdent,
-        varseltype: MotedeltakerVarselType,
-        svarType: DialogmoteSvarType,
-        svarTekst: String?,
-        conversationRef: String?,
-        parentRef: String?,
+        dialogmeldingSvar: DialogmeldingSvar,
         msgId: String,
     ): Boolean {
+        val arbeidstakerPersonIdent = dialogmeldingSvar.arbeidstakerPersonIdent
+        val behandlerPersonIdent = dialogmeldingSvar.behandlerPersonIdent
+        val varseltype = dialogmeldingSvar.innkallingDialogmoteSvar.foresporselType.getVarselType()
+        val svarType = dialogmeldingSvar.innkallingDialogmoteSvar.svarType.getDialogmoteSvarType()
+        val svarTekst = dialogmeldingSvar.innkallingDialogmoteSvar.svarTekst
+        val conversationRef = dialogmeldingSvar.conversationRef
+        val parentRef = dialogmeldingSvar.parentRef
+
         log.info("Received svar $svarType på varsel $varseltype with conversationRef $conversationRef, parentRef $parentRef and msgId $msgId")
         val pMotedeltakerBehandlerVarsel = getBehandlerVarselForSvar(
             varseltype = varseltype,
@@ -66,11 +72,21 @@ class BehandlerVarselService(
         return if (pMotedeltakerBehandlerVarsel != null) {
             try {
                 log.info("Found varsel with uuid ${pMotedeltakerBehandlerVarsel.uuid}")
+                val currentMote = database.getMote(behandlerVarsel = pMotedeltakerBehandlerVarsel)
+                if (currentMote == null) {
+                    log.error("Could not find mote for behandlerVarsel ${pMotedeltakerBehandlerVarsel.uuid} conversationRef $conversationRef, parentRef $parentRef and msgId $msgId - Did not create svar")
+                    return false
+                }
+                val moteStatus = DialogmoteStatus.valueOf(currentMote.status)
+                val moteUpdatedAt = currentMote.updatedAt
+                val isBehandlerSvarOnTime = moteStatus.unfinished() ||
+                    dialogmeldingSvar happenedBefore moteUpdatedAt
                 database.createMotedeltakerBehandlerVarselSvar(
                     motedeltakerBehandlerVarselId = pMotedeltakerBehandlerVarsel.id,
                     type = svarType,
                     tekst = svarTekst,
                     msgId = msgId,
+                    valid = isBehandlerSvarOnTime,
                 )
                 log.info("Created svar $svarType på varsel $varseltype with uuid ${pMotedeltakerBehandlerVarsel.uuid}")
                 COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_SUCCESS.increment()

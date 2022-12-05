@@ -11,7 +11,8 @@ object Versions {
     const val confluent = "7.2.1"
     const val flyway = "8.5.13"
     const val hikari = "5.0.1"
-    const val jackson = "2.13.4"
+    const val jackson = "2.13.4.2"
+    const val jacksonDataType = "2.14.0"
     const val jedis = "4.2.3"
     const val kafka = "3.2.0"
     const val kafkaEmbedded = "3.2.1"
@@ -90,7 +91,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus:${Versions.micrometerRegistry}")
 
     // (De-)serialization
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jackson}")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jacksonDataType}")
     implementation("javax.xml.bind:jaxb-api:${Versions.jaxbApi}")
     implementation("org.glassfish.jaxb:jaxb-runtime:${Versions.jaxbRuntime}")
 
