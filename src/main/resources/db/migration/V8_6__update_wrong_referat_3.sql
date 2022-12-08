@@ -1,0 +1,13 @@
+UPDATE MOTE_REFERAT
+    SET situasjon = '[Teksten er fjernet]',
+        konklusjon = '.',
+        arbeidstaker_oppgave = '.',
+        arbeidsgiver_oppgave = '.',
+        veileder_oppgave = null,
+        document = '[ { "key": null, "type": "HEADER_H1", "texts": [ "Referat fra dialogmøte" ], "title": null }, { "key": null, "type": "PARAGRAPH", "texts": [ "Sendt 8. desember 2022, kl. 10.49" ], "title": null }, { "key": null, "type": "HEADER_H2", "texts": [ "[Arbeidstaker]" ], "title": null }, { "key": null, "type": "PARAGRAPH", "texts": [ "F.nr. -" ], "title": null }, { "key": null, "type": "PARAGRAPH", "texts": [ "Tirsdag 1. november 2022 kl. 14.00" ], "title": "Møtetidspunkt" }, { "key": null, "type": "PARAGRAPH", "texts": [ "Hos legen - -" ], "title": "Møtested" }, { "key": null, "type": "PARAGRAPH", "texts": [ "Arbeidstaker: -", "Fra NAV: -", "Fra arbeidsgiver: -", "Behandler: Fastlege -" ], "title": "Deltakere i møtet" }, { "key": null, "type": "PARAGRAPH", "texts": [ "[Arbeidsgiver]" ], "title": "Arbeidsgiver" }, { "key": null, "type": "PARAGRAPH", "texts": [ "Formålet med dialogmøtet var å oppsummere situasjonen, drøfte mulighetene for å arbeide og legge en plan for tiden framover." ], "title": null }, { "key": null, "type": "PARAGRAPH", "texts": [ "Sykdom og diagnose er underlagt taushetsplikt. Derfor er helsen din bare et tema hvis du selv velger å være åpen om den. Av hensyn til personvernet inneholder referatet uansett ikke slike opplysninger. Se artikkel 9, Lov om behandling av personopplysninger." ], "title": null }, { "key": null, "type": "HEADER_H2", "texts": [ "Dette skjedde i møtet" ], "title": null }, { "key": null, "type": "PARAGRAPH", "texts": [ "." ], "title": "Konklusjon" }, { "key": null, "type": "PARAGRAPH", "texts": [ "." ], "title": "Din oppgave" }, { "key": null, "type": "PARAGRAPH", "texts": [ "." ], "title": "Arbeidsgiverens oppgave" }, { "key": null, "type": "PARAGRAPH", "texts": [ "." ], "title": "NAVs oppgave" }, { "key": null, "type": "PARAGRAPH", "texts": [ "." ], "title": "Situasjon og muligheter" }, { "key": null, "type": "HEADER_H2", "texts": [ "Dette informerte NAV om i møtet" ], "title": null }, { "key": "AVKLARING_ARBEIDSEVNE", "type": "PARAGRAPH", "texts": [ "." ], "title": "Avklaring av arbeidsevnen" }, { "key": null, "type": "PARAGRAPH", "texts": [ "Vennlig hilsen", "[Veileder]", "NAV" ], "title": null } ]',
+        behandler_oppgave = null
+    WHERE uuid = '557b4b94-bdb1-408d-81a1-b2ff264f81ad';
+
+UPDATE PDF
+    SET pdf = ''::bytea
+    WHERE uuid = '076e3f12-7ad3-44ac-9a52-53524231af54';
