@@ -76,6 +76,9 @@ spec:
         - application: isdialogmotepdfgen
         - application: isnarmesteleder
         - application: syfobehandlendeenhet
+        - application: esyfovarsel
+          namespace: team-esyfo
+          cluster: dev-gcp
   azure:
     application:
       enabled: true
@@ -126,16 +129,6 @@ spec:
       value: "dev-fss.teamsykefravr.syfo-tilgangskontroll"
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.dev-fss-pub.nais.io"
-    - name: MQGATEWAY_HOSTNAME
-      value: b27apvl220.preprod.local
-    - name: MQGATEWAY_PORT
-      value: '1413'
-    - name: MQGATEWAY_NAME
-      value: MQLS02
-    - name: MQGATEWAY_CHANNEL_NAME
-      value: Q1_ISDIALOGMOTE
-    - name: TREDJEPARTSVARSEL_QUEUENAME
-      value: QA.Q1_VARSELPRODUKSJON.BEST_SRVMLD_M_KONTAKT
     - name: NARMESTELEDER_URL
       value: "https://isnarmesteleder.dev.intern.nav.no"
     - name: NARMESTELEDER_CLIENT_ID

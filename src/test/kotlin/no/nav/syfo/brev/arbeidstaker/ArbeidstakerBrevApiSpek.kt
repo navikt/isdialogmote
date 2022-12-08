@@ -1,28 +1,27 @@
 package no.nav.syfo.brev.arbeidstaker
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.module.kotlin.*
 import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import io.mockk.*
-import kotlinx.coroutines.runBlocking
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.application.cache.RedisStore
-import no.nav.syfo.application.mq.MQSenderInterface
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
-import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
-import no.nav.syfo.client.azuread.AzureAdV2Client
-import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.client.tokendings.TokendingsClient
+import java.time.*
+import java.util.*
+import kotlinx.coroutines.*
+import no.altinn.schemas.services.intermediary.receipt._2009._10.*
+import no.altinn.services.serviceengine.correspondence._2009._10.*
+import no.nav.syfo.application.cache.*
+import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.*
+import no.nav.syfo.brev.arbeidstaker.domain.*
+import no.nav.syfo.brev.esyfovarsel.*
+import no.nav.syfo.client.azuread.*
+import no.nav.syfo.client.oppfolgingstilfelle.*
+import no.nav.syfo.client.tokendings.*
 import no.nav.syfo.dialogmote.*
-import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.api.v2.*
-import no.nav.syfo.dialogmote.database.getDialogmote
+import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
@@ -30,11 +29,9 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.*
 import org.amshove.kluent.*
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
+import org.spekframework.spek2.*
+import org.spekframework.spek2.style.specification.*
 import redis.clients.jedis.*
-import java.time.LocalDateTime
-import java.util.UUID
 
 class ArbeidstakerBrevApiSpek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -52,17 +49,15 @@ class ArbeidstakerBrevApiSpek : Spek({
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
-            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
+            val esyfovarselProducer = mockk<EsyfovarselProducer>(relaxed = true)
+            val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
+            justRun { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
-            val mqSenderMock = mockk<MQSenderInterface>(relaxed = true)
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
             )
             val cache = RedisStore(
@@ -153,8 +148,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
+                            verify(exactly = 0) { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            clearMocks(esyfovarselProducer)
                         }
 
                         with(

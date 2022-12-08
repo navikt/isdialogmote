@@ -1,22 +1,28 @@
 package no.nav.syfo.application.api
 
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.routing.*
+import io.ktor.server.application.Application
+import io.ktor.server.auth.authenticate
+import io.ktor.server.routing.routing
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
-import no.nav.syfo.application.api.authentication.*
+import no.nav.syfo.application.api.authentication.JwtIssuer
+import no.nav.syfo.application.api.authentication.JwtIssuerType
+import no.nav.syfo.application.api.authentication.WellKnown
+import no.nav.syfo.application.api.authentication.installCallId
+import no.nav.syfo.application.api.authentication.installContentNegotiation
+import no.nav.syfo.application.api.authentication.installJwtAuthentication
+import no.nav.syfo.application.api.authentication.installMetrics
+import no.nav.syfo.application.api.authentication.installStatusPages
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
 import no.nav.syfo.brev.behandler.BehandlerVarselService
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.narmesteleder.NarmesteLederAccessService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.brev.narmesteleder.registerNarmestelederBrevApi
 import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.azuread.AzureAdV2Client
@@ -29,7 +35,12 @@ import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.dialogmote.*
+import no.nav.syfo.dialogmote.DialogmoteService
+import no.nav.syfo.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.dialogmote.DialogmoterelasjonService
+import no.nav.syfo.dialogmote.DialogmotestatusService
+import no.nav.syfo.dialogmote.PdfService
+import no.nav.syfo.dialogmote.VarselService
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteActionsApiV2
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteApiV2
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
@@ -38,10 +49,9 @@ import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 fun Application.apiModule(
     applicationState: ApplicationState,
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
+    esyfovarselProducer: EsyfovarselProducer,
     behandlerVarselService: BehandlerVarselService,
     database: DatabaseInterface,
-    dineSykmeldteVarselProducer: DineSykmeldteVarselProducer,
-    mqSender: MQSenderInterface,
     environment: Environment,
     wellKnownSelvbetjening: WellKnown,
     wellKnownVeilederV2: WellKnown,
@@ -128,8 +138,7 @@ fun Application.apiModule(
     )
 
     val narmesteLederVarselService = NarmesteLederVarselService(
-        mqSender = mqSender,
-        dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
+        esyfovarselProducer = esyfovarselProducer,
     )
 
     val dialogmotedeltakerService = DialogmotedeltakerService(
