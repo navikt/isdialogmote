@@ -29,7 +29,6 @@ object Versions {
     const val redisEmbedded = "0.7.3"
     const val scala = "2.13.9"
     const val spek = "2.0.18"
-    const val mq = "9.2.5.0"
     const val tjenesteSpesifikasjonerGithub = "1.2020.06.11-19.53-1cad83414166"
     const val micrometerRegistry = "1.9.4"
     const val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
@@ -144,8 +143,6 @@ dependencies {
         }
     }
 
-    // MQ
-    implementation("com.ibm.mq:com.ibm.mq.allclient:${Versions.mq}")
     implementation("no.nav.tjenestespesifikasjoner:servicemeldingMedKontaktinformasjon-v1-tjenestespesifikasjon:${Versions.tjenesteSpesifikasjonerGithub}")
 
     testImplementation("io.ktor:ktor-server-test-host:${Versions.ktor}")

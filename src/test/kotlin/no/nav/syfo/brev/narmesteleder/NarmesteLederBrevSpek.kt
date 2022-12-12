@@ -2,44 +2,70 @@ package no.nav.syfo.brev.narmesteleder
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.http.*
-import io.ktor.server.testing.*
-import io.mockk.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.setBody
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.justRun
+import io.mockk.mockk
+import io.mockk.verify
+import java.time.LocalDateTime
+import java.util.*
 import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.cache.RedisStore
-import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.brev.domain.BrevType
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
+import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.tokendings.TokendingsClient
-import no.nav.syfo.dialogmote.*
+import no.nav.syfo.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.dialogmote.DialogmoterelasjonService
+import no.nav.syfo.dialogmote.DialogmotestatusService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.v2.*
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteEndreFerdigstiltPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteFerdigstillPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
 import no.nav.syfo.dialogmote.database.getDialogmote
-import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.testhelper.*
+import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR_2
-import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
-import no.nav.syfo.testhelper.generator.generateNewReferatDTO
-import no.nav.syfo.util.*
-import org.amshove.kluent.*
+import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.testhelper.addDummyDeltakere
+import no.nav.syfo.testhelper.dropData
+import no.nav.syfo.testhelper.generateJWTNavIdent
+import no.nav.syfo.testhelper.generateJWTTokenx
+import no.nav.syfo.testhelper.generator.*
+import no.nav.syfo.testhelper.testApiModule
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.util.configuredJacksonMapper
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import redis.clients.jedis.*
-import java.time.LocalDateTime
-import java.util.UUID
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
+import redis.clients.jedis.Protocol
 
 object NarmesteLederBrevSpek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -56,18 +82,16 @@ object NarmesteLederBrevSpek : Spek({
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
-            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
-
-            val mqSenderMock = mockk<MQSenderInterface>(relaxed = true)
+            val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
+            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
+                esyfovarselProducer = esyfovarselProducerMock,
             )
             val cache = RedisStore(
                 JedisPool(
@@ -166,8 +190,8 @@ object NarmesteLederBrevSpek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
-                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                        clearMocks(mqSenderMock)
+                        verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(generateInkallingHendelse()) }
+                        clearMocks(esyfovarselProducerMock)
                     }
                     with(
                         handleRequest(HttpMethod.Get, urlMote) {
@@ -460,8 +484,12 @@ object NarmesteLederBrevSpek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
-                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                        clearMocks(mqSenderMock)
+                        verify(exactly = 1) {
+                            esyfovarselProducerMock.sendVarselToEsyfovarsel(
+                                generateInkallingHendelse()
+                            )
+                        }
+                        clearMocks(esyfovarselProducerMock)
                     }
 
                     with(
@@ -472,8 +500,12 @@ object NarmesteLederBrevSpek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
-                        verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                        clearMocks(mqSenderMock)
+                        verify(exactly = 1) {
+                            esyfovarselProducerMock.sendVarselToEsyfovarsel(
+                                generateInkallingHendelseOtherVirksomhet()
+                            )
+                        }
+                        clearMocks(esyfovarselProducerMock)
                     }
 
                     with(

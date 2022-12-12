@@ -2,31 +2,52 @@ package no.nav.syfo.dialogmelding
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.http.*
-import io.ktor.server.testing.*
-import io.mockk.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.setBody
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.justRun
+import io.mockk.mockk
+import java.util.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
+import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.dialogmelding.domain.ForesporselType
 import no.nav.syfo.dialogmelding.domain.SvarType
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.v2.*
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteAvlysPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteTidStedPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.testhelper.*
-import no.nav.syfo.testhelper.generator.*
-import no.nav.syfo.util.*
+import no.nav.syfo.testhelper.ExternalMockEnvironment
+import no.nav.syfo.testhelper.UserConstants
+import no.nav.syfo.testhelper.dropData
+import no.nav.syfo.testhelper.generateJWTNavIdent
+import no.nav.syfo.testhelper.generator.generateAvlysDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTOWithBehandler
+import no.nav.syfo.testhelper.generator.generateInnkallingMoterespons
+import no.nav.syfo.testhelper.generator.generateKafkaDialogmeldingDTO
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithBehandler
+import no.nav.syfo.testhelper.testApiModule
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.util.*
 
 class DialogmeldingServiceSpek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -38,9 +59,10 @@ class DialogmeldingServiceSpek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
-            val mqSenderMock = mockk<MQSenderInterface>()
+            val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
+            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
             val behandlerVarselService = BehandlerVarselService(
                 database = database,
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
@@ -57,17 +79,15 @@ class DialogmeldingServiceSpek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
+                esyfovarselProducer = esyfovarselProducerMock,
             )
 
             database.dropData()
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-            justRun { mqSenderMock.sendMQMessage(any(), any()) }
-            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
             clearMocks(altinnMock)
             every {
                 altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())

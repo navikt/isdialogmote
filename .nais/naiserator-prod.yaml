@@ -126,16 +126,6 @@ spec:
       value: "prod-fss.teamsykefravr.syfo-tilgangskontroll"
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.prod-fss-pub.nais.io"
-    - name: MQGATEWAY_HOSTNAME
-      value: "mpls02.adeo.no"
-    - name: MQGATEWAY_PORT
-      value: '1414'
-    - name: MQGATEWAY_NAME
-      value: "MPLS02"
-    - name: MQGATEWAY_CHANNEL_NAME
-      value: "P_ISDIALOGMOTE"
-    - name: TREDJEPARTSVARSEL_QUEUENAME
-      value: "QA.P_VARSELPRODUKSJON.BEST_SRVMLD_M_KONTAKT"
     - name: NARMESTELEDER_URL
       value: "https://isnarmesteleder.intern.nav.no"
     - name: NARMESTELEDER_CLIENT_ID

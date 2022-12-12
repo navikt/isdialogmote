@@ -2,26 +2,44 @@ package no.nav.syfo.dialogmote.api.v2
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.http.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpHeaders.Authorization
-import io.ktor.server.testing.*
-import io.mockk.*
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.setBody
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.justRun
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
-import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
-import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.testhelper.*
+import no.nav.syfo.dialogmote.domain.DialogmeldingKode
+import no.nav.syfo.dialogmote.domain.DialogmeldingType
+import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.dialogmote.domain.DocumentComponentType
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.dialogmote.domain.serialize
+import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE
@@ -31,14 +49,20 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
+import no.nav.syfo.testhelper.dropData
+import no.nav.syfo.testhelper.generateJWTNavIdent
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
-import no.nav.syfo.util.*
-import org.amshove.kluent.*
+import no.nav.syfo.testhelper.testApiModule
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.util.configuredJacksonMapper
+import org.amshove.kluent.shouldBeBefore
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.*
 
 class PostDialogmoteApiV2Spek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -52,9 +76,12 @@ class PostDialogmoteApiV2Spek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
-            val mqSenderMock = mockk<MQSenderInterface>()
+
+            val esyfovarselHendelse = generateInkallingHendelse()
+            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
             val behandlerVarselService = BehandlerVarselService(
@@ -66,9 +93,8 @@ class PostDialogmoteApiV2Spek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
+                esyfovarselProducer = esyfovarselProducerMock
             )
 
             val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
@@ -92,11 +118,9 @@ class PostDialogmoteApiV2Spek : Spek({
                     justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                     clearMocks(behandlerDialogmeldingProducer)
                     justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-                    clearMocks(mqSenderMock)
-                    clearMocks(dineSykmeldteVarselProducer)
-                    justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
-                    justRun { mqSenderMock.sendMQMessage(any(), any()) }
                     clearMocks(altinnMock)
+                    clearMocks(esyfovarselProducerMock)
+                    justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
                     every {
                         altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
                     } returns altinnResponse
@@ -125,18 +149,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val xmlStringSlot = slot<String>()
-                            verify(exactly = 1) {
-                                mqSenderMock.sendMQMessage(
-                                    MotedeltakerVarselType.INNKALT,
-                                    capture(xmlStringSlot)
-                                )
-                            }
-                            val xml = xmlStringSlot.captured
-                            xml.shouldContain("<kanal>EPOST</kanal><kontaktinformasjon>narmesteLederNavn@gmail.com</kontaktinformasjon>")
-                            xml.shouldContain("<orgnummer>${VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value}</orgnummer>")
-                            xml.shouldContain("<parameterListe><key>navn</key><value>narmesteLederNavn</value></parameterListe>")
-                            clearMocks(mqSenderMock)
+
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
                             verify(exactly = 1) {
                                 altinnMock.insertCorrespondenceBasicV2(
                                     any(),
@@ -225,8 +239,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            clearMocks(esyfovarselProducerMock)
                         }
 
                         with(
@@ -275,8 +289,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            clearMocks(esyfovarselProducerMock)
                         }
 
                         with(
@@ -355,7 +369,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(any(), any()) }
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            clearMocks(esyfovarselProducerMock)
                         }
                     }
 
@@ -370,7 +385,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
+                            verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            clearMocks(esyfovarselProducerMock)
                             verify(exactly = 1) {
                                 altinnMock.insertCorrespondenceBasicV2(
                                     any(),
@@ -392,8 +408,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
+                            verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            clearMocks(esyfovarselProducerMock)
                         }
                     }
 
@@ -407,8 +423,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
+                            verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            clearMocks(esyfovarselProducerMock)
                         }
 
                         val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
@@ -427,7 +443,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             handleRequest(HttpMethod.Post, url) {}
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
+                            verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            clearMocks(esyfovarselProducerMock)
                         }
                     }
 
@@ -442,7 +459,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
+                            verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            clearMocks(esyfovarselProducerMock)
                         }
                     }
 
@@ -457,8 +475,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            clearMocks(esyfovarselProducerMock)
                         }
 
                         with(
@@ -469,8 +487,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Conflict
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
+                            verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            clearMocks(esyfovarselProducerMock)
                         }
                     }
 
@@ -484,8 +502,8 @@ class PostDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
+                            verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            clearMocks(esyfovarselProducerMock)
                         }
                     }
                 }

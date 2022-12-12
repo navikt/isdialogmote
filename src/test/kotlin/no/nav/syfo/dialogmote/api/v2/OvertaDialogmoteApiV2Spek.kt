@@ -11,9 +11,8 @@ import io.mockk.mockk
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
+import no.nav.syfo.brev.esyfovarsel.*
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.OvertaDialogmoterDTO
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
@@ -43,20 +42,16 @@ class OvertaDialogmoteApiV2Spek : Spek({
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
-            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
-
-            val mqSenderMock = mockk<MQSenderInterface>()
-            justRun { mqSenderMock.sendMQMessage(any(), any()) }
+            val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
+            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
+                esyfovarselProducer = esyfovarselProducerMock,
             )
 
             beforeEachGroup {
@@ -66,8 +61,7 @@ class OvertaDialogmoteApiV2Spek : Spek({
                 val altinnResponse = ReceiptExternal()
                 altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-                justRun { mqSenderMock.sendMQMessage(any(), any()) }
-                justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
+                justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
                 justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                 clearMocks(altinnMock)
                 every {

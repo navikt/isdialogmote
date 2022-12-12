@@ -9,12 +9,10 @@ import io.mockk.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
@@ -29,6 +27,7 @@ import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDateTime
+import no.nav.syfo.brev.esyfovarsel.*
 
 class AvlysDialogmoteApiV2Spek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -42,13 +41,12 @@ class AvlysDialogmoteApiV2Spek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
-            val mqSenderMock = mockk<MQSenderInterface>()
             val behandlerVarselService = BehandlerVarselService(
                 database = database,
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
             )
+            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
             val altinnResponse = ReceiptExternal()
@@ -58,9 +56,8 @@ class AvlysDialogmoteApiV2Spek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
+                esyfovarselProducer = esyfovarselProducerMock,
             )
 
             beforeEachTest {
@@ -69,10 +66,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                 justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                 clearMocks(behandlerDialogmeldingProducer)
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-                clearMocks(mqSenderMock)
-                justRun { mqSenderMock.sendMQMessage(any(), any()) }
-                clearMocks(dineSykmeldteVarselProducer)
-                justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
+                clearMocks(esyfovarselProducerMock)
                 clearMocks(altinnMock)
                 every {
                     altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
@@ -104,7 +98,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(generateInkallingHendelse()) }
                         }
 
                         with(
@@ -137,7 +131,11 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.AVLYST, any()) }
+                            verify(exactly = 1) {
+                                esyfovarselProducerMock.sendVarselToEsyfovarsel(
+                                    generateAvlysningHendelse()
+                                )
+                            }
                         }
 
                         with(
@@ -246,7 +244,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(generateInkallingHendelse()) }
                             verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                             clearMocks(behandlerDialogmeldingProducer)
                             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -282,7 +280,11 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.AVLYST, any()) }
+                            verify(exactly = 1) {
+                                esyfovarselProducerMock.sendVarselToEsyfovarsel(
+                                    generateAvlysningHendelse()
+                                )
+                            }
                         }
 
                         with(
@@ -330,7 +332,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(generateInkallingHendelse()) }
                             verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                             clearMocks(behandlerDialogmeldingProducer)
                             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -380,7 +382,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
 
                     it("should return OK if request is successful") {
                         val createdDialogmoteUUID: String
-
                         with(
                             handleRequest(HttpMethod.Post, urlMoter) {
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -389,7 +390,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
+                            verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(generateInkallingHendelse()) } // INNKALT
                         }
 
                         with(
@@ -422,7 +423,11 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.AVLYST, any()) }
+                            verify(exactly = 0) {
+                                esyfovarselProducerMock.sendVarselToEsyfovarsel(
+                                    generateAvlysningHendelse()
+                                )
+                            }
                         }
 
                         with(

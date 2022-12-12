@@ -2,28 +2,36 @@ package no.nav.syfo.dialogmote.api.v2
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.http.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpHeaders.Authorization
-import io.ktor.server.testing.*
-import io.mockk.*
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.setBody
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.justRun
+import io.mockk.mockk
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.application.mq.MQSenderInterface
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.narmesteleder.dinesykmeldte.DineSykmeldteVarselProducer
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.testhelper.dropData
+import no.nav.syfo.testhelper.generateJWTNavIdent
 import no.nav.syfo.testhelper.generator.generateNewDialogmote
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
@@ -44,19 +52,11 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
-            val dineSykmeldteVarselProducer = mockk<DineSykmeldteVarselProducer>()
-            justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
-
-            val mqSenderMock = mockk<MQSenderInterface>()
-            justRun { mqSenderMock.sendMQMessage(any(), any()) }
-
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dineSykmeldteVarselProducer = dineSykmeldteVarselProducer,
-                mqSenderMock = mqSenderMock,
                 altinnMock = altinnMock,
             )
 
@@ -64,9 +64,7 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                 val altinnResponse = ReceiptExternal()
                 altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-                justRun { mqSenderMock.sendMQMessage(any(), any()) }
                 justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-                justRun { dineSykmeldteVarselProducer.sendDineSykmeldteVarsel(any(), any()) }
                 clearMocks(altinnMock)
                 every {
                     altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
@@ -96,8 +94,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
                         }
 
                         val newDialogmoteAdressebeskyttet = generateNewDialogmote(ARBEIDSTAKER_ADRESSEBESKYTTET)
@@ -127,7 +123,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
 
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
@@ -158,8 +153,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { mqSenderMock.sendMQMessage(MotedeltakerVarselType.INNKALT, any()) }
-                            clearMocks(mqSenderMock)
                         }
 
                         val newDialogmoteAdressebeskyttet = generateNewDialogmote(ARBEIDSTAKER_ADRESSEBESKYTTET)
@@ -189,7 +182,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
 
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
@@ -207,7 +199,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             handleRequest(HttpMethod.Get, urlEnhetAccess) {}
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
 
@@ -218,7 +209,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                            verify(exactly = 0) { mqSenderMock.sendMQMessage(any(), any()) }
                         }
                     }
                 }
