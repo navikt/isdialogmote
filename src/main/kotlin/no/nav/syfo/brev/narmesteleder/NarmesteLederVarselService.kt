@@ -12,11 +12,11 @@ class NarmesteLederVarselService(
         varseltype: MotedeltakerVarselType
     ) {
         val hendelse = NarmesteLederHendelse(
-            getNaermesteLederVarselType(varseltype),
-            DialogmoteInnkallingNarmesteLederData(narmesteLeder.narmesteLederNavn),
-            narmesteLeder.narmesteLederPersonIdentNumber,
-            narmesteLeder.arbeidstakerPersonIdentNumber,
-            narmesteLeder.virksomhetsnummer
+            type = getNaermesteLederVarselType(varseltype),
+            data = DialogmoteInnkallingNarmesteLederData(narmesteLeder.narmesteLederNavn),
+            narmesteLederFnr = narmesteLeder.narmesteLederPersonIdentNumber,
+            arbeidstakerFnr = narmesteLeder.arbeidstakerPersonIdentNumber,
+            orgnummer = narmesteLeder.virksomhetsnummer
         )
         esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
     }
