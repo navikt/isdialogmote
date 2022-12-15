@@ -6,21 +6,26 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 object Versions {
+    const val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
     const val brukernotifikasjonAvro = "2.5.1"
-    const val isdialogmoteSchema = "1.0.5"
+    const val cxfVersion = "3.5.5"
     const val confluent = "7.2.1"
     const val flyway = "8.5.13"
     const val hikari = "5.0.1"
+    const val isdialogmoteSchema = "1.0.5"
     const val jacksonDataType = "2.14.1"
     const val jedis = "4.3.1"
     const val kafka = "3.3.1"
     const val kafkaEmbedded = "3.2.1"
     const val ktor = "2.2.1"
+    const val kluent = "1.72"
     const val jaxbApi = "2.3.1"
     const val jaxbRuntime = "2.3.6"
-    const val kluent = "1.72"
+    const val jaxsWsApiVersion = "2.3.1"
+    const val jaxwsToolsVersion = "2.3.5"
     const val logback = "1.2.11"
     const val logstashEncoder = "7.2"
+    const val micrometerRegistry = "1.10.2"
     const val mockk = "1.13.3"
     const val nimbusjosejwt = "9.25.1"
     const val postgresEmbedded = "0.13.4"
@@ -29,11 +34,6 @@ object Versions {
     const val scala = "2.13.9"
     const val spek = "2.0.19"
     const val tjenesteSpesifikasjonerGithub = "1.2020.06.11-19.53-1cad83414166"
-    const val micrometerRegistry = "1.10.2"
-    const val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
-    const val cxfVersion = "3.5.2"
-    const val jaxsWsApiVersion = "2.3.1"
-    const val jaxwsToolsVersion = "2.3.5"
 }
 
 plugins {
@@ -124,6 +124,12 @@ dependencies {
                 require("3.0.4")
             }
         }
+        implementation("com.google.protobuf:protobuf-java") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2022-3510")
+            version {
+                require("3.21.7")
+            }
+        }
     }
     implementation("com.github.navikt:brukernotifikasjon-schemas:${Versions.brukernotifikasjonAvro}")
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
@@ -138,6 +144,12 @@ dependencies {
             because("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-2048/")
             version {
                 require("9.4.48.v20220622")
+            }
+        }
+        implementation("com.google.protobuf:protobuf-java") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2022-3510")
+            version {
+                require("3.21.7")
             }
         }
     }
