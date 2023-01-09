@@ -8,7 +8,7 @@ version = "1.0.0"
 object Versions {
     const val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
     const val brukernotifikasjonAvro = "2.5.1"
-    const val cxfVersion = "3.5.5"
+    const val cxfVersion = "4.0.0"
     const val confluent = "7.2.1"
     const val flyway = "8.5.13"
     const val hikari = "5.0.1"
@@ -17,17 +17,17 @@ object Versions {
     const val jedis = "4.3.1"
     const val kafka = "3.3.1"
     const val kafkaEmbedded = "3.2.1"
-    const val ktor = "2.2.1"
+    const val ktor = "2.2.2"
     const val kluent = "1.72"
     const val jaxbApi = "2.3.1"
     const val jaxbRuntime = "2.3.6"
     const val jaxsWsApiVersion = "2.3.1"
-    const val jaxwsToolsVersion = "2.3.5"
-    const val logback = "1.2.11"
+    const val jaxwsToolsVersion = "4.0.0"
+    const val logback = "1.4.4"
     const val logstashEncoder = "7.2"
     const val micrometerRegistry = "1.10.2"
     const val mockk = "1.13.3"
-    const val nimbusjosejwt = "9.25.1"
+    const val nimbusjosejwt = "9.25.6"
     const val postgresEmbedded = "0.13.4"
     const val postgres = "42.5.1"
     const val redisEmbedded = "0.7.3"
@@ -48,6 +48,7 @@ repositories {
     mavenCentral()
     maven(url = "https://packages.confluent.io/maven/")
     maven(url = "https://jitpack.io")
+    maven(url = "https://build.shibboleth.net/maven/releases/")
     maven {
         url = uri("https://maven.pkg.github.com/navikt/isdialogmote-schema")
         credentials {
@@ -115,7 +116,7 @@ dependencies {
         implementation("org.yaml:snakeyaml") {
             because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-25857/")
             version {
-                require("1.31")
+                require("1.33")
             }
         }
         implementation("org.glassfish:jakarta.el") {
