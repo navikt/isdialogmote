@@ -1,6 +1,7 @@
 package no.nav.syfo.identhendelse
 
 import io.ktor.server.testing.*
+import io.mockk.mockk
 import kotlinx.coroutines.*
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
@@ -30,6 +31,7 @@ object IdenthendelseServiceSpek : Spek({
 
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
+            val cacheMock = mockk<RedisStore>()
             val pdlClient = PdlClient(
                 azureAdV2Client = AzureAdV2Client(
                     aadAppClient = externalMockEnvironment.environment.aadAppClient,
@@ -47,6 +49,7 @@ object IdenthendelseServiceSpek : Spek({
                 ),
                 pdlClientId = externalMockEnvironment.environment.pdlClientId,
                 pdlUrl = externalMockEnvironment.environment.pdlUrl,
+                redisStore = cacheMock,
             )
 
             val identhendelseService = IdenthendelseService(

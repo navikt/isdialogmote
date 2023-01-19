@@ -158,6 +158,7 @@ fun main() {
             azureAdV2Client = azureAdV2Client,
             pdlClientId = environment.pdlClientId,
             pdlUrl = environment.pdlUrl,
+            redisStore = cache,
         )
         val identhendelseService = IdenthendelseService(
             database = applicationDatabase,

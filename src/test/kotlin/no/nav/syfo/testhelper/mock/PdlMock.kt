@@ -30,7 +30,12 @@ class PdlMock {
                 val isHentIdenter = pdlRequest.query.contains("hentIdenter")
                 if (isHentIdenter) {
                     if (pdlRequest.variables.ident == UserConstants.ARBEIDSTAKER_TREDJE_FNR.value) {
-                        call.respond(generatePdlIdenter("enAnnenIdent"))
+                        call.respond(
+                            generatePdlIdenter(
+                                UserConstants.ARBEIDSTAKER_TREDJE_FNR.value,
+                                UserConstants.ARBEIDSTAKER_FJERDE_FNR.value,
+                            )
+                        )
                     } else {
                         call.respond(generatePdlIdenter(pdlRequest.variables.ident))
                     }

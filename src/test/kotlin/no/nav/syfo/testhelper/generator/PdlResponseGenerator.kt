@@ -45,10 +45,11 @@ fun generatePdlHentPerson(
 
 fun generatePdlIdenter(
     personident: String,
+    anotherPersonIdent: String? = null,
 ) = PdlIdentResponse(
     data = PdlHentIdenter(
         hentIdenter = PdlIdenter(
-            identer = listOf(
+            identer = mutableListOf(
                 PdlIdent(
                     ident = personident,
                     historisk = false,
@@ -59,7 +60,17 @@ fun generatePdlIdenter(
                     historisk = true,
                     gruppe = IdentGruppe.FOLKEREGISTERIDENT,
                 ),
-            ),
+            ).also {
+                if (anotherPersonIdent != null) {
+                    it.add(
+                        PdlIdent(
+                            ident = anotherPersonIdent,
+                            historisk = false,
+                            gruppe = IdentGruppe.FOLKEREGISTERIDENT,
+                        ),
+                    )
+                }
+            },
         ),
     ),
     errors = null,

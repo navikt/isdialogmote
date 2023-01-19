@@ -20,6 +20,7 @@ import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
+import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
@@ -111,10 +112,13 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                 dokarkivBaseUrl = externalMockEnvironment.dokarkivMock.url,
             )
 
+            val cacheMock = mockk<RedisStore>()
+
             val pdlClient = PdlClient(
                 azureAdV2Client = azureAdV2Client,
                 pdlClientId = externalMockEnvironment.environment.pdlClientId,
                 pdlUrl = externalMockEnvironment.pdlMock.url,
+                redisStore = cacheMock,
             )
             val eregClient = EregClient(
                 baseUrl = externalMockEnvironment.environment.eregUrl,
@@ -140,6 +144,12 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                 every {
                     altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
                 } returns altinnResponse
+                every {
+                    cacheMock.get(any())
+                } returns null
+                every {
+                    cacheMock.set(any(), any(), any())
+                } returns Unit
             }
 
             afterEachTest {
