@@ -36,6 +36,8 @@ class PdlMock {
                                 UserConstants.ARBEIDSTAKER_FJERDE_FNR.value,
                             )
                         )
+                    } else if (pdlRequest.variables.ident == UserConstants.ARBEIDSTAKER_IKKE_AKTIVT_FNR.value) {
+                        call.respond(generatePdlIdenter("dummyIdent"))
                     } else {
                         call.respond(generatePdlIdenter(pdlRequest.variables.ident))
                     }
