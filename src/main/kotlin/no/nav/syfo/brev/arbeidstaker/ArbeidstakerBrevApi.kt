@@ -41,13 +41,13 @@ fun Route.registerArbeidstakerBrevApi(
                     personIdent = requestPersonIdent,
                     callId = callId,
                 )
-                val arbeidstakerBrevDTOList = allPersonIdents.map { personIdent ->
+                val arbeidstakerBrevDTOList = allPersonIdents.flatMap { personIdent ->
                     dialogmoteService.getDialogmoteList(
                         personIdent = personIdent,
                     ).filter { dialogmote ->
                         dialogmote.status != DialogmoteStatus.LUKKET
                     }.toArbeidstakerBrevDTOList()
-                }.flatten()
+                }
                 call.respond(arbeidstakerBrevDTOList)
             } catch (e: IllegalArgumentException) {
                 val illegalArgumentMessage = "Could not retrieve list of brev"
