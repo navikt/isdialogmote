@@ -1,5 +1,6 @@
 package no.nav.syfo.client.pdl
 
+import no.nav.syfo.domain.PersonIdent
 import java.util.Locale
 
 data class PdlPersonResponse(
@@ -65,6 +66,9 @@ data class PdlIdenter(
     val aktivIdent: String? = identer.firstOrNull {
         it.gruppe == IdentGruppe.FOLKEREGISTERIDENT && !it.historisk
     }?.ident
+    fun aktivIdentIsHistorisk(newIdent: PersonIdent): Boolean {
+        return identer.any { it.ident == newIdent.value && it.historisk }
+    }
 }
 
 data class PdlIdent(
