@@ -112,7 +112,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                 dokarkivBaseUrl = externalMockEnvironment.dokarkivMock.url,
             )
 
-            val cacheMock = mockk<RedisStore>()
+            val cacheMock = mockk<RedisStore>(relaxed = true)
 
             val pdlClient = PdlClient(
                 azureAdV2Client = azureAdV2Client,
@@ -144,12 +144,6 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                 every {
                     altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
                 } returns altinnResponse
-                every {
-                    cacheMock.get(any())
-                } returns null
-                every {
-                    cacheMock.set(any(), any(), any())
-                } returns Unit
             }
 
             afterEachTest {
