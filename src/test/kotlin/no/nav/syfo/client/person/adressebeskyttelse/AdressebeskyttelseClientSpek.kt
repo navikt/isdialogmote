@@ -37,6 +37,7 @@ class AdressebeskyttelseClientSpek : Spek({
                 azureAdV2Client = azureAdV2ClientMock,
                 pdlClientId = externalMockEnvironment.environment.pdlClientId,
                 pdlUrl = externalMockEnvironment.pdlMock.url,
+                redisStore = cacheMock,
             )
             val client = AdressebeskyttelseClient(pdlClient, cacheMock)
 

@@ -4,6 +4,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.azuread.AzureAdV2Token
 import no.nav.syfo.client.httpClientDefault
@@ -17,16 +18,25 @@ class PdlClient(
     private val azureAdV2Client: AzureAdV2Client,
     private val pdlClientId: String,
     private val pdlUrl: String,
+    private val redisStore: RedisStore,
 ) {
     private val httpClient = httpClientDefault()
 
     suspend fun navn(
         personIdent: PersonIdent,
     ): String {
-        val token = azureAdV2Client.getSystemToken(pdlClientId)
-            ?: throw RuntimeException("Failed to send request to PDL: No token was found")
-        return person(personIdent, token)?.fullName()
-            ?: throw RuntimeException("PDL returned empty navn for given fnr")
+        val cacheKey = "$NAVN_CACHE_KEY_PREFIX${personIdent.value}"
+        val cachedNavn: String? = redisStore.get(key = cacheKey)
+        return if (cachedNavn != null) {
+            cachedNavn
+        } else {
+            val token = azureAdV2Client.getSystemToken(pdlClientId)
+                ?: throw RuntimeException("Failed to send request to PDL: No token was found")
+            val navn = person(personIdent, token)?.fullName()
+                ?: throw RuntimeException("PDL returned empty navn for given fnr")
+            redisStore.set(cacheKey, navn, CACHE_EXPIRE_SECONDS)
+            navn
+        }
     }
 
     suspend fun isKode6Or7(
@@ -37,6 +47,32 @@ class PdlClient(
             ?: throw RuntimeException("Failed to send request to PDL: No token was found")
         return person(personIdent, systemToken, callId)?.isKode6Or7()
             ?: throw RuntimeException("Person not found in PDL for given fnr")
+    }
+
+    suspend fun hentFolkeregisterIdenter(
+        personIdent: PersonIdent,
+        callId: String,
+    ): Set<PersonIdent> {
+        val cacheKey = "$FOLKEREG_IDENTER_CACHE_KEY_PREFIX${personIdent.value}"
+        val cachedIdenter: Set<PersonIdent>? = redisStore.getSetObject(key = cacheKey)
+        return if (cachedIdenter != null) {
+            cachedIdenter
+        } else {
+            mutableSetOf(personIdent).also {
+                it.addAll(
+                    hentIdenter(
+                        nyPersonIdent = personIdent.value,
+                        callId = callId,
+                    )?.identer?.filter { pdlIdent ->
+                        pdlIdent.gruppe == IdentGruppe.FOLKEREGISTERIDENT
+                    }?.map { pdlIdent ->
+                        PersonIdent(pdlIdent.ident)
+                    } ?: emptySet()
+                )
+            }.toSet().also {
+                redisStore.setObject(cacheKey, it, CACHE_EXPIRE_SECONDS)
+            }
+        }
     }
 
     suspend fun hentIdenter(
@@ -126,6 +162,9 @@ class PdlClient(
     }
 
     companion object {
+        private val NAVN_CACHE_KEY_PREFIX = "pdl-navn"
+        private val FOLKEREG_IDENTER_CACHE_KEY_PREFIX = "pdl-folkereg-identer"
+        private val CACHE_EXPIRE_SECONDS = 24L * 3600
         private val logger = LoggerFactory.getLogger(PdlClient::class.java)
     }
 }

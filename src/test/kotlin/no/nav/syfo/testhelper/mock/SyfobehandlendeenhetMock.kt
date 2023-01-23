@@ -11,12 +11,14 @@ import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient.Companion.PERS
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetDTO
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FJERDE_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_BEHANDLENDE_ENHET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_TREDJE_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.getRandomPort
@@ -51,6 +53,8 @@ class SyfobehandlendeenhetMock {
                         personIdent == ARBEIDSTAKER_FNR.value ||
                         personIdent == ARBEIDSTAKER_ADRESSEBESKYTTET.value ||
                         personIdent == ARBEIDSTAKER_ANNEN_FNR.value ||
+                        personIdent == ARBEIDSTAKER_TREDJE_FNR.value ||
+                        personIdent == ARBEIDSTAKER_FJERDE_FNR.value ||
                         personIdent == ARBEIDSTAKER_NO_JOURNALFORING.value ||
                         personIdent == ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE.value ||
                         personIdent == ARBEIDSTAKER_IKKE_VARSEL.value ||

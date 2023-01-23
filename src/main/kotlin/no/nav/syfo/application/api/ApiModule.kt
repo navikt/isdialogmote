@@ -92,6 +92,7 @@ fun Application.apiModule(
         azureAdV2Client = azureAdV2Client,
         pdlClientId = environment.pdlClientId,
         pdlUrl = environment.pdlUrl,
+        redisStore = cache,
     )
     val adressebeskyttelseClient = AdressebeskyttelseClient(
         pdlClient = pdlClient,
@@ -223,6 +224,7 @@ fun Application.apiModule(
                 dialogmoteService = dialogmoteService,
                 dialogmotedeltakerService = dialogmotedeltakerService,
                 pdfService = pdfService,
+                pdlClient = pdlClient,
             )
             registerNarmestelederBrevApi(
                 dialogmoteService = dialogmoteService,
