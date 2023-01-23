@@ -15,6 +15,7 @@ import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generator.generateKafkaIdenthendelseDTOGenerator
 import no.nav.syfo.testhelper.generator.generateNewDialogmote
 import org.amshove.kluent.internal.assertFailsWith
+import org.amshove.kluent.shouldBeAfter
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -79,6 +80,7 @@ object IdenthendelseServiceSpek : Spek({
                     // Check that arbeidstaker with old/current personident exist in db before update
                     val currentMotedeltakerArbeidstaker = database.getMotedeltakerArbeidstakerByIdent(oldIdent)
                     currentMotedeltakerArbeidstaker.size shouldBeEqualTo 1
+                    val initialUpdatedAt = currentMotedeltakerArbeidstaker.first().updatedAt
 
                     // Check that arbeidstaker with new personident do not exist in db before update
                     val newMotedeltakerArbeidstaker = database.getMotedeltakerArbeidstakerByIdent(newIdent)
@@ -91,6 +93,7 @@ object IdenthendelseServiceSpek : Spek({
                     // Check that arbeidstaker with new personident exist in db after update
                     val updatedMotedeltakerArbeidstaker = database.getMotedeltakerArbeidstakerByIdent(newIdent)
                     updatedMotedeltakerArbeidstaker.size shouldBeEqualTo 1
+                    updatedMotedeltakerArbeidstaker.first().updatedAt shouldBeAfter initialUpdatedAt
 
                     // Check that arbeidstaker with old personident do not exist in db after update
                     val oldMotedeltakerArbeidstaker = database.getMotedeltakerArbeidstakerByIdent(oldIdent)

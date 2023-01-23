@@ -110,16 +110,18 @@ fun DatabaseInterface.getMotedeltakerArbeidstakerByIdent(personident: PersonIden
 const val queryUpdateMotedeltakerArbeidstakerPersonident =
     """
         UPDATE MOTEDELTAKER_ARBEIDSTAKER
-        SET personident = ?
+        SET personident = ?, updated_at = ?
         WHERE personident = ?
     """
 
 fun DatabaseInterface.updateMotedeltakerArbeidstakerPersonident(nyPersonident: PersonIdent, gammelPersonident: PersonIdent): Int {
     var updatedRows: Int
+    val now = Timestamp.from(Instant.now())
     this.connection.use { connection ->
         updatedRows = connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerPersonident).use {
             it.setString(1, nyPersonident.value)
-            it.setString(2, gammelPersonident.value)
+            it.setTimestamp(2, now)
+            it.setString(3, gammelPersonident.value)
             it.executeUpdate()
         }.also {
             connection.commit()
