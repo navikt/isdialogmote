@@ -1,5 +1,6 @@
 package no.nav.syfo.identhendelse
 
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerByIdent
@@ -17,7 +18,7 @@ class IdenthendelseService(
 
     private val log: Logger = LoggerFactory.getLogger(IdenthendelseService::class.java)
 
-    suspend fun handleIdenthendelse(identhendelse: KafkaIdenthendelseDTO) {
+    fun handleIdenthendelse(identhendelse: KafkaIdenthendelseDTO) {
         if (identhendelse.folkeregisterIdenter.size > 1) {
             val activeIdent = identhendelse.getActivePersonident()
             if (activeIdent != null) {
@@ -44,10 +45,12 @@ class IdenthendelseService(
     }
 
     // Erfaringer fra andre team tilsier at vi burde dobbeltsjekke at ting har blitt oppdatert i PDL før vi gjør endringer
-    private suspend fun checkThatPdlIsUpdated(nyIdent: PersonIdent) {
-        val pdlIdenter = pdlClient.hentIdenter(nyIdent.value)
-        if (nyIdent.value != pdlIdenter?.aktivIdent || pdlIdenter.identer.any { it.ident == nyIdent.value && it.historisk }) {
-            throw IllegalStateException("Ny ident er ikke aktiv ident i PDL")
+    private fun checkThatPdlIsUpdated(nyIdent: PersonIdent) {
+        runBlocking {
+            val pdlIdenter = pdlClient.hentIdenter(nyIdent.value) ?: throw RuntimeException("Fant ingen identer fra PDL")
+            if (nyIdent.value != pdlIdenter.aktivIdent && pdlIdenter.identhendelseIsNotHistorisk(nyIdent.value)) {
+                throw IllegalStateException("Ny ident er ikke aktiv ident i PDL")
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 package no.nav.syfo.identhendelse.kafka
 
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.identhendelse.IdenthendelseService
@@ -18,10 +17,13 @@ class IdenthendelseConsumerService(
     private val applicationState: ApplicationState,
     private val identhendelseService: IdenthendelseService,
 ) {
-    suspend fun startConsumer() = coroutineScope {
+    suspend fun startConsumer() {
         kafkaConsumer.subscribe(listOf(PDL_AKTOR_TOPIC))
         log.info("Started consuming pdl-aktor topic")
         while (applicationState.ready) {
+            if (kafkaConsumer.subscription().isEmpty()) {
+                kafkaConsumer.subscribe(listOf(PDL_AKTOR_TOPIC))
+            }
             try {
                 val records = kafkaConsumer.poll(Duration.ofSeconds(POLL_DURATION_SECONDS))
                 if (records.count() > 0) {
@@ -37,6 +39,7 @@ class IdenthendelseConsumerService(
                 }
             } catch (ex: Exception) {
                 log.error("Error running kafka consumer for pdl-aktor, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry", ex)
+                kafkaConsumer.unsubscribe()
                 delay(DELAY_ON_ERROR_SECONDS.seconds)
             }
         }
