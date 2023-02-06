@@ -64,6 +64,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                 clearMocks(brukernotifikasjonProducer)
                 justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
                 justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
                 clearMocks(behandlerDialogmeldingProducer)
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                 clearMocks(esyfovarselProducerMock)

@@ -139,6 +139,23 @@ class DialogmotedeltakerService(
         }
     }
 
+    fun slettBrukeroppgaveVedAvbruttMote(
+        dialogmote: Dialogmote
+    ) {
+        val personIdent = dialogmote.arbeidstaker.personIdent
+        val motedeltakerArbeidstakerUuid = dialogmote.arbeidstaker.uuid
+        val sisteArbeidstakerBrukeroppgave = dialogmote.arbeidstaker.varselList
+            .filter { it.varselType.erInnkaltEllerNyttTidSted() }
+            .sortedBy { it.createdAt }
+            .last()
+        val brukeroppgaveUuid = sisteArbeidstakerBrukeroppgave.uuid
+        arbeidstakerVarselService.lesVarsel(
+            personIdent = personIdent,
+            motedeltakerArbeidstakerUuid = motedeltakerArbeidstakerUuid,
+            varselUuid = brukeroppgaveUuid
+        )
+    }
+
     fun updateArbeidsgiverBrevSettSomLest(brevUuid: UUID) {
         val brevIsReferat = database.getReferat(brevUuid).isNotEmpty()
 
