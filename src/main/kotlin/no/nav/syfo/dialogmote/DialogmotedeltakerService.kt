@@ -146,11 +146,11 @@ class DialogmotedeltakerService(
         val motedeltakerArbeidstakerUuid = dialogmote.arbeidstaker.uuid
         dialogmote.arbeidstaker.varselList
             .filter { it.varselType.erBrukeroppgaveVarsel() }
-            .forEach { brukeroppgave ->
+            .forEach { brukeroppgaveVarsel ->
                 arbeidstakerVarselService.lesVarsel(
                     personIdent = personIdent,
                     motedeltakerArbeidstakerUuid = motedeltakerArbeidstakerUuid,
-                    varselUuid = brukeroppgave.uuid
+                    varselUuid = brukeroppgaveVarsel.uuid
                 )
             }
     }
