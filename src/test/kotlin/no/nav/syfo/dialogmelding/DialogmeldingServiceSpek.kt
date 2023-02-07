@@ -86,6 +86,7 @@ class DialogmeldingServiceSpek : Spek({
             database.dropData()
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
+            justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
             clearMocks(altinnMock)

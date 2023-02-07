@@ -181,7 +181,6 @@ class DialogmoteService(
         avlysDialogmote: AvlysDialogmoteDTO,
         token: String,
     ) {
-
         val virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer
 
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
@@ -234,6 +233,9 @@ class DialogmoteService(
                 newDialogmoteStatus = DialogmoteStatus.AVLYST,
                 opprettetAv = getNAVIdentFromToken(token),
                 token = token,
+            )
+            dialogmotedeltakerService.slettBrukeroppgaverPaMote(
+                dialogmote = dialogmote
             )
             createAndSendVarsel(
                 connection = connection,

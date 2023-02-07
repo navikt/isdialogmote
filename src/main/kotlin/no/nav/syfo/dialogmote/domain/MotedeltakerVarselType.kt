@@ -103,6 +103,14 @@ fun MotedeltakerVarselType.getDialogMeldingKode(): DialogmeldingKode {
     }
 }
 
+fun MotedeltakerVarselType.erBrukeroppgaveVarsel(): Boolean {
+    return when (this) {
+        MotedeltakerVarselType.INNKALT,
+        MotedeltakerVarselType.NYTT_TID_STED -> true
+        else -> false
+    }
+}
+
 enum class DialogmeldingKode(
     val value: Int
 ) {

@@ -74,6 +74,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+            justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 
             val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
@@ -382,7 +383,6 @@ class DialogmoteOutdatedCronjobSpek : Spek({
                         dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
                         createdDialogmoteUUID = dialogmoteDTO.uuid
                     }
-
                     val urlMoteUUIDAvlys =
                         "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
                     with(
