@@ -139,7 +139,7 @@ class DialogmotedeltakerService(
         }
     }
 
-    fun slettBrukeroppgaveVedAvbruttMote(
+    fun slettBrukeroppgaverPaMote(
         dialogmote: Dialogmote
     ) {
         val personIdent = dialogmote.arbeidstaker.personIdent

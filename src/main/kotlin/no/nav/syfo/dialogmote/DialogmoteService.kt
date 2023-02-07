@@ -234,7 +234,7 @@ class DialogmoteService(
                 opprettetAv = getNAVIdentFromToken(token),
                 token = token,
             )
-            dialogmotedeltakerService.slettBrukeroppgaveVedAvbruttMote(
+            dialogmotedeltakerService.slettBrukeroppgavePaMote(
                 dialogmote = dialogmote
             )
             createAndSendVarsel(
