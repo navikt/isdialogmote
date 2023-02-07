@@ -144,16 +144,15 @@ class DialogmotedeltakerService(
     ) {
         val personIdent = dialogmote.arbeidstaker.personIdent
         val motedeltakerArbeidstakerUuid = dialogmote.arbeidstaker.uuid
-        val sisteArbeidstakerBrukeroppgave = dialogmote.arbeidstaker.varselList
-            .filter { it.varselType.erInnkaltEllerNyttTidSted() }
-            .sortedBy { it.createdAt }
-            .last()
-        val brukeroppgaveUuid = sisteArbeidstakerBrukeroppgave.uuid
-        arbeidstakerVarselService.lesVarsel(
-            personIdent = personIdent,
-            motedeltakerArbeidstakerUuid = motedeltakerArbeidstakerUuid,
-            varselUuid = brukeroppgaveUuid
-        )
+        dialogmote.arbeidstaker.varselList
+            .filter { it.varselType.erBrukeroppgaveVarsel() }
+            .forEach { brukeroppgave ->
+                arbeidstakerVarselService.lesVarsel(
+                    personIdent = personIdent,
+                    motedeltakerArbeidstakerUuid = motedeltakerArbeidstakerUuid,
+                    varselUuid = brukeroppgave.uuid
+                )
+            }
     }
 
     fun updateArbeidsgiverBrevSettSomLest(brevUuid: UUID) {

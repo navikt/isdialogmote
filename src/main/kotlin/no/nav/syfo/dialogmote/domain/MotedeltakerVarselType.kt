@@ -103,7 +103,7 @@ fun MotedeltakerVarselType.getDialogMeldingKode(): DialogmeldingKode {
     }
 }
 
-fun MotedeltakerVarselType.erInnkaltEllerNyttTidSted(): Boolean {
+fun MotedeltakerVarselType.erBrukeroppgaveVarsel(): Boolean {
     return when (this) {
         MotedeltakerVarselType.INNKALT,
         MotedeltakerVarselType.NYTT_TID_STED -> true
