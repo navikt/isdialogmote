@@ -81,6 +81,7 @@ spec:
           cluster: dev-gcp
   azure:
     application:
+      allowAllUsers: true
       enabled: true
       tenant: trygdeetaten.no
       replyURLs:
