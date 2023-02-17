@@ -11,6 +11,7 @@ import no.nav.syfo.client.pdl.Gradering
 import no.nav.syfo.client.pdl.PdlRequest
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
+import no.nav.syfo.testhelper.generator.generatePdlError
 import no.nav.syfo.testhelper.generator.generatePdlIdenter
 import no.nav.syfo.testhelper.generator.generatePdlPersonResponse
 import no.nav.syfo.testhelper.getRandomPort
@@ -29,17 +30,27 @@ class PdlMock {
                 val pdlRequest = call.receive<PdlRequest>()
                 val isHentIdenter = pdlRequest.query.contains("hentIdenter")
                 if (isHentIdenter) {
-                    if (pdlRequest.variables.ident == UserConstants.ARBEIDSTAKER_TREDJE_FNR.value) {
-                        call.respond(
-                            generatePdlIdenter(
-                                UserConstants.ARBEIDSTAKER_TREDJE_FNR.value,
-                                UserConstants.ARBEIDSTAKER_FJERDE_FNR.value,
+                    when (pdlRequest.variables.ident) {
+                        UserConstants.ARBEIDSTAKER_TREDJE_FNR.value -> {
+                            call.respond(
+                                generatePdlIdenter(
+                                    UserConstants.ARBEIDSTAKER_TREDJE_FNR.value,
+                                    UserConstants.ARBEIDSTAKER_FJERDE_FNR.value,
+                                )
                             )
-                        )
-                    } else if (pdlRequest.variables.ident == UserConstants.ARBEIDSTAKER_IKKE_AKTIVT_FNR.value) {
-                        call.respond(generatePdlIdenter("dummyIdent"))
-                    } else {
-                        call.respond(generatePdlIdenter(pdlRequest.variables.ident))
+                        }
+                        UserConstants.ARBEIDSTAKER_IKKE_AKTIVT_FNR.value -> {
+                            call.respond(generatePdlIdenter("dummyIdent"))
+                        }
+                        UserConstants.ARBEIDSTAKER_WITH_ERROR_FNR.value -> {
+                            call.respond(
+                                generatePdlIdenter(pdlRequest.variables.ident)
+                                    .copy(errors = generatePdlError(code = "not_found"))
+                            )
+                        }
+                        else -> {
+                            call.respond(generatePdlIdenter(pdlRequest.variables.ident))
+                        }
                     }
                 } else {
                     if (pdlRequest.variables.ident == ARBEIDSTAKER_ADRESSEBESKYTTET.value) {

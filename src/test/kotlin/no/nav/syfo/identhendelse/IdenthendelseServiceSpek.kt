@@ -167,6 +167,30 @@ object IdenthendelseServiceSpek : Spek({
                         }
                     }
                 }
+                it("Skal kaste RuntimeException hvis PDL gir en not_found ved henting av identer") {
+                    val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTOGenerator(
+                        personident = PersonIdent(UserConstants.ARBEIDSTAKER_WITH_ERROR_FNR.value),
+                        hasOldPersonident = true,
+                    )
+                    val oldIdent = kafkaIdenthendelseDTO.getInactivePersonidenter().first()
+
+                    val newDialogmote = generateNewDialogmote(personIdent = oldIdent)
+                    database.connection.use { connection ->
+                        connection.createNewDialogmoteWithReferences(
+                            newDialogmote = newDialogmote,
+                            commit = true,
+                        )
+                    }
+
+                    val oldMotedeltakerArbeidstaker = database.getMotedeltakerArbeidstakerByIdent(oldIdent)
+                    oldMotedeltakerArbeidstaker.size shouldBeEqualTo 1
+
+                    runBlocking {
+                        assertFailsWith(RuntimeException::class) {
+                            identhendelseService.handleIdenthendelse(kafkaIdenthendelseDTO)
+                        }
+                    }
+                }
             }
         }
     }
