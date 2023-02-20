@@ -76,6 +76,18 @@ fun generatePdlIdenter(
     errors = null,
 )
 
+fun generatePdlError(code: String? = null) = listOf(
+    PdlError(
+        message = "Error",
+        locations = emptyList(),
+        path = emptyList(),
+        extensions = PdlErrorExtension(
+            code = code,
+            classification = "Classification",
+        )
+    )
+)
+
 private fun String.toFakeOldIdent(): String {
     val substring = this.drop(1)
     return "9$substring"
