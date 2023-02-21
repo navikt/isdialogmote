@@ -75,6 +75,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+            justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -110,6 +111,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                 clearAllMocks()
                 justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
                 justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
             }
 
@@ -190,7 +192,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
 
                             verify(exactly = 1) { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
                             verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2
 
