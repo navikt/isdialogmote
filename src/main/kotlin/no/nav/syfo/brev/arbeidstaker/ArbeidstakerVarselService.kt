@@ -1,6 +1,7 @@
 package no.nav.syfo.brev.arbeidstaker
 
 import no.nav.brukernotifikasjon.schemas.builders.*
+import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal
 import no.nav.brukernotifikasjon.schemas.input.*
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
@@ -111,6 +112,7 @@ fun createBrukernotifikasjonBeskjed(
     .withLink(link)
     .withSikkerhetsnivaa(4)
     .withEksternVarsling(true)
+    .withPrefererteKanaler(PreferertKanal.SMS)
     .withSynligFremTil(LocalDateTime.now().plusYears(1))
     .build()
 
@@ -124,6 +126,7 @@ fun createBrukernotifikasjonOppgave(
     .withLink(link)
     .withSikkerhetsnivaa(4)
     .withEksternVarsling(true)
+    .withPrefererteKanaler(PreferertKanal.SMS)
     .build()
 
 fun createBrukernotifikasjonDone(): DoneInput = DoneInputBuilder()
