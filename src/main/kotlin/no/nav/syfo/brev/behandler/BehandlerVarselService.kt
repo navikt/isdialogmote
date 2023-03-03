@@ -42,6 +42,7 @@ class BehandlerVarselService(
                 dialogmeldingRefParent = varselParentId,
                 dialogmeldingRefConversation = getConversationUuid(varselUuid, varselInnkallingUuid).toString(),
                 dialogmeldingType = varseltype.getDialogMeldingType().name,
+                dialogmeldingKodeverk = varseltype.getDialogMeldingKodeverk().name,
                 dialogmeldingKode = varseltype.getDialogMeldingKode().value,
                 dialogmeldingTekst = document.serialize(),
                 dialogmeldingVedlegg = pdf,

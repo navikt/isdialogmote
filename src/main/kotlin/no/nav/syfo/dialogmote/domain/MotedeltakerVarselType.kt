@@ -94,6 +94,15 @@ fun MotedeltakerVarselType.getDialogMeldingType(): DialogmeldingType {
     }
 }
 
+fun MotedeltakerVarselType.getDialogMeldingKodeverk(): DialogmeldingKodeverk {
+    return when (this) {
+        MotedeltakerVarselType.INNKALT -> DialogmeldingKodeverk.DIALOGMOTE
+        MotedeltakerVarselType.NYTT_TID_STED -> DialogmeldingKodeverk.DIALOGMOTE
+        MotedeltakerVarselType.AVLYST -> DialogmeldingKodeverk.HENVENDELSE
+        MotedeltakerVarselType.REFERAT -> DialogmeldingKodeverk.HENVENDELSE
+    }
+}
+
 fun MotedeltakerVarselType.getDialogMeldingKode(): DialogmeldingKode {
     return when (this) {
         MotedeltakerVarselType.INNKALT -> DialogmeldingKode.INNKALLING
@@ -109,6 +118,12 @@ fun MotedeltakerVarselType.erBrukeroppgaveVarsel(): Boolean {
         MotedeltakerVarselType.NYTT_TID_STED -> true
         else -> false
     }
+}
+
+enum class DialogmeldingKodeverk() {
+    DIALOGMOTE,
+    HENVENDELSE,
+    FORESPORSEL,
 }
 
 enum class DialogmeldingKode(
