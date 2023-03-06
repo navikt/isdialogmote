@@ -33,12 +33,7 @@ import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
-import no.nav.syfo.dialogmote.domain.DialogmeldingKode
-import no.nav.syfo.dialogmote.domain.DialogmeldingType
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.dialogmote.domain.DocumentComponentType
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.dialogmote.domain.serialize
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -57,10 +52,7 @@ import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
-import org.amshove.kluent.shouldBeBefore
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldNotBeEqualTo
+import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -353,6 +345,7 @@ class PostDialogmoteApiV2Spek : Spek({
                             kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo newDialogmoteDTO.behandler!!.innkalling.serialize()
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingType shouldBeEqualTo DialogmeldingType.DIALOG_FORESPORSEL.name
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingKodeverk shouldBeEqualTo DialogmeldingKodeverk.DIALOGMOTE.name
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.INNKALLING.value
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldBeEqualTo null
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null

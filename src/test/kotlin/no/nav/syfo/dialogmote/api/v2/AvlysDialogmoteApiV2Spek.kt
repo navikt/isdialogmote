@@ -317,6 +317,7 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo avlysDialogMoteDto.behandler!!.avlysning.serialize()
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingType shouldBeEqualTo DialogmeldingType.DIALOG_NOTAT.name
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingKodeverk shouldBeEqualTo DialogmeldingKodeverk.HENVENDELSE.name
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.AVLYST.value
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldNotBeEqualTo null
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null

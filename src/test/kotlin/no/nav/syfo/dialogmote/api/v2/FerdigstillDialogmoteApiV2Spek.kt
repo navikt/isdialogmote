@@ -31,11 +31,7 @@ import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.database.getReferat
-import no.nav.syfo.dialogmote.domain.DialogmeldingKode
-import no.nav.syfo.dialogmote.domain.DialogmeldingType
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.dialogmote.domain.DocumentComponentType
-import no.nav.syfo.dialogmote.domain.serialize
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
@@ -613,6 +609,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingUuid shouldBeEqualTo referatBehandlerVarselUUID
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo newReferatDTO.document.serialize()
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingType shouldBeEqualTo DialogmeldingType.DIALOG_NOTAT.name
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingKodeverk shouldBeEqualTo DialogmeldingKodeverk.HENVENDELSE.name
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.REFERAT.value
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation shouldBeEqualTo innkallingBehandlerVarselUUID
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null

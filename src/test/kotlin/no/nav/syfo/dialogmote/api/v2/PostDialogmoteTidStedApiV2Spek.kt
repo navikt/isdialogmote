@@ -35,13 +35,7 @@ import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.EndreTidStedBegrunnelseDTO
 import no.nav.syfo.dialogmote.api.domain.EndreTidStedDialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
-import no.nav.syfo.dialogmote.domain.DialogmeldingKode
-import no.nav.syfo.dialogmote.domain.DialogmeldingType
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
-import no.nav.syfo.dialogmote.domain.DocumentComponentType
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.dialogmote.domain.serialize
+import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_FNR
@@ -371,6 +365,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             kafkaBehandlerDialogmeldingDTO.behandlerRef shouldBeEqualTo newDialogmoteDTO.behandler!!.behandlerRef
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst shouldBeEqualTo newDialogmoteTidSted.behandler!!.endringsdokument.serialize()
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingType shouldBeEqualTo DialogmeldingType.DIALOG_FORESPORSEL.name
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingKodeverk shouldBeEqualTo DialogmeldingKodeverk.DIALOGMOTE.name
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.TIDSTED.value
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldBeEqualTo createdDialogmote.behandler!!.varselList[1].uuid
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation shouldBeEqualTo createdDialogmote.behandler!!.varselList[1].uuid
