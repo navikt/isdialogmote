@@ -80,7 +80,7 @@ fun Application.cronjobModule(
     )
     val arbeidstakerVarselService = ArbeidstakerVarselService(
         brukernotifikasjonProducer = brukernotifikasjonProducer,
-        esyfovarselProducer= esyfovarselProducer,
+        esyfovarselProducer = esyfovarselProducer,
         namespace = environment.namespace,
         appname = environment.appname,
     )
