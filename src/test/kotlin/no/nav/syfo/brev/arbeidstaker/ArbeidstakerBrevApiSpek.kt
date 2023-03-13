@@ -88,7 +88,7 @@ class ArbeidstakerBrevApiSpek : Spek({
             )
             val arbeidstakerVarselService = ArbeidstakerVarselService(
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dialogmoteArbeidstakerUrl = externalMockEnvironment.environment.dialogmoteArbeidstakerUrl,
+                esyfovarselProducer = esyfovarselProducer,
                 namespace = externalMockEnvironment.environment.namespace,
                 appname = externalMockEnvironment.environment.appname,
             )

@@ -9,62 +9,22 @@ import no.nav.syfo.domain.PersonIdent
 import java.net.URL
 import java.time.*
 import java.util.*
+import no.nav.syfo.brev.esyfovarsel.*
 
 class ArbeidstakerVarselService(
     private val brukernotifikasjonProducer: BrukernotifikasjonProducer,
-    private val dialogmoteArbeidstakerUrl: String,
+    private val esyfovarselProducer: EsyfovarselProducer,
     private val namespace: String,
     private val appname: String,
 ) {
-    fun sendVarsel(
-        createdAt: LocalDateTime,
-        personIdent: PersonIdent,
-        type: MotedeltakerVarselType,
-        motedeltakerArbeidstakerUuid: UUID,
-        varselUuid: UUID,
-    ) {
-        val nokkel = createBrukernotifikasjonNokkel(
-            varselUuid = varselUuid,
-            grupperingsId = motedeltakerArbeidstakerUuid,
-            personIdent = personIdent,
-            namespace = namespace,
-            appname = appname,
+    fun sendVarsel(varseltype: MotedeltakerVarselType, personIdent: PersonIdent) {
+        val hendelse = ArbeidstakerHendelse(
+            type = getArbeidstakerVarselType(varseltype),
+            arbeidstakerFnr = personIdent.value,
+            data = null,
+            orgnummer = null,
         )
-        val tekst = when (type) {
-            MotedeltakerVarselType.INNKALT -> {
-                "Du er innkalt til dialogmøte - vi trenger svaret ditt"
-            }
-            MotedeltakerVarselType.AVLYST -> {
-                "Du har mottatt et brev om avlyst dialogmøte"
-            }
-            MotedeltakerVarselType.NYTT_TID_STED -> {
-                "Du har mottatt et brev om endret dialogmøte"
-            }
-            MotedeltakerVarselType.REFERAT -> {
-                "Du har mottatt et referat fra dialogmøte"
-            }
-        }
-        if (type == MotedeltakerVarselType.INNKALT || type == MotedeltakerVarselType.NYTT_TID_STED) {
-            val oppgave = createBrukernotifikasjonOppgave(
-                createdAt = createdAt,
-                tekst = tekst,
-                link = URL(dialogmoteArbeidstakerUrl),
-            )
-            brukernotifikasjonProducer.sendOppgave(
-                nokkel,
-                oppgave,
-            )
-        } else {
-            val beskjed = createBrukernotifikasjonBeskjed(
-                createdAt = createdAt,
-                tekst = tekst,
-                link = URL(dialogmoteArbeidstakerUrl),
-            )
-            brukernotifikasjonProducer.sendBeskjed(
-                nokkel,
-                beskjed,
-            )
-        }
+        esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
     }
 
     fun lesVarsel(
@@ -135,3 +95,12 @@ fun createBrukernotifikasjonDone(): DoneInput = DoneInputBuilder()
 
 fun LocalDateTime.toLocalDateTimeUTC() =
     this.atZone(ZoneId.of("Europe/Oslo")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()
+
+private fun getArbeidstakerVarselType(motedeltakerVarselType: MotedeltakerVarselType): HendelseType {
+    return when (motedeltakerVarselType) {
+        MotedeltakerVarselType.INNKALT -> HendelseType.SM_DIALOGMOTE_INNKALT
+        MotedeltakerVarselType.AVLYST -> HendelseType.SM_DIALOGMOTE_AVLYST
+        MotedeltakerVarselType.NYTT_TID_STED -> HendelseType.SM_DIALOGMOTE_NYTT_TID_STED
+        MotedeltakerVarselType.REFERAT -> HendelseType.SM_DIALOGMOTE_REFERAT
+    }
+}

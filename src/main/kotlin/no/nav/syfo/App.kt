@@ -124,6 +124,7 @@ fun main() {
                 environment = environment,
                 cache = cache,
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
+                esyfovarselProducer = esyfovarselProducer,
             )
         }
     }

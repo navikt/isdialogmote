@@ -8,6 +8,7 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.launchBackgroundTask
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.ereg.EregClient
@@ -35,6 +36,7 @@ fun Application.cronjobModule(
     environment: Environment,
     cache: RedisStore,
     brukernotifikasjonProducer: BrukernotifikasjonProducer,
+    esyfovarselProducer: EsyfovarselProducer,
 ) {
     val azureAdV2Client = AzureAdV2Client(
         aadAppClient = environment.aadAppClient,
@@ -78,7 +80,7 @@ fun Application.cronjobModule(
     )
     val arbeidstakerVarselService = ArbeidstakerVarselService(
         brukernotifikasjonProducer = brukernotifikasjonProducer,
-        dialogmoteArbeidstakerUrl = environment.dialogmoteArbeidstakerUrl,
+        esyfovarselProducer= esyfovarselProducer,
         namespace = environment.namespace,
         appname = environment.appname,
     )

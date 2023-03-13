@@ -133,7 +133,7 @@ fun Application.apiModule(
 
     val arbeidstakerVarselService = ArbeidstakerVarselService(
         brukernotifikasjonProducer = brukernotifikasjonProducer,
-        dialogmoteArbeidstakerUrl = environment.dialogmoteArbeidstakerUrl,
+        esyfovarselProducer = esyfovarselProducer,
         namespace = environment.namespace,
         appname = environment.appname,
     )

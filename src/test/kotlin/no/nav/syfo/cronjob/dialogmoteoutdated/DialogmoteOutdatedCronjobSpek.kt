@@ -110,7 +110,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
             )
             val arbeidstakerVarselService = ArbeidstakerVarselService(
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dialogmoteArbeidstakerUrl = externalMockEnvironment.environment.dialogmoteArbeidstakerUrl,
+                esyfovarselProducer = esyfovarselProducerMock,
                 namespace = externalMockEnvironment.environment.namespace,
                 appname = externalMockEnvironment.environment.appname,
             )

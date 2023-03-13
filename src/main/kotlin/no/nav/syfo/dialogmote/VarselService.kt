@@ -80,11 +80,8 @@ class VarselService(
 
         if (isDigitalVarselEnabledForArbeidstaker) {
             arbeidstakerVarselService.sendVarsel(
-                createdAt = tidspunktForVarsel,
+                varseltype = varselType,
                 personIdent = arbeidstakerPersonIdent,
-                type = varselType,
-                motedeltakerArbeidstakerUuid = arbeidstakerId,
-                varselUuid = arbeidstakerbrevId,
             )
         }
 

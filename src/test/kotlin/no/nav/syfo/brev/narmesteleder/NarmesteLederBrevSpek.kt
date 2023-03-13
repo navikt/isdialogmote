@@ -78,6 +78,7 @@ object NarmesteLederBrevSpek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
+            val esyfovarselProducer = mockk<EsyfovarselProducer>()
             justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
             justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
@@ -122,7 +123,7 @@ object NarmesteLederBrevSpek : Spek({
             )
             val arbeidstakerVarselService = ArbeidstakerVarselService(
                 brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dialogmoteArbeidstakerUrl = externalMockEnvironment.environment.dialogmoteArbeidstakerUrl,
+                esyfovarselProducer = esyfovarselProducer,
                 namespace = externalMockEnvironment.environment.namespace,
                 appname = externalMockEnvironment.environment.appname,
             )
