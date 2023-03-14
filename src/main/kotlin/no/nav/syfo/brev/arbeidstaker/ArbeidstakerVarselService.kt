@@ -1,15 +1,27 @@
 package no.nav.syfo.brev.arbeidstaker
 
-import no.nav.brukernotifikasjon.schemas.builders.*
+import java.net.URL
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.util.*
+import no.nav.brukernotifikasjon.schemas.builders.BeskjedInputBuilder
+import no.nav.brukernotifikasjon.schemas.builders.DoneInputBuilder
+import no.nav.brukernotifikasjon.schemas.builders.NokkelInputBuilder
+import no.nav.brukernotifikasjon.schemas.builders.OppgaveInputBuilder
 import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal
-import no.nav.brukernotifikasjon.schemas.input.*
+import no.nav.brukernotifikasjon.schemas.input.BeskjedInput
+import no.nav.brukernotifikasjon.schemas.input.DoneInput
+import no.nav.brukernotifikasjon.schemas.input.NokkelInput
+import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.esyfovarsel.ArbeidstakerHendelse
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.brev.esyfovarsel.HendelseType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.domain.PersonIdent
-import java.net.URL
-import java.time.*
-import java.util.*
-import no.nav.syfo.brev.esyfovarsel.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class ArbeidstakerVarselService(
     private val brukernotifikasjonProducer: BrukernotifikasjonProducer,
@@ -17,6 +29,8 @@ class ArbeidstakerVarselService(
     private val namespace: String,
     private val appname: String,
 ) {
+    private val log: Logger = LoggerFactory.getLogger(ArbeidstakerVarselService::class.java)
+
     fun sendVarsel(varseltype: MotedeltakerVarselType, personIdent: PersonIdent) {
         val hendelse = ArbeidstakerHendelse(
             type = getArbeidstakerVarselType(varseltype),
@@ -24,6 +38,7 @@ class ArbeidstakerVarselService(
             data = null,
             orgnummer = null,
         )
+        log.info("Skal sende ${getArbeidstakerVarselType(varseltype)} via til esyfovarselProducer")
         esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
     }
 
@@ -96,7 +111,7 @@ fun createBrukernotifikasjonDone(): DoneInput = DoneInputBuilder()
 fun LocalDateTime.toLocalDateTimeUTC() =
     this.atZone(ZoneId.of("Europe/Oslo")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()
 
-private fun getArbeidstakerVarselType(motedeltakerVarselType: MotedeltakerVarselType): HendelseType {
+fun getArbeidstakerVarselType(motedeltakerVarselType: MotedeltakerVarselType): HendelseType {
     return when (motedeltakerVarselType) {
         MotedeltakerVarselType.INNKALT -> HendelseType.SM_DIALOGMOTE_INNKALT
         MotedeltakerVarselType.AVLYST -> HendelseType.SM_DIALOGMOTE_AVLYST

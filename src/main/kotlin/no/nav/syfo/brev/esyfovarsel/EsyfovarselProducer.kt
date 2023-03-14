@@ -1,6 +1,6 @@
 package no.nav.syfo.brev.esyfovarsel
 
-import com.fasterxml.jackson.annotation.*
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.io.Serializable
 import java.util.*
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
 
 class EsyfovarselProducer(private val kafkaEsyfovarselProducer: KafkaProducer<String, EsyfovarselHendelse>) {
     fun sendVarselToEsyfovarsel(esyfovarselHendelse: EsyfovarselHendelse) {
+        log.info("Skal sende hndelse til varselbus topic ${esyfovarselHendelse.type}")
         try {
             kafkaEsyfovarselProducer.send(
                 ProducerRecord(

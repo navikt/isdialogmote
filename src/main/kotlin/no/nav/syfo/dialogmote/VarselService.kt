@@ -1,5 +1,7 @@
 package no.nav.syfo.dialogmote
 
+import java.time.LocalDateTime
+import java.util.*
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
@@ -12,8 +14,8 @@ import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
-import java.time.LocalDateTime
-import java.util.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class VarselService(
     private val arbeidstakerVarselService: ArbeidstakerVarselService,
@@ -23,6 +25,7 @@ class VarselService(
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     private val isAltinnSendingEnabled: Boolean,
 ) {
+    private val log: Logger = LoggerFactory.getLogger(VarselService::class.java)
 
     suspend fun sendVarsel(
         tidspunktForVarsel: LocalDateTime,
@@ -77,8 +80,9 @@ class VarselService(
                 varseltype = varselType,
             )
         }
-
+        log.info("isDigitalVarselEnabledForArbeidstaker $isDigitalVarselEnabledForArbeidstaker")
         if (isDigitalVarselEnabledForArbeidstaker) {
+            log.info("Skal sende $varselType via arbeidstakerVarselService")
             arbeidstakerVarselService.sendVarsel(
                 varseltype = varselType,
                 personIdent = arbeidstakerPersonIdent,
