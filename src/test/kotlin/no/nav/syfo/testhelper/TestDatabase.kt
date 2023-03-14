@@ -236,21 +236,19 @@ fun Connection.createBehandlerVarsel(
 
 const val createBehandlerVarselSvarQuery =
     """
-    INSERT INTO MOTEDELTAKER_BEHANDLER_VARSEL_SVAR(uuid, created_at, motedeltaker_behandler_varsel_id, svar_type, svar_tekst, msg_id, valid)
-    VALUES (?, now(), ?, ?, '', '', ?)
+    INSERT INTO MOTEDELTAKER_BEHANDLER_VARSEL_SVAR(uuid, created_at, motedeltaker_behandler_varsel_id, svar_type, svar_tekst, msg_id)
+    VALUES (?, now(), ?, ?, '', '')
 """
 
 fun Connection.createBehandlerVarselSvar(
     svarUuid: UUID,
     varselId: Int,
     svarType: DialogmoteSvarType,
-    valid: Boolean = true,
 ) {
     prepareStatement(createBehandlerVarselSvarQuery).use {
         it.setString(1, svarUuid.toString())
         it.setInt(2, varselId)
         it.setString(3, svarType.name)
-        it.setBoolean(4, valid)
         it.execute()
     }
     commit()

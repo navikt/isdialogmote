@@ -8,7 +8,6 @@ import no.nav.syfo.dialogmelding.COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDL
 import no.nav.syfo.dialogmelding.domain.DialogmeldingSvar
 import no.nav.syfo.dialogmelding.domain.getDialogmoteSvarType
 import no.nav.syfo.dialogmelding.domain.getVarselType
-import no.nav.syfo.dialogmelding.domain.happenedBefore
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
 import no.nav.syfo.dialogmote.domain.*
@@ -78,16 +77,11 @@ class BehandlerVarselService(
                     log.error("Could not find mote for behandlerVarsel ${pMotedeltakerBehandlerVarsel.uuid} conversationRef $conversationRef, parentRef $parentRef and msgId $msgId - Did not create svar")
                     return false
                 }
-                val moteStatus = DialogmoteStatus.valueOf(currentMote.status)
-                val moteUpdatedAt = currentMote.updatedAt
-                val isBehandlerSvarOnTime = moteStatus.unfinished() ||
-                    dialogmeldingSvar happenedBefore moteUpdatedAt
                 database.createMotedeltakerBehandlerVarselSvar(
                     motedeltakerBehandlerVarselId = pMotedeltakerBehandlerVarsel.id,
                     type = svarType,
                     tekst = svarTekst,
                     msgId = msgId,
-                    valid = isBehandlerSvarOnTime,
                 )
                 log.info("Created svar $svarType på varsel $varseltype with uuid ${pMotedeltakerBehandlerVarsel.uuid}")
                 COUNT_CREATE_INNKALLING_DIALOGMOTE_SVAR_BEHANDLER_SUCCESS.increment()
