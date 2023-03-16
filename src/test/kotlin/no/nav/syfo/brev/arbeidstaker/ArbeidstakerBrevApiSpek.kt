@@ -493,12 +493,12 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                     it("should return OK if request is successful") {
                         for (
-                        dialogmoteDTO in listOf(
-                            newDialogmoteLukket,
-                            newDialogmoteAvlyst1,
-                            newDialogmoteAvlyst2,
-                            newDialogmoteInnkalt
-                        )
+                            dialogmoteDTO in listOf(
+                                newDialogmoteLukket,
+                                newDialogmoteAvlyst1,
+                                newDialogmoteAvlyst2,
+                                newDialogmoteInnkalt
+                            )
                         ) {
                             with(
                                 handleRequest(HttpMethod.Post, urlMote) {

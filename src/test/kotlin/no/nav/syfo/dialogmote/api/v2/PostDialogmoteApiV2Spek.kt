@@ -259,7 +259,6 @@ class PostDialogmoteApiV2Spek : Spek({
 
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo ""
-
                         }
                     }
                     it("should return OK if request is successful: with behandler") {
