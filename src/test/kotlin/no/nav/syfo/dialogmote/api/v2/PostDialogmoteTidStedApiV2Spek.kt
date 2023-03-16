@@ -10,13 +10,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.mockk.clearAllMocks
-import io.mockk.clearMocks
-import io.mockk.every
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.verify
+import io.mockk.*
 import java.util.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
@@ -25,8 +19,8 @@ import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProduc
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
-import no.nav.syfo.brev.esyfovarsel.HendelseType
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.brev.esyfovarsel.HendelseType
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmelding.DialogmeldingService
 import no.nav.syfo.dialogmelding.domain.ForesporselType
@@ -48,11 +42,7 @@ import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldContain
-import org.amshove.kluent.shouldNotBeEqualTo
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -68,13 +58,14 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 
-            val esyfovarselHendelse = generateInkallingHendelse()
+            val esyfovarselEndringHendelse = generateEndringHendelse()
+            val esyfovarselEndringHendelse1 = generateEndringHendelse()
 
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
-            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
 
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -104,8 +95,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                 clearAllMocks()
             }
             beforeEachTest {
-                justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-                justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                 justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                 clearMocks(altinnMock)
@@ -135,7 +125,8 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            esyfovarselEndringHendelse.type = HendelseType.NL_DIALOGMOTE_INNKALT
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                         }
 
                         with(
@@ -193,8 +184,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            esyfovarselHendelse.type = HendelseType.NL_DIALOGMOTE_NYTT_TID_STED
-                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                         }
 
                         with(
@@ -236,7 +226,8 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteTidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/zyx"
 
-                            verify(exactly = 2) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
 
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2
@@ -263,8 +254,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            esyfovarselHendelse.type = HendelseType.NL_DIALOGMOTE_INNKALT
-                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                             verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                             clearMocks(behandlerDialogmeldingProducer)
                             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -333,7 +323,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                         }
 
                         val createdDialogmote: DialogmoteDTO
@@ -351,7 +341,6 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
 
                             createdDialogmote = dialogmoteList.first()
                             createdDialogmote.status shouldBeEqualTo DialogmoteStatus.NYTT_TID_STED.name
-                            verify(exactly = 2) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
                             val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
                             verify(exactly = 1) {
@@ -373,8 +362,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                         }
 
                         clearAllMocks()
-                        justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-                        justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
+                        justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                         justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
                         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                         clearMocks(altinnMock)
@@ -408,8 +396,8 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            esyfovarselHendelse.type = HendelseType.NL_DIALOGMOTE_NYTT_TID_STED
-                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            esyfovarselEndringHendelse.type = HendelseType.NL_DIALOGMOTE_NYTT_TID_STED
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                         }
 
                         with(
@@ -456,8 +444,8 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
-                            esyfovarselHendelse.type = HendelseType.NL_DIALOGMOTE_INNKALT
-                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                            esyfovarselEndringHendelse.type = HendelseType.NL_DIALOGMOTE_INNKALT
+                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                             verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                             clearMocks(behandlerDialogmeldingProducer)
                             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }

@@ -20,26 +20,13 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
-import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteAvlysPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteFerdigstillPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteTidStedPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
+import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.testhelper.ExternalMockEnvironment
-import no.nav.syfo.testhelper.UserConstants
-import no.nav.syfo.testhelper.dropData
-import no.nav.syfo.testhelper.generateJWTNavIdent
-import no.nav.syfo.testhelper.generator.generateAvlysDialogmoteDTO
-import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTO
-import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTOWithBehandler
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithBehandler
-import no.nav.syfo.testhelper.generator.generateNewReferatDTO
-import no.nav.syfo.testhelper.testApiModule
+import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
@@ -60,8 +47,6 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
-            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()

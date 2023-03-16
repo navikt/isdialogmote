@@ -15,7 +15,7 @@ import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.esyfovarsel.*
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.testhelper.ExternalMockEnvironment
@@ -26,7 +26,10 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generateJWTNavIdent
-import no.nav.syfo.testhelper.generator.*
+import no.nav.syfo.testhelper.generator.generateInkallingHendelse
+import no.nav.syfo.testhelper.generator.generateNewDialogmote
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithMissingValues
 import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -47,7 +50,6 @@ class GetDialogmoteApiV2Spek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
             val esyfovarselHendelse = generateInkallingHendelse()
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
@@ -72,7 +74,6 @@ class GetDialogmoteApiV2Spek : Spek({
                 describe("Happy path") {
                     beforeEachTest {
                         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-                        justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                     }
 
                     beforeEachTest {

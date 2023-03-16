@@ -12,7 +12,6 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.mockk.clearMocks
 import io.mockk.every
-import io.mockk.justRun
 import io.mockk.mockk
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
@@ -50,7 +49,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
@@ -64,7 +62,6 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                 val altinnResponse = ReceiptExternal()
                 altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-                justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                 clearMocks(altinnMock)
                 every {
                     altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())

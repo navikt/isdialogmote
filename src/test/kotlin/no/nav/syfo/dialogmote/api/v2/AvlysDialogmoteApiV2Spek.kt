@@ -2,10 +2,16 @@ package no.nav.syfo.dialogmote.api.v2
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.http.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpHeaders.Authorization
-import io.ktor.server.testing.*
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.setBody
 import io.mockk.*
+import java.time.LocalDateTime
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
@@ -13,21 +19,25 @@ import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProduc
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.testhelper.dropData
+import no.nav.syfo.testhelper.generateJWTNavIdent
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
-import no.nav.syfo.util.*
+import no.nav.syfo.testhelper.testApiModule
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.LocalDateTime
-import no.nav.syfo.brev.esyfovarsel.*
 
 class AvlysDialogmoteApiV2Spek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -62,8 +72,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
 
             beforeEachTest {
                 clearMocks(brukernotifikasjonProducer)
-                justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
-                justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                 justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
                 clearMocks(behandlerDialogmeldingProducer)
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -175,8 +183,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
                                 LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo true
 
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                             verify(exactly = 0) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
 
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
@@ -302,8 +308,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
 
                             val dialogmoteDTO = dialogmoteList.first()
                             dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.AVLYST.name
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
                             val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
                             verify(exactly = 1) {
@@ -467,9 +471,6 @@ class AvlysDialogmoteApiV2Spek : Spek({
                             val isTodayBeforeDialogmotetid =
                                 LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo false
-
-                            verify(exactly = 0) { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
-                            verify(exactly = 0) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
 
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2

@@ -1,39 +1,62 @@
 package no.nav.syfo.brev.arbeidstaker
 
-import com.fasterxml.jackson.databind.*
-import com.fasterxml.jackson.module.kotlin.*
-import io.ktor.http.*
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpHeaders.Authorization
-import io.ktor.server.testing.*
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.setBody
 import io.mockk.*
-import java.time.*
+import java.time.LocalDateTime
 import java.util.*
-import kotlinx.coroutines.*
-import no.altinn.schemas.services.intermediary.receipt._2009._10.*
-import no.altinn.services.serviceengine.correspondence._2009._10.*
-import no.nav.syfo.application.cache.*
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.*
-import no.nav.syfo.brev.arbeidstaker.domain.*
-import no.nav.syfo.brev.esyfovarsel.*
-import no.nav.syfo.client.azuread.*
-import no.nav.syfo.client.oppfolgingstilfelle.*
-import no.nav.syfo.client.tokendings.*
-import no.nav.syfo.dialogmote.*
-import no.nav.syfo.dialogmote.api.domain.*
-import no.nav.syfo.dialogmote.api.v2.*
-import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.domain.*
+import kotlinx.coroutines.runBlocking
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
+import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
+import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
+import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
+import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
+import no.nav.syfo.client.azuread.AzureAdV2Client
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.client.tokendings.TokendingsClient
+import no.nav.syfo.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.dialogmote.DialogmoterelasjonService
+import no.nav.syfo.dialogmote.DialogmotestatusService
+import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteAvlysPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteFerdigstillPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
+import no.nav.syfo.dialogmote.database.getDialogmote
+import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FJERDE_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_TREDJE_FNR
-import no.nav.syfo.testhelper.generator.*
-import no.nav.syfo.util.*
-import org.amshove.kluent.*
-import org.spekframework.spek2.*
-import org.spekframework.spek2.style.specification.*
-import redis.clients.jedis.*
+import no.nav.syfo.testhelper.generator.generateAvlysDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewReferatDTO
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.util.configuredJacksonMapper
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.shouldNotBeNull
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
+import redis.clients.jedis.Protocol
 
 class ArbeidstakerBrevApiSpek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -113,9 +136,8 @@ class ArbeidstakerBrevApiSpek : Spek({
                     altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
                 } returns altinnResponse
                 clearMocks(brukernotifikasjonProducer)
-                justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
-                justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                 justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
+                justRun { esyfovarselProducer.sendVarselToEsyfovarsel(any()) }
                 // Add dummy deltakere so that id for deltaker and mote does not match by accident
                 database.addDummyDeltakere()
             }
@@ -208,7 +230,6 @@ class ArbeidstakerBrevApiSpek : Spek({
                             val isTodayBeforeDialogmotetid = LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo true
 
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                             verify(exactly = 1) { brukernotifikasjonProducer.sendDone(any(), any()) }
                         }
                         with(
@@ -232,7 +253,6 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                             val arbeidstakerBrevUpdatedDTO = arbeidstakerBrevList.first()
                             arbeidstakerBrevUpdatedDTO.lestDato shouldBeEqualTo arbeidstakerBrevDTO!!.lestDato
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                             verify(exactly = 1) { brukernotifikasjonProducer.sendDone(any(), any()) }
                         }
                         val urlArbeidstakerBrevUUIDRespons =
@@ -379,7 +399,6 @@ class ArbeidstakerBrevApiSpek : Spek({
                             arbeidstakerBrevDTO!!.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
                             arbeidstakerBrevDTO!!.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
 
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                             verify(exactly = 1) { brukernotifikasjonProducer.sendDone(any(), any()) }
                         }
                         with(
@@ -403,7 +422,6 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                             val arbeidstakerBrevUpdatedDTO = arbeidstakerBrevList.first()
                             arbeidstakerBrevUpdatedDTO.lestDato shouldBeEqualTo arbeidstakerBrevDTO!!.lestDato
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                             verify(exactly = 1) { brukernotifikasjonProducer.sendDone(any(), any()) }
                         }
                         val urlArbeidstakerBrevUUIDRespons =
@@ -475,12 +493,12 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                     it("should return OK if request is successful") {
                         for (
-                            dialogmoteDTO in listOf(
-                                newDialogmoteLukket,
-                                newDialogmoteAvlyst1,
-                                newDialogmoteAvlyst2,
-                                newDialogmoteInnkalt
-                            )
+                        dialogmoteDTO in listOf(
+                            newDialogmoteLukket,
+                            newDialogmoteAvlyst1,
+                            newDialogmoteAvlyst2,
+                            newDialogmoteInnkalt
+                        )
                         ) {
                             with(
                                 handleRequest(HttpMethod.Post, urlMote) {

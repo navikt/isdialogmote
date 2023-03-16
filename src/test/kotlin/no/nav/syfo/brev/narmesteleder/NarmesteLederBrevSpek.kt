@@ -9,11 +9,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.mockk.clearMocks
-import io.mockk.every
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 import java.time.LocalDateTime
 import java.util.*
 import kotlinx.coroutines.runBlocking
@@ -25,8 +21,8 @@ import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.brev.domain.BrevType
-import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
@@ -43,18 +39,16 @@ import no.nav.syfo.dialogmote.database.getDialogmote
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.testhelper.ExternalMockEnvironment
+import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR_2
 import no.nav.syfo.testhelper.UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.addDummyDeltakere
-import no.nav.syfo.testhelper.dropData
-import no.nav.syfo.testhelper.generateJWTNavIdent
-import no.nav.syfo.testhelper.generateJWTTokenx
-import no.nav.syfo.testhelper.generator.*
-import no.nav.syfo.testhelper.testApiModule
+import no.nav.syfo.testhelper.generator.generateInkallingHendelse
+import no.nav.syfo.testhelper.generator.generateInkallingHendelseOtherVirksomhet
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewReferatDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
@@ -79,8 +73,6 @@ object NarmesteLederBrevSpek : Spek({
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             val esyfovarselProducer = mockk<EsyfovarselProducer>()
-            justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
-            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 
             val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)

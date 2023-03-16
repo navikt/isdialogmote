@@ -18,8 +18,8 @@ import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
@@ -30,18 +30,10 @@ import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.testhelper.ExternalMockEnvironment
-import no.nav.syfo.testhelper.UserConstants
-import no.nav.syfo.testhelper.dropData
-import no.nav.syfo.testhelper.generateJWTNavIdent
+import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewReferatDTO
-import no.nav.syfo.testhelper.setMotedeltakerArbeidstakerVarselBrevBestilt
-import no.nav.syfo.testhelper.setMotedeltakerArbeidstakerVarselJournalfort
-import no.nav.syfo.testhelper.setReferatBrevBestilt
-import no.nav.syfo.testhelper.setReferatJournalfort
-import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
@@ -64,8 +56,6 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
-            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
             justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
 
             val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
