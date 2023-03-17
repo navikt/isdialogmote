@@ -85,8 +85,6 @@ spec:
       allowAllUsers: true
       enabled: true
       tenant: trygdeetaten.no
-      replyURLs:
-        - "https://isdialogmote.intern.dev.nav.no/oauth2/callback"
       claims:
         extra:
           - "NAVident"
