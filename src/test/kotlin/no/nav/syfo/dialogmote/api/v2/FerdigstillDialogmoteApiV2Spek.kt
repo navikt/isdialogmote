@@ -57,7 +57,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
+            
 
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -91,7 +91,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
             afterEachTest {
                 database.dropData()
                 clearAllMocks()
-                justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
+                
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
             }
 

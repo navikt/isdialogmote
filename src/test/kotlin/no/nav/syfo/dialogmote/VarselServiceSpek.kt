@@ -46,7 +46,7 @@ object VarselServiceSpek : Spek({
             clearMocks(altinnClient)
             clearMocks(oppfolgingstilfelleClient)
 
-            justRun { arbeidstakerVarselService.sendVarsel(any(), any()) }
+            justRun { arbeidstakerVarselService.sendVarsel(any(), any(), any()) }
             justRun { narmesteLederVarselService.sendVarsel(any(), any()) }
             justRun { behandlerVarselService.sendVarsel(any(), any(), any(), any(), any(), any(), any(), any()) }
             justRun { altinnClient.sendToVirksomhet(any()) }

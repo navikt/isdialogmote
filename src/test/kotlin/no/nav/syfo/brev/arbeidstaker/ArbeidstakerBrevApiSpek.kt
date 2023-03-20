@@ -21,8 +21,8 @@ import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
+import no.nav.syfo.brev.esyfovarsel.ArbeidstakerHendelse
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.tokendings.TokendingsClient
@@ -72,7 +72,7 @@ class ArbeidstakerBrevApiSpek : Spek({
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
 
             val esyfovarselProducer = mockk<EsyfovarselProducer>(relaxed = true)
-            val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
+            val esyfovarselHendelse = mockk<ArbeidstakerHendelse>(relaxed = true)
             justRun { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
@@ -136,7 +136,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                     altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
                 } returns altinnResponse
                 clearMocks(brukernotifikasjonProducer)
-                justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
+                
                 justRun { esyfovarselProducer.sendVarselToEsyfovarsel(any()) }
                 // Add dummy deltakere so that id for deltaker and mote does not match by accident
                 database.addDummyDeltakere()
@@ -230,7 +230,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                             val isTodayBeforeDialogmotetid = LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo true
 
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendDone(any(), any()) }
+                            verify(exactly = 1) { esyfovarselProducer.sendVarselToEsyfovarsel(any()) }
                         }
                         with(
                             handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDLes) {
@@ -253,7 +253,7 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                             val arbeidstakerBrevUpdatedDTO = arbeidstakerBrevList.first()
                             arbeidstakerBrevUpdatedDTO.lestDato shouldBeEqualTo arbeidstakerBrevDTO!!.lestDato
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendDone(any(), any()) }
+                            verify(exactly = 1) { esyfovarselProducer.sendVarselToEsyfovarsel(any()) }
                         }
                         val urlArbeidstakerBrevUUIDRespons =
                             "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiResponsPath"
@@ -399,7 +399,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                             arbeidstakerBrevDTO!!.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
                             arbeidstakerBrevDTO!!.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
 
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendDone(any(), any()) }
+                            verify(exactly = 1) { esyfovarselProducer.sendVarselToEsyfovarsel(any()) }
                         }
                         with(
                             handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDLes) {
@@ -422,7 +422,7 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                             val arbeidstakerBrevUpdatedDTO = arbeidstakerBrevList.first()
                             arbeidstakerBrevUpdatedDTO.lestDato shouldBeEqualTo arbeidstakerBrevDTO!!.lestDato
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendDone(any(), any()) }
+                            verify(exactly = 1) { esyfovarselProducer.sendVarselToEsyfovarsel(any()) }
                         }
                         val urlArbeidstakerBrevUUIDRespons =
                             "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiResponsPath"

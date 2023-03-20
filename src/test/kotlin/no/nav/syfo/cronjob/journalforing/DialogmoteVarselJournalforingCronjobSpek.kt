@@ -63,7 +63,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
+            
 
             val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)

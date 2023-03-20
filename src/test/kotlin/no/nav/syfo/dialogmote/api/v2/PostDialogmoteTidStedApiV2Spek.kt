@@ -58,10 +58,9 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
             val database = externalMockEnvironment.database
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
+            
 
             val esyfovarselEndringHendelse = generateEndringHendelse()
-            val esyfovarselEndringHendelse1 = generateEndringHendelse()
 
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
@@ -96,7 +95,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
             }
             beforeEachTest {
                 justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
-                justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
+                
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                 clearMocks(altinnMock)
                 every {
@@ -363,7 +362,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
 
                         clearAllMocks()
                         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
-                        justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
+                        
                         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                         clearMocks(altinnMock)
                         every {

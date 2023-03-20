@@ -80,12 +80,12 @@ class VarselService(
                 varseltype = varselType,
             )
         }
-        log.info("isDigitalVarselEnabledForArbeidstaker $isDigitalVarselEnabledForArbeidstaker")
         if (isDigitalVarselEnabledForArbeidstaker) {
             log.info("Skal sende $varselType via arbeidstakerVarselService")
             arbeidstakerVarselService.sendVarsel(
                 varseltype = varselType,
                 personIdent = arbeidstakerPersonIdent,
+                varselUuid = arbeidstakerbrevId
             )
         }
 

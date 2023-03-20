@@ -132,7 +132,6 @@ class DialogmotedeltakerService(
 
             arbeidstakerVarselService.lesVarsel(
                 personIdent = personIdent,
-                motedeltakerArbeidstakerUuid = dialogmotedeltakerArbeidstakerUuid,
                 varselUuid = brevUuid,
             )
             connection.commit()
@@ -149,7 +148,6 @@ class DialogmotedeltakerService(
             .forEach { brukeroppgaveVarsel ->
                 arbeidstakerVarselService.lesVarsel(
                     personIdent = personIdent,
-                    motedeltakerArbeidstakerUuid = motedeltakerArbeidstakerUuid,
                     varselUuid = brukeroppgaveVarsel.uuid
                 )
             }

@@ -60,9 +60,6 @@ fun main() {
     )
 
     val brukernotifikasjonProducer = BrukernotifikasjonProducer(
-        kafkaProducerBeskjed = KafkaProducer<NokkelInput, BeskjedInput>(kafkaBrukernotifikasjonProducerProperties),
-        kafkaProducerOppgave = KafkaProducer<NokkelInput, OppgaveInput>(kafkaBrukernotifikasjonProducerProperties),
-        kafkaProducerDone = KafkaProducer<NokkelInput, DoneInput>(kafkaBrukernotifikasjonProducerProperties),
     )
 
     val behandlerDialogmeldingProducer = BehandlerDialogmeldingProducer(
