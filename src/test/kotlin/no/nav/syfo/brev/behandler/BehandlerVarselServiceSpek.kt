@@ -75,7 +75,6 @@ class BehandlerVarselServiceSpek : Spek({
                         any(),
                         any(),
                         any(),
-                        any(),
                         any()
                     )
                 }
@@ -95,7 +94,7 @@ class BehandlerVarselServiceSpek : Spek({
                     )
                 } returns Pair(1, pMotedeltakerBehandlerVarsel)
                 every { database.getMote(any()) } returns pDialogmote
-                every { database.createMotedeltakerBehandlerVarselSvar(any(), any(), any(), any(), any()) } returns Pair(1, UUID.randomUUID())
+                every { database.createMotedeltakerBehandlerVarselSvar(any(), any(), any(), any()) } returns Pair(1, UUID.randomUUID())
 
                 val isSvarSaved = behandlerVarselService.finnBehandlerVarselOgOpprettSvar(
                     dialogmeldingSvar = dialogmeldingSvar,
@@ -116,8 +115,7 @@ class BehandlerVarselServiceSpek : Spek({
                         motedeltakerBehandlerVarselId = 1,
                         type = DialogmoteSvarType.KOMMER_IKKE,
                         tekst = "tekst",
-                        msgId = "321",
-                        valid = true
+                        msgId = "321"
                     )
                 }
             }
@@ -142,7 +140,7 @@ class BehandlerVarselServiceSpek : Spek({
                     )
                 } returns Pair(1, pMotedeltakerBehandlerVarsel)
                 every { database.getMote(any()) } returns pDialogmote
-                every { database.createMotedeltakerBehandlerVarselSvar(any(), any(), any(), any(), any()) } returns Pair(1, UUID.randomUUID())
+                every { database.createMotedeltakerBehandlerVarselSvar(any(), any(), any(), any()) } returns Pair(1, UUID.randomUUID())
 
                 val isSvarSaved = behandlerVarselService.finnBehandlerVarselOgOpprettSvar(
                     dialogmeldingSvar = dialogmeldingSvar,
@@ -163,8 +161,7 @@ class BehandlerVarselServiceSpek : Spek({
                         motedeltakerBehandlerVarselId = 1,
                         type = DialogmoteSvarType.KOMMER_IKKE,
                         tekst = "tekst",
-                        msgId = "321",
-                        valid = true,
+                        msgId = "321"
                     )
                 }
             }
@@ -189,7 +186,7 @@ class BehandlerVarselServiceSpek : Spek({
                     )
                 } returns Pair(1, pMotedeltakerBehandlerVarsel)
                 every { database.getMote(any()) } returns pDialogmote
-                every { database.createMotedeltakerBehandlerVarselSvar(any(), any(), any(), any(), any()) } returns Pair(1, UUID.randomUUID())
+                every { database.createMotedeltakerBehandlerVarselSvar(any(), any(), any(), any()) } returns Pair(1, UUID.randomUUID())
 
                 val isSvarSaved = behandlerVarselService.finnBehandlerVarselOgOpprettSvar(
                     dialogmeldingSvar = dialogmeldingSvar,
@@ -210,8 +207,7 @@ class BehandlerVarselServiceSpek : Spek({
                         motedeltakerBehandlerVarselId = 1,
                         type = DialogmoteSvarType.KOMMER_IKKE,
                         tekst = "tekst",
-                        msgId = "321",
-                        valid = false,
+                        msgId = "321"
                     )
                 }
             }

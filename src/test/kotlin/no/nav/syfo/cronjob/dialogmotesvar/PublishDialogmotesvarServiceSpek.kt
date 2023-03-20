@@ -95,11 +95,11 @@ class PublishDialogmotesvarServiceSpek : Spek({
                 dialogmotesvarList.size shouldBeEqualTo 1
             }
 
-            it("Behandlers answer is not valid and will not be published") {
+            it("Behandlers answer is too late, but the answer is still published") {
                 val identifiers = database.connection.createNewDialogmoteWithReferences(
                     newDialogmote = generateNewDialogmoteWithBehandler(
                         UserConstants.ARBEIDSTAKER_FNR,
-                        DialogmoteStatus.INNKALT,
+                        DialogmoteStatus.AVLYST,
                     )
                 )
                 val varselId = database.connection.createBehandlerVarsel(
@@ -112,12 +112,11 @@ class PublishDialogmotesvarServiceSpek : Spek({
                     svarUuid = kommerIkkeSvarUuid,
                     varselId = varselId,
                     svarType = DialogmoteSvarType.KOMMER_IKKE,
-                    valid = false,
                 )
 
                 val dialogmotesvarList = publishDialogmotesvarService.getUnpublishedDialogmotesvar()
 
-                dialogmotesvarList.size shouldBeEqualTo 0
+                dialogmotesvarList.size shouldBeEqualTo 1
             }
 
             it("Get unpublished møtesvar from both arbeidsgiver and arbeidstaker") {

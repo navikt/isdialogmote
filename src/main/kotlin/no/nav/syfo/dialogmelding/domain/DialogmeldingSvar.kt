@@ -45,5 +45,3 @@ fun ForesporselType.getVarselType(): MotedeltakerVarselType {
         ForesporselType.ENDRING -> MotedeltakerVarselType.NYTT_TID_STED
     }
 }
-
-infix fun DialogmeldingSvar.happenedBefore(tidspunkt: LocalDateTime) = opprettetTidspunkt.isBefore(tidspunkt)
