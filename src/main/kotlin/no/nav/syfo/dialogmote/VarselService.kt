@@ -1,6 +1,5 @@
 package no.nav.syfo.dialogmote
 
-import java.time.LocalDateTime
 import java.util.*
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
