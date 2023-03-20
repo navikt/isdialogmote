@@ -15,7 +15,6 @@ data class PMotedeltakerBehandlerVarselSvar(
     val svarTekst: String,
     val msgId: String,
     val svarPublishedToKafkaAt: OffsetDateTime?,
-    val valid: Boolean,
 )
 
 fun PMotedeltakerBehandlerVarselSvar.toDialogmoteDeltakerVarselSvar() = DialogmotedeltakerBehandlerVarselSvar(
