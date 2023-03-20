@@ -18,7 +18,6 @@ import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEn
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.brev.domain.BrevType
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
@@ -71,7 +70,6 @@ object NarmesteLederBrevSpek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
-            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             val esyfovarselProducer = mockk<EsyfovarselProducer>()
 
             val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
@@ -81,7 +79,6 @@ object NarmesteLederBrevSpek : Spek({
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock,
             )
@@ -113,10 +110,7 @@ object NarmesteLederBrevSpek : Spek({
                 cache = cache,
             )
             val arbeidstakerVarselService = ArbeidstakerVarselService(
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 esyfovarselProducer = esyfovarselProducer,
-                namespace = externalMockEnvironment.environment.namespace,
-                appname = externalMockEnvironment.environment.appname,
             )
             val dialogmotestatusService = DialogmotestatusService(
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,

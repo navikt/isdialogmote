@@ -1,7 +1,6 @@
 package no.nav.syfo.brev.arbeidstaker
 
 import java.util.*
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.esyfovarsel.ArbeidstakerHendelse
 import no.nav.syfo.brev.esyfovarsel.ArbeidstakerHendelseUUID
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
@@ -12,10 +11,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class ArbeidstakerVarselService(
-    private val brukernotifikasjonProducer: BrukernotifikasjonProducer,
     private val esyfovarselProducer: EsyfovarselProducer,
-    private val namespace: String,
-    private val appname: String,
 ) {
     private val log: Logger = LoggerFactory.getLogger(ArbeidstakerVarselService::class.java)
 

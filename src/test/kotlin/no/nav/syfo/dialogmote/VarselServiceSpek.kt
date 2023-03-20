@@ -1,14 +1,20 @@
 package no.nav.syfo.dialogmote
 
 import io.mockk.*
-import kotlinx.coroutines.*
+import java.time.LocalDate
+import java.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import no.nav.syfo.application.Unbounded
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.altinn.createAltinnMelding
-import no.nav.syfo.client.oppfolgingstilfelle.*
+import no.nav.syfo.client.oppfolgingstilfelle.ARBEIDSGIVERPERIODE_DAYS
+import no.nav.syfo.client.oppfolgingstilfelle.Oppfolgingstilfelle
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
@@ -16,9 +22,6 @@ import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.mock.narmesteLeder
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.*
 
 object VarselServiceSpek : Spek({
 
@@ -59,7 +62,6 @@ object VarselServiceSpek : Spek({
             )
             val virksomhetsbrevId = UUID.randomUUID()
             val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
-            val tidspunktForVarsel = LocalDateTime.now()
             val altinnMelding = createAltinnMelding(
                 virksomhetsbrevId,
                 VIRKSOMHETSNUMMER_HAS_NARMESTELEDER,
@@ -72,7 +74,6 @@ object VarselServiceSpek : Spek({
 
             GlobalScope.launch(Dispatchers.Unbounded) {
                 varselService.sendVarsel(
-                    tidspunktForVarsel = tidspunktForVarsel,
                     varselType = MotedeltakerVarselType.INNKALT,
                     isDigitalVarselEnabledForArbeidstaker = false,
                     arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
@@ -122,7 +123,6 @@ object VarselServiceSpek : Spek({
 
             GlobalScope.launch(Dispatchers.Unbounded) {
                 varselService.sendVarsel(
-                    tidspunktForVarsel = LocalDateTime.now(),
                     varselType = MotedeltakerVarselType.INNKALT,
                     isDigitalVarselEnabledForArbeidstaker = false,
                     arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
@@ -172,7 +172,6 @@ object VarselServiceSpek : Spek({
 
             GlobalScope.launch(Dispatchers.Unbounded) {
                 varselService.sendVarsel(
-                    tidspunktForVarsel = LocalDateTime.now(),
                     varselType = MotedeltakerVarselType.INNKALT,
                     isDigitalVarselEnabledForArbeidstaker = false,
                     arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
@@ -219,7 +218,6 @@ object VarselServiceSpek : Spek({
 
             GlobalScope.launch(Dispatchers.Unbounded) {
                 varselService.sendVarsel(
-                    tidspunktForVarsel = LocalDateTime.now(),
                     varselType = MotedeltakerVarselType.INNKALT,
                     isDigitalVarselEnabledForArbeidstaker = false,
                     arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,

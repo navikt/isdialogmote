@@ -21,7 +21,6 @@ import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.cache.RedisStore
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
@@ -61,9 +60,6 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
-
-            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-
             val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
@@ -78,7 +74,6 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock,
             )

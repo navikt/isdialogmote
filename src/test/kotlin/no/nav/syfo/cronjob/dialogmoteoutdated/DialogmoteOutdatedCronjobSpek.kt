@@ -22,7 +22,6 @@ import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEn
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
@@ -63,8 +62,6 @@ class DialogmoteOutdatedCronjobSpek : Spek({
             val database = externalMockEnvironment.database
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
-            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-
             val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
@@ -78,7 +75,6 @@ class DialogmoteOutdatedCronjobSpek : Spek({
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock
             )
@@ -98,10 +94,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,
             )
             val arbeidstakerVarselService = ArbeidstakerVarselService(
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 esyfovarselProducer = esyfovarselProducerMock,
-                namespace = externalMockEnvironment.environment.namespace,
-                appname = externalMockEnvironment.environment.appname,
             )
             val dialogmotedeltakerService = DialogmotedeltakerService(
                 arbeidstakerVarselService = arbeidstakerVarselService,

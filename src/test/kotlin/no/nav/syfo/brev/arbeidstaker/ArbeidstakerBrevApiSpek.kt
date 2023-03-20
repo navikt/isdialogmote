@@ -18,7 +18,6 @@ import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.cache.RedisStore
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.brev.esyfovarsel.ArbeidstakerHendelse
@@ -69,8 +68,6 @@ class ArbeidstakerBrevApiSpek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
-            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-
             val esyfovarselProducer = mockk<EsyfovarselProducer>(relaxed = true)
             val esyfovarselHendelse = mockk<ArbeidstakerHendelse>(relaxed = true)
             justRun { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
@@ -79,7 +76,6 @@ class ArbeidstakerBrevApiSpek : Spek({
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 altinnMock = altinnMock,
             )
             val cache = RedisStore(
@@ -110,10 +106,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                 cache = cache,
             )
             val arbeidstakerVarselService = ArbeidstakerVarselService(
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 esyfovarselProducer = esyfovarselProducer,
-                namespace = externalMockEnvironment.environment.namespace,
-                appname = externalMockEnvironment.environment.appname,
             )
             val dialogmotestatusService = DialogmotestatusService(
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,
@@ -135,7 +128,6 @@ class ArbeidstakerBrevApiSpek : Spek({
                 every {
                     altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
                 } returns altinnResponse
-                clearMocks(brukernotifikasjonProducer)
 
                 justRun { esyfovarselProducer.sendVarselToEsyfovarsel(any()) }
                 // Add dummy deltakere so that id for deltaker and mote does not match by accident

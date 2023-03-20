@@ -28,7 +28,6 @@ class VarselService(
     private val log: Logger = LoggerFactory.getLogger(VarselService::class.java)
 
     suspend fun sendVarsel(
-        tidspunktForVarsel: LocalDateTime,
         varselType: MotedeltakerVarselType,
         isDigitalVarselEnabledForArbeidstaker: Boolean,
         arbeidstakerPersonIdent: PersonIdent,

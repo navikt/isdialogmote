@@ -17,8 +17,6 @@ import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
 import no.nav.syfo.application.launchBackgroundTask
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.kafkaBrukernotifikasjonProducerConfig
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
@@ -50,12 +48,6 @@ fun main() {
     val logger = LoggerFactory.getLogger("ktor.application")
     logger.info("isdialogmote starting with java version: " + Runtime.version())
     val environment = Environment()
-
-    val kafkaBrukernotifikasjonProducerProperties = kafkaBrukernotifikasjonProducerConfig(
-        environment.kafka,
-    )
-
-    val brukernotifikasjonProducer = BrukernotifikasjonProducer()
 
     val behandlerDialogmeldingProducer = BehandlerDialogmeldingProducer(
         kafkaProducerBehandlerDialogmeldingBestilling = KafkaProducer<String, KafkaBehandlerDialogmeldingDTO>(
@@ -100,7 +92,6 @@ fun main() {
 
             apiModule(
                 applicationState = applicationState,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 behandlerVarselService = behandlerVarselService,
                 esyfovarselProducer = esyfovarselProducer,
                 database = applicationDatabase,
@@ -115,7 +106,6 @@ fun main() {
                 database = applicationDatabase,
                 environment = environment,
                 cache = cache,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 esyfovarselProducer = esyfovarselProducer,
             )
         }

@@ -16,7 +16,6 @@ import java.time.LocalDateTime
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
@@ -51,7 +50,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
-            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
             val esyfovarselHendelse = generateInkallingHendelse()
 
@@ -60,7 +58,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock,
             )
@@ -78,7 +75,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                     val altinnResponse = ReceiptExternal()
                     altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-                    clearMocks(brukernotifikasjonProducer)
                     clearMocks(altinnMock)
                     every {
                         altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())

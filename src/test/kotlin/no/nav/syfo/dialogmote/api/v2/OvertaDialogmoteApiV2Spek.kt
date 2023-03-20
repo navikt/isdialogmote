@@ -16,7 +16,6 @@ import io.mockk.mockk
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
@@ -45,8 +44,6 @@ class OvertaDialogmoteApiV2Spek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
-            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-
             val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
@@ -54,7 +51,6 @@ class OvertaDialogmoteApiV2Spek : Spek({
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock,
             )
