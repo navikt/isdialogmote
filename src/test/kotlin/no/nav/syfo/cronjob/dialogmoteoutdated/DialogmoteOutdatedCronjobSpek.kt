@@ -65,7 +65,6 @@ class DialogmoteOutdatedCronjobSpek : Spek({
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
 
-
             val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }

@@ -136,7 +136,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                     altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
                 } returns altinnResponse
                 clearMocks(brukernotifikasjonProducer)
-                
+
                 justRun { esyfovarselProducer.sendVarselToEsyfovarsel(any()) }
                 // Add dummy deltakere so that id for deltaker and mote does not match by accident
                 database.addDummyDeltakere()

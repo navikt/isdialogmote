@@ -73,7 +73,6 @@ object NarmesteLederBrevSpek : Spek({
 
             val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             val esyfovarselProducer = mockk<EsyfovarselProducer>()
-            
 
             val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)

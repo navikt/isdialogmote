@@ -76,7 +76,7 @@ class DialogmeldingServiceSpek : Spek({
             )
 
             database.dropData()
-            
+
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
             clearMocks(altinnMock)
