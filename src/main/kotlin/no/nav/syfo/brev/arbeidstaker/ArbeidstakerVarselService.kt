@@ -36,7 +36,7 @@ class ArbeidstakerVarselService(
             data = ArbeidstakerHendelseUUID(varselUuid.toString()),
             orgnummer = null,
         )
-        log.info("Skal sende lesT oppgave ${HendelseType.SM_DIALOGMOTE_LEST} via til esyfovarselProducer")
+        log.info("Skal sende lest oppgave ${HendelseType.SM_DIALOGMOTE_LEST} via til esyfovarselProducer")
         esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
     }
 }
