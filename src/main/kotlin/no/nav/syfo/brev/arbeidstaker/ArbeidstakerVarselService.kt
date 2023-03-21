@@ -22,7 +22,7 @@ class ArbeidstakerVarselService(
             data = DialogmoteInnkallingArbeidatakerData(varselUuid.toString()),
             orgnummer = null,
         )
-        log.info("Skal sende ${getArbeidstakerVarselType(varseltype)} via til esyfovarselProducer")
+        log.info("Skal sende ${getArbeidstakerVarselType(varseltype)} til esyfovarselProducer")
         esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
     }
 
@@ -36,7 +36,7 @@ class ArbeidstakerVarselService(
             data = DialogmoteInnkallingArbeidatakerData(varselUuid.toString()),
             orgnummer = null,
         )
-        log.info("Skal sende lest oppgave ${HendelseType.SM_DIALOGMOTE_LEST} via til esyfovarselProducer")
+        log.info("Skal sende lest hendelse ${HendelseType.SM_DIALOGMOTE_LEST} til esyfovarselProducer")
         esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
     }
 }
