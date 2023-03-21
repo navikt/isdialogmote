@@ -51,8 +51,6 @@ data class ArbeidstakerHendelse(
     val orgnummer: String?
 ) : EsyfovarselHendelse
 
-data class ArbeidstakerHendelseUUID(val varselUuid: String)
-
 enum class HendelseType {
     NL_DIALOGMOTE_INNKALT,
     SM_DIALOGMOTE_INNKALT,
