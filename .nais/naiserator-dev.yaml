@@ -39,7 +39,6 @@ spec:
       cpu: 100m
       memory: 384Mi
   ingresses:
-    - "https://isdialogmote.dev.intern.nav.no"
     - "https://isdialogmote.intern.dev.nav.no"
     - "https://isdialogmote.dev.nav.no"
   gcp:
@@ -108,13 +107,13 @@ spec:
     - name: ISOPPFOLGINGSTILFELLE_CLIENT_ID
       value: "dev-gcp.teamsykefravr.isoppfolgingstilfelle"
     - name: ISOPPFOLGINGSTILFELLE_URL
-      value: "https://isoppfolgingstilfelle.dev.intern.nav.no"
+      value: "https://isoppfolgingstilfelle.intern.dev.nav.no"
     - name: EREG_URL
       value: "https://ereg-services-q1.dev-fss-pub.nais.io"
     - name: KRR_CLIENT_ID
       value: "dev-gcp.team-rocket.digdir-krr-proxy"
     - name: KRR_URL
-      value: "https://digdir-krr-proxy.dev.intern.nav.no"
+      value: "https://digdir-krr-proxy.intern.dev.nav.no"
     - name: PDL_CLIENT_ID
       value: "dev-fss.pdl.pdl-api"
     - name: PDL_URL
@@ -122,13 +121,13 @@ spec:
     - name: SYFOBEHANDLENDEENHET_CLIENT_ID
       value: "dev-gcp.teamsykefravr.syfobehandlendeenhet"
     - name: SYFOBEHANDLENDEENHET_URL
-      value: "https://syfobehandlendeenhet.dev.intern.nav.no"
+      value: "https://syfobehandlendeenhet.intern.dev.nav.no"
     - name: SYFOTILGANGSKONTROLL_CLIENT_ID
       value: "dev-fss.teamsykefravr.syfo-tilgangskontroll"
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.dev-fss-pub.nais.io"
     - name: NARMESTELEDER_URL
-      value: "https://isnarmesteleder.dev.intern.nav.no"
+      value: "https://isnarmesteleder.intern.dev.nav.no"
     - name: NARMESTELEDER_CLIENT_ID
       value: "dev-gcp.teamsykefravr.isnarmesteleder"
     - name: ALTINN_WS_URL

@@ -1,0 +1,2 @@
+ALTER TABLE motedeltaker_behandler_varsel_svar
+DROP COLUMN valid;
