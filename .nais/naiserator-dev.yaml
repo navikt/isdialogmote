@@ -64,21 +64,22 @@ spec:
           cluster: dev-gcp
     outbound:
       external:
-        - host: kafka-schema-registry.nais-q.adeo.no
+        - host: "kafka-schema-registry.nais-q.adeo.no"
         - host: "login.microsoftonline.com"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
         - host: "ereg-services-q1.dev-fss-pub.nais.io"
         - host: "pdl-api.dev-fss-pub.nais.io"
+        - host: "dokarkiv.dev-fss-pub.nais.io"
         - host: "dokdistfordeling-q1.dev-fss-pub.nais.io"
+        - host: "tt02.altinn.no"
       rules:
         - application: digdir-krr-proxy
+          namespace: team-rocket
         - application: isdialogmote-redis
         - application: isdialogmotepdfgen
         - application: isnarmesteleder
+        - application: isoppfolgingstilfelle
         - application: syfobehandlendeenhet
-        - application: esyfovarsel
-          namespace: team-esyfo
-          cluster: dev-gcp
   azure:
     application:
       allowAllUsers: true
@@ -109,13 +110,13 @@ spec:
     - name: ISOPPFOLGINGSTILFELLE_CLIENT_ID
       value: "dev-gcp.teamsykefravr.isoppfolgingstilfelle"
     - name: ISOPPFOLGINGSTILFELLE_URL
-      value: "https://isoppfolgingstilfelle.intern.dev.nav.no"
+      value: "http://isoppfolgingstilfelle"
     - name: EREG_URL
       value: "https://ereg-services-q1.dev-fss-pub.nais.io"
     - name: KRR_CLIENT_ID
       value: "dev-gcp.team-rocket.digdir-krr-proxy"
     - name: KRR_URL
-      value: "https://digdir-krr-proxy.intern.dev.nav.no"
+      value: "http://digdir-krr-proxy"
     - name: PDL_CLIENT_ID
       value: "dev-fss.pdl.pdl-api"
     - name: PDL_URL
@@ -123,13 +124,13 @@ spec:
     - name: SYFOBEHANDLENDEENHET_CLIENT_ID
       value: "dev-gcp.teamsykefravr.syfobehandlendeenhet"
     - name: SYFOBEHANDLENDEENHET_URL
-      value: "https://syfobehandlendeenhet.intern.dev.nav.no"
+      value: "http://syfobehandlendeenhet"
     - name: SYFOTILGANGSKONTROLL_CLIENT_ID
       value: "dev-fss.teamsykefravr.syfo-tilgangskontroll"
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.dev-fss-pub.nais.io"
     - name: NARMESTELEDER_URL
-      value: "https://isnarmesteleder.intern.dev.nav.no"
+      value: "http://isnarmesteleder"
     - name: NARMESTELEDER_CLIENT_ID
       value: "dev-gcp.teamsykefravr.isnarmesteleder"
     - name: ALTINN_WS_URL
