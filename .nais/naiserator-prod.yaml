@@ -65,17 +65,20 @@ spec:
           cluster: prod-gcp
     outbound:
       external:
-        - host: "kafka-schema-registry.nais.adeo.no"
         - host: "login.microsoftonline.com"
         - host: "syfo-tilgangskontroll.prod-fss-pub.nais.io"
         - host: "ereg-services.prod-fss-pub.nais.io"
         - host: "pdl-api.prod-fss-pub.nais.io"
+        - host: "dokarkiv.prod-fss-pub.nais.io"
         - host: "dokdistfordeling.prod-fss-pub.nais.io"
+        - host: "www.altinn.no"
       rules:
         - application: digdir-krr-proxy
+          namespace: team-rocket
         - application: isdialogmote-redis
         - application: isdialogmotepdfgen
         - application: isnarmesteleder
+        - application: isoppfolgingstilfelle
         - application: syfobehandlendeenhet
   azure:
     application:
@@ -107,13 +110,13 @@ spec:
     - name: ISOPPFOLGINGSTILFELLE_CLIENT_ID
       value: "prod-gcp.teamsykefravr.isoppfolgingstilfelle"
     - name: ISOPPFOLGINGSTILFELLE_URL
-      value: "https://isoppfolgingstilfelle.intern.nav.no"
+      value: "http://isoppfolgingstilfelle"
     - name: EREG_URL
       value: "https://ereg-services.prod-fss-pub.nais.io"
     - name: KRR_CLIENT_ID
       value: "prod-gcp.team-rocket.digdir-krr-proxy"
     - name: KRR_URL
-      value: "https://digdir-krr-proxy.intern.nav.no"
+      value: "http://digdir-krr-proxy.team-rocket"
     - name: PDL_CLIENT_ID
       value: "prod-fss.pdl.pdl-api"
     - name: PDL_URL
@@ -121,17 +124,17 @@ spec:
     - name: SYFOBEHANDLENDEENHET_CLIENT_ID
       value: "prod-gcp.teamsykefravr.syfobehandlendeenhet"
     - name: SYFOBEHANDLENDEENHET_URL
-      value: "https://syfobehandlendeenhet.intern.nav.no"
+      value: "http://syfobehandlendeenhet"
     - name: SYFOTILGANGSKONTROLL_CLIENT_ID
       value: "prod-fss.teamsykefravr.syfo-tilgangskontroll"
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.prod-fss-pub.nais.io"
     - name: NARMESTELEDER_URL
-      value: "https://isnarmesteleder.intern.nav.no"
+      value: "http://isnarmesteleder"
     - name: NARMESTELEDER_CLIENT_ID
       value: "prod-gcp.teamsykefravr.isnarmesteleder"
     - name: ALTINN_WS_URL
-      value: https://www.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternalBasic.svc
+      value: "https://www.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternalBasic.svc"
     - name: DOKDIST_FORDELING_URL
       value: "https://dokdistfordeling.prod-fss-pub.nais.io"
     - name: DOKDIST_FORDELING_CLIENT_ID
