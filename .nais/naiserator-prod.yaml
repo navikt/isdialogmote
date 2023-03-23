@@ -65,7 +65,6 @@ spec:
           cluster: prod-gcp
     outbound:
       external:
-        - host: "kafka-schema-registry.nais.adeo.no"
         - host: "login.microsoftonline.com"
         - host: "syfo-tilgangskontroll.prod-fss-pub.nais.io"
         - host: "ereg-services.prod-fss-pub.nais.io"

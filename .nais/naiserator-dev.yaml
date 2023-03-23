@@ -64,7 +64,6 @@ spec:
           cluster: dev-gcp
     outbound:
       external:
-        - host: "kafka-schema-registry.nais-q.adeo.no"
         - host: "login.microsoftonline.com"
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
         - host: "ereg-services-q1.dev-fss-pub.nais.io"
