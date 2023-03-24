@@ -24,7 +24,6 @@ class DialogmoteJournalpostDistribusjonCronjob(
         referatJournalpostDistribusjon()
     }
 
-    // TODO: Kan dette slettes?
     suspend fun dialogmoteVarselJournalpostDistribusjon(): DialogmoteCronjobResult {
         val result = DialogmoteCronjobResult()
         dialogmotedeltakerVarselJournalpostService.getDialogmotedeltakerArbeidstakerVarselForJournalpostDistribusjonList()
