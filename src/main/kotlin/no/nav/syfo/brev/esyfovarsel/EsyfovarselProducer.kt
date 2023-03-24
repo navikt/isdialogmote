@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
 
 class EsyfovarselProducer(private val kafkaEsyfovarselProducer: KafkaProducer<String, EsyfovarselHendelse>) {
     fun sendVarselToEsyfovarsel(esyfovarselHendelse: EsyfovarselHendelse) {
-        log.info("Skal sende hndelse til varselbus topic ${esyfovarselHendelse.type}")
+        log.info("Skal sende hendelse til varselbus topic ${esyfovarselHendelse.type}")
         try {
             kafkaEsyfovarselProducer.send(
                 ProducerRecord(

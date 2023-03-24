@@ -2,7 +2,7 @@ package no.nav.syfo.brev.arbeidstaker
 
 import java.util.*
 import no.nav.syfo.brev.esyfovarsel.ArbeidstakerHendelse
-import no.nav.syfo.brev.esyfovarsel.DialogmoteInnkallingArbeidatakerData
+import no.nav.syfo.brev.esyfovarsel.DialogmoteInnkallingArbeidstakerData
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.esyfovarsel.HendelseType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
@@ -19,7 +19,7 @@ class ArbeidstakerVarselService(
         val hendelse = ArbeidstakerHendelse(
             type = getArbeidstakerVarselType(varseltype),
             arbeidstakerFnr = personIdent.value,
-            data = DialogmoteInnkallingArbeidatakerData(varselUuid.toString()),
+            data = DialogmoteInnkallingArbeidstakerData(varselUuid.toString()),
             orgnummer = null,
         )
         log.info("Skal sende ${getArbeidstakerVarselType(varseltype)} til esyfovarselProducer")
@@ -33,7 +33,7 @@ class ArbeidstakerVarselService(
         val hendelse = ArbeidstakerHendelse(
             type = HendelseType.SM_DIALOGMOTE_LEST,
             arbeidstakerFnr = personIdent.value,
-            data = DialogmoteInnkallingArbeidatakerData(varselUuid.toString()),
+            data = DialogmoteInnkallingArbeidstakerData(varselUuid.toString()),
             orgnummer = null,
         )
         log.info("Skal sende lest hendelse ${HendelseType.SM_DIALOGMOTE_LEST} til esyfovarselProducer")
