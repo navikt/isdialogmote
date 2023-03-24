@@ -10,18 +10,11 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.mockk.clearAllMocks
-import io.mockk.clearMocks
-import io.mockk.every
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.verify
+import io.mockk.*
 import java.util.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
@@ -38,13 +31,7 @@ import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT_2
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generateJWTNavIdent
-import no.nav.syfo.testhelper.generator.generateAvlysDialogmoteDTO
-import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTO
-import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTOWithBehandler
-import no.nav.syfo.testhelper.generator.generateModfisertReferatDTO
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithBehandler
-import no.nav.syfo.testhelper.generator.generateNewReferatDTO
+import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
@@ -68,11 +55,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
-            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
-            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-            justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
-
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
             val behandlerVarselService = BehandlerVarselService(
@@ -88,7 +70,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 altinnMock = altinnMock,
             )
 
@@ -105,9 +86,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
             afterEachTest {
                 database.dropData()
                 clearAllMocks()
-                justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
-                justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-                justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
+
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
             }
 
@@ -186,8 +165,6 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                                 pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId!!)
                             pdf shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
 
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2
 

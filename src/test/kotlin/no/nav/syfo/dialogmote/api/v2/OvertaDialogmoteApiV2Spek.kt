@@ -2,8 +2,13 @@ package no.nav.syfo.dialogmote.api.v2
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.http.*
-import io.ktor.server.testing.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.setBody
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.justRun
@@ -11,8 +16,8 @@ import io.mockk.mockk
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.esyfovarsel.*
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.OvertaDialogmoterDTO
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
@@ -39,9 +44,6 @@ class OvertaDialogmoteApiV2Spek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
-            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-
             val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
@@ -49,7 +51,6 @@ class OvertaDialogmoteApiV2Spek : Spek({
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock,
             )
@@ -62,7 +63,6 @@ class OvertaDialogmoteApiV2Spek : Spek({
                 altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
                 justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-                justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                 clearMocks(altinnMock)
                 every {
                     altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())

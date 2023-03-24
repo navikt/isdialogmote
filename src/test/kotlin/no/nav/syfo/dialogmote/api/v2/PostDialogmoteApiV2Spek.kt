@@ -10,22 +10,12 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.mockk.clearMocks
-import io.mockk.every
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.verify
-import java.time.Instant
+import io.mockk.*
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.brukernotifikasjon.schemas.input.NokkelInput
-import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
@@ -46,13 +36,18 @@ import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generateJWTNavIdent
-import no.nav.syfo.testhelper.generator.*
+import no.nav.syfo.testhelper.generator.generateInkallingHendelse
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithBehandler
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithMissingValues
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
-import org.amshove.kluent.*
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -67,7 +62,6 @@ class PostDialogmoteApiV2Spek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
-            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
 
             val esyfovarselHendelse = generateInkallingHendelse()
@@ -84,7 +78,6 @@ class PostDialogmoteApiV2Spek : Spek({
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock
             )
@@ -106,8 +99,6 @@ class PostDialogmoteApiV2Spek : Spek({
                     val altinnResponse = ReceiptExternal()
                     altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-                    clearMocks(brukernotifikasjonProducer)
-                    justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                     clearMocks(behandlerDialogmeldingProducer)
                     justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                     clearMocks(altinnMock)
@@ -209,8 +200,6 @@ class PostDialogmoteApiV2Spek : Spek({
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
 
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 1
 
@@ -266,13 +255,10 @@ class PostDialogmoteApiV2Spek : Spek({
 
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo ""
-
-                            verify(exactly = 1) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }
                     }
                     it("should return OK if request is successful: with behandler") {
                         val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
-                        val createdAt = LocalDateTime.now()
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
                                 addHeader(Authorization, bearerHeader(validToken))
@@ -315,23 +301,6 @@ class PostDialogmoteApiV2Spek : Spek({
 
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo ""
-
-                            val nokkelInputSlot = slot<NokkelInput>()
-                            val oppgaveInputSlot = slot<OppgaveInput>()
-                            verify(exactly = 1) {
-                                brukernotifikasjonProducer.sendOppgave(
-                                    capture(nokkelInputSlot),
-                                    capture(oppgaveInputSlot)
-                                )
-                            }
-                            val nokkelInput = nokkelInputSlot.captured
-                            nokkelInput.getFodselsnummer() shouldBeEqualTo ARBEIDSTAKER_FNR.value
-                            val oppgaveInput = oppgaveInputSlot.captured
-                            val oppgaveTidspunkt =
-                                Instant.ofEpochMilli(oppgaveInput.getTidspunkt()).atOffset(ZoneOffset.UTC)
-                                    .toLocalDateTime()
-                            oppgaveTidspunkt shouldBeBefore createdAt // Since oppgaveTidspunkt is UTC
-                            oppgaveInput.getTekst() shouldBeEqualTo "Du er innkalt til dialogmøte - vi trenger svaret ditt"
 
                             val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
                             verify(exactly = 1) {

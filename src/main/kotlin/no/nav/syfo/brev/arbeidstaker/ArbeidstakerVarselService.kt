@@ -1,137 +1,51 @@
 package no.nav.syfo.brev.arbeidstaker
 
-import no.nav.brukernotifikasjon.schemas.builders.*
-import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal
-import no.nav.brukernotifikasjon.schemas.input.*
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import java.util.*
+import no.nav.syfo.brev.esyfovarsel.ArbeidstakerHendelse
+import no.nav.syfo.brev.esyfovarsel.DialogmoteInnkallingArbeidstakerData
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.brev.esyfovarsel.HendelseType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.domain.PersonIdent
-import java.net.URL
-import java.time.*
-import java.util.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class ArbeidstakerVarselService(
-    private val brukernotifikasjonProducer: BrukernotifikasjonProducer,
-    private val dialogmoteArbeidstakerUrl: String,
-    private val namespace: String,
-    private val appname: String,
+    private val esyfovarselProducer: EsyfovarselProducer,
 ) {
-    fun sendVarsel(
-        createdAt: LocalDateTime,
-        personIdent: PersonIdent,
-        type: MotedeltakerVarselType,
-        motedeltakerArbeidstakerUuid: UUID,
-        varselUuid: UUID,
-    ) {
-        val nokkel = createBrukernotifikasjonNokkel(
-            varselUuid = varselUuid,
-            grupperingsId = motedeltakerArbeidstakerUuid,
-            personIdent = personIdent,
-            namespace = namespace,
-            appname = appname,
+    private val log: Logger = LoggerFactory.getLogger(ArbeidstakerVarselService::class.java)
+
+    fun sendVarsel(varseltype: MotedeltakerVarselType, personIdent: PersonIdent, varselUuid: UUID) {
+        val hendelse = ArbeidstakerHendelse(
+            type = getArbeidstakerVarselType(varseltype),
+            arbeidstakerFnr = personIdent.value,
+            data = DialogmoteInnkallingArbeidstakerData(varselUuid.toString()),
+            orgnummer = null,
         )
-        val tekst = when (type) {
-            MotedeltakerVarselType.INNKALT -> {
-                "Du er innkalt til dialogmøte - vi trenger svaret ditt"
-            }
-            MotedeltakerVarselType.AVLYST -> {
-                "Du har mottatt et brev om avlyst dialogmøte"
-            }
-            MotedeltakerVarselType.NYTT_TID_STED -> {
-                "Du har mottatt et brev om endret dialogmøte"
-            }
-            MotedeltakerVarselType.REFERAT -> {
-                "Du har mottatt et referat fra dialogmøte"
-            }
-        }
-        if (type == MotedeltakerVarselType.INNKALT || type == MotedeltakerVarselType.NYTT_TID_STED) {
-            val oppgave = createBrukernotifikasjonOppgave(
-                createdAt = createdAt,
-                tekst = tekst,
-                link = URL(dialogmoteArbeidstakerUrl),
-            )
-            brukernotifikasjonProducer.sendOppgave(
-                nokkel,
-                oppgave,
-            )
-        } else {
-            val beskjed = createBrukernotifikasjonBeskjed(
-                createdAt = createdAt,
-                tekst = tekst,
-                link = URL(dialogmoteArbeidstakerUrl),
-            )
-            brukernotifikasjonProducer.sendBeskjed(
-                nokkel,
-                beskjed,
-            )
-        }
+        log.info("Skal sende ${getArbeidstakerVarselType(varseltype)} til esyfovarselProducer")
+        esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
     }
 
     fun lesVarsel(
         personIdent: PersonIdent,
-        motedeltakerArbeidstakerUuid: UUID,
         varselUuid: UUID,
     ) {
-        val nokkel = createBrukernotifikasjonNokkel(
-            varselUuid = varselUuid,
-            grupperingsId = motedeltakerArbeidstakerUuid,
-            personIdent = personIdent,
-            namespace = namespace,
-            appname = appname,
+        val hendelse = ArbeidstakerHendelse(
+            type = HendelseType.SM_DIALOGMOTE_LEST,
+            arbeidstakerFnr = personIdent.value,
+            data = DialogmoteInnkallingArbeidstakerData(varselUuid.toString()),
+            orgnummer = null,
         )
-        val done = createBrukernotifikasjonDone()
-
-        brukernotifikasjonProducer.sendDone(
-            nokkel,
-            done,
-        )
+        log.info("Skal sende lest hendelse ${HendelseType.SM_DIALOGMOTE_LEST} til esyfovarselProducer")
+        esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
     }
 }
 
-fun createBrukernotifikasjonNokkel(
-    varselUuid: UUID,
-    grupperingsId: UUID,
-    personIdent: PersonIdent,
-    namespace: String,
-    appname: String,
-): NokkelInput = NokkelInputBuilder()
-    .withEventId(varselUuid.toString())
-    .withNamespace(namespace)
-    .withAppnavn(appname)
-    .withGrupperingsId(grupperingsId.toString())
-    .withFodselsnummer(personIdent.value)
-    .build()
-
-fun createBrukernotifikasjonBeskjed(
-    createdAt: LocalDateTime,
-    tekst: String,
-    link: URL,
-): BeskjedInput = BeskjedInputBuilder()
-    .withTidspunkt(createdAt.toLocalDateTimeUTC())
-    .withTekst(tekst)
-    .withLink(link)
-    .withSikkerhetsnivaa(4)
-    .withEksternVarsling(true)
-    .withPrefererteKanaler(PreferertKanal.SMS)
-    .withSynligFremTil(LocalDateTime.now().plusYears(1))
-    .build()
-
-fun createBrukernotifikasjonOppgave(
-    createdAt: LocalDateTime,
-    tekst: String,
-    link: URL,
-): OppgaveInput = OppgaveInputBuilder()
-    .withTidspunkt(createdAt.toLocalDateTimeUTC())
-    .withTekst(tekst)
-    .withLink(link)
-    .withSikkerhetsnivaa(4)
-    .withEksternVarsling(true)
-    .withPrefererteKanaler(PreferertKanal.SMS)
-    .build()
-
-fun createBrukernotifikasjonDone(): DoneInput = DoneInputBuilder()
-    .withTidspunkt(LocalDateTime.now().toLocalDateTimeUTC())
-    .build()
-
-fun LocalDateTime.toLocalDateTimeUTC() =
-    this.atZone(ZoneId.of("Europe/Oslo")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()
+fun getArbeidstakerVarselType(motedeltakerVarselType: MotedeltakerVarselType): HendelseType {
+    return when (motedeltakerVarselType) {
+        MotedeltakerVarselType.INNKALT -> HendelseType.SM_DIALOGMOTE_INNKALT
+        MotedeltakerVarselType.AVLYST -> HendelseType.SM_DIALOGMOTE_AVLYST
+        MotedeltakerVarselType.NYTT_TID_STED -> HendelseType.SM_DIALOGMOTE_NYTT_TID_STED
+        MotedeltakerVarselType.REFERAT -> HendelseType.SM_DIALOGMOTE_REFERAT
+    }
+}

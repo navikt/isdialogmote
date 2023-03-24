@@ -49,7 +49,6 @@ fun testEnvironment(
     isdialogmoteDbName = "isdialogmote_dev",
     isdialogmoteDbUsername = "username",
     isdialogmoteDbPassword = "password",
-    dialogmoteArbeidstakerUrl = "https://www.nav.no/dialogmote",
     dokarkivUrl = dokarkivUrl,
     isdialogmotepdfgenUrl = isdialogmotepdfgenUrl ?: "http://isdialogmotepdfgen",
     krrClientId = "dev-gcp.team-rocket.digdir-krr-proxy",

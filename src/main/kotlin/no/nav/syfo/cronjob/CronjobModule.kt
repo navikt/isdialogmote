@@ -1,13 +1,13 @@
 package no.nav.syfo.cronjob
 
-import io.ktor.server.application.*
+import io.ktor.server.application.Application
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.launchBackgroundTask
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.ereg.EregClient
@@ -23,7 +23,10 @@ import no.nav.syfo.cronjob.dialogmotesvar.kafkaDialogmotesvarProducerConfig
 import no.nav.syfo.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
 import no.nav.syfo.cronjob.journalpostdistribusjon.DialogmoteJournalpostDistribusjonCronjob
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
-import no.nav.syfo.cronjob.statusendring.*
+import no.nav.syfo.cronjob.statusendring.DialogmoteStatusEndringProducer
+import no.nav.syfo.cronjob.statusendring.PublishDialogmoteStatusEndringCronjob
+import no.nav.syfo.cronjob.statusendring.PublishDialogmoteStatusEndringService
+import no.nav.syfo.cronjob.statusendring.kafkaDialogmoteStatusEndringProducerConfig
 import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.api.domain.KDialogmotesvar
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
@@ -34,7 +37,7 @@ fun Application.cronjobModule(
     database: DatabaseInterface,
     environment: Environment,
     cache: RedisStore,
-    brukernotifikasjonProducer: BrukernotifikasjonProducer,
+    esyfovarselProducer: EsyfovarselProducer,
 ) {
     val azureAdV2Client = AzureAdV2Client(
         aadAppClient = environment.aadAppClient,
@@ -77,10 +80,7 @@ fun Application.cronjobModule(
         database = database,
     )
     val arbeidstakerVarselService = ArbeidstakerVarselService(
-        brukernotifikasjonProducer = brukernotifikasjonProducer,
-        dialogmoteArbeidstakerUrl = environment.dialogmoteArbeidstakerUrl,
-        namespace = environment.namespace,
-        appname = environment.appname,
+        esyfovarselProducer = esyfovarselProducer,
     )
     val dialogmotestatusService = DialogmotestatusService(
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,

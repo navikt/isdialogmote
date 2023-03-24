@@ -445,7 +445,6 @@ class DialogmoteService(
 
         if (!isDialogmoteTidPassed) {
             varselService.sendVarsel(
-                tidspunktForVarsel = now,
                 varselType = varselType,
                 isDigitalVarselEnabledForArbeidstaker = digitalArbeidstakerVarsling,
                 arbeidstakerPersonIdent = arbeidstakerPersonIdent,
@@ -630,7 +629,6 @@ class DialogmoteService(
             }
 
             varselService.sendVarsel(
-                tidspunktForVarsel = now,
                 varselType = MotedeltakerVarselType.REFERAT,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
                 arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
@@ -739,7 +737,6 @@ class DialogmoteService(
             }
 
             varselService.sendVarsel(
-                tidspunktForVarsel = LocalDateTime.now(),
                 varselType = MotedeltakerVarselType.REFERAT,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
                 arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,

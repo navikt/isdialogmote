@@ -6,18 +6,10 @@ import io.ktor.server.routing.routing
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
-import no.nav.syfo.application.api.authentication.JwtIssuer
-import no.nav.syfo.application.api.authentication.JwtIssuerType
-import no.nav.syfo.application.api.authentication.WellKnown
-import no.nav.syfo.application.api.authentication.installCallId
-import no.nav.syfo.application.api.authentication.installContentNegotiation
-import no.nav.syfo.application.api.authentication.installJwtAuthentication
-import no.nav.syfo.application.api.authentication.installMetrics
-import no.nav.syfo.application.api.authentication.installStatusPages
+import no.nav.syfo.application.api.authentication.*
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
@@ -35,12 +27,7 @@ import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.dialogmote.DialogmoteService
-import no.nav.syfo.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.dialogmote.DialogmoterelasjonService
-import no.nav.syfo.dialogmote.DialogmotestatusService
-import no.nav.syfo.dialogmote.PdfService
-import no.nav.syfo.dialogmote.VarselService
+import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteActionsApiV2
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteApiV2
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
@@ -48,7 +35,6 @@ import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 
 fun Application.apiModule(
     applicationState: ApplicationState,
-    brukernotifikasjonProducer: BrukernotifikasjonProducer,
     esyfovarselProducer: EsyfovarselProducer,
     behandlerVarselService: BehandlerVarselService,
     database: DatabaseInterface,
@@ -132,10 +118,7 @@ fun Application.apiModule(
     )
 
     val arbeidstakerVarselService = ArbeidstakerVarselService(
-        brukernotifikasjonProducer = brukernotifikasjonProducer,
-        dialogmoteArbeidstakerUrl = environment.dialogmoteArbeidstakerUrl,
-        namespace = environment.namespace,
-        appname = environment.appname,
+        esyfovarselProducer = esyfovarselProducer,
     )
 
     val narmesteLederVarselService = NarmesteLederVarselService(

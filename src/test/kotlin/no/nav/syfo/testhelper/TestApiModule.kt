@@ -5,7 +5,6 @@ import io.mockk.mockk
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.cache.RedisStore
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import redis.clients.jedis.JedisPool
@@ -15,7 +14,6 @@ import redis.clients.jedis.Protocol
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
     behandlerVarselService: BehandlerVarselService = mockk(),
-    brukernotifikasjonProducer: BrukernotifikasjonProducer,
     altinnMock: ICorrespondenceAgencyExternalBasic = mockk(),
     esyfovarselProducer: EsyfovarselProducer = mockk(relaxed = true),
 ) {
@@ -30,7 +28,6 @@ fun Application.testApiModule(
     )
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,
-        brukernotifikasjonProducer = brukernotifikasjonProducer,
         behandlerVarselService = behandlerVarselService,
         database = externalMockEnvironment.database,
         environment = externalMockEnvironment.environment,

@@ -8,7 +8,6 @@ version = "1.0.0"
 
 object Versions {
     const val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
-    const val brukernotifikasjonAvro = "2.5.1"
     const val cxfVersion = "3.5.5"
     const val confluent = "7.3.1"
     const val flyway = "9.14.0"
@@ -132,7 +131,6 @@ dependencies {
             }
         }
     }
-    implementation("com.github.navikt:brukernotifikasjon-schemas:${Versions.brukernotifikasjonAvro}")
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
     implementation("org.scala-lang:scala-library") {
         version {

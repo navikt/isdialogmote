@@ -9,10 +9,6 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
 import java.util.concurrent.TimeUnit
-import no.nav.brukernotifikasjon.schemas.input.BeskjedInput
-import no.nav.brukernotifikasjon.schemas.input.DoneInput
-import no.nav.brukernotifikasjon.schemas.input.NokkelInput
-import no.nav.brukernotifikasjon.schemas.input.OppgaveInput
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.apiModule
@@ -21,8 +17,6 @@ import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
 import no.nav.syfo.application.launchBackgroundTask
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.kafkaBrukernotifikasjonProducerConfig
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
@@ -54,16 +48,6 @@ fun main() {
     val logger = LoggerFactory.getLogger("ktor.application")
     logger.info("isdialogmote starting with java version: " + Runtime.version())
     val environment = Environment()
-
-    val kafkaBrukernotifikasjonProducerProperties = kafkaBrukernotifikasjonProducerConfig(
-        environment.kafka,
-    )
-
-    val brukernotifikasjonProducer = BrukernotifikasjonProducer(
-        kafkaProducerBeskjed = KafkaProducer<NokkelInput, BeskjedInput>(kafkaBrukernotifikasjonProducerProperties),
-        kafkaProducerOppgave = KafkaProducer<NokkelInput, OppgaveInput>(kafkaBrukernotifikasjonProducerProperties),
-        kafkaProducerDone = KafkaProducer<NokkelInput, DoneInput>(kafkaBrukernotifikasjonProducerProperties),
-    )
 
     val behandlerDialogmeldingProducer = BehandlerDialogmeldingProducer(
         kafkaProducerBehandlerDialogmeldingBestilling = KafkaProducer<String, KafkaBehandlerDialogmeldingDTO>(
@@ -108,7 +92,6 @@ fun main() {
 
             apiModule(
                 applicationState = applicationState,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 behandlerVarselService = behandlerVarselService,
                 esyfovarselProducer = esyfovarselProducer,
                 database = applicationDatabase,
@@ -123,7 +106,7 @@ fun main() {
                 database = applicationDatabase,
                 environment = environment,
                 cache = cache,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
+                esyfovarselProducer = esyfovarselProducer,
             )
         }
     }

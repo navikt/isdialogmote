@@ -10,33 +10,26 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.mockk.clearMocks
-import io.mockk.every
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
-import no.nav.syfo.brev.esyfovarsel.*
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
-import no.nav.syfo.testhelper.ExternalMockEnvironment
+import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.dropData
-import no.nav.syfo.testhelper.generateJWTNavIdent
-import no.nav.syfo.testhelper.generator.*
+import no.nav.syfo.testhelper.generator.generateInkallingHendelse
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithMissingValues
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
-import no.nav.syfo.testhelper.setMotedeltakerArbeidstakerVarselBrevBestilt
-import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
@@ -57,7 +50,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
 
-            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
             val esyfovarselHendelse = generateInkallingHendelse()
 
@@ -66,7 +58,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock,
             )
@@ -84,8 +75,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                     val altinnResponse = ReceiptExternal()
                     altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-                    clearMocks(brukernotifikasjonProducer)
-                    justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                     clearMocks(altinnMock)
                     every {
                         altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
@@ -177,8 +166,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
 
-                            verify(exactly = 0) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 1
 
@@ -248,8 +235,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
 
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo ""
-
-                            verify(exactly = 0) { brukernotifikasjonProducer.sendOppgave(any(), any()) }
                         }
                     }
                 }

@@ -22,11 +22,10 @@ import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEn
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.brev.arbeidstaker.brukernotifikasjon.BrukernotifikasjonProducer
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
-import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.tokendings.TokendingsClient
@@ -36,21 +35,13 @@ import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.DialogmoterelasjonService
 import no.nav.syfo.dialogmote.DialogmotestatusService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteAvlysPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteFerdigstillPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteTidStedPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
+import no.nav.syfo.dialogmote.api.v2.*
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.testhelper.ExternalMockEnvironment
-import no.nav.syfo.testhelper.UserConstants
-import no.nav.syfo.testhelper.dropData
-import no.nav.syfo.testhelper.generateJWTNavIdent
+import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateAvlysDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewReferatDTO
-import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
@@ -71,11 +62,6 @@ class DialogmoteOutdatedCronjobSpek : Spek({
             val database = externalMockEnvironment.database
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
-            val brukernotifikasjonProducer = mockk<BrukernotifikasjonProducer>()
-            justRun { brukernotifikasjonProducer.sendBeskjed(any(), any()) }
-            justRun { brukernotifikasjonProducer.sendOppgave(any(), any()) }
-            justRun { brukernotifikasjonProducer.sendDone(any(), any()) }
-
             val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
@@ -89,7 +75,6 @@ class DialogmoteOutdatedCronjobSpek : Spek({
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 behandlerVarselService = behandlerVarselService,
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
                 altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock
             )
@@ -109,10 +94,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,
             )
             val arbeidstakerVarselService = ArbeidstakerVarselService(
-                brukernotifikasjonProducer = brukernotifikasjonProducer,
-                dialogmoteArbeidstakerUrl = externalMockEnvironment.environment.dialogmoteArbeidstakerUrl,
-                namespace = externalMockEnvironment.environment.namespace,
-                appname = externalMockEnvironment.environment.appname,
+                esyfovarselProducer = esyfovarselProducerMock,
             )
             val dialogmotedeltakerService = DialogmotedeltakerService(
                 arbeidstakerVarselService = arbeidstakerVarselService,
@@ -159,7 +141,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
                     )
                     with(
                         handleRequest(HttpMethod.Post, urlMote) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(Authorization, bearerHeader(validToken))
                             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                             setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
                         }
@@ -175,7 +157,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
                     }
                     with(
                         handleRequest(HttpMethod.Get, urlMote) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(Authorization, bearerHeader(validToken))
                             addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
                         }
                     ) {
@@ -241,7 +223,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
                     }
                     with(
                         handleRequest(HttpMethod.Get, urlMote) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(Authorization, bearerHeader(validToken))
                             addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
                         }
                     ) {
@@ -262,7 +244,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
                     )
                     with(
                         handleRequest(HttpMethod.Post, urlMote) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(Authorization, bearerHeader(validToken))
                             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                             setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
                         }
@@ -278,7 +260,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
                     }
                     with(
                         handleRequest(HttpMethod.Get, urlMote) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(Authorization, bearerHeader(validToken))
                             addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
                         }
                     ) {
@@ -341,7 +323,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
                     }
                     with(
                         handleRequest(HttpMethod.Get, urlMote) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(Authorization, bearerHeader(validToken))
                             addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
                         }
                     ) {
@@ -403,7 +385,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
                     }
                     with(
                         handleRequest(HttpMethod.Get, urlMote) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(Authorization, bearerHeader(validToken))
                             addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
                         }
                     ) {

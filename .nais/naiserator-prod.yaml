@@ -101,8 +101,6 @@ spec:
       value: "production"
     - name: REDIS_HOST
       value: "isdialogmote-redis.teamsykefravr.svc.cluster.local"
-    - name: DIALOGMOTE_ARBEIDSTAKER_URL
-      value: "https://www.nav.no/syk/dialogmoter/sykmeldt"
     - name: DOKARKIV_CLIENT_ID
       value: "prod-fss.teamdokumenthandtering.dokarkiv"
     - name: DOKARKIV_URL
