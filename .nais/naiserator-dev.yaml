@@ -56,6 +56,12 @@ spec:
         - application: syfomoteoversikt
           namespace: teamsykefravr
           cluster: dev-fss
+        - application: syfomodiaperson
+          namespace: teamsykefravr
+          cluster: dev-gcp
+        - application: syfomoteoversikt
+          namespace: teamsykefravr
+          cluster: dev-gcp
         - application: dialogmote-frontend
           namespace: team-esyfo
           cluster: dev-gcp
