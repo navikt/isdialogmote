@@ -1,3 +1,2 @@
 [*.{kt,kts}]
-ktlint_code_style = official
 ktlint_disabled_rules=import-ordering,no-wildcard-imports,trailing-comma-on-call-site,trailing-comma-on-declaration-site,multiline-if-else,filename
