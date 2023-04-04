@@ -33,7 +33,6 @@ class NarmesteLederClient(
         callId: String,
         token: String,
     ): NarmesteLederRelasjonDTO? {
-
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
             scopeClientId = narmestelederClientId,
             token = token,

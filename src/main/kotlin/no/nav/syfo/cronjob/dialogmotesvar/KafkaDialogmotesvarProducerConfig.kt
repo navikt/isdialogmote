@@ -7,7 +7,7 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import java.util.*
 
-fun kafkaDialogmotesvarProducerConfig(
+fun KafkaDialogmotesvarProducerConfig(
     applicationEnvironmentKafka: ApplicationEnvironmentKafka,
 ): Properties {
     return Properties().apply {
