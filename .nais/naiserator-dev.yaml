@@ -146,3 +146,5 @@ spec:
       value: "true"
     - name: PUBLISH_DIALOGMOTESVAR_ENABLED
       value: "true"
+    - name: SENDING_TO_RESERVED_VIA_ESYFOVARSEL_ENABLED
+      value: "true"

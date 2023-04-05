@@ -15,14 +15,14 @@ class ArbeidstakerVarselService(
 ) {
     private val log: Logger = LoggerFactory.getLogger(ArbeidstakerVarselService::class.java)
 
-    fun sendVarsel(varseltype: MotedeltakerVarselType, personIdent: PersonIdent, varselUuid: UUID) {
+    fun sendVarsel(varseltype: MotedeltakerVarselType, personIdent: PersonIdent, varselUuid: UUID, journalpostId: String?) {
         val hendelse = ArbeidstakerHendelse(
             type = getArbeidstakerVarselType(varseltype),
             arbeidstakerFnr = personIdent.value,
-            data = DialogmoteInnkallingArbeidstakerData(varselUuid.toString()),
+            data = DialogmoteInnkallingArbeidstakerData(varselUuid.toString(), journalpostId),
             orgnummer = null,
         )
-        log.info("Skal sende ${getArbeidstakerVarselType(varseltype)} til esyfovarselProducer")
+        log.info("Skal sende ${getArbeidstakerVarselType(varseltype)} til esyfovarselProducer. Journalpostid: $journalpostId")
         esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
     }
 
@@ -33,7 +33,7 @@ class ArbeidstakerVarselService(
         val hendelse = ArbeidstakerHendelse(
             type = HendelseType.SM_DIALOGMOTE_LEST,
             arbeidstakerFnr = personIdent.value,
-            data = DialogmoteInnkallingArbeidstakerData(varselUuid.toString()),
+            data = DialogmoteInnkallingArbeidstakerData(varselUuid.toString(), journalpostId = null),
             orgnummer = null,
         )
         log.info("Skal sende lest hendelse ${HendelseType.SM_DIALOGMOTE_LEST} til esyfovarselProducer")

@@ -5,5 +5,6 @@ import java.io.*
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 data class DialogmoteInnkallingArbeidstakerData(
-    val varselUuid: String
+    val varselUuid: String,
+    val journalpostId: String?,
 ) : Serializable

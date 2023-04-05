@@ -1,6 +1,7 @@
 package no.nav.syfo.dialogmote
 
 import java.util.*
+import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
@@ -9,6 +10,7 @@ import no.nav.syfo.client.altinn.createAltinnMelding
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.oppfolgingstilfelle.isInactive
+import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerVarselJournalpostId
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.domain.PersonIdent
@@ -23,6 +25,7 @@ class VarselService(
     private val altinnClient: AltinnClient,
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     private val isAltinnSendingEnabled: Boolean,
+    private val database: DatabaseInterface,
 ) {
     private val log: Logger = LoggerFactory.getLogger(VarselService::class.java)
 
@@ -79,11 +82,17 @@ class VarselService(
             )
         }
         if (isDigitalVarselEnabledForArbeidstaker) {
-            log.info("Skal sende $varselType via arbeidstakerVarselService")
+            val lagretVarselFromDB = database.getMotedeltakerArbeidstakerVarselJournalpostId(
+                uuid = arbeidstakerbrevId,
+            )
+            val lagretJournalpostId = lagretVarselFromDB.firstOrNull()?.journalpostId
+            log.info("Stored jornalpostId is : $lagretJournalpostId for arbeidstakerbrevId $arbeidstakerbrevId")
+
             arbeidstakerVarselService.sendVarsel(
                 varseltype = varselType,
                 personIdent = arbeidstakerPersonIdent,
-                varselUuid = arbeidstakerbrevId
+                varselUuid = arbeidstakerbrevId,
+                journalpostId = lagretJournalpostId,
             )
         }
 

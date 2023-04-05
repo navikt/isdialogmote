@@ -144,7 +144,9 @@ fun Application.cronjobModule(
     val journalpostDistribusjonCronjob = DialogmoteJournalpostDistribusjonCronjob(
         dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
         referatJournalpostService = referatJournalpostService,
-        journalpostdistribusjonClient = journalpostdistribusjonClient
+        journalpostdistribusjonClient = journalpostdistribusjonClient,
+        arbeidstakerVarselService = arbeidstakerVarselService,
+        isSendingToReservedViaEsyfovarselEnabled = environment.sendingToReservedViaEsyfovarselEnabled,
     )
     val publishDialogmotesvarCronjob = PublishDialogmotesvarCronjob(
         publishDialogmotesvarService = publishDialogmotesvarService
