@@ -17,12 +17,12 @@ class ArbeidstakerVarselService(
 
     fun sendVarsel(varseltype: MotedeltakerVarselType, personIdent: PersonIdent, varselUuid: UUID, journalpostId: String?) {
         val hendelse = ArbeidstakerHendelse(
-            type = getArbeidstakerVarselType(varseltype),
+            type = getArbeidstakerHendelseType(varseltype),
             arbeidstakerFnr = personIdent.value,
             data = DialogmoteInnkallingArbeidstakerData(varselUuid.toString(), journalpostId),
             orgnummer = null,
         )
-        log.info("Skal sende ${getArbeidstakerVarselType(varseltype)} til esyfovarselProducer. Journalpostid: $journalpostId")
+        log.info("Skal sende ${getArbeidstakerHendelseType(varseltype)} til esyfovarselProducer. Journalpostid: $journalpostId")
         esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
     }
 
@@ -41,7 +41,7 @@ class ArbeidstakerVarselService(
     }
 }
 
-fun getArbeidstakerVarselType(motedeltakerVarselType: MotedeltakerVarselType): HendelseType {
+fun getArbeidstakerHendelseType(motedeltakerVarselType: MotedeltakerVarselType): HendelseType {
     return when (motedeltakerVarselType) {
         MotedeltakerVarselType.INNKALT -> HendelseType.SM_DIALOGMOTE_INNKALT
         MotedeltakerVarselType.AVLYST -> HendelseType.SM_DIALOGMOTE_AVLYST
