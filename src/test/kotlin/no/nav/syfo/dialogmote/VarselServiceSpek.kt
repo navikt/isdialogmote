@@ -98,7 +98,8 @@ object VarselServiceSpek : Spek({
                 verify(exactly = 1) { altinnClient.sendToVirksomhet(altinnMelding) }
                 verify(exactly = 1) {
                     narmesteLederVarselService.sendVarsel(
-                        narmesteLeder, MotedeltakerVarselType.INNKALT
+                        narmesteLeder,
+                        MotedeltakerVarselType.INNKALT
                     )
                 }
             }

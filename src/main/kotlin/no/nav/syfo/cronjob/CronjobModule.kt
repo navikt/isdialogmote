@@ -19,7 +19,7 @@ import no.nav.syfo.cronjob.dialogmoteOutdated.DialogmoteOutdatedCronjob
 import no.nav.syfo.cronjob.dialogmotesvar.DialogmotesvarProducer
 import no.nav.syfo.cronjob.dialogmotesvar.PublishDialogmotesvarCronjob
 import no.nav.syfo.cronjob.dialogmotesvar.PublishDialogmotesvarService
-import no.nav.syfo.cronjob.dialogmotesvar.kafkaDialogmotesvarProducerConfig
+import no.nav.syfo.cronjob.dialogmotesvar.KafkaDialogmotesvarProducerConfig
 import no.nav.syfo.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
 import no.nav.syfo.cronjob.journalpostdistribusjon.DialogmoteJournalpostDistribusjonCronjob
 import no.nav.syfo.cronjob.leaderelection.LeaderPodClient
@@ -115,7 +115,7 @@ fun Application.cronjobModule(
     val kafkaDialogmoteStatusEndringProducer = KafkaProducer<String, KDialogmoteStatusEndring>(
         kafkaDialogmoteStatusEndringProducerProperties
     )
-    val kafkaDialogmotesvarProducerProperties = kafkaDialogmotesvarProducerConfig(environment.kafka)
+    val kafkaDialogmotesvarProducerProperties = KafkaDialogmotesvarProducerConfig(environment.kafka)
 
     val kafkaDialogmotesvarProducer = KafkaProducer<String, KDialogmotesvar>(
         kafkaDialogmotesvarProducerProperties

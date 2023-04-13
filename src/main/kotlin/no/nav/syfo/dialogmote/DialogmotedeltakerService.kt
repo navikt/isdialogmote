@@ -12,6 +12,7 @@ class DialogmotedeltakerService(
     private val arbeidstakerVarselService: ArbeidstakerVarselService,
     private val database: DatabaseInterface,
 ) {
+
     fun getDialogmoteDeltakerArbeidstaker(
         moteId: Int,
     ): DialogmotedeltakerArbeidstaker {

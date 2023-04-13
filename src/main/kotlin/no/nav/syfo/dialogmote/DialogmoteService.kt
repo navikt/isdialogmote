@@ -274,7 +274,6 @@ class DialogmoteService(
         endreDialogmoteTidSted: EndreTidStedDialogmoteDTO,
         token: String,
     ) {
-
         val virksomhetsnummer = dialogmote.arbeidsgiver.virksomhetsnummer
 
         if (dialogmote.status == DialogmoteStatus.FERDIGSTILT) {
