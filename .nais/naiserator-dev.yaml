@@ -62,6 +62,9 @@ spec:
         - application: ditt-sykefravaer
           namespace: flex
           cluster: dev-gcp
+        - application: tms-min-side-proxy
+          namespace: min-side
+          cluster: dev-gcp
     outbound:
       external:
         - host: "login.microsoftonline.com"
