@@ -91,7 +91,6 @@ class DialogmotedeltakerVarselJournalpostService(
             .map { motedeltakerArbeidstakerVarsel ->
                 val motedeltakerArbeidstaker =
                     database.getMotedeltakerArbeidstakerById(motedeltakerArbeidstakerVarsel.motedeltakerArbeidstakerId)
-                        .toDialogmotedeltakerArbeidstaker(emptyList())
                 Pair(
                     motedeltakerArbeidstaker.personIdent,
                     motedeltakerArbeidstakerVarsel,
