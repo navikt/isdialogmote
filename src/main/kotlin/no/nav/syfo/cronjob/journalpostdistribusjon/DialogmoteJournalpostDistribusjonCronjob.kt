@@ -40,7 +40,7 @@ class DialogmoteJournalpostDistribusjonCronjob(
                         if (arbeidstakerVarsel.journalpostId !== null) {
                             log.info("ArbeidstakerVarsel-journalpost-distribusjon til reserverte via esyfovarsel ENABLED. About to send varsel of type: ${arbeidstakerVarsel.varselType}")
                             arbeidstakerVarselService.sendVarsel(arbeidstakerVarsel.varselType, arbeidstakerFnr, UUID.randomUUID(), arbeidstakerVarsel.journalpostId)
-                            dialogmotedeltakerVarselJournalpostService.updateBestillingsId(
+                            dialogmotedeltakerVarselJournalpostService.updateBestilling(
                                 // Oppdaterer utsendingstidspunkt
                                 dialogmotedeltakerArbeidstakerVarsel = arbeidstakerVarsel,
                                 bestillingsId = null,
@@ -50,7 +50,7 @@ class DialogmoteJournalpostDistribusjonCronjob(
                         log.info("ArbeidstakerVarsel-journalpost-distribusjon til reserverte via esyfovarsel DISABLED. About to send varsel of type: ${arbeidstakerVarsel.varselType}")
                         val bestillingsId =
                             journalpostdistribusjonClient.distribuerJournalpost(arbeidstakerVarsel.journalpostId!!)?.bestillingsId
-                        dialogmotedeltakerVarselJournalpostService.updateBestillingsId(
+                        dialogmotedeltakerVarselJournalpostService.updateBestilling(
                             dialogmotedeltakerArbeidstakerVarsel = arbeidstakerVarsel,
                             bestillingsId = bestillingsId,
                         )

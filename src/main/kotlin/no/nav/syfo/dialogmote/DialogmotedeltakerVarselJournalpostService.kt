@@ -99,7 +99,7 @@ class DialogmotedeltakerVarselJournalpostService(
             }
     }
 
-    fun updateBestillingsId(
+    fun updateBestilling(
         dialogmotedeltakerArbeidstakerVarsel: DialogmotedeltakerArbeidstakerVarsel,
         bestillingsId: String?,
     ) {
