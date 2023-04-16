@@ -9,10 +9,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.mockk.clearMocks
-import io.mockk.every
-import io.mockk.justRun
-import io.mockk.mockk
+import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
@@ -184,11 +181,17 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         result.failed shouldBeEqualTo 0
                         result.updated shouldBeEqualTo 2
                     }
+
+                    coVerify(exactly = 1) { arbeidstakerVarselServiceMock.sendVarsel(MotedeltakerVarselType.NYTT_TID_STED, any(), any(), any()) }
+                    coVerify(exactly = 1) { arbeidstakerVarselServiceMock.sendVarsel(MotedeltakerVarselType.INNKALT, any(), any(), any()) }
+
                     runBlocking {
                         val result = journalpostDistribusjonCronjob.referatJournalpostDistribusjon()
                         result.failed shouldBeEqualTo 0
                         result.updated shouldBeEqualTo 1
                     }
+
+                    coVerify(exactly = 1) { arbeidstakerVarselServiceMock.sendVarsel(MotedeltakerVarselType.REFERAT, any(), any(), any()) }
 
                     with(
                         handleRequest(HttpMethod.Get, urlMote) {
