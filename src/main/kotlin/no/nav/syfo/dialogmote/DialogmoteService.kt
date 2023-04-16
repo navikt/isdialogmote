@@ -17,7 +17,6 @@ import no.nav.syfo.domain.*
 import java.sql.Connection
 import java.time.LocalDateTime
 import java.util.*
-import org.slf4j.LoggerFactory
 
 class DialogmoteService(
     private val database: DatabaseInterface,
@@ -825,9 +824,5 @@ class DialogmoteService(
             token = token,
             callId = callId,
         )
-    }
-
-    companion object {
-        private val log = LoggerFactory.getLogger(DialogmoteService::class.java)
     }
 }
