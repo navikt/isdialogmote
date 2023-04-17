@@ -1,13 +1,15 @@
 package no.nav.syfo.dialogmote
 
+import java.time.LocalDateTime
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.database.domain.*
+import no.nav.syfo.dialogmote.database.domain.toDialogmoteDeltakerAnnen
+import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerBehandler
+import no.nav.syfo.dialogmote.database.domain.toReferat
 import no.nav.syfo.dialogmote.domain.DialogmotedeltakerBehandler
 import no.nav.syfo.dialogmote.domain.Referat
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
-import java.time.LocalDateTime
 
 class ReferatJournalpostService(
     private val database: DatabaseInterface
@@ -32,23 +34,25 @@ class ReferatJournalpostService(
     }
 
     fun getDialogmoteReferatJournalforingListArbeidsgiver(): List<Triple<Virksomhetsnummer, PersonIdent, Referat>> {
-        return database.getFerdigstilteReferatWithoutJournalpostArbeidsgiverList().map { (virksomhetsnummer, pReferat) ->
-            val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id).map {
-                it.toDialogmoteDeltakerAnnen()
-            }
-            val motedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(pReferat.moteId)
-            val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
+        return database.getFerdigstilteReferatWithoutJournalpostArbeidsgiverList()
+            .map { (virksomhetsnummer, pReferat) ->
+                val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id)
+                    .map {
+                        it.toDialogmoteDeltakerAnnen()
+                    }
+                val motedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(pReferat.moteId)
+                val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
 
-            Triple(
-                first = virksomhetsnummer,
-                second = motedeltakerArbeidstaker.personIdent,
-                third = pReferat.toReferat(
-                    andreDeltakere = andreDeltakere,
-                    motedeltakerArbeidstakerId = motedeltakerArbeidstaker.id,
-                    motedeltakerArbeidsgiverId = motedeltakerArbeidsgiverId
+                Triple(
+                    first = virksomhetsnummer,
+                    second = motedeltakerArbeidstaker.personIdent,
+                    third = pReferat.toReferat(
+                        andreDeltakere = andreDeltakere,
+                        motedeltakerArbeidstakerId = motedeltakerArbeidstaker.id,
+                        motedeltakerArbeidsgiverId = motedeltakerArbeidsgiverId
+                    )
                 )
-            )
-        }
+            }
     }
 
     fun getDialogmoteReferatJournalforingListBehandler(): List<Triple<PersonIdent, DialogmotedeltakerBehandler, Referat>> {
@@ -76,8 +80,12 @@ class ReferatJournalpostService(
     fun getMotetidspunkt(moteId: Int): LocalDateTime? =
         database.getTidSted(moteId).maxByOrNull { it.createdAt }?.tid
 
-    fun getDialogmoteReferatForJournalpostDistribusjonList(): List<Pair<Int, String?>> {
-        return database.getReferatForFysiskBrevUtsending().map { Pair(it.id, it.journalpostIdArbeidstaker) }
+    fun getDialogmoteReferatForJournalpostDistribusjonList(): List<Triple<Int, PersonIdent, String?>> {
+        return database.getReferatForFysiskBrevUtsending()
+            .map { pReferat ->
+                val motedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(pReferat.moteId)
+                Triple(pReferat.id, motedeltakerArbeidstaker.personIdent, pReferat.journalpostIdArbeidstaker)
+            }
     }
 
     fun updateBestillingsId(

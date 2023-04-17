@@ -2,7 +2,10 @@ package no.nav.syfo.dialogmote
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.database.domain.*
+import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidsgiver
+import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerArbeidstaker
+import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerBehandler
+import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerBehandlerVarsel
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
@@ -81,13 +84,21 @@ class DialogmotedeltakerVarselJournalpostService(
         }
     }
 
-    fun getDialogmotedeltakerArbeidstakerVarselForJournalpostDistribusjonList(): List<DialogmotedeltakerArbeidstakerVarsel> {
+    fun getDialogmotedeltakerArbeidstakerVarselForJournalpostDistribusjonList(): List<Pair<PersonIdent, DialogmotedeltakerArbeidstakerVarsel>> {
         return database.getMotedeltakerArbeidstakerVarselForFysiskBrevUtsending()
             .map { it.toDialogmotedeltakerArbeidstaker() }
             .filter { journalforingVarselTypeList.contains(it.varselType) }
+            .map { motedeltakerArbeidstakerVarsel ->
+                val motedeltakerArbeidstaker =
+                    database.getMotedeltakerArbeidstakerById(motedeltakerArbeidstakerVarsel.motedeltakerArbeidstakerId)
+                Pair(
+                    motedeltakerArbeidstaker.personIdent,
+                    motedeltakerArbeidstakerVarsel,
+                )
+            }
     }
 
-    fun updateBestillingsId(
+    fun updateBestilling(
         dialogmotedeltakerArbeidstakerVarsel: DialogmotedeltakerArbeidstakerVarsel,
         bestillingsId: String?,
     ) {

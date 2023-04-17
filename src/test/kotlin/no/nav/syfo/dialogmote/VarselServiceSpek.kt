@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import no.nav.syfo.application.Unbounded
+import no.nav.syfo.application.database.Database
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
@@ -32,6 +33,7 @@ object VarselServiceSpek : Spek({
         val behandlerVarselService = mockk<BehandlerVarselService>()
         val altinnClient = mockk<AltinnClient>()
         val oppfolgingstilfelleClient = mockk<OppfolgingstilfelleClient>()
+        val database: Database = mockk()
 
         val varselService = VarselService(
             arbeidstakerVarselService = arbeidstakerVarselService,
@@ -39,7 +41,7 @@ object VarselServiceSpek : Spek({
             behandlerVarselService = behandlerVarselService,
             altinnClient = altinnClient,
             oppfolgingstilfelleClient = oppfolgingstilfelleClient,
-            isAltinnSendingEnabled = true
+            isAltinnSendingEnabled = true,
         )
 
         beforeEachTest {
@@ -49,7 +51,7 @@ object VarselServiceSpek : Spek({
             clearMocks(altinnClient)
             clearMocks(oppfolgingstilfelleClient)
 
-            justRun { arbeidstakerVarselService.sendVarsel(any(), any(), any()) }
+            justRun { arbeidstakerVarselService.sendVarsel(any(), any(), any(), any()) }
             justRun { narmesteLederVarselService.sendVarsel(any(), any()) }
             justRun { behandlerVarselService.sendVarsel(any(), any(), any(), any(), any(), any(), any(), any()) }
             justRun { altinnClient.sendToVirksomhet(any()) }

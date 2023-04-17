@@ -563,8 +563,6 @@ class DialogmoteService(
             documentComponentDTOList = referat.document,
         ) ?: throw RuntimeException("Failed to request PDF - Referat")
 
-        val now = LocalDateTime.now()
-
         val digitalVarsling = isDigitalVarselEnabled(
             personIdent = dialogmote.arbeidstaker.personIdent,
             token = token,

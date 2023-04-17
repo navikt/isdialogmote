@@ -1,16 +1,21 @@
 package no.nav.syfo.dialogmote.database
 
 import com.fasterxml.jackson.core.type.TypeReference
-import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.application.database.toList
-import no.nav.syfo.dialogmote.database.domain.PMotedeltakerArbeidstakerVarsel
-import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.util.configuredJacksonMapper
-import no.nav.syfo.util.toOffsetDateTimeUTC
-import java.sql.*
+import java.sql.Connection
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
+import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.application.database.toList
+import no.nav.syfo.dialogmote.database.domain.PMotedeltakerArbeidstakerVarsel
+import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
+import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
+import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.util.configuredJacksonMapper
+import no.nav.syfo.util.toOffsetDateTimeUTC
 
 const val queryCreateMotedeltakerVarselArbeidstaker =
     """
@@ -155,6 +160,24 @@ const val queryGetMotedeltakerArbeidstakerVarselForFysiskBrevUtsending =
 fun DatabaseInterface.getMotedeltakerArbeidstakerVarselForFysiskBrevUtsending(): List<PMotedeltakerArbeidstakerVarsel> {
     return this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerArbeidstakerVarselForFysiskBrevUtsending).use {
+            it.executeQuery().toList { toPMotedeltakerArbeidstakerVarsel() }
+        }
+    }
+}
+
+const val queryGetMotedeltakerArbeidstakerVarselByUUID =
+    """
+        SELECT *
+        FROM MOTEDELTAKER_ARBEIDSTAKER_VARSEL
+        WHERE uuid = ? 
+              AND journalpost_id IS NOT NULL
+              AND digitalt IS TRUE
+    """
+
+fun DatabaseInterface.getMotedeltakerArbeidstakerVarselJournalpostId(uuid: UUID): List<PMotedeltakerArbeidstakerVarsel> {
+    return this.connection.use { connection ->
+        connection.prepareStatement(queryGetMotedeltakerArbeidstakerVarselByUUID).use {
+            it.setString(1, uuid.toString())
             it.executeQuery().toList { toPMotedeltakerArbeidstakerVarsel() }
         }
     }
