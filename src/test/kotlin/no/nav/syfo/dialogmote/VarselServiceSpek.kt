@@ -42,7 +42,6 @@ object VarselServiceSpek : Spek({
             altinnClient = altinnClient,
             oppfolgingstilfelleClient = oppfolgingstilfelleClient,
             isAltinnSendingEnabled = true,
-            database = database,
         )
 
         beforeEachTest {

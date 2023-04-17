@@ -154,7 +154,6 @@ fun Application.apiModule(
         altinnClient = altinnClient,
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
         isAltinnSendingEnabled = environment.altinnSendingEnabled,
-        database = database,
     )
 
     val dialogmotestatusService = DialogmotestatusService(
