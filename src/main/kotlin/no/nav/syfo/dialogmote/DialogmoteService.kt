@@ -128,7 +128,7 @@ class DialogmoteService(
             personIdent = personIdent,
             token = token,
             callId = callId,
-        ) && doesNotHaveAdressebeskyttelse(personIdent = personIdent, callId)
+        )
 
         database.connection.use { connection ->
             createdDialogmoteIdentifiers = connection.createNewDialogmoteWithReferences(
@@ -825,10 +825,6 @@ class DialogmoteService(
             personIdent = personIdent,
             token = token,
             callId = callId,
-        )
-    }
-
-    private suspend fun doesNotHaveAdressebeskyttelse(personIdent: PersonIdent, callId: String): Boolean {
-        return !adressebeskyttelseClient.hasAdressebeskyttelse(personIdent, callId)
+        ) && !adressebeskyttelseClient.hasAdressebeskyttelse(personIdent, callId)
     }
 }
