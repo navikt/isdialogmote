@@ -1,5 +1,8 @@
 package no.nav.syfo.dialogmote
 
+import java.sql.Connection
+import java.time.LocalDateTime
+import java.util.*
 import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.exception.ConflictException
@@ -8,15 +11,13 @@ import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.pdl.PdlClient
+import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.*
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.*
-import java.sql.Connection
-import java.time.LocalDateTime
-import java.util.*
 
 class DialogmoteService(
     private val database: DatabaseInterface,
@@ -28,7 +29,8 @@ class DialogmoteService(
     private val pdfGenClient: PdfGenClient,
     private val kontaktinformasjonClient: KontaktinformasjonClient,
     private val varselService: VarselService,
-    private val pdlClient: PdlClient
+    private val pdlClient: PdlClient,
+    private val adressebeskyttelseClient: AdressebeskyttelseClient,
 ) {
     fun getDialogmote(
         moteUUID: UUID
@@ -126,7 +128,7 @@ class DialogmoteService(
             personIdent = personIdent,
             token = token,
             callId = callId,
-        )
+        ) && doesNotHaveAdressebeskyttelse(personIdent = personIdent, callId)
 
         database.connection.use { connection ->
             createdDialogmoteIdentifiers = connection.createNewDialogmoteWithReferences(
@@ -824,5 +826,9 @@ class DialogmoteService(
             token = token,
             callId = callId,
         )
+    }
+
+    private suspend fun doesNotHaveAdressebeskyttelse(personIdent: PersonIdent, callId: String): Boolean {
+        return !adressebeskyttelseClient.hasAdressebeskyttelse(personIdent, callId)
     }
 }

@@ -176,6 +176,7 @@ fun Application.apiModule(
         kontaktinformasjonClient = kontaktinformasjonClient,
         varselService = varselService,
         pdlClient = pdlClient,
+        adressebeskyttelseClient = adressebeskyttelseClient,
     )
 
     val narmesteLederTilgangService = NarmesteLederAccessService(
