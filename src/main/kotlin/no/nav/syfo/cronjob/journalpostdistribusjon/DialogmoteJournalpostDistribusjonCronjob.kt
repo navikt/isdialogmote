@@ -77,7 +77,13 @@ class DialogmoteJournalpostDistribusjonCronjob(
             .forEach { (referatId, personIdent, referatJournalpostId) ->
                 try {
                     if (isSendingToReservedViaEsyfovarselEnabled) {
+                        log.info("ArbeidstakerVarsel-journalpost-distribusjon til reserverte via esyfovarsel ENABLED. About to send varsel of type: ${MotedeltakerVarselType.REFERAT}")
                         arbeidstakerVarselService.sendVarsel(MotedeltakerVarselType.REFERAT, personIdent, UUID.randomUUID(), referatJournalpostId!!)
+                        referatJournalpostService.updateBestillingsId(
+                            // Oppdaterer utsendingstidspunkt
+                            referatId = referatId,
+                            bestillingsId = null,
+                        )
                     } else {
                         val bestillingsId =
                             journalpostdistribusjonClient.distribuerJournalpost(referatJournalpostId!!)?.bestillingsId
