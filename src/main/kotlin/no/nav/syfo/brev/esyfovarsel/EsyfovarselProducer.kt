@@ -6,6 +6,7 @@ import java.util.*
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 
 class EsyfovarselProducer(private val kafkaEsyfovarselProducer: KafkaProducer<String, EsyfovarselHendelse>) {
     fun sendVarselToEsyfovarsel(esyfovarselHendelse: EsyfovarselHendelse) {
@@ -50,6 +51,25 @@ data class ArbeidstakerHendelse(
     val arbeidstakerFnr: String,
     val orgnummer: String?
 ) : EsyfovarselHendelse
+
+data class VarselData(
+    val journalpost: VarselDataJournalpost? = null,
+    val narmesteLeder: VarselDataNarmesteLeder? = null,
+    val motetidspunkt: VarselDataMotetidspunkt? = null
+)
+
+data class VarselDataJournalpost(
+    val uuid: String,
+    val id: String?
+)
+
+data class VarselDataNarmesteLeder(
+    val navn: String?
+)
+
+data class VarselDataMotetidspunkt(
+    val tidspunkt: LocalDateTime
+)
 
 enum class HendelseType {
     NL_DIALOGMOTE_INNKALT,

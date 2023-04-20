@@ -163,7 +163,7 @@ class DialogmoteService(
                 documentArbeidstaker = newDialogmoteDTO.arbeidstaker.innkalling,
                 documentArbeidsgiver = newDialogmoteDTO.arbeidsgiver.innkalling,
                 documentBehandler = newDialogmoteDTO.behandler?.innkalling ?: emptyList(),
-                moteTidspunkt = newDialogmoteDTO.tidSted.tid,
+                motetidspunkt = newDialogmoteDTO.tidSted.tid,
                 digitalArbeidstakerVarsling = digitalVarsling,
                 virksomhetsnummer = virksomhetsnummer,
                 token = token,
@@ -256,7 +256,7 @@ class DialogmoteService(
                 documentArbeidstaker = avlysDialogmote.arbeidstaker.avlysning,
                 documentArbeidsgiver = avlysDialogmote.arbeidsgiver.avlysning,
                 documentBehandler = avlysDialogmote.behandler?.avlysning ?: emptyList(),
-                moteTidspunkt = dialogmote.tidStedList.latest()!!.tid,
+                motetidspunkt = dialogmote.tidStedList.latest()!!.tid,
                 digitalArbeidstakerVarsling = digitalVarsling,
                 virksomhetsnummer = virksomhetsnummer,
                 token = token,
@@ -353,7 +353,7 @@ class DialogmoteService(
                 documentArbeidstaker = endreDialogmoteTidSted.arbeidstaker.endringsdokument,
                 documentArbeidsgiver = endreDialogmoteTidSted.arbeidsgiver.endringsdokument,
                 documentBehandler = endreDialogmoteTidSted.behandler?.endringsdokument ?: emptyList(),
-                moteTidspunkt = endreDialogmoteTidSted.tid,
+                motetidspunkt = endreDialogmoteTidSted.tid,
                 digitalArbeidstakerVarsling = digitalVarsling,
                 virksomhetsnummer = virksomhetsnummer,
                 token = token,
@@ -385,7 +385,7 @@ class DialogmoteService(
         documentArbeidstaker: List<DocumentComponentDTO> = emptyList(),
         documentArbeidsgiver: List<DocumentComponentDTO> = emptyList(),
         documentBehandler: List<DocumentComponentDTO> = emptyList(),
-        moteTidspunkt: LocalDateTime,
+        motetidspunkt: LocalDateTime,
         digitalArbeidstakerVarsling: Boolean,
         virksomhetsnummer: Virksomhetsnummer,
         token: String,
@@ -436,7 +436,7 @@ class DialogmoteService(
         }
 
         val now = LocalDateTime.now()
-        val isDialogmoteTidPassed = moteTidspunkt.isBefore(now)
+        val isDialogmoteTidPassed = motetidspunkt.isBefore(now)
 
         if (!isDialogmoteTidPassed) {
             varselService.sendVarsel(
@@ -456,6 +456,7 @@ class DialogmoteService(
                 behandlerbrevId = behandlerVarselIdPair?.second,
                 behandlerbrevParentId = behandlerParentVarselId,
                 behandlerInnkallingUuid = behandlerInnkallingUuid,
+                motetidspunkt = motetidspunkt,
                 token = token,
                 callId = callId,
             )
@@ -620,6 +621,8 @@ class DialogmoteService(
                 )
             }
 
+            val sisteMotetidspunkt = dialogmote.tidStedList.maxBy { tidSted -> tidSted.tid }?.tid
+
             varselService.sendVarsel(
                 varselType = MotedeltakerVarselType.REFERAT,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
@@ -638,6 +641,7 @@ class DialogmoteService(
                 behandlerbrevId = referatUuid,
                 behandlerbrevParentId = behandler?.findParentVarselId(),
                 behandlerInnkallingUuid = behandler?.findInnkallingVarselUuid(),
+                motetidspunkt = sisteMotetidspunkt,
                 token = token,
                 callId = callId,
             )
@@ -727,6 +731,8 @@ class DialogmoteService(
                 )
             }
 
+            val sisteMotetidspunkt = dialogmote.tidStedList.maxBy { tidSted -> tidSted.tid }?.tid
+
             varselService.sendVarsel(
                 varselType = MotedeltakerVarselType.REFERAT,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
@@ -745,6 +751,7 @@ class DialogmoteService(
                 behandlerbrevId = referatUuid,
                 behandlerbrevParentId = behandler?.findParentVarselId(),
                 behandlerInnkallingUuid = behandler?.findInnkallingVarselUuid(),
+                motetidspunkt = sisteMotetidspunkt,
                 token = token,
                 callId = callId,
             )

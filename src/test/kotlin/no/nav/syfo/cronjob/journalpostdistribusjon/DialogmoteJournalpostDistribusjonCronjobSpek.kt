@@ -171,8 +171,8 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         result.updated shouldBeEqualTo 2
                     }
 
-                    coVerify(exactly = 1) { arbeidstakerVarselServiceMock.sendVarsel(MotedeltakerVarselType.NYTT_TID_STED, any(), any(), any()) }
-                    coVerify(exactly = 1) { arbeidstakerVarselServiceMock.sendVarsel(MotedeltakerVarselType.INNKALT, any(), any(), any()) }
+                    coVerify(exactly = 1) { arbeidstakerVarselServiceMock.sendVarsel(MotedeltakerVarselType.NYTT_TID_STED, any(), any(), any(), any()) }
+                    coVerify(exactly = 1) { arbeidstakerVarselServiceMock.sendVarsel(MotedeltakerVarselType.INNKALT, any(), any(), any(), any()) }
 
                     runBlocking {
                         val result = journalpostDistribusjonCronjob.referatJournalpostDistribusjon()
@@ -180,7 +180,7 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         result.updated shouldBeEqualTo 1
                     }
 
-                    coVerify(exactly = 1) { arbeidstakerVarselServiceMock.sendVarsel(MotedeltakerVarselType.REFERAT, any(), any(), any()) }
+                    coVerify(exactly = 1) { arbeidstakerVarselServiceMock.sendVarsel(MotedeltakerVarselType.REFERAT, any(), any(), any(), any()) }
 
                     with(
                         handleRequest(HttpMethod.Get, urlMote) {

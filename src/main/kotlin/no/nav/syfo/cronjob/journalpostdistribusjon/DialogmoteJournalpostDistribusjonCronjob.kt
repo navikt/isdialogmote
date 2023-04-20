@@ -29,19 +29,17 @@ class DialogmoteJournalpostDistribusjonCronjob(
     fun dialogmoteVarselJournalpostDistribusjon(): DialogmoteCronjobResult {
         val result = DialogmoteCronjobResult()
         dialogmotedeltakerVarselJournalpostService.getDialogmotedeltakerArbeidstakerVarselForJournalpostDistribusjonList()
-            .forEach { arbeidstakerVarselPair ->
-                val arbeidstakerFnr = arbeidstakerVarselPair.first
-                val arbeidstakerVarsel = arbeidstakerVarselPair.second
+            .forEach { (arbeidstakerFnr, arbeidstakerVarsel, motetidspunkt) ->
                 try {
                     log.info("ArbeidstakerVarsel-journalpost-distribusjon til reserverte via esyfovarsel. About to send varsel of type: ${arbeidstakerVarsel.varselType}")
                     arbeidstakerVarselService.sendVarsel(
                         arbeidstakerVarsel.varselType,
                         arbeidstakerFnr,
                         UUID.randomUUID(),
-                        arbeidstakerVarsel.journalpostId!!
+                        arbeidstakerVarsel.journalpostId!!,
+                        motetidspunkt
                     )
                     dialogmotedeltakerVarselJournalpostService.updateBrevBestilt(dialogmotedeltakerArbeidstakerVarsel = arbeidstakerVarsel)
-
                     result.updated++
                     COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE.increment()
                 } catch (e: Exception) {
@@ -61,17 +59,17 @@ class DialogmoteJournalpostDistribusjonCronjob(
     fun referatJournalpostDistribusjon(): DialogmoteCronjobResult {
         val result = DialogmoteCronjobResult()
         referatJournalpostService.getDialogmoteReferatForJournalpostDistribusjonList()
-            .forEach { (referatId, personIdent, referatJournalpostId) ->
+            .forEach { (referatId, personIdent, referatJournalpostId, motetidspunkt) ->
                 try {
                     log.info("ArbeidstakerVarsel-journalpost-distribusjon til reserverte via esyfovarsel. About to send varsel of type: ${MotedeltakerVarselType.REFERAT}")
                     arbeidstakerVarselService.sendVarsel(
                         MotedeltakerVarselType.REFERAT,
                         personIdent,
                         UUID.randomUUID(),
-                        referatJournalpostId!!
+                        referatJournalpostId!!,
+                        motetidspunkt
                     )
                     referatJournalpostService.updateBrevBestilt(referatId = referatId)
-
                     result.updated++
                     COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE.increment()
                 } catch (e: Exception) {

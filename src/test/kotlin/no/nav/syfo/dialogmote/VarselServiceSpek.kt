@@ -23,6 +23,7 @@ import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.mock.narmesteLeder
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDateTime
 
 object VarselServiceSpek : Spek({
 
@@ -51,7 +52,7 @@ object VarselServiceSpek : Spek({
             clearMocks(altinnClient)
             clearMocks(oppfolgingstilfelleClient)
 
-            justRun { arbeidstakerVarselService.sendVarsel(any(), any(), any(), any()) }
+            justRun { arbeidstakerVarselService.sendVarsel(any(), any(), any(), any(), any()) }
             justRun { narmesteLederVarselService.sendVarsel(any(), any()) }
             justRun { behandlerVarselService.sendVarsel(any(), any(), any(), any(), any(), any(), any(), any()) }
             justRun { altinnClient.sendToVirksomhet(any()) }
@@ -92,6 +93,7 @@ object VarselServiceSpek : Spek({
                     behandlerbrevId = null,
                     behandlerbrevParentId = null,
                     behandlerInnkallingUuid = null,
+                    motetidspunkt = LocalDateTime.now().plusDays(1L),
                     token = "token",
                     callId = "callId",
                 )
@@ -141,6 +143,7 @@ object VarselServiceSpek : Spek({
                     behandlerbrevId = null,
                     behandlerbrevParentId = null,
                     behandlerInnkallingUuid = null,
+                    motetidspunkt = LocalDateTime.now().plusDays(1L),
                     token = "token",
                     callId = "callId",
                 )
@@ -189,6 +192,7 @@ object VarselServiceSpek : Spek({
                     behandlerbrevId = null,
                     behandlerbrevParentId = null,
                     behandlerInnkallingUuid = null,
+                    motetidspunkt = LocalDateTime.now().plusDays(1L),
                     token = "token",
                     callId = "callId",
                 )
@@ -234,6 +238,7 @@ object VarselServiceSpek : Spek({
                     behandlerbrevId = null,
                     behandlerbrevParentId = null,
                     behandlerInnkallingUuid = null,
+                    motetidspunkt = LocalDateTime.now().plusDays(1L),
                     token = "token",
                     callId = "callId",
                 )
