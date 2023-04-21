@@ -3,7 +3,6 @@ package no.nav.syfo.cronjob.journalpostdistribusjon
 import java.util.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
 import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_FAIL
 import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE
 import no.nav.syfo.cronjob.DialogmoteCronjob
@@ -16,9 +15,7 @@ import org.slf4j.LoggerFactory
 class DialogmoteJournalpostDistribusjonCronjob(
     private val dialogmotedeltakerVarselJournalpostService: DialogmotedeltakerVarselJournalpostService,
     private val referatJournalpostService: ReferatJournalpostService,
-    private val journalpostdistribusjonClient: JournalpostdistribusjonClient,
     private val arbeidstakerVarselService: ArbeidstakerVarselService,
-    private val isSendingToReservedViaEsyfovarselEnabled: Boolean,
 ) : DialogmoteCronjob {
 
     override val initialDelayMinutes: Long = 5
@@ -29,32 +26,26 @@ class DialogmoteJournalpostDistribusjonCronjob(
         referatJournalpostDistribusjon()
     }
 
-    suspend fun dialogmoteVarselJournalpostDistribusjon(): DialogmoteCronjobResult {
+    fun dialogmoteVarselJournalpostDistribusjon(): DialogmoteCronjobResult {
         val result = DialogmoteCronjobResult()
         dialogmotedeltakerVarselJournalpostService.getDialogmotedeltakerArbeidstakerVarselForJournalpostDistribusjonList()
             .forEach { arbeidstakerVarselPair ->
                 val arbeidstakerFnr = arbeidstakerVarselPair.first
                 val arbeidstakerVarsel = arbeidstakerVarselPair.second
                 try {
-                    if (isSendingToReservedViaEsyfovarselEnabled) {
-                        if (arbeidstakerVarsel.journalpostId !== null) {
-                            log.info("ArbeidstakerVarsel-journalpost-distribusjon til reserverte via esyfovarsel ENABLED. About to send varsel of type: ${arbeidstakerVarsel.varselType}")
-                            arbeidstakerVarselService.sendVarsel(arbeidstakerVarsel.varselType, arbeidstakerFnr, UUID.randomUUID(), arbeidstakerVarsel.journalpostId)
-                            dialogmotedeltakerVarselJournalpostService.updateBestilling(
-                                // Oppdaterer utsendingstidspunkt
-                                dialogmotedeltakerArbeidstakerVarsel = arbeidstakerVarsel,
-                                bestillingsId = null,
-                            )
-                        }
-                    } else {
-                        log.info("ArbeidstakerVarsel-journalpost-distribusjon til reserverte via esyfovarsel DISABLED. About to send varsel of type: ${arbeidstakerVarsel.varselType}")
-                        val bestillingsId =
-                            journalpostdistribusjonClient.distribuerJournalpost(arbeidstakerVarsel.journalpostId!!)?.bestillingsId
-                        dialogmotedeltakerVarselJournalpostService.updateBestilling(
-                            dialogmotedeltakerArbeidstakerVarsel = arbeidstakerVarsel,
-                            bestillingsId = bestillingsId,
-                        )
-                    }
+                    log.info("ArbeidstakerVarsel-journalpost-distribusjon til reserverte via esyfovarsel. About to send varsel of type: ${arbeidstakerVarsel.varselType}")
+                    arbeidstakerVarselService.sendVarsel(
+                        arbeidstakerVarsel.varselType,
+                        arbeidstakerFnr,
+                        UUID.randomUUID(),
+                        arbeidstakerVarsel.journalpostId!!
+                    )
+                    dialogmotedeltakerVarselJournalpostService.updateBestilling(
+                        // Oppdaterer utsendingstidspunkt
+                        dialogmotedeltakerArbeidstakerVarsel = arbeidstakerVarsel,
+                        bestillingsId = null,
+                    )
+
                     result.updated++
                     COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE.increment()
                 } catch (e: Exception) {
@@ -76,22 +67,19 @@ class DialogmoteJournalpostDistribusjonCronjob(
         referatJournalpostService.getDialogmoteReferatForJournalpostDistribusjonList()
             .forEach { (referatId, personIdent, referatJournalpostId) ->
                 try {
-                    if (isSendingToReservedViaEsyfovarselEnabled) {
-                        log.info("ArbeidstakerVarsel-journalpost-distribusjon til reserverte via esyfovarsel ENABLED. About to send varsel of type: ${MotedeltakerVarselType.REFERAT}")
-                        arbeidstakerVarselService.sendVarsel(MotedeltakerVarselType.REFERAT, personIdent, UUID.randomUUID(), referatJournalpostId!!)
-                        referatJournalpostService.updateBestillingsId(
-                            // Oppdaterer utsendingstidspunkt
-                            referatId = referatId,
-                            bestillingsId = null,
-                        )
-                    } else {
-                        val bestillingsId =
-                            journalpostdistribusjonClient.distribuerJournalpost(referatJournalpostId!!)?.bestillingsId
-                        referatJournalpostService.updateBestillingsId(
-                            referatId = referatId,
-                            bestillingsId = bestillingsId,
-                        )
-                    }
+                    log.info("ArbeidstakerVarsel-journalpost-distribusjon til reserverte via esyfovarsel. About to send varsel of type: ${MotedeltakerVarselType.REFERAT}")
+                    arbeidstakerVarselService.sendVarsel(
+                        MotedeltakerVarselType.REFERAT,
+                        personIdent,
+                        UUID.randomUUID(),
+                        referatJournalpostId!!
+                    )
+                    referatJournalpostService.updateBestillingsId(
+                        // Oppdaterer utsendingstidspunkt
+                        referatId = referatId,
+                        bestillingsId = null,
+                    )
+
                     result.updated++
                     COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE.increment()
                 } catch (e: Exception) {

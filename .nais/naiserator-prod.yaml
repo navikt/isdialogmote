@@ -73,7 +73,6 @@ spec:
         - host: "ereg-services.prod-fss-pub.nais.io"
         - host: "pdl-api.prod-fss-pub.nais.io"
         - host: "dokarkiv.prod-fss-pub.nais.io"
-        - host: "dokdistfordeling.prod-fss-pub.nais.io"
         - host: "www.altinn.no"
       rules:
         - application: digdir-krr-proxy
@@ -136,10 +135,6 @@ spec:
       value: "prod-gcp.teamsykefravr.isnarmesteleder"
     - name: ALTINN_WS_URL
       value: "https://www.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternalBasic.svc"
-    - name: DOKDIST_FORDELING_URL
-      value: "https://dokdistfordeling.prod-fss-pub.nais.io"
-    - name: DOKDIST_FORDELING_CLIENT_ID
-      value: "prod-fss.teamdokumenthandtering.saf"
     - name: OUTDATED_DIALOGMOTE_CUTOFF
       value: "2022-07-01"
     - name: OUTDATED_DIALOGMOTE_CRONJOB_ENABLED
@@ -149,6 +144,4 @@ spec:
     - name: KODE6_ENABLED
       value: "true"
     - name: PUBLISH_DIALOGMOTESVAR_ENABLED
-      value: "true"
-    - name: SENDING_TO_RESERVED_VIA_ESYFOVARSEL_ENABLED
       value: "true"

@@ -11,7 +11,6 @@ import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.ereg.EregClient
-import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.tokendings.TokendingsClient
@@ -49,11 +48,6 @@ fun Application.cronjobModule(
         azureAdV2Client = azureAdV2Client,
         dokarkivClientId = environment.dokarkivClientId,
         dokarkivBaseUrl = environment.dokarkivUrl,
-    )
-    val journalpostdistribusjonClient = JournalpostdistribusjonClient(
-        azureAdV2Client = azureAdV2Client,
-        dokdistFordelingClientId = environment.dokdistFordelingClientId,
-        dokdistFordelingBaseUrl = environment.dokdistFordelingUrl,
     )
     val pdlClient = PdlClient(
         azureAdV2Client = azureAdV2Client,
@@ -144,9 +138,7 @@ fun Application.cronjobModule(
     val journalpostDistribusjonCronjob = DialogmoteJournalpostDistribusjonCronjob(
         dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
         referatJournalpostService = referatJournalpostService,
-        journalpostdistribusjonClient = journalpostdistribusjonClient,
         arbeidstakerVarselService = arbeidstakerVarselService,
-        isSendingToReservedViaEsyfovarselEnabled = environment.sendingToReservedViaEsyfovarselEnabled,
     )
     val publishDialogmotesvarCronjob = PublishDialogmotesvarCronjob(
         publishDialogmotesvarService = publishDialogmotesvarService
