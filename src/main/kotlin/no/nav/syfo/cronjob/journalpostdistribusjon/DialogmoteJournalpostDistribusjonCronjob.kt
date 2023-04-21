@@ -40,11 +40,7 @@ class DialogmoteJournalpostDistribusjonCronjob(
                         UUID.randomUUID(),
                         arbeidstakerVarsel.journalpostId!!
                     )
-                    dialogmotedeltakerVarselJournalpostService.updateBestilling(
-                        // Oppdaterer utsendingstidspunkt
-                        dialogmotedeltakerArbeidstakerVarsel = arbeidstakerVarsel,
-                        bestillingsId = null,
-                    )
+                    dialogmotedeltakerVarselJournalpostService.updateBrevBestilt(dialogmotedeltakerArbeidstakerVarsel = arbeidstakerVarsel)
 
                     result.updated++
                     COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE.increment()
@@ -62,7 +58,7 @@ class DialogmoteJournalpostDistribusjonCronjob(
         return result
     }
 
-    suspend fun referatJournalpostDistribusjon(): DialogmoteCronjobResult {
+    fun referatJournalpostDistribusjon(): DialogmoteCronjobResult {
         val result = DialogmoteCronjobResult()
         referatJournalpostService.getDialogmoteReferatForJournalpostDistribusjonList()
             .forEach { (referatId, personIdent, referatJournalpostId) ->
@@ -74,11 +70,7 @@ class DialogmoteJournalpostDistribusjonCronjob(
                         UUID.randomUUID(),
                         referatJournalpostId!!
                     )
-                    referatJournalpostService.updateBestillingsId(
-                        // Oppdaterer utsendingstidspunkt
-                        referatId = referatId,
-                        bestillingsId = null,
-                    )
+                    referatJournalpostService.updateBrevBestilt(referatId = referatId)
 
                     result.updated++
                     COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE.increment()

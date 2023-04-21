@@ -121,23 +121,19 @@ fun DatabaseInterface.updateMoteStatus(
 
 fun DatabaseInterface.setReferatBrevBestilt(
     referatUuid: String,
-    bestillingsId: String,
 ) {
     val referatId = this.getReferat(UUID.fromString(referatUuid)).first().id
-    this.updateReferatBrevBestillingsId(
+    this.updateReferatBrevBestilt(
         referatId,
-        bestillingsId
     )
 }
 
 fun DatabaseInterface.setMotedeltakerArbeidstakerVarselBrevBestilt(
     varselUuid: String,
-    bestillingsId: String,
 ) {
     val varselId = this.getMotedeltakerArbeidstakerVarsel(UUID.fromString(varselUuid)).first().id
-    this.updateMotedeltakerArbeidstakerBrevBestillingsId(
+    this.updateMotedeltakerArbeidstakerBrevBestilt(
         varselId,
-        bestillingsId
     )
 }
 

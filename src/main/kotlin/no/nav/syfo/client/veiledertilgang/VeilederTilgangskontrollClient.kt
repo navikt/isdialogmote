@@ -58,14 +58,14 @@ class VeilederTilgangskontrollClient(
             if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_CALL_TILGANGSKONTROLL_PERSONS_FORBIDDEN.increment()
             } else {
-                handleUnexpectedResponseException(e.response, resourceEnhet, callId = callId)
+                handleUnexpectedResponseException(e.response, resourcePersonList, callId = callId)
             }
             emptyList()
         } catch (e: ServerResponseException) {
-            handleUnexpectedResponseException(e.response, resourceEnhet, callId = callId)
+            handleUnexpectedResponseException(e.response, resourcePersonList, callId = callId)
             emptyList()
         } catch (e: ClosedReceiveChannelException) {
-            handleClosedReceiveChannelException(e, "hasAccessToPersonList", resourceEnhet)
+            handleClosedReceiveChannelException(e, "hasAccessToPersonList", resourcePersonList)
             emptyList()
         } finally {
             val duration = Duration.ofMillis(System.currentTimeMillis() - starttime)
@@ -128,12 +128,10 @@ class VeilederTilgangskontrollClient(
 
     private fun incrementFailCounter(resource: String) {
         when (resource) {
-            resourcePerson -> {
-                COUNT_CALL_TILGANGSKONTROLL_PERSON_FAIL.increment()
-            }
             resourceEnhet -> {
                 COUNT_CALL_TILGANGSKONTROLL_ENHET_FAIL.increment()
             }
+
             resourcePersonList -> {
                 COUNT_CALL_TILGANGSKONTROLL_PERSONS_FAIL.increment()
             }
@@ -152,7 +150,6 @@ class VeilederTilgangskontrollClient(
     companion object {
         private val log = LoggerFactory.getLogger(VeilederTilgangskontrollClient::class.java)
 
-        private const val resourcePerson = "PERSON"
         private const val resourcePersonList = "PERSONLIST"
         private const val resourceEnhet = "ENHET"
 

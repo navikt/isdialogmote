@@ -165,40 +165,20 @@ fun DatabaseInterface.getMotedeltakerArbeidstakerVarselForFysiskBrevUtsending():
     }
 }
 
-const val queryGetMotedeltakerArbeidstakerVarselByUUID =
-    """
-        SELECT *
-        FROM MOTEDELTAKER_ARBEIDSTAKER_VARSEL
-        WHERE uuid = ? 
-              AND journalpost_id IS NOT NULL
-              AND digitalt IS TRUE
-    """
-
-fun DatabaseInterface.getMotedeltakerArbeidstakerVarselJournalpostId(uuid: UUID): List<PMotedeltakerArbeidstakerVarsel> {
-    return this.connection.use { connection ->
-        connection.prepareStatement(queryGetMotedeltakerArbeidstakerVarselByUUID).use {
-            it.setString(1, uuid.toString())
-            it.executeQuery().toList { toPMotedeltakerArbeidstakerVarsel() }
-        }
-    }
-}
-
-const val queryUpdateMotedeltakerArbeidstakerBrevBestillingsId =
+const val queryUpdateMotedeltakerArbeidstakerBrevBestilt =
     """
         UPDATE MOTEDELTAKER_ARBEIDSTAKER_VARSEL
-        SET brev_bestilling_id = ?, brev_bestilt_tidspunkt = ?
+        SET brev_bestilt_tidspunkt = ?
         WHERE id = ?
     """
 
-fun DatabaseInterface.updateMotedeltakerArbeidstakerBrevBestillingsId(
+fun DatabaseInterface.updateMotedeltakerArbeidstakerBrevBestilt(
     motedeltakerArbeidstakerVarselId: Int,
-    brevBestillingsId: String?,
 ) {
     this.connection.use { connection ->
-        connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerBrevBestillingsId).use {
-            it.setString(1, brevBestillingsId)
-            it.setTimestamp(2, Timestamp.from(Instant.now()))
-            it.setInt(3, motedeltakerArbeidstakerVarselId)
+        connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerBrevBestilt).use {
+            it.setTimestamp(1, Timestamp.from(Instant.now()))
+            it.setInt(2, motedeltakerArbeidstakerVarselId)
             it.execute()
         }
         connection.commit()

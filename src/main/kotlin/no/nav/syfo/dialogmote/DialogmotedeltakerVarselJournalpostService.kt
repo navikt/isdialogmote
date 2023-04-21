@@ -98,13 +98,11 @@ class DialogmotedeltakerVarselJournalpostService(
             }
     }
 
-    fun updateBestilling(
+    fun updateBrevBestilt(
         dialogmotedeltakerArbeidstakerVarsel: DialogmotedeltakerArbeidstakerVarsel,
-        bestillingsId: String?,
     ) {
-        database.updateMotedeltakerArbeidstakerBrevBestillingsId(
+        database.updateMotedeltakerArbeidstakerBrevBestilt(
             motedeltakerArbeidstakerVarselId = dialogmotedeltakerArbeidstakerVarsel.id,
-            brevBestillingsId = bestillingsId
         )
     }
 

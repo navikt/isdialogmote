@@ -366,10 +366,10 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
 
                     varselUuids.forEach {
                         database.setMotedeltakerArbeidstakerVarselJournalfort(it, 123)
-                        database.setMotedeltakerArbeidstakerVarselBrevBestilt(it, "123")
+                        database.setMotedeltakerArbeidstakerVarselBrevBestilt(it)
                     }
                     database.setReferatJournalfort(referatUuid, 123)
-                    database.setReferatBrevBestilt(referatUuid, "123")
+                    database.setReferatBrevBestilt(referatUuid)
 
                     runBlocking {
                         val result = journalpostDistribusjonCronjob.dialogmoteVarselJournalpostDistribusjon()
@@ -624,10 +624,10 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
 
                     varselUuids.forEach {
                         database.setMotedeltakerArbeidstakerVarselJournalfort(it, 123)
-                        database.setMotedeltakerArbeidstakerVarselBrevBestilt(it, "123")
+                        database.setMotedeltakerArbeidstakerVarselBrevBestilt(it)
                     }
                     database.setReferatJournalfort(referatUuid, 123)
-                    database.setReferatBrevBestilt(referatUuid, "123")
+                    database.setReferatBrevBestilt(referatUuid)
 
                     runBlocking {
                         val result = journalpostDistribusjonCronjob.dialogmoteVarselJournalpostDistribusjon()
