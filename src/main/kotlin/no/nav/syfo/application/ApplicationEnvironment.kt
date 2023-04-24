@@ -55,14 +55,11 @@ data class Environment(
     val altinnWsUrl: String = getEnvVar("ALTINN_WS_URL"),
     val altinnUsername: String = getEnvVar("ALTINN_USERNAME"),
     val altinnPassword: String = getEnvVar("ALTINN_PASSWORD"),
-    val dokdistFordelingUrl: String = getEnvVar("DOKDIST_FORDELING_URL"),
-    val dokdistFordelingClientId: String = getEnvVar("DOKDIST_FORDELING_CLIENT_ID"),
     val altinnSendingEnabled: Boolean = getEnvVar("ALTINN_SENDING_ENABLED").toBoolean(),
     val outdatedDialogmoteCronJobEnabled: Boolean = getEnvVar("OUTDATED_DIALOGMOTE_CRONJOB_ENABLED").toBoolean(),
     val outdatedDialogmoteCutoff: LocalDate = LocalDate.parse(getEnvVar("OUTDATED_DIALOGMOTE_CUTOFF")),
     val kode6Enabled: Boolean = getEnvVar("KODE6_ENABLED").toBoolean(),
     val publishDialogmotesvarEnabled: Boolean = getEnvVar("PUBLISH_DIALOGMOTESVAR_ENABLED").toBoolean(),
-    val sendingToReservedViaEsyfovarselEnabled: Boolean = getEnvVar("SENDING_TO_RESERVED_VIA_ESYFOVARSEL_ENABLED").toBoolean(),
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$isdialogmoteDbHost:$isdialogmoteDbPort/$isdialogmoteDbName"

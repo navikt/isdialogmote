@@ -64,14 +64,11 @@ fun testEnvironment(
     altinnWsUrl = "altinnUrl",
     altinnUsername = "username",
     altinnPassword = "password",
-    dokdistFordelingClientId = "dokdistFordelingClientId",
-    dokdistFordelingUrl = "http://dokdistfordeling",
     altinnSendingEnabled = true,
     outdatedDialogmoteCronJobEnabled = true,
     outdatedDialogmoteCutoff = LocalDate.parse("2022-07-01"),
     kode6Enabled = true,
     publishDialogmotesvarEnabled = true,
-    sendingToReservedViaEsyfovarselEnabled = true,
 )
 
 fun testAppState() = ApplicationState(

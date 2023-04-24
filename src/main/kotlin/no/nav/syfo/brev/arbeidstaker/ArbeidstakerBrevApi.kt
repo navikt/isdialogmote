@@ -114,7 +114,6 @@ fun Route.registerArbeidstakerBrevApi(
                     if (brev.lestDatoArbeidstaker == null) {
                         dialogmotedeltakerService.updateArbeidstakerBrevSettSomLest(
                             personIdent = requestPersonIdent,
-                            dialogmotedeltakerArbeidstakerUuid = motedeltakerArbeidstaker.uuid,
                             brevUuid = brevUuid,
                         )
                     }

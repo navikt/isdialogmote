@@ -28,23 +28,6 @@ fun MotedeltakerVarselType.toJournalpostTittel(): String {
     }
 }
 
-fun MotedeltakerVarselType.toDineSykmeldteVarselTekst(): String {
-    return when (this) {
-        MotedeltakerVarselType.AVLYST -> {
-            "Avlysning av dialogmøte"
-        }
-        MotedeltakerVarselType.INNKALT -> {
-            "Innkalling til dialogmøte"
-        }
-        MotedeltakerVarselType.NYTT_TID_STED -> {
-            "Endring av dialogmøte"
-        }
-        MotedeltakerVarselType.REFERAT -> {
-            "Referat fra dialogmøte"
-        }
-    }
-}
-
 fun MotedeltakerVarselType.toBrevkodeType(
     dialogmoteDeltakerType: DialogmoteDeltakerType,
 ): BrevkodeType {

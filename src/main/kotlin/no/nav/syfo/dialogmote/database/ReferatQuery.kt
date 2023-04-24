@@ -426,22 +426,20 @@ fun DatabaseInterface.getReferatForFysiskBrevUtsending(): List<PReferat> {
     }
 }
 
-const val queryUpdateReferatBrevBestillingsId =
+const val queryUpdateReferatBrevBestilt =
     """
         UPDATE MOTE_REFERAT
-        SET brev_bestilling_id = ?, brev_bestilt_tidspunkt = ?
+        SET brev_bestilt_tidspunkt = ?
         WHERE id = ?
     """
 
-fun DatabaseInterface.updateReferatBrevBestillingsId(
+fun DatabaseInterface.updateReferatBrevBestilt(
     referatId: Int,
-    brevBestillingsId: String?,
 ) {
     this.connection.use { connection ->
-        connection.prepareStatement(queryUpdateReferatBrevBestillingsId).use {
-            it.setString(1, brevBestillingsId)
-            it.setTimestamp(2, Timestamp.from(Instant.now()))
-            it.setInt(3, referatId)
+        connection.prepareStatement(queryUpdateReferatBrevBestilt).use {
+            it.setTimestamp(1, Timestamp.from(Instant.now()))
+            it.setInt(2, referatId)
             it.execute()
         }
         connection.commit()

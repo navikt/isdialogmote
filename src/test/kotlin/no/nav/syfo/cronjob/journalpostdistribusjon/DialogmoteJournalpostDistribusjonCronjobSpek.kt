@@ -17,8 +17,6 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
-import no.nav.syfo.client.azuread.AzureAdV2Client
-import no.nav.syfo.client.journalpostdistribusjon.JournalpostdistribusjonClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
 import no.nav.syfo.dialogmote.ReferatJournalpostService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
@@ -34,8 +32,7 @@ import no.nav.syfo.testhelper.generator.generateNewReferatDTO
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -47,7 +44,6 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
         with(TestApplicationEngine()) {
             start()
 
-            val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
             val arbeidstakerVarselServiceMock = mockk<ArbeidstakerVarselService>(relaxed = true)
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
@@ -69,17 +65,10 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
             val dialogmotedeltakerVarselJournalpostService =
                 DialogmotedeltakerVarselJournalpostService(database = database)
             val referatJournalpostService = ReferatJournalpostService(database = database)
-            val journalpostdistribusjonClient = JournalpostdistribusjonClient(
-                azureAdV2Client = azureAdV2ClientMock,
-                dokdistFordelingClientId = externalMockEnvironment.dokdistMock.name,
-                dokdistFordelingBaseUrl = externalMockEnvironment.dokdistMock.url
-            )
 
             val journalpostDistribusjonCronjob = DialogmoteJournalpostDistribusjonCronjob(
                 dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
                 referatJournalpostService = referatJournalpostService,
-                journalpostdistribusjonClient = journalpostdistribusjonClient,
-                isSendingToReservedViaEsyfovarselEnabled = true,
                 arbeidstakerVarselService = arbeidstakerVarselServiceMock,
             )
 
@@ -202,6 +191,11 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
                         val dialogmoteDTO = dialogmoteList.first()
+                        dialogmoteDTO.referatList.first().brevBestiltTidspunkt.shouldNotBeNull()
+                        dialogmoteDTO.arbeidstaker.varselList.filter { it.varselType != MotedeltakerVarselType.REFERAT.name }
+                            .forEach {
+                                it.brevBestiltTidspunkt.shouldNotBeNull()
+                            }
                     }
                 }
                 it("Distribuerer journalført innkalling med respons 410") {
@@ -243,6 +237,9 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dialogmoteDTO = dialogmoteList.first()
+                        dialogmoteDTO.arbeidstaker.varselList.first().brevBestiltTidspunkt.shouldNotBeNull()
                     }
                 }
 
@@ -369,10 +366,10 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
 
                     varselUuids.forEach {
                         database.setMotedeltakerArbeidstakerVarselJournalfort(it, 123)
-                        database.setMotedeltakerArbeidstakerVarselBrevBestilt(it, "123")
+                        database.setMotedeltakerArbeidstakerVarselBrevBestilt(it)
                     }
                     database.setReferatJournalfort(referatUuid, 123)
-                    database.setReferatBrevBestilt(referatUuid, "123")
+                    database.setReferatBrevBestilt(referatUuid)
 
                     runBlocking {
                         val result = journalpostDistribusjonCronjob.dialogmoteVarselJournalpostDistribusjon()
@@ -627,10 +624,10 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
 
                     varselUuids.forEach {
                         database.setMotedeltakerArbeidstakerVarselJournalfort(it, 123)
-                        database.setMotedeltakerArbeidstakerVarselBrevBestilt(it, "123")
+                        database.setMotedeltakerArbeidstakerVarselBrevBestilt(it)
                     }
                     database.setReferatJournalfort(referatUuid, 123)
-                    database.setReferatBrevBestilt(referatUuid, "123")
+                    database.setReferatBrevBestilt(referatUuid)
 
                     runBlocking {
                         val result = journalpostDistribusjonCronjob.dialogmoteVarselJournalpostDistribusjon()

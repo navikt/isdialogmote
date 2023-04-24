@@ -88,13 +88,11 @@ class ReferatJournalpostService(
             }
     }
 
-    fun updateBestillingsId(
+    fun updateBrevBestilt(
         referatId: Int,
-        bestillingsId: String?,
     ) {
-        database.updateReferatBrevBestillingsId(
+        database.updateReferatBrevBestilt(
             referatId = referatId,
-            brevBestillingsId = bestillingsId
         )
     }
 

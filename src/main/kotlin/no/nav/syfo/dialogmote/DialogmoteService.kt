@@ -145,7 +145,6 @@ class DialogmoteService(
             createAndSendVarsel(
                 connection = connection,
                 arbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdPair.first,
-                arbeidstakerUuid = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdPair.second,
                 arbeidstakernavn = arbeidstakernavn,
                 arbeidsgiverId = createdDialogmoteIdentifiers.motedeltakerArbeidsgiverIdPair.first,
                 behandlerId = createdDialogmoteIdentifiers.motedeltakerBehandlerIdPair?.first,
@@ -240,7 +239,6 @@ class DialogmoteService(
             createAndSendVarsel(
                 connection = connection,
                 arbeidstakerId = dialogmote.arbeidstaker.id,
-                arbeidstakerUuid = dialogmote.arbeidstaker.uuid,
                 arbeidstakernavn = arbeidstakernavn,
                 arbeidsgiverId = dialogmote.arbeidsgiver.id,
                 behandlerId = dialogmote.behandler?.id,
@@ -338,7 +336,6 @@ class DialogmoteService(
             createAndSendVarsel(
                 connection = connection,
                 arbeidstakerId = dialogmote.arbeidstaker.id,
-                arbeidstakerUuid = dialogmote.arbeidstaker.uuid,
                 arbeidsgiverId = dialogmote.arbeidsgiver.id,
                 behandlerId = dialogmote.behandler?.id,
                 behandlerRef = dialogmote.behandler?.behandlerRef,
@@ -369,7 +366,6 @@ class DialogmoteService(
 
     private suspend fun createAndSendVarsel(
         connection: Connection,
-        arbeidstakerUuid: UUID,
         arbeidstakerId: Int,
         arbeidsgiverId: Int,
         behandlerId: Int?,
@@ -448,7 +444,6 @@ class DialogmoteService(
                 isDigitalVarselEnabledForArbeidstaker = digitalArbeidstakerVarsling,
                 arbeidstakerPersonIdent = arbeidstakerPersonIdent,
                 arbeidstakernavn = arbeidstakernavn,
-                arbeidstakerId = arbeidstakerUuid,
                 arbeidstakerbrevId = varselArbeidstakerId,
                 narmesteLeder = narmesteLeder,
                 virksomhetsbrevId = virksomhetsbrevId,
@@ -629,7 +624,6 @@ class DialogmoteService(
                 varselType = MotedeltakerVarselType.REFERAT,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
                 arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
-                arbeidstakerId = dialogmote.arbeidstaker.uuid,
                 arbeidstakernavn = arbeidstakernavn,
                 arbeidstakerbrevId = referatUuid,
                 narmesteLeder = narmesteLeder,
@@ -737,7 +731,6 @@ class DialogmoteService(
                 varselType = MotedeltakerVarselType.REFERAT,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
                 arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
-                arbeidstakerId = dialogmote.arbeidstaker.uuid,
                 arbeidstakernavn = arbeidstakernavn,
                 arbeidstakerbrevId = referatUuid,
                 narmesteLeder = narmesteLeder,

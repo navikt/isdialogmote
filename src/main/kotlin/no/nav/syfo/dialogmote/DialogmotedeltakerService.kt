@@ -115,7 +115,6 @@ class DialogmotedeltakerService(
 
     fun updateArbeidstakerBrevSettSomLest(
         personIdent: PersonIdent,
-        dialogmotedeltakerArbeidstakerUuid: UUID,
         brevUuid: UUID,
     ) {
         val brevIsReferat = database.getReferat(brevUuid).isNotEmpty()
@@ -143,7 +142,6 @@ class DialogmotedeltakerService(
         dialogmote: Dialogmote
     ) {
         val personIdent = dialogmote.arbeidstaker.personIdent
-        val motedeltakerArbeidstakerUuid = dialogmote.arbeidstaker.uuid
         dialogmote.arbeidstaker.varselList
             .filter { it.varselType.erBrukeroppgaveVarsel() }
             .forEach { brukeroppgaveVarsel ->

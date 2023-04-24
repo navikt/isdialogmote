@@ -31,7 +31,6 @@ class VarselService(
         isDigitalVarselEnabledForArbeidstaker: Boolean,
         arbeidstakerPersonIdent: PersonIdent,
         arbeidstakernavn: String,
-        arbeidstakerId: UUID,
         arbeidstakerbrevId: UUID,
         narmesteLeder: NarmesteLederRelasjonDTO?,
         virksomhetsbrevId: UUID,

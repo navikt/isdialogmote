@@ -84,10 +84,6 @@ fun List<Referat>.ferdigstilte(): List<Referat> {
     return this.filter { it.ferdigstilt }
 }
 
-fun List<Referat>.latestFerdigstilt(): Referat? {
-    return this.ferdigstilte().firstOrNull()
-}
-
 fun DialogmotedeltakerAnnen.toDialogmotedeltakerAnnenDTO(): DialogmotedeltakerAnnenDTO {
     return DialogmotedeltakerAnnenDTO(
         uuid = this.uuid.toString(),

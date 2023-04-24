@@ -192,7 +192,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                                 moteStatusEndret.tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start
                             }
                         }
-                        database.setReferatBrevBestilt(referatUuid, "123")
+                        database.setReferatBrevBestilt(referatUuid)
                         with(
                             handleRequest(HttpMethod.Get, urlMoter) {
                                 addHeader(Authorization, bearerHeader(validToken))
