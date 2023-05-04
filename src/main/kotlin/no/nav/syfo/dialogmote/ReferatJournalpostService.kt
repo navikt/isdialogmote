@@ -8,6 +8,7 @@ import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerBehandler
 import no.nav.syfo.dialogmote.database.domain.toReferat
 import no.nav.syfo.dialogmote.domain.DialogmotedeltakerBehandler
 import no.nav.syfo.dialogmote.domain.Referat
+import no.nav.syfo.dialogmote.domain.ReferatForJournalpostDistribusjon
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 
@@ -80,11 +81,16 @@ class ReferatJournalpostService(
     fun getMotetidspunkt(moteId: Int): LocalDateTime? =
         database.getTidSted(moteId).maxByOrNull { it.createdAt }?.tid
 
-    fun getDialogmoteReferatForJournalpostDistribusjonList(): List<Triple<Int, PersonIdent, String?>> {
+    fun getDialogmoteReferatForJournalpostDistribusjonList(): List<ReferatForJournalpostDistribusjon> {
         return database.getReferatForFysiskBrevUtsending()
             .map { pReferat ->
                 val motedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(pReferat.moteId)
-                Triple(pReferat.id, motedeltakerArbeidstaker.personIdent, pReferat.journalpostIdArbeidstaker)
+                ReferatForJournalpostDistribusjon(
+                    pReferat.id,
+                    motedeltakerArbeidstaker.personIdent,
+                    pReferat.journalpostIdArbeidstaker,
+                    getMotetidspunkt(pReferat.moteId)
+                )
             }
     }
 

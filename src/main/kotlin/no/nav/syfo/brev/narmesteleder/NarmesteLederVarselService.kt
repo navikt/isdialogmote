@@ -13,7 +13,9 @@ class NarmesteLederVarselService(
     ) {
         val hendelse = NarmesteLederHendelse(
             type = getNaermesteLederVarselType(varseltype),
-            data = DialogmoteInnkallingNarmesteLederData(narmesteLeder.narmesteLederNavn),
+            data = VarselData(
+                narmesteLeder = VarselDataNarmesteLeder(narmesteLeder.narmesteLederNavn)
+            ),
             narmesteLederFnr = narmesteLeder.narmesteLederPersonIdentNumber,
             arbeidstakerFnr = narmesteLeder.arbeidstakerPersonIdentNumber,
             orgnummer = narmesteLeder.virksomhetsnummer

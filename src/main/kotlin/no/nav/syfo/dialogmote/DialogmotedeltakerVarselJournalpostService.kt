@@ -9,6 +9,7 @@ import no.nav.syfo.dialogmote.database.domain.toDialogmotedeltakerBehandlerVarse
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
+import java.time.LocalDateTime
 
 class DialogmotedeltakerVarselJournalpostService(
     private val database: DatabaseInterface,
@@ -84,16 +85,21 @@ class DialogmotedeltakerVarselJournalpostService(
         }
     }
 
-    fun getDialogmotedeltakerArbeidstakerVarselForJournalpostDistribusjonList(): List<Pair<PersonIdent, DialogmotedeltakerArbeidstakerVarsel>> {
+    fun getDialogmotedeltakerArbeidstakerVarselForJournalpostDistribusjonList(): List<Triple<PersonIdent, DialogmotedeltakerArbeidstakerVarsel, LocalDateTime>> {
         return database.getMotedeltakerArbeidstakerVarselForFysiskBrevUtsending()
             .map { it.toDialogmotedeltakerArbeidstaker() }
             .filter { journalforingVarselTypeList.contains(it.varselType) }
             .map { motedeltakerArbeidstakerVarsel ->
                 val motedeltakerArbeidstaker =
                     database.getMotedeltakerArbeidstakerById(motedeltakerArbeidstakerVarsel.motedeltakerArbeidstakerId)
-                Pair(
+                val tidspunkt =
+                    database.getTidSted(motedeltakerArbeidstaker.moteId)
+                        .last()
+                        .tid
+                Triple(
                     motedeltakerArbeidstaker.personIdent,
                     motedeltakerArbeidstakerVarsel,
+                    tidspunkt
                 )
             }
     }
