@@ -11,12 +11,24 @@ jobs:
   build:
     name: Gradle dependency submission
     runs-on: ubuntu-latest
+    env:
+      ORG_GRADLE_PROJECT_githubUser: x-access-token
+      ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
     permissions: # The Dependency Submission API requires write permission
       contents: write
     steps:
-      - uses: actions/checkout@v3
-      - name: Run snapshot action
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17.x'
+          cache: 'gradle'
+      - name: Run dependency submission
         uses: mikepenz/gradle-dependency-submission@v0.8.6
         with:
           fail-on-error: true
           gradle-dependency-path: "build.gradle.kts"
+          gradle-build-configuration: |-
+            compileClasspath
