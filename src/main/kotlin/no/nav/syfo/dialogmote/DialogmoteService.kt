@@ -623,6 +623,10 @@ class DialogmoteService(
 
             val sisteMotetidspunkt = dialogmote.tidStedList.maxBy { tidSted -> tidSted.tid }?.tid
 
+            dialogmotedeltakerService.slettBrukeroppgaverPaMote(
+                dialogmote = dialogmote
+            )
+
             varselService.sendVarsel(
                 varselType = MotedeltakerVarselType.REFERAT,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
