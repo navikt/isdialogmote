@@ -115,7 +115,7 @@ fun Application.installStatusPages() {
             val logExceptionMessage = "Caught exception, callId=$callId, consumerClientId=$consumerId"
             val log = call.application.log
             when (cause) {
-                is ForbiddenAccessVeilederException -> {
+                is ForbiddenAccessVeilederException, is ConflictException -> {
                     log.warn(logExceptionMessage, cause)
                 }
                 else -> {
