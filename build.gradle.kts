@@ -7,7 +7,7 @@ version = "1.0.0"
 
 object Versions {
     const val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
-    const val cxfVersion = "3.5.5"
+    const val cxfVersion = "4.0.2"
     const val confluent = "7.4.0"
     const val flyway = "9.20.0"
     const val hikari = "5.0.1"
@@ -170,6 +170,32 @@ dependencies {
     implementation("org.apache.cxf:cxf-rt-features-logging:${Versions.cxfVersion}")
     implementation("org.apache.cxf:cxf-rt-transports-http:${Versions.cxfVersion}")
     implementation("org.apache.cxf:cxf-rt-ws-security:${Versions.cxfVersion}")
+    constraints {
+        implementation("org.opensaml:opensaml-saml-impl") {
+            because("org.apache.cxf:cxf-rt-ws-security:${Versions.cxfVersion}-> https://github.com/advisories/GHSA-59j4-wjwp-mw9m")
+            version {
+                strictly("4.0.1")
+            }
+        }
+        implementation("org.opensaml:opensaml-xacml-saml-impl") {
+            because("org.apache.cxf:cxf-rt-ws-security:${Versions.cxfVersion}-> https://github.com/advisories/GHSA-59j4-wjwp-mw9m")
+            version {
+                strictly("4.0.1")
+            }
+        }
+        implementation("org.opensaml:opensaml-xacml-impl") {
+            because("org.apache.cxf:cxf-rt-ws-security:${Versions.cxfVersion}-> https://github.com/advisories/GHSA-59j4-wjwp-mw9m")
+            version {
+                strictly("4.0.1")
+            }
+        }
+        implementation("org.apache.velocity:velocity-engine-core") {
+            because("org.apache.cxf:cxf-rt-ws-security:${Versions.cxfVersion}-> https://github.com/advisories/GHSA-59j4-wjwp-mw9m")
+            version {
+                strictly("2.3")
+            }
+        }
+    }
     implementation("javax.xml.ws:jaxws-api:${Versions.jaxsWsApiVersion}")
     implementation("com.sun.xml.ws:jaxws-tools:${Versions.jaxwsToolsVersion}") {
         exclude(group = "com.sun.xml.ws", module = "policy")
