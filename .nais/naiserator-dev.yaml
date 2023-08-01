@@ -138,7 +138,7 @@ spec:
     - name: OUTDATED_DIALOGMOTE_CRONJOB_ENABLED
       value: "true"
     - name: ALTINN_SENDING_ENABLED
-      value: "false"
+      value: "true"
     - name: KODE6_ENABLED
       value: "true"
     - name: PUBLISH_DIALOGMOTESVAR_ENABLED
