@@ -6,6 +6,7 @@ import java.time.LocalDate
 data class Environment(
     val namespace: String = "teamsykefravr",
     val appname: String = "isdialogmote",
+    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val aadAppClient: String = getEnvVar("AZURE_APP_CLIENT_ID"),
     val aadAppSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val aadTokenEndpoint: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
@@ -89,3 +90,7 @@ fun Application.isDev(block: () -> Unit) {
 fun Application.isProd(block: () -> Unit) {
     if (envKind == "production") block()
 }
+
+val DEV_GCP = "dev-gcp"
+
+fun Environment.isDevGcp() = DEV_GCP == cluster

@@ -16,6 +16,7 @@ import no.nav.syfo.application.api.authentication.getWellKnown
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
+import no.nav.syfo.application.isDevGcp
 import no.nav.syfo.application.launchBackgroundTask
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
@@ -34,6 +35,9 @@ import no.nav.syfo.dialogmelding.kafka.kafkaDialogmeldingConsumerConfig
 import no.nav.syfo.identhendelse.IdenthendelseService
 import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
 import no.nav.syfo.identhendelse.kafka.kafkaIdenthendelseConsumerConfig
+import no.nav.syfo.testdata.reset.TestdataResetService
+import no.nav.syfo.testdata.reset.kafka.TestdataResetConsumer
+import no.nav.syfo.testdata.reset.kafka.kafkaTestdataResetConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
@@ -154,6 +158,22 @@ fun main() {
         )
         launchBackgroundTask(applicationState = applicationState) {
             identhendelseConsumerService.startConsumer()
+        }
+
+        if (environment.isDevGcp()) {
+            val testdataResetService = TestdataResetService(
+                database = applicationDatabase,
+            )
+
+            val testdataResetConsumer = TestdataResetConsumer(
+                kafkaConsumer = KafkaConsumer(kafkaTestdataResetConsumerConfig(environment.kafka)),
+                applicationState = applicationState,
+                testdataResetService = testdataResetService,
+            )
+
+            launchBackgroundTask(applicationState = applicationState) {
+                testdataResetConsumer.startConsumer()
+            }
         }
     }
 
