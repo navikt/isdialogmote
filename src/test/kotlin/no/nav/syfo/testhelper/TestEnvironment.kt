@@ -18,6 +18,7 @@ fun testEnvironment(
     narmestelederUrl: String? = null,
     pdlUrl: String? = null,
 ) = Environment(
+    cluster = "local",
     aadAppClient = "isdialogmote-client-id",
     aadAppSecret = "isdialogmote-secret",
     aadTokenEndpoint = azureTokenEndpoint,
