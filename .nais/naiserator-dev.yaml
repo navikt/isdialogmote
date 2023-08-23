@@ -135,11 +135,5 @@ spec:
       value: "https://tt02.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternalBasic.svc"
     - name: OUTDATED_DIALOGMOTE_CUTOFF
       value: "2022-09-22"
-    - name: OUTDATED_DIALOGMOTE_CRONJOB_ENABLED
-      value: "true"
     - name: ALTINN_SENDING_ENABLED
       value: "false"
-    - name: KODE6_ENABLED
-      value: "true"
-    - name: PUBLISH_DIALOGMOTESVAR_ENABLED
-      value: "true"

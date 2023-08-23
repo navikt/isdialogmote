@@ -66,10 +66,7 @@ fun testEnvironment(
     altinnUsername = "username",
     altinnPassword = "password",
     altinnSendingEnabled = true,
-    outdatedDialogmoteCronJobEnabled = true,
     outdatedDialogmoteCutoff = LocalDate.parse("2022-07-01"),
-    kode6Enabled = true,
-    publishDialogmotesvarEnabled = true,
 )
 
 fun testAppState() = ApplicationState(
