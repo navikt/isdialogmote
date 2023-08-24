@@ -165,18 +165,14 @@ fun Application.cronjobModule(
     ) {
         cronjobRunner.start(cronjob = journalpostDistribusjonCronjob)
     }
-    if (environment.publishDialogmotesvarEnabled) {
-        launchBackgroundTask(
-            applicationState = applicationState
-        ) {
-            cronjobRunner.start(cronjob = publishDialogmotesvarCronjob)
-        }
+    launchBackgroundTask(
+        applicationState = applicationState
+    ) {
+        cronjobRunner.start(cronjob = publishDialogmotesvarCronjob)
     }
-    if (environment.outdatedDialogmoteCronJobEnabled) {
-        launchBackgroundTask(
-            applicationState = applicationState
-        ) {
-            cronjobRunner.start(cronjob = dialogmoteOutdatedCronjob)
-        }
+    launchBackgroundTask(
+        applicationState = applicationState
+    ) {
+        cronjobRunner.start(cronjob = dialogmoteOutdatedCronjob)
     }
 }
