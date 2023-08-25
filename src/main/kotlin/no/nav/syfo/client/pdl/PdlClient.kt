@@ -39,16 +39,6 @@ class PdlClient(
         }
     }
 
-    suspend fun isKode6Or7(
-        personIdent: PersonIdent,
-        callId: String,
-    ): Boolean {
-        val systemToken = azureAdV2Client.getSystemToken(pdlClientId)
-            ?: throw RuntimeException("Failed to send request to PDL: No token was found")
-        return person(personIdent, systemToken, callId)?.isKode6Or7()
-            ?: throw RuntimeException("Person not found in PDL for given fnr")
-    }
-
     suspend fun hentFolkeregisterIdenter(
         personIdent: PersonIdent,
         callId: String,

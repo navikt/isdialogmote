@@ -1,11 +1,9 @@
 package no.nav.syfo.dialogmote.tilgang
 
-import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.domain.PersonIdent
 
 class DialogmoteTilgangService(
-    private val adressebeskyttelseClient: AdressebeskyttelseClient,
     private val veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
 ) {
     suspend fun hasAccessToAllDialogmotePersons(

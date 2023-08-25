@@ -10,7 +10,6 @@ import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.veiledertilgang.Tilgang
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient.Companion.TILGANGSKONTROLL_ENHET_PATH
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient.Companion.TILGANGSKONTROLL_PERSON_LIST_PATH
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FJERDE_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -60,7 +59,6 @@ class VeilederTilgangskontrollMock {
                             ARBEIDSTAKER_ANNEN_FNR.value,
                             ARBEIDSTAKER_TREDJE_FNR.value,
                             ARBEIDSTAKER_FJERDE_FNR.value,
-                            ARBEIDSTAKER_ADRESSEBESKYTTET.value,
                             ARBEIDSTAKER_NO_JOURNALFORING.value,
                             ARBEIDSTAKER_IKKE_VARSEL.value,
                             ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value,

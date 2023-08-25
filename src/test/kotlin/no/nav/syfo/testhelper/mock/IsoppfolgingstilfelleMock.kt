@@ -13,7 +13,6 @@ import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient.Companio
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleDTO
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfellePersonDTO
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FJERDE_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -78,7 +77,6 @@ class IsoppfolgingstilfelleMock {
                 call.respond(
                     when (getPersonIdentHeader()) {
                         ARBEIDSTAKER_FNR.value -> oppfolgingstilfellePersonDTO(ARBEIDSTAKER_FNR)
-                        ARBEIDSTAKER_ADRESSEBESKYTTET.value -> oppfolgingstilfellePersonDTO(ARBEIDSTAKER_ADRESSEBESKYTTET)
                         ARBEIDSTAKER_ANNEN_FNR.value -> oppfolgingstilfellePersonDTO(ARBEIDSTAKER_ANNEN_FNR)
                         ARBEIDSTAKER_TREDJE_FNR.value -> oppfolgingstilfellePersonDTO(ARBEIDSTAKER_TREDJE_FNR)
                         ARBEIDSTAKER_FJERDE_FNR.value -> oppfolgingstilfellePersonDTO(ARBEIDSTAKER_FJERDE_FNR)
