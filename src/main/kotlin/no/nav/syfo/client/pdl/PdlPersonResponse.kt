@@ -41,7 +41,6 @@ data class PdlHentIdenter(
 
 data class PdlPerson(
     val navn: List<PdlPersonNavn>,
-    val adressebeskyttelse: List<Adressebeskyttelse>?
 )
 
 data class PdlPersonNavn(
@@ -49,17 +48,6 @@ data class PdlPersonNavn(
     val mellomnavn: String?,
     val etternavn: String
 )
-
-data class Adressebeskyttelse(
-    val gradering: Gradering
-)
-
-enum class Gradering {
-    STRENGT_FORTROLIG_UTLAND,
-    STRENGT_FORTROLIG,
-    FORTROLIG,
-    UGRADERT
-}
 
 data class PdlIdenter(
     val identer: List<PdlIdent>

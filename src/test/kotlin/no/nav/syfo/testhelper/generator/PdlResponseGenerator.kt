@@ -26,7 +26,6 @@ fun generatePdlHentPerson(
             navn = listOf(
                 pdlPersonNavn ?: generatePdlPersonNavn()
             ),
-            adressebeskyttelse = emptyList()
         )
     )
 }
