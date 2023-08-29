@@ -23,7 +23,6 @@ import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.pdl.PdlClient
-import no.nav.syfo.client.person.adressebeskyttelse.AdressebeskyttelseClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
@@ -80,10 +79,6 @@ fun Application.apiModule(
         pdlUrl = environment.pdlUrl,
         redisStore = cache,
     )
-    val adressebeskyttelseClient = AdressebeskyttelseClient(
-        pdlClient = pdlClient,
-        cache = cache,
-    )
     val behandlendeEnhetClient = BehandlendeEnhetClient(
         azureAdV2Client = azureAdV2Client,
         syfobehandlendeenhetBaseUrl = environment.syfobehandlendeenhetUrl,
@@ -112,7 +107,6 @@ fun Application.apiModule(
     )
 
     val dialogmoteTilgangService = DialogmoteTilgangService(
-        adressebeskyttelseClient = adressebeskyttelseClient,
         veilederTilgangskontrollClient = veilederTilgangskontrollClient,
     )
 

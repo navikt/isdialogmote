@@ -7,10 +7,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.application.api.authentication.installContentNegotiation
-import no.nav.syfo.client.pdl.Gradering
 import no.nav.syfo.client.pdl.PdlRequest
 import no.nav.syfo.testhelper.UserConstants
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
 import no.nav.syfo.testhelper.generator.generatePdlError
 import no.nav.syfo.testhelper.generator.generatePdlIdenter
 import no.nav.syfo.testhelper.generator.generatePdlPersonResponse
@@ -53,11 +51,7 @@ class PdlMock {
                         }
                     }
                 } else {
-                    if (pdlRequest.variables.ident == ARBEIDSTAKER_ADRESSEBESKYTTET.value) {
-                        call.respond(generatePdlPersonResponse(Gradering.STRENGT_FORTROLIG))
-                    } else {
-                        call.respond(generatePdlPersonResponse())
-                    }
+                    call.respond(generatePdlPersonResponse())
                 }
             }
         }

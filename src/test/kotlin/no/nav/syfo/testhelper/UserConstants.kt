@@ -12,7 +12,6 @@ object UserConstants {
     val ARBEIDSTAKERNAVN = "Fornavn Etternavn"
     val ARBEIDSTAKER_VEILEDER_NO_ACCESS = PersonIdent(ARBEIDSTAKER_FNR.value.replace("2", "1"))
     val ARBEIDSTAKER_NO_JOURNALFORING = PersonIdent(ARBEIDSTAKER_FNR.value.replace("2", "3"))
-    val ARBEIDSTAKER_ADRESSEBESKYTTET = PersonIdent(ARBEIDSTAKER_FNR.value.replace("2", "6"))
     val ARBEIDSTAKER_IKKE_VARSEL = PersonIdent(ARBEIDSTAKER_FNR.value.replace("2", "7"))
     val ARBEIDSTAKER_DKIF_FEIL = PersonIdent(ARBEIDSTAKER_FNR.value.replace("2", "8"))
     val ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER = PersonIdent(ARBEIDSTAKER_FNR.value.replace("2", "8"))

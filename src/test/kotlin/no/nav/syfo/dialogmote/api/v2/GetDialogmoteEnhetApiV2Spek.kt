@@ -20,7 +20,7 @@ import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.ExternalMockEnvironment
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ADRESSEBESKYTTET
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR_NO_ACCESS
@@ -89,10 +89,10 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                         }
 
-                        val newDialogmoteAdressebeskyttet = generateNewDialogmote(ARBEIDSTAKER_ADRESSEBESKYTTET)
+                        val newDialogmote = generateNewDialogmote(ARBEIDSTAKER_ANNEN_FNR)
                         database.connection.use { connection ->
                             connection.createNewDialogmoteWithReferences(
-                                newDialogmote = newDialogmoteAdressebeskyttet
+                                newDialogmote = newDialogmote
                             )
                         }
                         val newDialogmoteFerdigstilt =
@@ -123,9 +123,9 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
 
                             val dialogmoteDTO_0 = dialogmoteList[0]
                             dialogmoteDTO_0.tildeltEnhet shouldBeEqualTo ENHET_NR.value
-                            dialogmoteDTO_0.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteAdressebeskyttet.arbeidstaker.personIdent.value
-                            dialogmoteDTO_0.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteAdressebeskyttet.arbeidsgiver.virksomhetsnummer.value
-                            dialogmoteDTO_0.sted shouldBeEqualTo newDialogmoteAdressebeskyttet.tidSted.sted
+                            dialogmoteDTO_0.arbeidstaker.personIdent shouldBeEqualTo newDialogmote.arbeidstaker.personIdent.value
+                            dialogmoteDTO_0.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmote.arbeidsgiver.virksomhetsnummer.value
+                            dialogmoteDTO_0.sted shouldBeEqualTo newDialogmote.tidSted.sted
                             dialogmoteDTO_0.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
 
                             val dialogmoteDTO_1 = dialogmoteList[1]
@@ -148,10 +148,10 @@ class GetDialogmoteEnhetApiV2Spek : Spek({
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                         }
 
-                        val newDialogmoteAdressebeskyttet = generateNewDialogmote(ARBEIDSTAKER_ADRESSEBESKYTTET)
+                        val newDialogmote = generateNewDialogmote(ARBEIDSTAKER_ANNEN_FNR)
                         database.connection.use { connection ->
                             connection.createNewDialogmoteWithReferences(
-                                newDialogmote = newDialogmoteAdressebeskyttet
+                                newDialogmote = newDialogmote
                             )
                         }
                         val newDialogmoteFerdigstilt =
