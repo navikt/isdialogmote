@@ -39,7 +39,6 @@ spec:
       memory: 512Mi
   ingresses:
     - "https://isdialogmote.intern.nav.no"
-    - "https://isdialogmote.nav.no"
   gcp:
     sqlInstances:
       - type: POSTGRES_14
