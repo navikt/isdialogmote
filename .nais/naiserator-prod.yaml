@@ -134,6 +134,6 @@ spec:
     - name: ALTINN_WS_URL
       value: "https://www.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternalBasic.svc"
     - name: OUTDATED_DIALOGMOTE_CUTOFF
-      value: "2022-07-01"
+      value: "2023-06-01"
     - name: ALTINN_SENDING_ENABLED
       value: "true"
