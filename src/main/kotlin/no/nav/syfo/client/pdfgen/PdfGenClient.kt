@@ -1,7 +1,5 @@
 package no.nav.syfo.client.pdfgen
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -12,7 +10,6 @@ import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.callIdArgument
-import no.nav.syfo.util.configuredJacksonMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -121,24 +118,21 @@ class PdfGenClient(
         const val REFERAT_PATH = "$API_BASE_PATH/referat"
 
         val log: Logger = LoggerFactory.getLogger(PdfGenClient::class.java)
-        val objectMapper: ObjectMapper = configuredJacksonMapper()
+        val illegalCharacters = listOf('\u0002')
     }
 }
 
-fun List<DocumentComponentDTO>.sanitizeForPdfGen(): List<DocumentComponentDTO> {
-    val illegalCharacters = listOf('\u0002')
-    val documentJsonString = PdfGenClient.objectMapper.writeValueAsString(this)
-
-    val toCharArray = documentJsonString.toCharArray()
-    val sanitizedJson = toCharArray.filter {
-        println("CHAR: $it")
-        if (it in illegalCharacters) {
-            PdfGenClient.log.warn("Illegal character in document: %x".format(it.code))
-            false
-        } else {
-            true
+fun List<DocumentComponentDTO>.sanitizeForPdfGen(): List<DocumentComponentDTO> = this.map {
+    it.copy(
+        texts = it.texts.map { text ->
+            text.toCharArray().filter { char ->
+                if (char in PdfGenClient.illegalCharacters) {
+                    PdfGenClient.log.warn("Illegal character in document: %x".format(char.code))
+                    false
+                } else {
+                    true
+                }
+            }.joinToString("")
         }
-    }.joinToString("")
-
-    return PdfGenClient.objectMapper.readValue(sanitizedJson)
+    )
 }
