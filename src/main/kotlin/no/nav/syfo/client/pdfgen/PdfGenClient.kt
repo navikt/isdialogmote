@@ -129,7 +129,9 @@ fun List<DocumentComponentDTO>.sanitizeForPdfGen(): List<DocumentComponentDTO> {
     val illegalCharacters = listOf('\u0002')
     val documentJsonString = PdfGenClient.objectMapper.writeValueAsString(this)
 
-    val sanitizedJson = documentJsonString.toCharArray().filter {
+    val toCharArray = documentJsonString.toCharArray()
+    val sanitizedJson = toCharArray.filter {
+        println("CHAR: $it")
         if (it in illegalCharacters) {
             PdfGenClient.log.warn("Illegal character in document: %x".format(it.code))
             false
