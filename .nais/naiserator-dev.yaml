@@ -60,9 +60,6 @@ spec:
         - application: ditt-sykefravaer
           namespace: flex
           cluster: dev-gcp
-        - application: tms-min-side-proxy
-          namespace: min-side
-          cluster: dev-gcp
         - application: esyfo-proxy
           namespace: team-esyfo
           cluster: dev-gcp
