@@ -45,7 +45,7 @@ class ExternalMockEnvironment private constructor() {
         eregUrl = eregMock.url,
         krrUrl = krrMock.url,
         syfobehandlendeenhetUrl = syfobehandlendeenhetMock.url,
-        syfotilgangskontrollUrl = tilgangskontrollMock.url,
+        tilgangskontrollUrl = tilgangskontrollMock.url,
         narmestelederUrl = narmesteLederMock.url,
         pdlUrl = pdlMock.url,
     )
