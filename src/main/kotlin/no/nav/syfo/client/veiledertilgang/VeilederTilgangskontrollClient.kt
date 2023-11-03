@@ -18,7 +18,7 @@ import java.time.Duration
 
 class VeilederTilgangskontrollClient(
     private val azureAdV2Client: AzureAdV2Client,
-    private val syfotilgangskontrollClientId: String,
+    private val tilgangskontrollClientId: String,
     tilgangskontrollBaseUrl: String,
 ) {
     private val httpClient = httpClientDefault()
@@ -37,7 +37,7 @@ class VeilederTilgangskontrollClient(
         callId: String,
     ): List<PersonIdent> {
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
-            scopeClientId = syfotilgangskontrollClientId,
+            scopeClientId = tilgangskontrollClientId,
             token = token
         )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
 
@@ -79,7 +79,7 @@ class VeilederTilgangskontrollClient(
         callId: String
     ): Boolean {
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
-            scopeClientId = syfotilgangskontrollClientId,
+            scopeClientId = tilgangskontrollClientId,
             token = token
         )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
 
@@ -92,7 +92,7 @@ class VeilederTilgangskontrollClient(
                 accept(ContentType.Application.Json)
             }
             COUNT_CALL_TILGANGSKONTROLL_ENHET_SUCCESS.increment()
-            response.body<Tilgang>().harTilgang
+            response.body<Tilgang>().erGodkjent
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_CALL_TILGANGSKONTROLL_ENHET_FORBIDDEN.increment()
@@ -119,7 +119,7 @@ class VeilederTilgangskontrollClient(
         callId: String,
     ) {
         log.error(
-            "Error while requesting access to $resource from syfo-tilgangskontroll with {}, {}",
+            "Error while requesting access to $resource from istilgangskontroll with {}, {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             callIdArgument(callId)
         )
@@ -153,7 +153,7 @@ class VeilederTilgangskontrollClient(
         private const val resourcePersonList = "PERSONLIST"
         private const val resourceEnhet = "ENHET"
 
-        const val TILGANGSKONTROLL_COMMON_PATH = "/syfo-tilgangskontroll/api/tilgang/navident"
+        const val TILGANGSKONTROLL_COMMON_PATH = "/api/tilgang/navident"
         const val TILGANGSKONTROLL_PERSON_LIST_PATH = "$TILGANGSKONTROLL_COMMON_PATH/brukere"
         const val TILGANGSKONTROLL_ENHET_PATH = "$TILGANGSKONTROLL_COMMON_PATH/enhet"
     }

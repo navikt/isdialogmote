@@ -80,7 +80,7 @@ spec:
         - application: isnarmesteleder
         - application: isoppfolgingstilfelle
         - application: syfobehandlendeenhet
-        - application: syfo-tilgangskontroll
+        - application: istilgangskontroll
   azure:
     application:
       allowAllUsers: true
@@ -124,10 +124,10 @@ spec:
       value: "prod-gcp.teamsykefravr.syfobehandlendeenhet"
     - name: SYFOBEHANDLENDEENHET_URL
       value: "http://syfobehandlendeenhet"
-    - name: SYFOTILGANGSKONTROLL_CLIENT_ID
-      value: "prod-gcp.teamsykefravr.syfo-tilgangskontroll"
-    - name: SYFOTILGANGSKONTROLL_URL
-      value: "http://syfo-tilgangskontroll"
+    - name: ISTILGANGSKONTROLL_CLIENT_ID
+      value: "prod-gcp.teamsykefravr.istilgangskontroll"
+    - name: ISTILGANGSKONTROLL_URL
+      value: "http://istilgangskontroll"
     - name: NARMESTELEDER_URL
       value: "http://isnarmesteleder"
     - name: NARMESTELEDER_CLIENT_ID

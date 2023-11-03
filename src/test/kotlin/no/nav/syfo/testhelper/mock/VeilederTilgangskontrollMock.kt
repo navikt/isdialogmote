@@ -28,10 +28,10 @@ class VeilederTilgangskontrollMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
     val tilgangFalse = Tilgang(
-        harTilgang = false,
+        erGodkjent = false,
     )
     val tilgangTrue = Tilgang(
-        harTilgang = true,
+        erGodkjent = true,
     )
 
     val name = "veiledertilgangskontroll"
