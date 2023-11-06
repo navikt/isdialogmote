@@ -102,8 +102,8 @@ fun Application.apiModule(
     )
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
         azureAdV2Client = azureAdV2Client,
-        tilgangskontrollClientId = environment.tilgangskontrollClientId,
-        tilgangskontrollBaseUrl = environment.tilgangskontrollUrl
+        tilgangskontrollClientId = environment.istilgangskontrollClientId,
+        tilgangskontrollBaseUrl = environment.istilgangskontrollUrl
     )
 
     val dialogmoteTilgangService = DialogmoteTilgangService(
