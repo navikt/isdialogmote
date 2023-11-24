@@ -131,6 +131,14 @@ dependencies {
         }
     }
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
+    constraints {
+        implementation("org.apache.avro:avro") {
+            because("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema} -> https://nvd.nist.gov/vuln/detail/CVE-2023-39410")
+            version {
+                require("1.11.3")
+            }
+        }
+    }
     implementation("org.scala-lang:scala-library") {
         version {
             strictly(Versions.scala)
