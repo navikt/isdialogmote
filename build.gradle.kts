@@ -129,6 +129,12 @@ dependencies {
                 require("3.21.7")
             }
         }
+        implementation("org.apache.zookeeper:zookeeper") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
+            version {
+                require("3.7.2")
+            }
+        }
     }
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
     constraints {
