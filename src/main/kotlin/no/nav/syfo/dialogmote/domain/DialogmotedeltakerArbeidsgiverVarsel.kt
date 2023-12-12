@@ -83,4 +83,5 @@ fun DialogmotedeltakerArbeidsgiverVarsel.toJournalpostRequest(
     dokumentName = this.varselType.toJournalpostTittel(),
     brevkodeType = this.varselType.toBrevkodeType(DialogmoteDeltakerType.ARBEIDSGIVER),
     dokumentPdf = pdf,
+    varselUuid = this.uuid,
 )

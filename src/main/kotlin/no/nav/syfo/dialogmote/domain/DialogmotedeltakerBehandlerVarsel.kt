@@ -46,4 +46,5 @@ fun DialogmotedeltakerBehandlerVarsel.toJournalpostRequest(
     brevkodeType = this.varselType.toBrevkodeType(DialogmoteDeltakerType.BEHANDLER),
     dokumentPdf = pdf,
     kanal = JournalpostKanal.HELSENETTET,
+    varselUuid = this.uuid,
 )

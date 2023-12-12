@@ -1,6 +1,7 @@
 package no.nav.syfo.testhelper
 
 import no.nav.syfo.domain.*
+import java.util.*
 
 object UserConstants {
     val ARBEIDSTAKER_FNR = PersonIdent("12345678912")
@@ -43,6 +44,7 @@ object UserConstants {
     val OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER = Virksomhetsnummer("922222223")
 
     val JOURNALPOST_ID_MOTTAKER_GONE = 129
+    val EXISTING_EKSTERN_REFERANSE_UUID: UUID = UUID.fromString("e7e8e9e0-e1e2-e3e4-e5e6-e7e8e9e0e1e2")
 
     val AZUREAD_TOKEN = "tokenReturnedByAzureAd"
 

@@ -2,6 +2,7 @@ package no.nav.syfo.client.dokarkiv.domain
 
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
+import java.util.*
 
 const val JOURNALFORENDE_ENHET = 9999
 
@@ -35,6 +36,7 @@ data class JournalpostRequest private constructor(
     val tema: String,
     val kanal: String,
     val sak: Sak,
+    val eksternReferanseId: String,
 ) {
     companion object {
         fun create(
@@ -47,6 +49,7 @@ data class JournalpostRequest private constructor(
             tema: JournalpostTema,
             kanal: JournalpostKanal,
             sak: Sak,
+            eksternReferanseId: String,
         ) = JournalpostRequest(
             avsenderMottaker = avsenderMottaker,
             tittel = tittel,
@@ -57,6 +60,7 @@ data class JournalpostRequest private constructor(
             tema = tema.value,
             kanal = kanal.value,
             sak = sak,
+            eksternReferanseId = eksternReferanseId,
         )
     }
 }
@@ -71,6 +75,7 @@ fun createJournalpostRequest(
     dokumentName: String,
     dokumentPdf: ByteArray,
     kanal: JournalpostKanal? = null,
+    varselUuid: UUID,
 ): JournalpostRequest {
     val avsenderMottaker = AvsenderMottaker.create(
         id = mottakerPersonIdent?.value ?: mottakerVirksomhetsnummer?.value,
@@ -108,6 +113,7 @@ fun createJournalpostRequest(
         kanal = jpKanal,
         sak = sak,
         tema = JournalpostTema.OPPFOLGING,
+        eksternReferanseId = varselUuid.toString()
     )
 }
 
