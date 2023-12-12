@@ -9,14 +9,14 @@ object Versions {
     const val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
     const val cxfVersion = "3.5.5"
     const val confluent = "7.5.1"
-    const val flyway = "9.20.0"
+    const val flyway = "9.22.3"
     const val hikari = "5.0.1"
     const val isdialogmoteSchema = "1.0.5"
     const val jacksonDataType = "2.16.0"
     const val jedis = "5.1.0"
-    const val kafka = "3.5.0"
+    const val kafka = "3.6.0"
     const val kafkaEmbedded = "3.2.3"
-    const val ktor = "2.3.6"
+    const val ktor = "2.3.7"
     const val kluent = "1.73"
     const val jaxbApi = "2.3.1"
     const val jaxbRuntime = "2.3.6"
@@ -126,7 +126,7 @@ dependencies {
         implementation("com.google.protobuf:protobuf-java") {
             because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2022-3510")
             version {
-                require("3.21.7")
+                require("3.25.1")
             }
         }
         implementation("org.apache.zookeeper:zookeeper") {
@@ -155,13 +155,13 @@ dependencies {
         implementation("org.eclipse.jetty.http2:http2-server") {
             because("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-2048/")
             version {
-                require("9.4.48.v20220622")
+                require("9.4.53.v20231009")
             }
         }
         implementation("com.google.protobuf:protobuf-java") {
             because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2022-3510")
             version {
-                require("3.21.7")
+                require("3.25.1")
             }
         }
     }
