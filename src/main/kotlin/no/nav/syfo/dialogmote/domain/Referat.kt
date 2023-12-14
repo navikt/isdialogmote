@@ -3,9 +3,7 @@ package no.nav.syfo.dialogmote.domain
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.brev.domain.BrevType
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
-import no.nav.syfo.client.dokarkiv.domain.BrevkodeType
-import no.nav.syfo.client.dokarkiv.domain.JournalpostKanal
-import no.nav.syfo.client.dokarkiv.domain.createJournalpostRequest
+import no.nav.syfo.client.dokarkiv.domain.*
 import no.nav.syfo.dialogmote.api.domain.DialogmotedeltakerAnnenDTO
 import no.nav.syfo.dialogmote.api.domain.ReferatDTO
 import no.nav.syfo.domain.PersonIdent
@@ -107,6 +105,7 @@ fun Referat.toJournalforingRequestArbeidstaker(
     dokumentName = this.toJournalpostTittel(moteTidspunkt),
     brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AT,
     dokumentPdf = pdf,
+    varselUuid = UUID.nameUUIDFromBytes((this.uuid.toString() + "arbeidstaker").toByteArray())
 )
 
 fun Referat.toJournalforingRequestArbeidsgiver(
@@ -123,6 +122,7 @@ fun Referat.toJournalforingRequestArbeidsgiver(
     dokumentName = this.toJournalpostTittel(moteTidspunkt),
     brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AG,
     dokumentPdf = pdf,
+    varselUuid = UUID.nameUUIDFromBytes((this.uuid.toString() + "arbeidsgiver").toByteArray())
 )
 
 fun Referat.toJournalforingRequestBehandler(
@@ -140,6 +140,7 @@ fun Referat.toJournalforingRequestBehandler(
     brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_BEH,
     dokumentPdf = pdf,
     kanal = JournalpostKanal.HELSENETTET,
+    varselUuid = UUID.nameUUIDFromBytes((this.uuid.toString() + "behandler").toByteArray())
 )
 
 private val dateFormatterNorwegian = DateTimeFormatter.ofPattern("d. MMMM YYYY", Locale.forLanguageTag("no-NO"))

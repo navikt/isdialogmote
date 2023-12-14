@@ -147,14 +147,14 @@ class DialogmoteVarselJournalforingCronjob(
                 val navn = pdlClient.navn(personIdent)
                 val pdf = pdfService.getPdf(referat.pdfId!!)
                 val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
-                val journalpostId = dokarkivClient.journalfor(
-                    journalpostRequest = referat.toJournalforingRequestArbeidstaker(
-                        personIdent = personIdent,
-                        navn = navn,
-                        pdf = pdf,
-                        moteTidspunkt = moteTidspunkt,
-                    )
-                )?.journalpostId
+                val journalpostRequest = referat.toJournalforingRequestArbeidstaker(
+                    personIdent = personIdent,
+                    navn = navn,
+                    pdf = pdf,
+                    moteTidspunkt = moteTidspunkt,
+                )
+                log.info("Journalfør referat to arbeidstaker with uuid ${referat.uuid} and eksternReferanseId: ${journalpostRequest.eksternReferanseId}")
+                val journalpostId = dokarkivClient.journalfor(journalpostRequest)?.journalpostId
 
                 journalpostId?.let { it ->
                     referatJournalpostService.updateJournalpostIdArbeidstakerForReferat(
@@ -179,15 +179,15 @@ class DialogmoteVarselJournalforingCronjob(
                 val virksomhetsnavn = eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer)
                 val pdf = pdfService.getPdf(referat.pdfId!!)
                 val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
-                val journalpostId = dokarkivClient.journalfor(
-                    journalpostRequest = referat.toJournalforingRequestArbeidsgiver(
-                        brukerPersonIdent = personIdent,
-                        virksomhetsnummer = virksomhetsnummer,
-                        virksomhetsnavn = virksomhetsnavn?.virksomhetsnavn ?: "",
-                        pdf = pdf,
-                        moteTidspunkt = moteTidspunkt,
-                    )
-                )?.journalpostId
+                val journalpostRequest = referat.toJournalforingRequestArbeidsgiver(
+                    brukerPersonIdent = personIdent,
+                    virksomhetsnummer = virksomhetsnummer,
+                    virksomhetsnavn = virksomhetsnavn?.virksomhetsnavn ?: "",
+                    pdf = pdf,
+                    moteTidspunkt = moteTidspunkt,
+                )
+                log.info("Journalfør referat to arbeidsgiver with uuid ${referat.uuid} and eksternReferanseId: ${journalpostRequest.eksternReferanseId}")
+                val journalpostId = dokarkivClient.journalfor(journalpostRequest)?.journalpostId
 
                 journalpostId?.let { it ->
                     referatJournalpostService.updateJournalpostIdArbeidsgiverForReferat(
@@ -211,15 +211,15 @@ class DialogmoteVarselJournalforingCronjob(
             try {
                 val pdf = pdfService.getPdf(referat.pdfId!!)
                 val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
-                val journalpostId = dokarkivClient.journalfor(
-                    journalpostRequest = referat.toJournalforingRequestBehandler(
-                        brukerPersonIdent = personIdent,
-                        behandlerPersonIdent = behandler.personIdent,
-                        behandlerNavn = behandler.behandlerNavn,
-                        pdf = pdf,
-                        moteTidspunkt = moteTidspunkt,
-                    )
-                )?.journalpostId
+                val journalpostRequest = referat.toJournalforingRequestBehandler(
+                    brukerPersonIdent = personIdent,
+                    behandlerPersonIdent = behandler.personIdent,
+                    behandlerNavn = behandler.behandlerNavn,
+                    pdf = pdf,
+                    moteTidspunkt = moteTidspunkt,
+                )
+                log.info("Journalfør referat to behandler with uuid ${referat.uuid} and eksternReferanseId: ${journalpostRequest.eksternReferanseId}")
+                val journalpostId = dokarkivClient.journalfor(journalpostRequest)?.journalpostId
 
                 journalpostId?.let { it ->
                     referatJournalpostService.updateJournalpostIdBehandlerForReferat(
