@@ -6,24 +6,15 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.domain.BrevkodeType
 import no.nav.syfo.client.dokarkiv.domain.JournalpostKanal
-import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient.Companion.CACHE_KONTAKTINFORMASJON_KEY_PREFIX
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.generator.generateJournalpostRequest
 import no.nav.syfo.testhelper.mock.DokarkivMock
-import no.nav.syfo.testhelper.mock.digitalKontaktinfoBolkKanVarslesTrue
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.util.*
 
 class DokarkivClientSpek : Spek({
-
-    val personIdent = UserConstants.ARBEIDSTAKER_FNR
-    val digitalKontaktInfo = digitalKontaktinfoBolkKanVarslesTrue(personIdent.value)
-    val digitalKontaktInfoCacheKey = "$CACHE_KONTAKTINFORMASJON_KEY_PREFIX${personIdent.value}"
-
-    val anyToken = "token"
-    val anyCallId = "callId"
 
     describe("DokarkivClient") {
 
@@ -59,11 +50,11 @@ class DokarkivClientSpek : Spek({
                 runBlocking {
                     val response = dokarkivClient.journalfor(journalpostRequest = journalpostRequestReferat)
 
-                    response?.journalpostId shouldBeEqualTo 12345678
+                    response?.journalpostId shouldBeEqualTo UserConstants.JOURNALPOSTID_JOURNALFORING
                 }
             }
 
-            it("handles conflict from api when eksternRefeanseId exists by returning null") {
+            it("handles conflict from api when eksternRefeanseId exists by returning journalpostid") {
                 val journalpostRequestReferat = generateJournalpostRequest(
                     tittel = "Referat fra dialogmøte",
                     brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AG,
@@ -75,7 +66,7 @@ class DokarkivClientSpek : Spek({
                 runBlocking {
                     val response = dokarkivClient.journalfor(journalpostRequest = journalpostRequestReferat)
 
-                    response shouldBeEqualTo null
+                    response?.journalpostId shouldBeEqualTo UserConstants.JOURNALPOSTID_JOURNALFORING
                 }
             }
         }

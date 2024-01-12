@@ -19,8 +19,8 @@ class DokarkivMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
 
-    val journalpostResponse = JournalpostResponse(
-        journalpostId = 12345678,
+    private val journalpostResponse = JournalpostResponse(
+        journalpostId = UserConstants.JOURNALPOSTID_JOURNALFORING,
         journalstatus = "journalstatus",
     )
 
@@ -45,7 +45,7 @@ class DokarkivMock {
                     } else if (journalpostRequest.sak.sakstype.trim() == "") {
                         call.respond(HttpStatusCode.BadRequest, "")
                     } else if (journalpostRequest.eksternReferanseId == UserConstants.EXISTING_EKSTERN_REFERANSE_UUID.toString()) {
-                        call.respond(HttpStatusCode.Conflict, "")
+                        call.respond(HttpStatusCode.Conflict, journalpostResponse)
                     } else {
                         call.respond(journalpostResponse)
                     }
