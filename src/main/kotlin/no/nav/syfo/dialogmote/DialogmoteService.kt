@@ -463,7 +463,7 @@ class DialogmoteService(
         }
     }
 
-    fun overtaMoter(veilederIdent: String, dialogmoter: List<Dialogmote>) {
+    fun tildelMoter(veilederIdent: String, dialogmoter: List<Dialogmote>) {
         database.connection.use { connection ->
             dialogmoter.forEach { dialogmote ->
                 connection.updateMoteTildeltVeileder(

@@ -14,12 +14,9 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.domain.OvertaDialogmoterDTO
+import no.nav.syfo.dialogmote.api.domain.TildelDialogmoterDTO
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.testhelper.*
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
-import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
-import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.generator.generateNewDialogmote
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.util.bearerHeader
@@ -27,12 +24,13 @@ import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.*
 
-class OvertaDialogmoteApiV2Spek : Spek({
+class TildelDialogmoteApiV2Spek : Spek({
 
     val objectMapper: ObjectMapper = configuredJacksonMapper()
 
-    describe(OvertaDialogmoteApiV2Spek::class.java.simpleName) {
+    describe(TildelDialogmoteApiV2Spek::class.java.simpleName) {
         with(TestApplicationEngine()) {
             start()
 
@@ -43,6 +41,14 @@ class OvertaDialogmoteApiV2Spek : Spek({
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
+
+            val veilederCallerIdent = UserConstants.VEILEDER_IDENT
+            val veilederIdentTildelesMoter = UserConstants.VEILEDER_IDENT_2
+            val veilederCallerToken = generateJWTNavIdent(
+                externalMockEnvironment.environment.aadAppClient,
+                externalMockEnvironment.wellKnownVeilederV2.issuer,
+                veilederCallerIdent,
+            )
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
@@ -63,31 +69,22 @@ class OvertaDialogmoteApiV2Spek : Spek({
                     altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
                 } returns altinnResponse
             }
+            afterGroup { database.dropData() }
 
-            describe("Overta Dialogmoter") {
-                val validTokenV2 = generateJWTNavIdent(
-                    externalMockEnvironment.environment.aadAppClient,
-                    externalMockEnvironment.wellKnownVeilederV2.issuer,
-                    UserConstants.VEILEDER_IDENT,
-                )
-                val validTokenV2AnnenVeileder = generateJWTNavIdent(
-                    externalMockEnvironment.environment.aadAppClient,
-                    externalMockEnvironment.wellKnownVeilederV2.issuer,
-                    UserConstants.VEILEDER_IDENT_2,
-                )
+            describe("Tildel dialogmoter") {
                 val urlMote = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
-                val urlMoterEnhet = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR.value}"
-                val urlOvertaMoter = "$dialogmoteApiV2Basepath$dialogmoteActionsApiOvertaPath"
-                val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
-                val newDialogmoteDTOAnnenArbeidstaker = generateNewDialogmoteDTO(ARBEIDSTAKER_ANNEN_FNR)
+                val urlMoterEnhet = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${UserConstants.ENHET_NR.value}"
+                val urlTildelMote = "$dialogmoteApiV2Basepath$dialogmoteTildelPath"
+                val newDialogmoteDTO = generateNewDialogmoteDTO(UserConstants.ARBEIDSTAKER_FNR)
+                val newDialogmoteDTOAnnenArbeidstaker = generateNewDialogmoteDTO(UserConstants.ARBEIDSTAKER_ANNEN_FNR)
 
                 describe("Happy path") {
-                    it("should overta Dialogmoter if request is successfull") {
-                        val createdDialogmoterUuids = mutableListOf<String>()
+                    it("should tildele dialogmoter if request is successful") {
+                        val createdDialogmoterUuids = mutableListOf<UUID>()
 
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV2))
+                                addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
                             }
@@ -96,7 +93,7 @@ class OvertaDialogmoteApiV2Spek : Spek({
                         }
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV2AnnenVeileder))
+                                addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(objectMapper.writeValueAsString(newDialogmoteDTOAnnenArbeidstaker))
                             }
@@ -106,24 +103,31 @@ class OvertaDialogmoteApiV2Spek : Spek({
 
                         with(
                             handleRequest(HttpMethod.Get, urlMoterEnhet) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV2))
+                                addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
                             dialogmoteList.size shouldBeEqualTo 2
-                            dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == UserConstants.VEILEDER_IDENT } shouldBeEqualTo true
-                            dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == UserConstants.VEILEDER_IDENT_2 } shouldBeEqualTo true
+                            dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == veilederCallerIdent } shouldBeEqualTo true
+                            dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == veilederIdentTildelesMoter } shouldBeEqualTo false
 
-                            createdDialogmoterUuids.addAll(dialogmoteList.map { it.uuid })
+                            createdDialogmoterUuids.addAll(dialogmoteList.map { UUID.fromString(it.uuid) })
                         }
 
                         with(
-                            handleRequest(HttpMethod.Post, urlOvertaMoter) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV2))
+                            handleRequest(HttpMethod.Post, urlTildelMote) {
+                                addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(OvertaDialogmoterDTO(createdDialogmoterUuids)))
+                                setBody(
+                                    objectMapper.writeValueAsString(
+                                        TildelDialogmoterDTO(
+                                            veilederIdent = veilederIdentTildelesMoter,
+                                            dialogmoteUuids = createdDialogmoterUuids
+                                        )
+                                    )
+                                )
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -131,14 +135,15 @@ class OvertaDialogmoteApiV2Spek : Spek({
 
                         with(
                             handleRequest(HttpMethod.Get, urlMoterEnhet) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV2))
+                                addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
                             dialogmoteList.size shouldBeEqualTo 2
-                            dialogmoteList.all { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == UserConstants.VEILEDER_IDENT } shouldBeEqualTo true
+                            dialogmoteList.all { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == veilederIdentTildelesMoter } shouldBeEqualTo true
+                            dialogmoteList.all { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == veilederCallerIdent } shouldBeEqualTo false
                         }
                     }
                 }
@@ -146,7 +151,7 @@ class OvertaDialogmoteApiV2Spek : Spek({
                 describe("Unhappy paths") {
                     it("should return status Unauthorized if no token is supplied") {
                         with(
-                            handleRequest(HttpMethod.Post, urlOvertaMoter) {
+                            handleRequest(HttpMethod.Post, urlTildelMote) {
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
@@ -155,10 +160,17 @@ class OvertaDialogmoteApiV2Spek : Spek({
 
                     it("should return status Bad Request if no dialogmoteUuids supplied") {
                         with(
-                            handleRequest(HttpMethod.Post, urlOvertaMoter) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV2))
+                            handleRequest(HttpMethod.Post, urlTildelMote) {
+                                addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(OvertaDialogmoterDTO(emptyList())))
+                                setBody(
+                                    objectMapper.writeValueAsString(
+                                        TildelDialogmoterDTO(
+                                            veilederIdent = veilederIdentTildelesMoter,
+                                            dialogmoteUuids = emptyList()
+                                        )
+                                    )
+                                )
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.BadRequest
@@ -166,7 +178,7 @@ class OvertaDialogmoteApiV2Spek : Spek({
                     }
 
                     it("should return status Forbidden if denied access to dialogmøte person") {
-                        val createdDialogmoterUuids = mutableListOf<String>()
+                        val createdDialogmoterUuids = mutableListOf<UUID>()
 
                         val newDialogmoteNoVeilederAccess =
                             generateNewDialogmote(UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS)
@@ -174,15 +186,21 @@ class OvertaDialogmoteApiV2Spek : Spek({
                             val (dialogmoteIdPair) = connection.createNewDialogmoteWithReferences(
                                 newDialogmote = newDialogmoteNoVeilederAccess
                             )
-                            val dialogmoteNoAccessUuid = (dialogmoteIdPair.second).toString()
-                            createdDialogmoterUuids.add(dialogmoteNoAccessUuid)
+                            createdDialogmoterUuids.add(dialogmoteIdPair.second)
                         }
 
                         with(
-                            handleRequest(HttpMethod.Post, urlOvertaMoter) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV2))
+                            handleRequest(HttpMethod.Post, urlTildelMote) {
+                                addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(OvertaDialogmoterDTO(createdDialogmoterUuids)))
+                                setBody(
+                                    objectMapper.writeValueAsString(
+                                        TildelDialogmoterDTO(
+                                            veilederIdent = veilederIdentTildelesMoter,
+                                            dialogmoteUuids = createdDialogmoterUuids,
+                                        )
+                                    )
+                                )
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
@@ -190,11 +208,11 @@ class OvertaDialogmoteApiV2Spek : Spek({
                     }
 
                     it("should return status Forbidden if contains dialogmøte with denied access to person") {
-                        val createdDialogmoterUuids = mutableListOf<String>()
+                        val createdDialogmoterUuids = mutableListOf<UUID>()
 
                         with(
                             handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV2AnnenVeileder))
+                                addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
                             }
@@ -204,7 +222,7 @@ class OvertaDialogmoteApiV2Spek : Spek({
 
                         with(
                             handleRequest(HttpMethod.Get, urlMoterEnhet) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV2))
+                                addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -212,7 +230,7 @@ class OvertaDialogmoteApiV2Spek : Spek({
 
                             dialogmoteList.size shouldBeEqualTo 1
 
-                            createdDialogmoterUuids.addAll(dialogmoteList.map { it.uuid })
+                            createdDialogmoterUuids.addAll(dialogmoteList.map { UUID.fromString(it.uuid) })
                         }
 
                         val newDialogmoteNoVeilederAccess =
@@ -221,15 +239,21 @@ class OvertaDialogmoteApiV2Spek : Spek({
                             val (dialogmoteIdPair) = connection.createNewDialogmoteWithReferences(
                                 newDialogmote = newDialogmoteNoVeilederAccess
                             )
-                            val dialogmoteNoAccessUuid = (dialogmoteIdPair.second).toString()
-                            createdDialogmoterUuids.add(dialogmoteNoAccessUuid)
+                            createdDialogmoterUuids.add(dialogmoteIdPair.second)
                         }
 
                         with(
-                            handleRequest(HttpMethod.Post, urlOvertaMoter) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validTokenV2))
+                            handleRequest(HttpMethod.Post, urlTildelMote) {
+                                addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(OvertaDialogmoterDTO(createdDialogmoterUuids)))
+                                setBody(
+                                    objectMapper.writeValueAsString(
+                                        TildelDialogmoterDTO(
+                                            veilederIdent = veilederIdentTildelesMoter,
+                                            dialogmoteUuids = createdDialogmoterUuids
+                                        )
+                                    )
+                                )
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
