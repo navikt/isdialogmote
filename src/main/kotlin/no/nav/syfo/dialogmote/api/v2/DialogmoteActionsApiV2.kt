@@ -23,6 +23,7 @@ const val dialogmoteApiMoteFerdigstillPath = "/ferdigstill"
 const val dialogmoteApiMoteEndreFerdigstiltPath = "/endreferdigstilt"
 const val dialogmoteApiMoteTidStedPath = "/tidsted"
 const val dialogmoteActionsApiOvertaPath = "/overta"
+const val dialogmoteTildelPath = "/tildel"
 
 fun Route.registerDialogmoteActionsApiV2(
     dialogmoteService: DialogmoteService,
@@ -176,7 +177,7 @@ fun Route.registerDialogmoteActionsApiV2(
                         callId
                     )
                 ) {
-                    dialogmoteService.overtaMoter(getNAVIdentFromToken(token), dialogmoter)
+                    dialogmoteService.tildelMoter(getNAVIdentFromToken(token), dialogmoter)
                     call.respond(HttpStatusCode.OK)
                 } else {
                     val accessDeniedMessage = "Denied Veileder access to Dialogmøter for Person with PersonIdent"
@@ -185,6 +186,38 @@ fun Route.registerDialogmoteActionsApiV2(
                 }
             } catch (e: IllegalArgumentException) {
                 val illegalArgumentMessage = "Could not Overta Dialogmøter"
+                log.error("$illegalArgumentMessage: {}, {}", e.message, callId)
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
+        }
+
+        post(dialogmoteTildelPath) {
+            val callId = getCallId()
+            try {
+                val token = getBearerHeader()
+                    ?: throw IllegalArgumentException("No Authorization header supplied")
+                val (veilederIdent, dialogmoteUuids) = call.receive<TildelDialogmoterDTO>()
+                if (dialogmoteUuids.isEmpty()) {
+                    throw IllegalArgumentException("No dialogmoteUuids supplied")
+                }
+
+                val dialogmoter = dialogmoteUuids.map { dialogmoteService.getDialogmote(it) }
+
+                if (dialogmoteTilgangService.hasAccessToAllDialogmotePersons(
+                        personIdentList = dialogmoter.map { it.arbeidstaker.personIdent },
+                        token,
+                        callId
+                    )
+                ) {
+                    dialogmoteService.tildelMoter(veilederIdent, dialogmoter)
+                    call.respond(HttpStatusCode.OK)
+                } else {
+                    val accessDeniedMessage = "Denied veileder access to dialogmøter for person with PersonIdent"
+                    log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
+                    call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
+                }
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Could not tildele dialogmøter"
                 log.error("$illegalArgumentMessage: {}, {}", e.message, callId)
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }
