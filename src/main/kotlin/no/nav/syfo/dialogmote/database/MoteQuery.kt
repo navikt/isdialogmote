@@ -5,10 +5,15 @@ import no.nav.syfo.application.database.toList
 import no.nav.syfo.cronjob.statusendring.toInstantOslo
 import no.nav.syfo.dialogmote.database.domain.PDialogmote
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
-import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.dialogmote.domain.NewDialogmote
+import no.nav.syfo.dialogmote.domain.TidStedDTO
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
-import java.sql.*
+import java.sql.Connection
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
@@ -135,12 +140,12 @@ data class CreatedDialogmoteIdentifiers(
 )
 
 fun Connection.createNewDialogmoteWithReferences(
-    commit: Boolean = true,
     newDialogmote: NewDialogmote,
+    commit: Boolean = true,
 ): CreatedDialogmoteIdentifiers {
     val moteIdList = this.createDialogmote(
+        newDialogmote = newDialogmote,
         commit = false,
-        newDialogmote = newDialogmote
     )
 
     val moteId = moteIdList.first
@@ -181,8 +186,8 @@ fun Connection.createNewDialogmoteWithReferences(
 }
 
 fun Connection.createDialogmote(
+    newDialogmote: NewDialogmote,
     commit: Boolean = true,
-    newDialogmote: NewDialogmote
 ): Pair<Int, UUID> {
     val moteUuid = UUID.randomUUID()
     val now = Timestamp.from(Instant.now())
