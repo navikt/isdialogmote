@@ -1,7 +1,7 @@
 package no.nav.syfo.dialogmote.api.v2
 
-import io.ktor.server.application.*
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -9,7 +9,10 @@ import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.dialogmote.DialogmoteService
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
-import no.nav.syfo.util.*
+import no.nav.syfo.util.callIdArgument
+import no.nav.syfo.util.getBearerHeader
+import no.nav.syfo.util.getCallId
+import no.nav.syfo.util.validateVeilederAccess
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -191,7 +194,7 @@ fun Route.registerDialogmoteActionsApiV2(
             }
         }
 
-        post(dialogmoteTildelPath) {
+        patch(dialogmoteTildelPath) {
             val callId = getCallId()
             try {
                 val token = getBearerHeader()
@@ -210,7 +213,7 @@ fun Route.registerDialogmoteActionsApiV2(
                     )
                 ) {
                     dialogmoteService.tildelMoter(veilederIdent, dialogmoter)
-                    call.respond(HttpStatusCode.OK)
+                    call.respond(HttpStatusCode.NoContent)
                 } else {
                     val accessDeniedMessage = "Denied veileder access to dialogmøter for person with PersonIdent"
                     log.warn("$accessDeniedMessage, {}", callIdArgument(callId))

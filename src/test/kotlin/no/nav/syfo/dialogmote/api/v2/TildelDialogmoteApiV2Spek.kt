@@ -16,6 +16,8 @@ import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.TildelDialogmoterDTO
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
+import no.nav.syfo.dialogmote.database.getDialogmoteUnfinishedList
+import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmote
 import no.nav.syfo.util.bearerHeader
@@ -71,7 +73,6 @@ class TildelDialogmoteApiV2Spek : Spek({
             afterGroup { database.dropData() }
 
             describe("Tildel dialogmoter") {
-                val urlMote = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
                 val urlMoterEnhet = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${UserConstants.ENHET_NR.value}"
                 val urlTildelMote = "$dialogmoteApiV2Basepath$dialogmoteTildelPath"
                 val newDialogmote = generateNewDialogmote(UserConstants.ARBEIDSTAKER_FNR)
@@ -99,7 +100,7 @@ class TildelDialogmoteApiV2Spek : Spek({
                         }
 
                         with(
-                            handleRequest(HttpMethod.Post, urlTildelMote) {
+                            handleRequest(HttpMethod.Patch, urlTildelMote) {
                                 addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(
@@ -112,28 +113,20 @@ class TildelDialogmoteApiV2Spek : Spek({
                                 )
                             }
                         ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            response.status() shouldBeEqualTo HttpStatusCode.NoContent
                         }
 
-                        with(
-                            handleRequest(HttpMethod.Get, urlMoterEnhet) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-
-                            dialogmoteList.size shouldBeEqualTo 2
-                            dialogmoteList.all { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == veilederIdentTildelesMoter } shouldBeEqualTo true
-                            dialogmoteList.all { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == veilederCallerIdent } shouldBeEqualTo false
-                        }
+                        val dialogmoter = database.getDialogmoteUnfinishedList(EnhetNr(UserConstants.ENHET_NR.value))
+                        dialogmoter.size shouldBeEqualTo 2
+                        dialogmoter.all { dialogmote -> dialogmote.tildeltVeilederIdent == veilederIdentTildelesMoter } shouldBeEqualTo true
+                        dialogmoter.all { dialogmote -> dialogmote.tildeltVeilederIdent == veilederCallerIdent } shouldBeEqualTo false
                     }
                 }
 
                 describe("Unhappy paths") {
                     it("should return status Unauthorized if no token is supplied") {
                         with(
-                            handleRequest(HttpMethod.Post, urlTildelMote) {
+                            handleRequest(HttpMethod.Patch, urlTildelMote) {
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
@@ -142,7 +135,7 @@ class TildelDialogmoteApiV2Spek : Spek({
 
                     it("should return status Bad Request if no dialogmoteUuids supplied") {
                         with(
-                            handleRequest(HttpMethod.Post, urlTildelMote) {
+                            handleRequest(HttpMethod.Patch, urlTildelMote) {
                                 addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(
@@ -172,7 +165,7 @@ class TildelDialogmoteApiV2Spek : Spek({
                         }
 
                         with(
-                            handleRequest(HttpMethod.Post, urlTildelMote) {
+                            handleRequest(HttpMethod.Patch, urlTildelMote) {
                                 addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(
@@ -190,21 +183,8 @@ class TildelDialogmoteApiV2Spek : Spek({
                     }
 
                     it("should return status Forbidden if contains dialogmøte with denied access to person") {
-                        val createdDialogmoterUuids = mutableListOf<UUID>()
-                        database.connection.run { this.createNewDialogmoteWithReferences(newDialogmote) }
-
-                        with(
-                            handleRequest(HttpMethod.Get, urlMoterEnhet) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-
-                            dialogmoteList.size shouldBeEqualTo 1
-
-                            createdDialogmoterUuids.addAll(dialogmoteList.map { UUID.fromString(it.uuid) })
-                        }
+                        val createdDialogmoteUuid =
+                            mutableListOf(database.connection.run { this.createNewDialogmoteWithReferences(newDialogmote) }.dialogmoteIdPair.second)
 
                         val newDialogmoteNoVeilederAccess =
                             generateNewDialogmote(UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS)
@@ -212,18 +192,18 @@ class TildelDialogmoteApiV2Spek : Spek({
                             val (dialogmoteIdPair) = connection.createNewDialogmoteWithReferences(
                                 newDialogmote = newDialogmoteNoVeilederAccess
                             )
-                            createdDialogmoterUuids.add(dialogmoteIdPair.second)
+                            createdDialogmoteUuid.add(dialogmoteIdPair.second)
                         }
 
                         with(
-                            handleRequest(HttpMethod.Post, urlTildelMote) {
+                            handleRequest(HttpMethod.Patch, urlTildelMote) {
                                 addHeader(HttpHeaders.Authorization, bearerHeader(veilederCallerToken))
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 setBody(
                                     objectMapper.writeValueAsString(
                                         TildelDialogmoterDTO(
                                             veilederIdent = veilederIdentTildelesMoter,
-                                            dialogmoteUuids = createdDialogmoterUuids
+                                            dialogmoteUuids = createdDialogmoteUuid
                                         )
                                     )
                                 )
