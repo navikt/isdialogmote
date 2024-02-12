@@ -11,7 +11,6 @@ import no.nav.syfo.dialogmote.domain.TidStedDTO
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
 import java.sql.Connection
-import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Timestamp
 import java.time.Instant
@@ -314,15 +313,3 @@ fun Connection.updateMoteTidSted(
         this.commit()
     }
 }
-
-fun ResultSet.toPDialogmote(): PDialogmote =
-    PDialogmote(
-        id = getInt("id"),
-        uuid = UUID.fromString(getString("uuid")),
-        createdAt = getTimestamp("created_at").toLocalDateTime(),
-        updatedAt = getTimestamp("updated_at").toLocalDateTime(),
-        status = getString("status"),
-        opprettetAv = getString("opprettet_av"),
-        tildeltVeilederIdent = getString("tildelt_veileder_ident"),
-        tildeltEnhet = getString("tildelt_enhet")
-    )

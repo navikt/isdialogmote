@@ -11,15 +11,18 @@ import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.database.domain.*
+import no.nav.syfo.dialogmote.database.domain.toReferat
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.domain.*
+import no.nav.syfo.domain.EnhetNr
+import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Virksomhetsnummer
 import java.sql.Connection
 import java.time.LocalDateTime
 import java.util.*
 
 class DialogmoteService(
     private val database: DatabaseInterface,
+    private val moteRepository: MoteRepository,
     private val dialogmotedeltakerService: DialogmotedeltakerService,
     private val dialogmotestatusService: DialogmotestatusService,
     private val dialogmoterelasjonService: DialogmoterelasjonService,
@@ -33,7 +36,7 @@ class DialogmoteService(
     fun getDialogmote(
         moteUUID: UUID
     ): Dialogmote {
-        return database.getDialogmote(moteUUID).first().let { pDialogmote ->
+        return moteRepository.getMote(moteUUID).first().let { pDialogmote ->
             dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
         }
     }
@@ -41,7 +44,7 @@ class DialogmoteService(
     fun getDialogmoteList(
         personIdent: PersonIdent,
     ): List<Dialogmote> {
-        return database.getDialogmoteList(personIdent).map { pDialogmote ->
+        return moteRepository.getMoterFor(personIdent).map { pDialogmote ->
             dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
         }
     }

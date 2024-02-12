@@ -1,8 +1,8 @@
 package no.nav.syfo.application.api
 
-import io.ktor.server.application.Application
-import io.ktor.server.auth.authenticate
-import io.ktor.server.routing.routing
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.routing.*
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
@@ -30,6 +30,7 @@ import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteActionsApiV2
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteApiV2
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
+import no.nav.syfo.dialogmote.database.MoteRepository
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 
 fun Application.apiModule(
@@ -160,6 +161,7 @@ fun Application.apiModule(
 
     val dialogmoteService = DialogmoteService(
         database = database,
+        moteRepository = MoteRepository(database),
         dialogmotedeltakerService = dialogmotedeltakerService,
         dialogmotestatusService = dialogmotestatusService,
         dialogmoterelasjonService = dialogmoterelasjonService,
