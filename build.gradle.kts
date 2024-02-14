@@ -7,7 +7,7 @@ version = "1.0.0"
 
 object Versions {
     const val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
-    const val cxfVersion = "3.5.5"
+    const val cxfVersion = "3.5.7"
     const val confluent = "7.5.1"
     const val flyway = "9.22.3"
     const val hikari = "5.0.1"
@@ -184,6 +184,14 @@ dependencies {
     implementation("org.apache.cxf:cxf-rt-features-logging:${Versions.cxfVersion}")
     implementation("org.apache.cxf:cxf-rt-transports-http:${Versions.cxfVersion}")
     implementation("org.apache.cxf:cxf-rt-ws-security:${Versions.cxfVersion}")
+    constraints {
+        implementation("org.apache.santuario:xmlsec") {
+            because("org.apache.cxf:cxf-rt-ws-security:${Versions.cxfVersion} -> https://nvd.nist.gov/vuln/detail/CVE-2023-44483")
+            version {
+                require("2.3.4")
+            }
+        }
+    }
     implementation("javax.xml.ws:jaxws-api:${Versions.jaxsWsApiVersion}")
     implementation("com.sun.xml.ws:jaxws-tools:${Versions.jaxwsToolsVersion}") {
         exclude(group = "com.sun.xml.ws", module = "policy")
