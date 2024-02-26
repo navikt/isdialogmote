@@ -11,7 +11,8 @@ import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.metric.COUNT_CALL_PDL_FAIL
 import no.nav.syfo.metric.COUNT_CALL_PDL_SUCCESS
-import no.nav.syfo.util.*
+import no.nav.syfo.util.NAV_CALL_ID_HEADER
+import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 
 class PdlClient(
@@ -79,7 +80,7 @@ class PdlClient(
             setBody(request)
             header(HttpHeaders.ContentType, "application/json")
             header(HttpHeaders.Authorization, bearerHeader(systemToken.accessToken))
-            header(TEMA_HEADER, ALLE_TEMA_HEADERVERDI)
+            header(BEHANDLINGSNUMMER_HEADER_KEY, BEHANDLINGSNUMMER_HEADER_VALUE)
             header(NAV_CALL_ID_HEADER, callId)
         }
 
@@ -101,6 +102,7 @@ class PdlClient(
                     pdlIdenterReponse.data?.hentIdenter
                 }
             }
+
             else -> {
                 COUNT_CALL_PDL_FAIL.increment()
                 val message = "Request with url: $pdlUrl failed with reponse code ${response.status.value}"
@@ -123,7 +125,7 @@ class PdlClient(
             setBody(request)
             header(HttpHeaders.ContentType, "application/json")
             header(HttpHeaders.Authorization, bearerHeader(token.accessToken))
-            header(TEMA_HEADER, ALLE_TEMA_HEADERVERDI)
+            header(BEHANDLINGSNUMMER_HEADER_KEY, BEHANDLINGSNUMMER_HEADER_VALUE)
             header(NAV_CALL_ID_HEADER, callId)
         }
 
@@ -141,6 +143,7 @@ class PdlClient(
                     pdlPersonReponse.data
                 }
             }
+
             else -> {
                 COUNT_CALL_PDL_FAIL.increment()
                 logger.error("Request with url: $pdlUrl failed with reponse code ${response.status.value}")
@@ -160,5 +163,10 @@ class PdlClient(
         private val FOLKEREG_IDENTER_CACHE_KEY_PREFIX = "pdl-folkereg-identer"
         private val CACHE_EXPIRE_SECONDS = 24L * 3600
         private val logger = LoggerFactory.getLogger(PdlClient::class.java)
+
+        // Se behandlingskatalog https://behandlingskatalog.intern.nav.no/
+        // Behandling: Vurdere behov for, innkalle og gjennomføre dialogmøter, samt vurdere behov for arbeidsrettede tiltak, jf. § 8-7 a.
+        private const val BEHANDLINGSNUMMER_HEADER_KEY = "behandlingsnummer"
+        private const val BEHANDLINGSNUMMER_HEADER_VALUE = "B380"
     }
 }
