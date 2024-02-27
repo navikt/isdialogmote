@@ -16,27 +16,27 @@ object Versions {
     const val jedis = "5.1.0"
     const val kafka = "3.6.0"
     const val kafkaEmbedded = "3.2.3"
-    const val ktor = "2.3.7"
+    const val ktor = "2.3.8"
     const val kluent = "1.73"
     const val jaxbApi = "2.3.1"
     const val jaxbRuntime = "2.3.6"
     const val jaxsWsApiVersion = "2.3.1"
     const val jaxwsToolsVersion = "2.3.5"
+    const val jetty = "9.4.53.v20231009"
     const val logback = "1.4.14"
     const val logstashEncoder = "7.4"
     const val micrometerRegistry = "1.12.0"
     const val mockk = "1.13.8"
     const val nimbusjosejwt = "9.37.2"
     val postgresEmbedded = if (Os.isFamily(Os.FAMILY_MAC)) "1.0.0" else "0.13.4"
-    const val postgres = "42.6.0"
+    const val postgres = "42.7.2"
     const val redisEmbedded = "0.7.3"
-    const val scala = "2.13.12"
     const val spek = "2.0.19"
     const val tjenesteSpesifikasjonerGithub = "1.2020.06.11-19.53-1cad83414166"
 }
 
 plugins {
-    kotlin("jvm") version "1.9.21"
+    kotlin("jvm") version "1.9.22"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.jlleitschuh.gradle.ktlint") version "11.4.2"
 }
@@ -109,6 +109,20 @@ dependencies {
     }
     implementation("org.apache.kafka:kafka_2.13:${Versions.kafka}", excludeLog4j)
     implementation("io.confluent:kafka-avro-serializer:${Versions.confluent}", excludeLog4j)
+    constraints {
+        implementation("org.apache.commons:commons-compress") {
+            because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
+            version {
+                require("1.26.0")
+            }
+        }
+        implementation("com.google.guava:guava") {
+            because("com.google.guava:guava:30.1.1-jre -> https://www.cve.org/CVERecord?id=CVE-2020-8908")
+            version {
+                require("32.1.3-jre")
+            }
+        }
+    }
     implementation("io.confluent:kafka-schema-registry:${Versions.confluent}", excludeLog4j)
     constraints {
         implementation("org.yaml:snakeyaml") {
@@ -135,6 +149,30 @@ dependencies {
                 require("3.7.2")
             }
         }
+        implementation("org.eclipse.jetty:jetty-server") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
+            version {
+                require(Versions.jetty)
+            }
+        }
+        implementation("org.eclipse.jetty:jetty-xml") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
+            version {
+                require(Versions.jetty)
+            }
+        }
+        implementation("org.eclipse.jetty:jetty-servlets") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
+            version {
+                require(Versions.jetty)
+            }
+        }
+        implementation("org.eclipse.jetty.http2:http2-server") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
+            version {
+                require(Versions.jetty)
+            }
+        }
     }
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
     constraints {
@@ -145,26 +183,7 @@ dependencies {
             }
         }
     }
-    implementation("org.scala-lang:scala-library") {
-        version {
-            strictly(Versions.scala)
-        }
-    }
     testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded}", excludeLog4j)
-    constraints {
-        implementation("org.eclipse.jetty.http2:http2-server") {
-            because("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-2048/")
-            version {
-                require("9.4.53.v20231009")
-            }
-        }
-        implementation("com.google.protobuf:protobuf-java") {
-            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2022-3510")
-            version {
-                require("3.25.1")
-            }
-        }
-    }
 
     implementation("no.nav.tjenestespesifikasjoner:servicemeldingMedKontaktinformasjon-v1-tjenestespesifikasjon:${Versions.tjenesteSpesifikasjonerGithub}")
 
