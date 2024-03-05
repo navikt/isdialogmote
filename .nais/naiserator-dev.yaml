@@ -57,9 +57,6 @@ spec:
         - application: dialogmote-frontend
           namespace: team-esyfo
           cluster: dev-gcp
-        - application: ditt-sykefravaer
-          namespace: flex
-          cluster: dev-gcp
         - application: esyfo-proxy
           namespace: team-esyfo
           cluster: dev-gcp
