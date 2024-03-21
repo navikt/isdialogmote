@@ -36,6 +36,8 @@ import no.nav.syfo.identhendelse.IdenthendelseService
 import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
 import no.nav.syfo.identhendelse.kafka.kafkaIdenthendelseConsumerConfig
 import no.nav.syfo.testdata.reset.TestdataResetService
+import no.nav.syfo.janitor.kafka.JanitorEventConsumer
+import no.nav.syfo.janitor.kafka.kafkaJanitorEventConsumerConfig
 import no.nav.syfo.testdata.reset.kafka.TestdataResetConsumer
 import no.nav.syfo.testdata.reset.kafka.kafkaTestdataResetConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -158,6 +160,15 @@ fun main() {
         )
         launchBackgroundTask(applicationState = applicationState) {
             identhendelseConsumerService.startConsumer()
+        }
+        val janitorEventConsumer = JanitorEventConsumer(
+            kafkaConsumer = KafkaConsumer(kafkaJanitorEventConsumerConfig(environment.kafka)),
+            applicationState = applicationState,
+            //testdataResetService = testdataResetService,
+        )
+        launchBackgroundTask(applicationState = applicationState) {
+            logger.info("Starting janitor event kafka consumer")
+            janitorEventConsumer.startConsumer()
         }
 
         if (environment.isDevGcp()) {
