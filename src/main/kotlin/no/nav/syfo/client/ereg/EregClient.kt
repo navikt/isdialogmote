@@ -56,7 +56,7 @@ class EregClient(
     }
 
     companion object {
-        const val EREG_PATH = "/ereg/api/v1/organisasjon"
+        const val EREG_PATH = "ereg/api/v1/organisasjon"
         private val log = LoggerFactory.getLogger(EregClient::class.java)
     }
 }
