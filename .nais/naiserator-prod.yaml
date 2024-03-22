@@ -96,6 +96,10 @@ spec:
     - secret: isdialogmote-altinnuser
   kafka:
     pool: nav-prod
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   env:
     - name: KTOR_ENV
       value: "production"
