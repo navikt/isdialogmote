@@ -2,16 +2,10 @@ package no.nav.syfo.dialogmote.api.v2
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
+import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
+import io.ktor.server.testing.*
 import io.mockk.*
-import java.util.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
@@ -42,6 +36,7 @@ import org.amshove.kluent.shouldContain
 import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.*
 
 class FerdigstillDialogmoteApiV2Spek : Spek({
 
@@ -163,7 +158,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
 
                             val pdf =
                                 pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId!!)
-                            pdf shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
+                            pdf shouldBeEqualTo externalMockEnvironment.ispdfgenMock.pdfReferat
 
                             val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2

@@ -42,7 +42,7 @@ data class Environment(
     val eregUrl: String = getEnvVar("EREG_URL"),
     val sidecarInitialDelay: Long = getEnvVar("SIDECAR_INITIAL_DELAY", "30000").toLong(),
     val dokarkivUrl: String = getEnvVar("DOKARKIV_URL"),
-    val isdialogmotepdfgenUrl: String = "http://isdialogmotepdfgen",
+    val ispdfgenUrl: String = "http://ispdfgen",
     val krrClientId: String = getEnvVar("KRR_CLIENT_ID"),
     val krrUrl: String = getEnvVar("KRR_URL"),
     val syfobehandlendeenhetClientId: String = getEnvVar("SYFOBEHANDLENDEENHET_CLIENT_ID"),

@@ -15,7 +15,7 @@ import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.REFERAT_PATH
 import no.nav.syfo.testhelper.getRandomPort
 import no.nav.syfo.util.configure
 
-class IsdialogmotepdfgenMock {
+class ispdfgenMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
 
@@ -24,12 +24,12 @@ class IsdialogmotepdfgenMock {
     val pdfInnkalling = byteArrayOf(0x2E, 0x28)
     val pdfReferat = byteArrayOf(0x2E, 0x27)
 
-    val name = "isdialogmotepdfgen"
-    val server = mockIsdialogmotepdfgenServer(
+    val name = "ispdfgen"
+    val server = mockIspdfgenServer(
         port
     )
 
-    private fun mockIsdialogmotepdfgenServer(
+    private fun mockIspdfgenServer(
         port: Int
     ): NettyApplicationEngine {
         return embeddedServer(
