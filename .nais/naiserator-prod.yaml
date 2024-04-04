@@ -72,7 +72,7 @@ spec:
         - application: digdir-krr-proxy
           namespace: team-rocket
         - application: isdialogmote-redis
-        - application: isdialogmotepdfgen
+        - application: ispdfgen
         - application: isnarmesteleder
         - application: isoppfolgingstilfelle
         - application: syfobehandlendeenhet

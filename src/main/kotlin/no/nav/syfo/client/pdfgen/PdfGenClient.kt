@@ -14,19 +14,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class PdfGenClient(
-    pdfGenBaseUrl: String
+    private val pdfGenBaseUrl: String
 ) {
-    private val avlysningUrl: String
-    private val endringTidStedUrl: String
-    private val innkallingUrl: String
-    private val referatUrl: String
-
-    init {
-        this.avlysningUrl = "$pdfGenBaseUrl$AVLYSNING_PATH"
-        this.endringTidStedUrl = "$pdfGenBaseUrl$ENDRING_TIDSTED_PATH"
-        this.innkallingUrl = "$pdfGenBaseUrl$INNKALLING_PATH"
-        this.referatUrl = "$pdfGenBaseUrl$REFERAT_PATH"
-    }
 
     private val httpClient = httpClientDefault()
 
@@ -37,7 +26,7 @@ class PdfGenClient(
         return getPdf(
             callId = callId,
             documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = avlysningUrl,
+            pdfUrl = "$pdfGenBaseUrl$AVLYSNING_PATH",
         )
     }
 
@@ -48,7 +37,7 @@ class PdfGenClient(
         return getPdf(
             callId = callId,
             documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = endringTidStedUrl,
+            pdfUrl = "$pdfGenBaseUrl$ENDRING_TIDSTED_PATH",
         )
     }
 
@@ -59,7 +48,7 @@ class PdfGenClient(
         return getPdf(
             callId = callId,
             documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = innkallingUrl,
+            pdfUrl = "$pdfGenBaseUrl$INNKALLING_PATH",
         )
     }
 
@@ -70,7 +59,7 @@ class PdfGenClient(
         return getPdf(
             callId = callId,
             documentComponentDTOList = documentComponentDTOList,
-            pdfUrl = referatUrl,
+            pdfUrl = "$pdfGenBaseUrl$REFERAT_PATH",
         )
     }
 
@@ -80,11 +69,13 @@ class PdfGenClient(
         pdfUrl: String,
     ): ByteArray? {
         return try {
+            val requestBody =
+                DialogmoteHendelsePdfContent(documentComponents = documentComponentDTOList.sanitizeForPdfGen())
             val response: HttpResponse = httpClient.post(pdfUrl) {
                 header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
-                setBody(documentComponentDTOList.sanitizeForPdfGen())
+                setBody(requestBody)
             }
             COUNT_CALL_PDFGEN_SUCCESS.increment()
             response.body()
@@ -101,7 +92,7 @@ class PdfGenClient(
         callId: String,
     ): ByteArray? {
         log.error(
-            "Error while requesting PDF from Isdialogmotepdfgen with {}, {}, {}",
+            "Error while requesting PDF from ispdfgen with {}, {}, {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             StructuredArguments.keyValue("url", url),
             callIdArgument(callId)

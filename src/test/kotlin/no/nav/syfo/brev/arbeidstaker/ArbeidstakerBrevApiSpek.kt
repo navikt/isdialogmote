@@ -2,17 +2,10 @@ package no.nav.syfo.brev.arbeidstaker
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
+import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
+import io.ktor.server.testing.*
 import io.mockk.*
-import java.time.LocalDateTime
-import java.util.*
 import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
@@ -56,6 +49,8 @@ import org.spekframework.spek2.style.specification.describe
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
 import redis.clients.jedis.Protocol
+import java.time.LocalDateTime
+import java.util.*
 
 class ArbeidstakerBrevApiSpek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -696,7 +691,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             val pdfContent = response.byteContent!!
-                            pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkalling
+                            pdfContent shouldBeEqualTo externalMockEnvironment.ispdfgenMock.pdfInnkalling
                         }
                         val urlPdfForReferatNedlasting =
                             "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
@@ -707,7 +702,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             val pdfContent = response.byteContent!!
-                            pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
+                            pdfContent shouldBeEqualTo externalMockEnvironment.ispdfgenMock.pdfReferat
                         }
                     }
                 }
@@ -842,7 +837,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             val pdfContent = response.byteContent!!
-                            pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfInnkalling
+                            pdfContent shouldBeEqualTo externalMockEnvironment.ispdfgenMock.pdfInnkalling
                         }
 
                         val urlPdfForReferatNedlasting =
@@ -861,7 +856,7 @@ class ArbeidstakerBrevApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             val pdfContent = response.byteContent!!
-                            pdfContent shouldBeEqualTo externalMockEnvironment.isdialogmotepdfgenMock.pdfReferat
+                            pdfContent shouldBeEqualTo externalMockEnvironment.ispdfgenMock.pdfReferat
                         }
                     }
                 }

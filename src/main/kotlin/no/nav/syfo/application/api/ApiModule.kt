@@ -99,7 +99,7 @@ fun Application.apiModule(
         cache = cache,
     )
     val pdfGenClient = PdfGenClient(
-        pdfGenBaseUrl = environment.isdialogmotepdfgenUrl
+        pdfGenBaseUrl = environment.ispdfgenUrl
     )
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
         azureAdV2Client = azureAdV2Client,

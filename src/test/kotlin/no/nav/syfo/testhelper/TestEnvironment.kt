@@ -1,6 +1,9 @@
 package no.nav.syfo.testhelper
 
-import no.nav.syfo.application.*
+import io.ktor.utils.io.core.*
+import no.nav.syfo.application.ApplicationEnvironmentKafka
+import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.application.Environment
 import java.net.ServerSocket
 import java.time.LocalDate
 
@@ -9,7 +12,7 @@ fun testEnvironment(
     dokarkivUrl: String = "http://dokarkiv",
     azureTokenEndpoint: String = "azureTokenEndpoint",
     tokenxEndpoint: String = "tokenxEndpoint",
-    isdialogmotepdfgenUrl: String? = null,
+    ispdfgenUrl: String? = null,
     isoppfolgingstilfelleUrl: String = "isoppfolgingstilfelle",
     eregUrl: String = "ereg",
     krrUrl: String = "krr",
@@ -51,7 +54,7 @@ fun testEnvironment(
     isdialogmoteDbUsername = "username",
     isdialogmoteDbPassword = "password",
     dokarkivUrl = dokarkivUrl,
-    isdialogmotepdfgenUrl = isdialogmotepdfgenUrl ?: "http://isdialogmotepdfgen",
+    ispdfgenUrl = ispdfgenUrl ?: "http://ispdfgen",
     krrClientId = "dev-gcp.team-rocket.digdir-krr-proxy",
     krrUrl = krrUrl,
     syfobehandlendeenhetClientId = "syfobehandlendeenhetClientId",

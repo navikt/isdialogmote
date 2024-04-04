@@ -4,6 +4,7 @@ import io.ktor.server.netty.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.testhelper.mock.*
+import java.util.*
 
 class ExternalMockEnvironment private constructor() {
     val applicationState: ApplicationState = testAppState()
@@ -13,7 +14,7 @@ class ExternalMockEnvironment private constructor() {
     val tokendingsMock = TokendingsMock()
     val dokarkivMock = DokarkivMock()
     val pdlMock = PdlMock()
-    val isdialogmotepdfgenMock = IsdialogmotepdfgenMock()
+    val ispdfgenMock = ispdfgenMock()
     val isoppfolgingstilfelleMock = IsoppfolgingstilfelleMock()
     val eregMock = EregMock()
     val krrMock = KrrMock()
@@ -25,7 +26,7 @@ class ExternalMockEnvironment private constructor() {
         azureAdV2Mock.name to azureAdV2Mock.server,
         tokendingsMock.name to tokendingsMock.server,
         dokarkivMock.name to dokarkivMock.server,
-        isdialogmotepdfgenMock.name to isdialogmotepdfgenMock.server,
+        ispdfgenMock.name to ispdfgenMock.server,
         isoppfolgingstilfelleMock.name to isoppfolgingstilfelleMock.server,
         eregMock.name to eregMock.server,
         krrMock.name to krrMock.server,
@@ -40,7 +41,7 @@ class ExternalMockEnvironment private constructor() {
         azureTokenEndpoint = azureAdV2Mock.url,
         tokenxEndpoint = tokendingsMock.url,
         dokarkivUrl = dokarkivMock.url,
-        isdialogmotepdfgenUrl = isdialogmotepdfgenMock.url,
+        ispdfgenUrl = ispdfgenMock.url,
         isoppfolgingstilfelleUrl = isoppfolgingstilfelleMock.url,
         eregUrl = eregMock.url,
         krrUrl = krrMock.url,
