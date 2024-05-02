@@ -10,8 +10,10 @@ import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.callIdArgument
+import no.nav.syfo.util.toReadableString
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 
 class PdfGenClient(
     private val pdfGenBaseUrl: String
@@ -21,56 +23,77 @@ class PdfGenClient(
 
     suspend fun pdfAvlysning(
         callId: String,
-        documentComponentDTOList: List<DocumentComponentDTO>,
+        mottakerNavn: String? = null,
+        mottakerFodselsnummer: String? = null,
+        pdfContent: List<DocumentComponentDTO>,
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            documentComponentDTOList = documentComponentDTOList,
+            mottakerNavn = mottakerNavn,
+            mottakerFodselsnummer = mottakerFodselsnummer,
+            pdfContent = pdfContent,
             pdfUrl = "$pdfGenBaseUrl$AVLYSNING_PATH",
         )
     }
 
     suspend fun pdfEndringTidSted(
         callId: String,
-        documentComponentDTOList: List<DocumentComponentDTO>,
+        mottakerNavn: String? = null,
+        mottakerFodselsnummer: String? = null,
+        pdfContent: List<DocumentComponentDTO>,
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            documentComponentDTOList = documentComponentDTOList,
+            mottakerNavn = mottakerNavn,
+            mottakerFodselsnummer = mottakerFodselsnummer,
+            pdfContent = pdfContent,
             pdfUrl = "$pdfGenBaseUrl$ENDRING_TIDSTED_PATH",
         )
     }
 
     suspend fun pdfInnkalling(
         callId: String,
-        documentComponentDTOList: List<DocumentComponentDTO>,
+        mottakerNavn: String? = null,
+        mottakerFodselsnummer: String? = null,
+        pdfContent: List<DocumentComponentDTO>,
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            documentComponentDTOList = documentComponentDTOList,
+            mottakerNavn = mottakerNavn,
+            mottakerFodselsnummer = mottakerFodselsnummer,
+            pdfContent = pdfContent,
             pdfUrl = "$pdfGenBaseUrl$INNKALLING_PATH",
         )
     }
 
     suspend fun pdfReferat(
         callId: String,
-        documentComponentDTOList: List<DocumentComponentDTO>,
+        pdfContent: List<DocumentComponentDTO>,
     ): ByteArray? {
         return getPdf(
             callId = callId,
-            documentComponentDTOList = documentComponentDTOList,
+            mottakerNavn = null,
+            mottakerFodselsnummer = null,
+            pdfContent = pdfContent,
             pdfUrl = "$pdfGenBaseUrl$REFERAT_PATH",
         )
     }
 
     private suspend fun getPdf(
         callId: String,
-        documentComponentDTOList: List<DocumentComponentDTO>,
+        mottakerNavn: String?,
+        mottakerFodselsnummer: String?,
+        pdfContent: List<DocumentComponentDTO>,
         pdfUrl: String,
     ): ByteArray? {
         return try {
             val requestBody =
-                DialogmoteHendelsePdfContent(documentComponents = documentComponentDTOList.sanitizeForPdfGen())
+                DialogmoteHendelsePdfContent(
+                    mottakerNavn = mottakerNavn,
+                    mottakerFodselsnummer = mottakerFodselsnummer,
+                    datoSendt = LocalDateTime.now().toReadableString(),
+                    documentComponents = pdfContent.sanitizeForPdfGen(),
+                )
             val response: HttpResponse = httpClient.post(pdfUrl) {
                 header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
@@ -103,10 +126,10 @@ class PdfGenClient(
 
     companion object {
         private const val API_BASE_PATH = "/api/v1/genpdf/isdialogmote"
-        const val AVLYSNING_PATH = "$API_BASE_PATH/avlysning"
-        const val ENDRING_TIDSTED_PATH = "$API_BASE_PATH/endring-tidsted"
-        const val INNKALLING_PATH = "$API_BASE_PATH/innkalling"
-        const val REFERAT_PATH = "$API_BASE_PATH/referat"
+        const val AVLYSNING_PATH = "$API_BASE_PATH/avlysning-v2"
+        const val ENDRING_TIDSTED_PATH = "$API_BASE_PATH/endring-tid-sted-v2"
+        const val INNKALLING_PATH = "$API_BASE_PATH/innkalling-v2"
+        const val REFERAT_PATH = "$API_BASE_PATH/referat-v2"
 
         val log: Logger = LoggerFactory.getLogger(PdfGenClient::class.java)
         val illegalCharacters = listOf('\u0002')
