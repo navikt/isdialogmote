@@ -55,6 +55,7 @@ data class PdlIdenter(
     val aktivIdent: String? = identer.firstOrNull {
         it.gruppe == IdentGruppe.FOLKEREGISTERIDENT && !it.historisk
     }?.ident
+
     fun identhendelseIsNotHistorisk(newIdent: String): Boolean {
         return identer.none { it.ident == newIdent && it.historisk }
     }
@@ -90,10 +91,20 @@ fun PdlHentPerson.fullName(): String? {
     }
 }
 
-fun String.lowerCapitalize(): String {
-    return this.lowercase()
-        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-}
+fun String.lowerCapitalize() =
+    this.split(" ").joinToString(" ") { name ->
+        val nameWithDash = name.split("-")
+        if (nameWithDash.size > 1) {
+            nameWithDash.joinToString("-") { it.capitalizeName() }
+        } else {
+            name.capitalizeName()
+        }
+    }
+
+private fun String.capitalizeName() =
+    this.lowercase(Locale.getDefault()).replaceFirstChar {
+        if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+    }
 
 fun PdlError.errorMessage(): String {
     return "${this.message} with code: ${extensions.code} and classification: ${extensions.classification}"
