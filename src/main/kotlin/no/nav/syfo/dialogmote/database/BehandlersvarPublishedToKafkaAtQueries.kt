@@ -2,7 +2,8 @@ package no.nav.syfo.dialogmote.database
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.dialogmote.api.domain.*
+import no.nav.syfo.cronjob.dialogmotesvar.Dialogmotesvar
+import no.nav.syfo.cronjob.dialogmotesvar.SenderType
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.util.toOffsetDateTimeUTC
@@ -12,7 +13,7 @@ import java.util.*
 
 const val queryGetUnpublishedBehandlersvar =
     """
-        SELECT m.uuid as mote_uuid, ma.personident, s.svar_type, s.uuid as svar_uuid, mbv.created_at as brev_sent_at, s.created_at as svar_received_at
+        SELECT m.uuid as mote_uuid, ma.personident, s.svar_type, s.svar_tekst, s.uuid as svar_uuid, mbv.created_at as brev_sent_at, s.created_at as svar_received_at
         FROM motedeltaker_behandler_varsel_svar s
         INNER JOIN motedeltaker_behandler_varsel mbv ON s.motedeltaker_behandler_varsel_id = mbv.id
         INNER JOIN motedeltaker_behandler mb ON mbv.motedeltaker_behandler_id = mb.id
@@ -22,9 +23,9 @@ const val queryGetUnpublishedBehandlersvar =
         LIMIT 100;
     """
 
-fun Connection.getUnpublishedBehandlersvar(): List<Behandlersvar> {
+fun Connection.getUnpublishedBehandlersvar(): List<Dialogmotesvar> {
     return this.prepareStatement(queryGetUnpublishedBehandlersvar).use {
-        it.executeQuery().toList { behandlersvar() }
+        it.executeQuery().toList { toDialogmotesvarBehandler() }
     }
 }
 
@@ -52,11 +53,13 @@ fun DatabaseInterface.updateBehandlersvarPublishedAt(
     }
 }
 
-fun ResultSet.behandlersvar(): Behandlersvar = Behandlersvar(
+fun ResultSet.toDialogmotesvarBehandler(): Dialogmotesvar = Dialogmotesvar(
     moteuuid = UUID.fromString(getString("mote_uuid")),
     ident = PersonIdent(getString("personident")),
     svarType = DialogmoteSvarType.valueOf(getString("svar_type")),
-    svaruuid = UUID.fromString(getString("svar_uuid")),
+    dbRef = UUID.fromString(getString("svar_uuid")),
     brevSentAt = getTimestamp("brev_sent_at").toLocalDateTime().toOffsetDateTimeUTC(),
     svarReceivedAt = getTimestamp("svar_received_at").toLocalDateTime().toOffsetDateTimeUTC(),
+    svarTekst = getString("svar_tekst"),
+    senderType = SenderType.BEHANDLER,
 )

@@ -27,7 +27,7 @@ import no.nav.syfo.cronjob.statusendring.PublishDialogmoteStatusEndringCronjob
 import no.nav.syfo.cronjob.statusendring.PublishDialogmoteStatusEndringService
 import no.nav.syfo.cronjob.statusendring.kafkaDialogmoteStatusEndringProducerConfig
 import no.nav.syfo.dialogmote.*
-import no.nav.syfo.dialogmote.api.domain.KDialogmotesvar
+import no.nav.syfo.cronjob.dialogmotesvar.KDialogmotesvar
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import org.apache.kafka.clients.producer.KafkaProducer
 

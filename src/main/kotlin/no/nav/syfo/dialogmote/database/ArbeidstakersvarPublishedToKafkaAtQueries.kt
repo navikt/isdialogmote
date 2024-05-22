@@ -2,7 +2,8 @@ package no.nav.syfo.dialogmote.database
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.dialogmote.api.domain.*
+import no.nav.syfo.cronjob.dialogmotesvar.Dialogmotesvar
+import no.nav.syfo.cronjob.dialogmotesvar.SenderType
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.util.toOffsetDateTimeUTC
@@ -12,7 +13,7 @@ import java.util.*
 
 const val queryGetUnpublishedArbeidstakersvar =
     """
-        SELECT m.uuid as mote_uuid, ma.personident, v.svar_type,  v.uuid as varsel_uuid, v.created_at as brev_sent_at, v.svar_tidspunkt as svar_received_at
+        SELECT m.uuid as mote_uuid, ma.personident, v.svar_type, v.svar_tekst, v.uuid as varsel_uuid, v.created_at as brev_sent_at, v.svar_tidspunkt as svar_received_at
         FROM motedeltaker_arbeidstaker_varsel v
         INNER JOIN motedeltaker_arbeidstaker ma ON v.motedeltaker_arbeidstaker_id = ma.id
         INNER JOIN mote m ON ma.mote_id = m.id
@@ -21,11 +22,10 @@ const val queryGetUnpublishedArbeidstakersvar =
         LIMIT 100;
     """
 
-fun Connection.getUnpublishedArbeidstakersvar(): List<Arbeidstakersvar> {
-    return this.prepareStatement(queryGetUnpublishedArbeidstakersvar).use {
-        it.executeQuery().toList { toArbeidstakersvar() }
+fun Connection.getUnpublishedArbeidstakersvar(): List<Dialogmotesvar> =
+    this.prepareStatement(queryGetUnpublishedArbeidstakersvar).use {
+        it.executeQuery().toList { toDialogmotesvarArbeidstaker() }
     }
-}
 
 const val queryUpdateArbeidstakerVarselPublishedAt =
     """
@@ -51,11 +51,13 @@ fun DatabaseInterface.updateArbeidstakerVarselPublishedAt(
     }
 }
 
-fun ResultSet.toArbeidstakersvar(): Arbeidstakersvar = Arbeidstakersvar(
+fun ResultSet.toDialogmotesvarArbeidstaker(): Dialogmotesvar = Dialogmotesvar(
     moteuuid = UUID.fromString(getString("mote_uuid")),
     ident = PersonIdent(getString("personident")),
     svarType = DialogmoteSvarType.valueOf(getString("svar_type")),
-    varseluuid = UUID.fromString(getString("varsel_uuid")),
+    dbRef = UUID.fromString(getString("varsel_uuid")),
     brevSentAt = getTimestamp("brev_sent_at").toLocalDateTime().toOffsetDateTimeUTC(),
     svarReceivedAt = getTimestamp("svar_received_at").toLocalDateTime().toOffsetDateTimeUTC(),
+    svarTekst = getString("svar_tekst"),
+    senderType = SenderType.ARBEIDSTAKER,
 )

@@ -1,8 +1,6 @@
 package no.nav.syfo.cronjob.dialogmotesvar
 
 import io.mockk.*
-import no.nav.syfo.dialogmote.api.domain.Dialogmotesvar
-import no.nav.syfo.dialogmote.api.domain.SenderType
 import no.nav.syfo.dialogmote.database.getMotedeltakerBehandlerVarselSvar
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
@@ -43,6 +41,7 @@ class PublishDialogmotesvarBehandlerServiceSpek : Spek({
                     senderType = SenderType.BEHANDLER,
                     brevSentAt = threeDaysAgo,
                     svarReceivedAt = now,
+                    svarTekst = null,
                 )
                 val varselId = database.connection.createBehandlerVarsel(
                     varseluuid = UUID.randomUUID(),
