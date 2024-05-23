@@ -1,7 +1,6 @@
 package no.nav.syfo.cronjob.dialogmotesvar
 
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.*
 
 class PublishDialogmotesvarService(
@@ -15,9 +14,9 @@ class PublishDialogmotesvarService(
             val arbeidsgiveresUnpublishedMotesvar = connection.getUnpublishedArbeidsgiversvar()
             val behandleresUnpublishedMotesvar = connection.getUnpublishedBehandlersvar()
 
-            unpublishedDialogmotesvar.addAll(arbeidstakeresUnpublishedMotesvar.map { it.toDialogmotesvar() })
-            unpublishedDialogmotesvar.addAll(arbeidsgiveresUnpublishedMotesvar.map { it.toDialogmotesvar() })
-            unpublishedDialogmotesvar.addAll(behandleresUnpublishedMotesvar.map { it.toDialogmotesvar() })
+            unpublishedDialogmotesvar.addAll(arbeidstakeresUnpublishedMotesvar)
+            unpublishedDialogmotesvar.addAll(arbeidsgiveresUnpublishedMotesvar)
+            unpublishedDialogmotesvar.addAll(behandleresUnpublishedMotesvar)
         }
 
         return unpublishedDialogmotesvar

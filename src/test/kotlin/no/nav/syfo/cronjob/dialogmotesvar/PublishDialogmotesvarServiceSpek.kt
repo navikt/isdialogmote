@@ -1,7 +1,6 @@
 package no.nav.syfo.cronjob.dialogmotesvar
 
 import io.mockk.*
-import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.*
@@ -35,6 +34,7 @@ class PublishDialogmotesvarServiceSpek : Spek({
                 val moteid = UUID.randomUUID()
                 val threeDaysAgo = OffsetDateTime.now().minusDays(3)
                 val now = OffsetDateTime.now()
+                val svarTekst = "Jeg kommer til møtet"
                 database.connection.createArbeidstakerVarsel(
                     varselUuid = dbRef,
                     varselType = MotedeltakerVarselType.INNKALT,
@@ -47,6 +47,7 @@ class PublishDialogmotesvarServiceSpek : Spek({
                     senderType = SenderType.ARBEIDSTAKER,
                     brevSentAt = threeDaysAgo,
                     svarReceivedAt = now,
+                    svarTekst = svarTekst,
                 )
                 val kDialogmotesvar = KDialogmotesvar(
                     ident = UserConstants.ARBEIDSTAKER_FNR,
@@ -54,6 +55,7 @@ class PublishDialogmotesvarServiceSpek : Spek({
                     senderType = SenderType.ARBEIDSTAKER,
                     brevSentAt = threeDaysAgo,
                     svarReceivedAt = now,
+                    svarTekst = svarTekst,
                 )
                 justRun { dialogmotesvarProducer.sendDialogmotesvar(kDialogmotesvar, moteid) }
 
@@ -159,6 +161,7 @@ class PublishDialogmotesvarServiceSpek : Spek({
                     senderType = SenderType.ARBEIDSTAKER,
                     brevSentAt = threeDaysAgo,
                     svarReceivedAt = now,
+                    svarTekst = null,
                 )
                 database.connection.createArbeidstakerVarsel(
                     varselUuid = varseluuid,
@@ -186,6 +189,7 @@ class PublishDialogmotesvarServiceSpek : Spek({
                     senderType = SenderType.ARBEIDSGIVER,
                     brevSentAt = threeDaysAgo,
                     svarReceivedAt = now,
+                    svarTekst = null,
                 )
                 database.connection.createArbeidsgiverVarsel(
                     varselUuid = varseluuid,

@@ -1,6 +1,5 @@
 package no.nav.syfo.cronjob.dialogmotesvar
 
-import no.nav.syfo.dialogmote.api.domain.KDialogmotesvar
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
