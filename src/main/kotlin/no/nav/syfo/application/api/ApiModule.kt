@@ -43,6 +43,10 @@ fun Application.apiModule(
     wellKnownVeilederV2: WellKnown,
     cache: RedisStore,
     altinnSoapClient: ICorrespondenceAgencyExternalBasic,
+    dialogmotestatusService: DialogmotestatusService,
+    dialogmoterelasjonService: DialogmoterelasjonService,
+    dialogmotedeltakerService: DialogmotedeltakerService,
+    arbeidstakerVarselService: ArbeidstakerVarselService,
 ) {
     installMetrics()
     installCallId()
@@ -111,17 +115,8 @@ fun Application.apiModule(
         veilederTilgangskontrollClient = veilederTilgangskontrollClient,
     )
 
-    val arbeidstakerVarselService = ArbeidstakerVarselService(
-        esyfovarselProducer = esyfovarselProducer,
-    )
-
     val narmesteLederVarselService = NarmesteLederVarselService(
         esyfovarselProducer = esyfovarselProducer,
-    )
-
-    val dialogmotedeltakerService = DialogmotedeltakerService(
-        arbeidstakerVarselService = arbeidstakerVarselService,
-        database = database,
     )
 
     val narmesteLederClient = NarmesteLederClient(
@@ -148,15 +143,6 @@ fun Application.apiModule(
         altinnClient = altinnClient,
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
         isAltinnSendingEnabled = environment.altinnSendingEnabled,
-    )
-
-    val dialogmotestatusService = DialogmotestatusService(
-        oppfolgingstilfelleClient = oppfolgingstilfelleClient,
-    )
-
-    val dialogmoterelasjonService = DialogmoterelasjonService(
-        dialogmotedeltakerService = dialogmotedeltakerService,
-        database = database,
     )
 
     val dialogmoteService = DialogmoteService(

@@ -7,13 +7,10 @@ import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.launchBackgroundTask
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.ereg.EregClient
-import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.pdl.PdlClient
-import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.cronjob.dialogmoteOutdated.DialogmoteOutdatedCronjob
 import no.nav.syfo.cronjob.dialogmotesvar.DialogmotesvarProducer
 import no.nav.syfo.cronjob.dialogmotesvar.PublishDialogmotesvarCronjob
@@ -36,7 +33,9 @@ fun Application.cronjobModule(
     database: DatabaseInterface,
     environment: Environment,
     cache: RedisStore,
-    esyfovarselProducer: EsyfovarselProducer,
+    dialogmotestatusService: DialogmotestatusService,
+    dialogmoterelasjonService: DialogmoterelasjonService,
+    arbeidstakerVarselService: ArbeidstakerVarselService,
 ) {
     val azureAdV2Client = AzureAdV2Client(
         aadAppClient = environment.aadAppClient,
@@ -58,33 +57,7 @@ fun Application.cronjobModule(
     val eregClient = EregClient(
         baseUrl = environment.eregUrl,
     )
-    val tokendingsClient = TokendingsClient(
-        tokenxClientId = environment.tokenxClientId,
-        tokenxEndpoint = environment.tokenxEndpoint,
-        tokenxPrivateJWK = environment.tokenxPrivateJWK,
-    )
-    val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
-        azureAdV2Client = azureAdV2Client,
-        tokendingsClient = tokendingsClient,
-        isoppfolgingstilfelleClientId = environment.isoppfolgingstilfelleClientId,
-        isoppfolgingstilfelleBaseUrl = environment.isoppfolgingstilfelleUrl,
-        cache = cache,
-    )
     val pdfService = PdfService(
-        database = database,
-    )
-    val arbeidstakerVarselService = ArbeidstakerVarselService(
-        esyfovarselProducer = esyfovarselProducer,
-    )
-    val dialogmotestatusService = DialogmotestatusService(
-        oppfolgingstilfelleClient = oppfolgingstilfelleClient,
-    )
-    val dialogmotedeltakerService = DialogmotedeltakerService(
-        arbeidstakerVarselService = arbeidstakerVarselService,
-        database = database,
-    )
-    val dialogmoterelasjonService = DialogmoterelasjonService(
-        dialogmotedeltakerService = dialogmotedeltakerService,
         database = database,
     )
     val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(

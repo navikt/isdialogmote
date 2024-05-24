@@ -18,6 +18,7 @@ import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
 import no.nav.syfo.application.isDevGcp
 import no.nav.syfo.application.launchBackgroundTask
+import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
@@ -27,14 +28,24 @@ import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.esyfovarsel.kafkaEsyfovarselConfig
 import no.nav.syfo.client.altinn.createPort
 import no.nav.syfo.client.azuread.AzureAdV2Client
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.pdl.PdlClient
+import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.cronjob.cronjobModule
 import no.nav.syfo.dialogmelding.DialogmeldingService
 import no.nav.syfo.dialogmelding.kafka.DialogmeldingConsumerService
 import no.nav.syfo.dialogmelding.kafka.kafkaDialogmeldingConsumerConfig
+import no.nav.syfo.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.dialogmote.DialogmoterelasjonService
+import no.nav.syfo.dialogmote.DialogmotestatusService
 import no.nav.syfo.identhendelse.IdenthendelseService
 import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
 import no.nav.syfo.identhendelse.kafka.kafkaIdenthendelseConsumerConfig
+import no.nav.syfo.janitor.JanitorService
+import no.nav.syfo.janitor.kafka.JanitorEventConsumer
+import no.nav.syfo.janitor.kafka.JanitorEventStatusProducer
+import no.nav.syfo.janitor.kafka.kafkaJanitorEventConsumerConfig
+import no.nav.syfo.janitor.kafka.kafkaJanitorEventProducerConfig
 import no.nav.syfo.testdata.reset.TestdataResetService
 import no.nav.syfo.testdata.reset.kafka.TestdataResetConsumer
 import no.nav.syfo.testdata.reset.kafka.kafkaTestdataResetConsumerConfig
@@ -76,8 +87,28 @@ fun main() {
     )
 
     val altinnSoapClient = createPort(environment.altinnWsUrl)
+    val azureAdV2Client = AzureAdV2Client(
+        aadAppClient = environment.aadAppClient,
+        aadAppSecret = environment.aadAppSecret,
+        aadTokenEndpoint = environment.aadTokenEndpoint,
+        redisStore = cache,
+    )
+    val tokendingsClient = TokendingsClient(
+        tokenxClientId = environment.tokenxClientId,
+        tokenxEndpoint = environment.tokenxEndpoint,
+        tokenxPrivateJWK = environment.tokenxPrivateJWK,
+    )
+    val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
+        azureAdV2Client = azureAdV2Client,
+        tokendingsClient = tokendingsClient,
+        isoppfolgingstilfelleBaseUrl = environment.isoppfolgingstilfelleUrl,
+        isoppfolgingstilfelleClientId = environment.isoppfolgingstilfelleClientId,
+        cache = cache,
+    )
+    val dialogmotestatusService = DialogmotestatusService(oppfolgingstilfelleClient = oppfolgingstilfelleClient)
 
     lateinit var behandlerVarselService: BehandlerVarselService
+    lateinit var dialogmoterelasjonService: DialogmoterelasjonService
 
     val applicationEngineEnvironment = applicationEngineEnvironment {
         log = logger
@@ -93,24 +124,41 @@ fun main() {
                 database = applicationDatabase,
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer
             )
+            val arbeidstakerVarselService = ArbeidstakerVarselService(
+                esyfovarselProducer = esyfovarselProducer,
+            )
+            val dialogmotedeltakerService = DialogmotedeltakerService(
+                database = applicationDatabase,
+                arbeidstakerVarselService = arbeidstakerVarselService
+            )
+            dialogmoterelasjonService = DialogmoterelasjonService(
+                database = applicationDatabase,
+                dialogmotedeltakerService = dialogmotedeltakerService
+            )
 
             apiModule(
                 applicationState = applicationState,
-                behandlerVarselService = behandlerVarselService,
                 esyfovarselProducer = esyfovarselProducer,
+                behandlerVarselService = behandlerVarselService,
                 database = applicationDatabase,
                 environment = environment,
                 wellKnownSelvbetjening = getWellKnown(environment.tokenxWellKnownUrl),
                 wellKnownVeilederV2 = getWellKnown(environment.azureAppWellKnownUrl),
                 cache = cache,
                 altinnSoapClient = altinnSoapClient,
+                dialogmotestatusService = dialogmotestatusService,
+                dialogmoterelasjonService = dialogmoterelasjonService,
+                dialogmotedeltakerService = dialogmotedeltakerService,
+                arbeidstakerVarselService = arbeidstakerVarselService,
             )
             cronjobModule(
                 applicationState = applicationState,
                 database = applicationDatabase,
                 environment = environment,
                 cache = cache,
-                esyfovarselProducer = esyfovarselProducer,
+                dialogmotestatusService = dialogmotestatusService,
+                dialogmoterelasjonService = dialogmoterelasjonService,
+                arbeidstakerVarselService = arbeidstakerVarselService,
             )
         }
     }
@@ -134,13 +182,6 @@ fun main() {
             logger.info("Starting dialogmelding kafka consumer")
             dialogmeldingConsumerService.startConsumer()
         }
-
-        val azureAdV2Client = AzureAdV2Client(
-            aadAppClient = environment.aadAppClient,
-            aadAppSecret = environment.aadAppSecret,
-            aadTokenEndpoint = environment.aadTokenEndpoint,
-            redisStore = cache,
-        )
         val pdlClient = PdlClient(
             azureAdV2Client = azureAdV2Client,
             pdlClientId = environment.pdlClientId,
@@ -158,6 +199,24 @@ fun main() {
         )
         launchBackgroundTask(applicationState = applicationState) {
             identhendelseConsumerService.startConsumer()
+        }
+
+        val janitorService = JanitorService(
+            database = applicationDatabase,
+            dialogmotestatusService = dialogmotestatusService,
+            dialogmoterelasjonService = dialogmoterelasjonService,
+            janitorEventStatusProducer = JanitorEventStatusProducer(
+                kafkaProducer = KafkaProducer(kafkaJanitorEventProducerConfig(environment.kafka)),
+            ),
+        )
+
+        val janitorEventConsumer = JanitorEventConsumer(
+            kafkaConsumer = KafkaConsumer(kafkaJanitorEventConsumerConfig(environment.kafka)),
+            applicationState = applicationState,
+            janitorService = janitorService,
+        )
+        launchBackgroundTask(applicationState = applicationState) {
+            janitorEventConsumer.startConsumer()
         }
 
         if (environment.isDevGcp()) {
