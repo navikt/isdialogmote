@@ -6,7 +6,6 @@ data class JanitorEventStatusDTO(
 )
 
 enum class JanitorEventStatus {
-    CREATED,
     OK,
     FAILED,
 }
