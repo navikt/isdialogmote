@@ -215,10 +215,8 @@ fun main() {
             applicationState = applicationState,
             janitorService = janitorService,
         )
-        if (environment.isDevGcp()) {
-            launchBackgroundTask(applicationState = applicationState) {
-                janitorEventConsumer.startConsumer()
-            }
+        launchBackgroundTask(applicationState = applicationState) {
+            janitorEventConsumer.startConsumer()
         }
 
         if (environment.isDevGcp()) {
