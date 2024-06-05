@@ -132,4 +132,4 @@ spec:
     - name: OUTDATED_DIALOGMOTE_CUTOFF
       value: "2023-06-01"
     - name: ALTINN_SENDING_ENABLED
-      value: "false"
+      value: "true"
