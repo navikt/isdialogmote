@@ -82,6 +82,7 @@ dependencies {
     // Logging
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
+    implementation("org.json:json:$jsonVersion")
 
     // Metrics and Prometheus
     implementation("io.ktor:ktor-server-metrics-micrometer:$ktorVersion")
