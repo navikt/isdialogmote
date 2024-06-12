@@ -6,28 +6,30 @@ version = "1.0.0"
 
 val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
 val cxfVersion = "3.5.7"
-val confluentVersion = "7.5.1"
+val confluentVersion = "7.6.0"
 val flywayVersion = "9.22.3"
-val hikariVersion = "5.0.1"
+val hikariVersion = "5.1.0"
 val isdialogmoteSchemaVersion = "1.0.5"
-val jacksonDataTypeVersion = "2.16.0"
+val jacksonDataTypeVersion = "2.17.1"
 val jedisVersion = "5.1.0"
-val kafkaVersion = "3.6.0"
-val kafkaEmbeddedVersion = "3.2.3"
-val ktorVersion = "2.3.8"
+val jsonVersion = "20240303"
+val jettyVersion = "9.4.54.v20240208"
+val joseVersion = "0.9.4"
+val kafkaVersion = "3.7.0"
+val kafkaEmbeddedVersion = "3.2.5"
+val ktorVersion = "2.3.11"
 val kluentVersion = "1.73"
 val jaxbApiVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.3.6"
 val jaxsWsApiVersion = "2.3.1"
 val jaxwsToolsVersion = "2.3.5"
-val jettyVersion = "9.4.53.v20231009"
 val logbackVersion = "1.4.14"
 val logstashEncoderVersion = "7.4"
-val micrometerRegistryVersion = "1.12.0"
-val mockkVersion = "1.13.8"
-val nimbusjosejwtVersion = "9.37.2"
+val micrometerRegistryVersion = "1.12.6"
+val mockkVersion = "1.13.9"
+val nimbusjosejwtVersion = "9.39.1"
 val postgresEmbeddedVersion = "2.0.7"
-val postgresVersion = "42.7.2"
+val postgresVersion = "42.7.3"
 val redisEmbeddedVersion = "0.7.3"
 val spekVersion = "2.0.19"
 val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
@@ -80,6 +82,7 @@ dependencies {
     // Logging
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
+    implementation("org.json:json:$jsonVersion")
 
     // Metrics and Prometheus
     implementation("io.ktor:ktor-server-metrics-micrometer:$ktorVersion")
@@ -105,6 +108,14 @@ dependencies {
         exclude(group = "log4j")
     }
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", excludeLog4j)
+    constraints {
+        implementation("org.bitbucket.b_c:jose4j") {
+            because("org.bitbucket.b_c:jose4j:0.9.3 -> https://ossindex.sonatype.org/vulnerability/CVE-2023-51775")
+            version {
+                require("$joseVersion")
+            }
+        }
+    }
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion", excludeLog4j)
     constraints {
         implementation("org.apache.commons:commons-compress") {
