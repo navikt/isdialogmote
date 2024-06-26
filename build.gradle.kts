@@ -5,7 +5,7 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
-val cxfVersion = "3.5.7"
+val cxfVersion = "4.0.4"
 val confluentVersion = "7.6.0"
 val flywayVersion = "9.22.3"
 val hikariVersion = "5.1.0"
