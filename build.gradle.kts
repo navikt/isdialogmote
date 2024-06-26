@@ -16,7 +16,6 @@ val jsonVersion = "20240303"
 val jettyVersion = "9.4.54.v20240208"
 val joseVersion = "0.9.4"
 val kafkaVersion = "3.7.0"
-val kafkaEmbeddedVersion = "3.2.5"
 val ktorVersion = "2.3.11"
 val kluentVersion = "1.73"
 val jaxbApiVersion = "2.3.1"
@@ -191,7 +190,6 @@ dependencies {
             }
         }
     }
-    testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion", excludeLog4j)
 
     implementation("no.nav.tjenestespesifikasjoner:servicemeldingMedKontaktinformasjon-v1-tjenestespesifikasjon:$tjenesteSpesifikasjonerGithubVersion")
 

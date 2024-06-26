@@ -1,7 +1,6 @@
 package no.nav.syfo.testhelper
 
 import io.ktor.server.netty.*
-import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.testhelper.mock.*
 import java.util.*
@@ -9,7 +8,6 @@ import java.util.*
 class ExternalMockEnvironment private constructor() {
     val applicationState: ApplicationState = testAppState()
     val database = TestDatabase()
-    val embeddedEnvironment: KafkaEnvironment = testKafka()
     val azureAdV2Mock = AzureAdV2Mock()
     val tokendingsMock = TokendingsMock()
     val dokarkivMock = DokarkivMock()
@@ -37,7 +35,6 @@ class ExternalMockEnvironment private constructor() {
     )
 
     var environment = testEnvironment(
-        kafkaBootstrapServers = embeddedEnvironment.brokersURL,
         azureTokenEndpoint = azureAdV2Mock.url,
         tokenxEndpoint = tokendingsMock.url,
         dokarkivUrl = dokarkivMock.url,
@@ -70,14 +67,12 @@ class ExternalMockEnvironment private constructor() {
 
 fun ExternalMockEnvironment.startExternalMocks() {
     this.externalApplicationMockMap.start()
-    this.embeddedEnvironment.start()
     this.redisServer.start()
 }
 
 fun ExternalMockEnvironment.stopExternalMocks() {
     this.externalApplicationMockMap.stop()
     this.database.stop()
-    this.embeddedEnvironment.tearDown()
     this.redisServer.stop()
 }
 

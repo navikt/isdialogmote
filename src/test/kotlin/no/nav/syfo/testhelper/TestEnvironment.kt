@@ -8,7 +8,6 @@ import java.net.ServerSocket
 import java.time.LocalDate
 
 fun testEnvironment(
-    kafkaBootstrapServers: String,
     dokarkivUrl: String = "http://dokarkiv",
     azureTokenEndpoint: String = "azureTokenEndpoint",
     tokenxEndpoint: String = "tokenxEndpoint",
@@ -36,7 +35,7 @@ fun testEnvironment(
     eregUrl = eregUrl,
     electorPath = "electorPath",
     kafka = ApplicationEnvironmentKafka(
-        aivenBootstrapServers = kafkaBootstrapServers,
+        aivenBootstrapServers = "kafkaBootstrapServers",
         aivenSchemaRegistryUrl = "http://kafka-schema-registry.tpa.svc.nais.local:8081",
         aivenRegistryUser = "registryuser",
         aivenRegistryPassword = "registrypassword",
