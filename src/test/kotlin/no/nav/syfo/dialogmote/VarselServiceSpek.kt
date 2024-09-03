@@ -1,6 +1,7 @@
 package no.nav.syfo.dialogmote
 
 import io.mockk.*
+import kotlinx.coroutines.DelicateCoroutinesApi
 import java.time.LocalDate
 import java.util.*
 import kotlinx.coroutines.Dispatchers
@@ -75,6 +76,7 @@ object VarselServiceSpek : Spek({
                 true
             )
 
+            @OptIn(DelicateCoroutinesApi::class)
             GlobalScope.launch(Dispatchers.Unbounded) {
                 varselService.sendVarsel(
                     varselType = MotedeltakerVarselType.INNKALT,
@@ -125,6 +127,7 @@ object VarselServiceSpek : Spek({
                 false
             )
 
+            @OptIn(DelicateCoroutinesApi::class)
             GlobalScope.launch(Dispatchers.Unbounded) {
                 varselService.sendVarsel(
                     varselType = MotedeltakerVarselType.INNKALT,
@@ -174,6 +177,7 @@ object VarselServiceSpek : Spek({
                 false
             )
 
+            @OptIn(DelicateCoroutinesApi::class)
             GlobalScope.launch(Dispatchers.Unbounded) {
                 varselService.sendVarsel(
                     varselType = MotedeltakerVarselType.INNKALT,
@@ -220,6 +224,7 @@ object VarselServiceSpek : Spek({
                 false
             )
 
+            @OptIn(DelicateCoroutinesApi::class)
             GlobalScope.launch(Dispatchers.Unbounded) {
                 varselService.sendVarsel(
                     varselType = MotedeltakerVarselType.INNKALT,
