@@ -37,6 +37,9 @@ class DokarkivClient(
                 }
                 val journalpostResponse = response.body<JournalpostResponse>()
                 COUNT_CALL_DOKARKIV_JOURNALPOST_SUCCESS.increment()
+                if (journalpostResponse.journalpostferdigstilt == null || !journalpostResponse.journalpostferdigstilt) {
+                    log.error("Journalpost med id ${journalpostResponse.journalpostId} ble ikke ferdigstilt (status er ${journalpostResponse.journalstatus})")
+                }
                 journalpostResponse
             } catch (e: ClientRequestException) {
                 if (e.response.status == HttpStatusCode.Conflict) {

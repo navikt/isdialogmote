@@ -19,19 +19,19 @@ class EregClient(
     suspend fun organisasjonVirksomhetsnavn(
         virksomhetsnummer: Virksomhetsnummer,
     ): EregVirksomhetsnavn? {
-        try {
+        return try {
             val url = "$eregOrganisasjonUrl/${virksomhetsnummer.value}"
             val response = httpClient.get(url) {
                 accept(ContentType.Application.Json)
             }.body<EregOrganisasjonResponse>()
             COUNT_CALL_EREG_ORGANISASJON_SUCCESS.increment()
-            return response.toEregVirksomhetsnavn()
+            response.toEregVirksomhetsnavn()
         } catch (e: ResponseException) {
             if (e.isOrganisasjonNotFound(virksomhetsnummer)) {
                 log.warn("No Organisasjon was found in Ereg: returning empty Virksomhetsnavn, message=${e.message}")
                 COUNT_CALL_EREG_ORGANISASJON_NOT_FOUND.increment()
-                return EregVirksomhetsnavn(
-                    virksomhetsnavn = "",
+                EregVirksomhetsnavn(
+                    virksomhetsnavn = "Ukjent",
                 )
             } else {
                 log.error(
@@ -40,9 +40,9 @@ class EregClient(
                     StructuredArguments.keyValue("message", e.message),
                 )
                 COUNT_CALL_EREG_ORGANISASJON_FAIL.increment()
+                throw RuntimeException(e)
             }
         }
-        return null
     }
 
     private fun ResponseException.isOrganisasjonNotFound(
