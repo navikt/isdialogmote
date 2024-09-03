@@ -510,6 +510,37 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                         result.updated shouldBeEqualTo 0
                     }
                 }
+                it("should fail to update journalpost if cal to ereg fails") {
+                    val newDialogmoteDTO = generateNewDialogmoteDTO(
+                        personIdent = UserConstants.ARBEIDSTAKER_FNR,
+                        virksomhetsnummer = UserConstants.VIRKSOMHETSNUMMER_EREG_FAILS.value,
+                    )
+
+                    with(
+                        handleRequest(HttpMethod.Post, urlMote) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
+
+                    runBlocking {
+                        val result = DialogmoteCronjobResult()
+                        dialogmoteVarselJournalforingCronjob.dialogmoteArbeidstakerVarselJournalforingJob(result)
+
+                        result.failed shouldBeEqualTo 0
+                        result.updated shouldBeEqualTo 1
+                    }
+                    runBlocking {
+                        val result = DialogmoteCronjobResult()
+                        dialogmoteVarselJournalforingCronjob.dialogmoteArbeidsgiverVarselJournalforingJob(result)
+
+                        result.failed shouldBeEqualTo 1
+                        result.updated shouldBeEqualTo 0
+                    }
+                }
                 it("Check that correct title is generated") {
                     val moteTidspunkt = LocalDateTime.of(2022, Month.JUNE, 20, 0, 0, 0)
                     val referatUtenEndring = createReferat(

@@ -69,7 +69,7 @@ class DialogmoteVarselJournalforingCronjob(
                     journalforingResult.updated++
                 } ?: throw RuntimeException("Failed to Journalfor ArbeidstakerVarsel: response missing JournalpostId")
             } catch (e: Exception) {
-                log.error("Exception caught while attempting Journalforing of ArbeidstakerVarsel", e)
+                log.error("Exception caught while attempting Journalforing of ArbeidstakerVarsel, will try again later", e)
                 journalforingResult.failed++
             }
         }
