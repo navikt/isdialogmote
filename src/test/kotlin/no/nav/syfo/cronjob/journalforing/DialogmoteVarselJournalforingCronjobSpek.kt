@@ -510,7 +510,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                         result.updated shouldBeEqualTo 0
                     }
                 }
-                it("should fail to update journalpost if cal to ereg fails") {
+                it("should fail to update journalpost if call to ereg fails") {
                     val newDialogmoteDTO = generateNewDialogmoteDTO(
                         personIdent = UserConstants.ARBEIDSTAKER_FNR,
                         virksomhetsnummer = UserConstants.VIRKSOMHETSNUMMER_EREG_FAILS.value,
