@@ -215,7 +215,7 @@ kotlin {
 
 tasks {
     jar {
-        manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
+        manifest.attributes["Main-Class"] = "no.nav.syfo.AppKt"
     }
 
     shadowJar {
