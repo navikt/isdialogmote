@@ -8,6 +8,7 @@ import kotlin.coroutines.CoroutineContext
 
 private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.application")
 
+@OptIn(DelicateCoroutinesApi::class)
 fun launchBackgroundTask(
     applicationState: ApplicationState,
     action: suspend CoroutineScope.() -> Unit
