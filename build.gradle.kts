@@ -219,6 +219,7 @@ tasks {
     }
 
     shadowJar {
+        isZip64 = true
         archiveBaseName.set("app")
         archiveClassifier.set("")
         archiveVersion.set("")
