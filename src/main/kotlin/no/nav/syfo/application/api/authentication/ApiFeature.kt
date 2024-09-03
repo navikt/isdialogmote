@@ -21,7 +21,7 @@ import no.nav.syfo.metric.METRICS_REGISTRY
 import no.nav.syfo.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.net.URL
+import java.net.URI
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -43,7 +43,7 @@ fun Application.installJwtAuthentication(
 fun AuthenticationConfig.configureJwt(
     jwtIssuer: JwtIssuer,
 ) {
-    val jwkProviderSelvbetjening = JwkProviderBuilder(URL(jwtIssuer.wellKnown.jwks_uri))
+    val jwkProviderSelvbetjening = JwkProviderBuilder(URI.create(jwtIssuer.wellKnown.jwks_uri).toURL())
         .cached(10, 24, TimeUnit.HOURS)
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
