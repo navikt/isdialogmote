@@ -31,7 +31,7 @@ class Database(
             maximumPoolSize = daoConfig.poolSize
             minimumIdle = 1
             isAutoCommit = false
-            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+            transactionIsolation = "TRANSACTION_READ_COMMITTED"
             metricsTrackerFactory = PrometheusMetricsTrackerFactory(METRICS_REGISTRY.prometheusRegistry)
             validate()
         }
