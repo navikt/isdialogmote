@@ -6,10 +6,10 @@ version = "1.0.0"
 val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
 val cxfVersion = "3.5.7"
 val confluentVersion = "7.6.1"
-val flywayVersion = "9.22.3"
+val flywayVersion = "10.17.3"
 val hikariVersion = "5.1.0"
 val isdialogmoteSchemaVersion = "1.0.5"
-val jacksonDataTypeVersion = "2.17.1"
+val jacksonDataTypeVersion = "2.17.2"
 val jedisVersion = "5.1.3"
 val jsonVersion = "20240303"
 val jettyVersion = "9.4.54.v20240208"
@@ -27,14 +27,14 @@ val micrometerRegistryVersion = "1.12.7"
 val mockkVersion = "1.13.11"
 val nimbusjosejwtVersion = "9.40"
 val postgresEmbeddedVersion = "2.0.7"
-val postgresVersion = "42.7.3"
+val postgresVersion = "42.7.4"
 val redisEmbeddedVersion = "0.7.3"
 val spekVersion = "2.0.19"
 val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
 
 plugins {
-    kotlin("jvm") version "2.0.10"
-    id("com.gradleup.shadow") version "8.3.0"
+    kotlin("jvm") version "2.0.20"
+    id("com.gradleup.shadow") version "8.3.2"
     id("org.jlleitschuh.gradle.ktlint") version "11.4.2"
 }
 
@@ -85,7 +85,7 @@ dependencies {
     // Database
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
-    implementation("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     testImplementation("io.zonky.test:embedded-postgres:$postgresEmbeddedVersion")
 
     // Kafka
@@ -220,6 +220,7 @@ tasks {
 
     shadowJar {
         isZip64 = true
+        mergeServiceFiles()
         archiveBaseName.set("app")
         archiveClassifier.set("")
         archiveVersion.set("")
