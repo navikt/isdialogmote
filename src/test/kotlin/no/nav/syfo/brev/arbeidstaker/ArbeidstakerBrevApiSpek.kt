@@ -27,6 +27,7 @@ import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
 import no.nav.syfo.dialogmote.database.getDialogmote
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
@@ -105,6 +106,7 @@ class ArbeidstakerBrevApiSpek : Spek({
             )
             val dialogmotestatusService = DialogmotestatusService(
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+                moteStatusEndretRepository = MoteStatusEndretRepository(database),
             )
             val dialogmotedeltakerService = DialogmotedeltakerService(
                 arbeidstakerVarselService = arbeidstakerVarselService,

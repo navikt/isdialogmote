@@ -21,7 +21,7 @@ import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
+import no.nav.syfo.dialogmote.database.repository.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR

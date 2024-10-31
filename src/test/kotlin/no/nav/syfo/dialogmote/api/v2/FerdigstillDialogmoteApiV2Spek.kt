@@ -16,7 +16,7 @@ import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.PdfService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
-import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
+import no.nav.syfo.dialogmote.database.repository.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.database.getReferat
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.ExternalMockEnvironment

@@ -1,6 +1,7 @@
 package no.nav.syfo.dialogmote.database
 
 import io.ktor.server.testing.*
+import no.nav.syfo.dialogmote.database.repository.MoteRepository
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.dropData

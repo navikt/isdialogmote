@@ -38,6 +38,7 @@ import no.nav.syfo.dialogmelding.kafka.kafkaDialogmeldingConsumerConfig
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.DialogmoterelasjonService
 import no.nav.syfo.dialogmote.DialogmotestatusService
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.identhendelse.IdenthendelseService
 import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
 import no.nav.syfo.identhendelse.kafka.kafkaIdenthendelseConsumerConfig
@@ -105,10 +106,10 @@ fun main() {
         isoppfolgingstilfelleClientId = environment.isoppfolgingstilfelleClientId,
         cache = cache,
     )
-    val dialogmotestatusService = DialogmotestatusService(oppfolgingstilfelleClient = oppfolgingstilfelleClient)
 
     lateinit var behandlerVarselService: BehandlerVarselService
     lateinit var dialogmoterelasjonService: DialogmoterelasjonService
+    lateinit var dialogmotestatusService: DialogmotestatusService
 
     val applicationEngineEnvironment = applicationEngineEnvironment {
         log = logger
@@ -134,6 +135,13 @@ fun main() {
             dialogmoterelasjonService = DialogmoterelasjonService(
                 database = applicationDatabase,
                 dialogmotedeltakerService = dialogmotedeltakerService
+            )
+            val moteStatusEndretRepository = MoteStatusEndretRepository(
+                database = applicationDatabase,
+            )
+            dialogmotestatusService = DialogmotestatusService(
+                oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+                moteStatusEndretRepository = moteStatusEndretRepository,
             )
 
             apiModule(

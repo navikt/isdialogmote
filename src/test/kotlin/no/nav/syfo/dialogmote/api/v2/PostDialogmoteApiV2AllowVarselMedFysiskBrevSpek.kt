@@ -19,7 +19,7 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
+import no.nav.syfo.dialogmote.database.repository.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*

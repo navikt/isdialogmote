@@ -27,7 +27,7 @@ import no.nav.syfo.dialogmelding.domain.SvarType
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.EndreTidStedBegrunnelseDTO
 import no.nav.syfo.dialogmote.api.domain.EndreTidStedDialogmoteDTO
-import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
+import no.nav.syfo.dialogmote.database.repository.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
