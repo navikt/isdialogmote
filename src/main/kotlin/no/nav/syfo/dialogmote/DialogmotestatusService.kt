@@ -97,7 +97,8 @@ class DialogmotestatusService(
             )
         }
 
-        connection.createMoteStatusEndring(
+        moteStatusEndretRepository.createMoteStatusEndring(
+            connection = connection,
             commit = false,
             moteId = dialogmoteId,
             opprettetAv = opprettetAv,
