@@ -14,6 +14,7 @@ import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.DialogmoterelasjonService
 import no.nav.syfo.dialogmote.DialogmotestatusService
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
 import redis.clients.jedis.Protocol
@@ -51,7 +52,10 @@ fun Application.testApiModule(
         isoppfolgingstilfelleBaseUrl = externalMockEnvironment.environment.isoppfolgingstilfelleUrl,
         cache = cache,
     )
-    val dialogmotestatusService = DialogmotestatusService(oppfolgingstilfelleClient = oppfolgingstilfelleClient)
+    val dialogmotestatusService = DialogmotestatusService(
+        oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+        moteStatusEndretRepository = MoteStatusEndretRepository(externalMockEnvironment.database),
+    )
     val arbeidstakerVarselService = ArbeidstakerVarselService(
         esyfovarselProducer = esyfovarselProducer,
     )

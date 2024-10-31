@@ -7,6 +7,9 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.dialogmote.DialogmoteService
+import no.nav.syfo.dialogmote.DialogmotestatusService
+import no.nav.syfo.dialogmote.api.domain.DialogmoteStatusEndringDTO
+import no.nav.syfo.dialogmote.api.domain.MoteDTO
 import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
 import no.nav.syfo.dialogmote.domain.toDialogmoteDTO
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
@@ -22,6 +25,7 @@ const val dialogmoteApiVeilederIdentUrlPath = "/veilederident"
 fun Route.registerDialogmoteApiV2(
     dialogmoteService: DialogmoteService,
     dialogmoteTilgangService: DialogmoteTilgangService,
+    dialogmotestatusService: DialogmotestatusService,
 ) {
     route(dialogmoteApiV2Basepath) {
         get(dialogmoteApiPersonIdentUrlPath) {
@@ -83,6 +87,40 @@ fun Route.registerDialogmoteApiV2(
                     callId = callId,
                 )
                 call.respond(HttpStatusCode.OK)
+            }
+        }
+
+        get("/personident/motestatusendringer") {
+            val personident = getPersonIdentHeader()?.let { personident ->
+                PersonIdent(personident)
+            } ?: throw IllegalArgumentException("No Personident supplied")
+
+            validateVeilederAccess(
+                dialogmoteTilgangService = dialogmoteTilgangService,
+                personIdentToAccess = personident,
+                action = "GET dialogmote statusendringer for Personident"
+            ) {
+                val dialogmoteStatusEndringer = dialogmotestatusService.getMoteStatusEndringer(personident)
+
+                if (dialogmoteStatusEndringer.isEmpty()) {
+                    call.respond(HttpStatusCode.NoContent)
+                } else {
+                    val response = dialogmoteStatusEndringer.map {
+                        DialogmoteStatusEndringDTO(
+                            uuid = it.first.uuid.toString(),
+                            createdAt = it.first.createdAt,
+                            dialogmote = MoteDTO(
+                                id = it.first.moteId,
+                                tid = it.third.first,
+                                sted = it.third.second,
+                                opprettetAv = it.second,
+                            ),
+                            status = it.first.status,
+                            opprettetAv = it.first.opprettetAv,
+                        )
+                    }
+                    call.respond(response)
+                }
             }
         }
     }

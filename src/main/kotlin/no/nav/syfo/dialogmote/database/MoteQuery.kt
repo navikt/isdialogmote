@@ -5,6 +5,7 @@ import no.nav.syfo.application.database.toList
 import no.nav.syfo.cronjob.statusendring.toInstantOslo
 import no.nav.syfo.dialogmote.database.domain.PDialogmote
 import no.nav.syfo.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
+import no.nav.syfo.dialogmote.database.repository.toPDialogmote
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.dialogmote.domain.NewDialogmote
 import no.nav.syfo.dialogmote.domain.TidStedDTO
