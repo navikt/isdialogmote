@@ -4,7 +4,7 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
-val cxfVersion = "3.5.7"
+val cxfVersion = "3.6.4"
 val confluentVersion = "7.6.1"
 val flywayVersion = "10.17.3"
 val hikariVersion = "5.1.0"
@@ -12,7 +12,7 @@ val isdialogmoteSchemaVersion = "1.0.5"
 val jacksonDataTypeVersion = "2.17.2"
 val jedisVersion = "5.1.3"
 val jsonVersion = "20240303"
-val jettyVersion = "9.4.54.v20240208"
+val jettyVersion = "9.4.56.v20240826"
 val joseVersion = "0.9.4"
 val kafkaVersion = "3.7.0"
 val ktorVersion = "2.3.12"
@@ -172,7 +172,7 @@ dependencies {
         implementation("org.apache.avro:avro") {
             because("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion -> https://nvd.nist.gov/vuln/detail/CVE-2023-39410")
             version {
-                require("1.11.3")
+                require("1.12.0")
             }
         }
     }
