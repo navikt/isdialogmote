@@ -30,7 +30,7 @@ import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteActionsApiV2
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteApiV2
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteEnhetApiV2
-import no.nav.syfo.dialogmote.database.MoteRepository
+import no.nav.syfo.dialogmote.database.repository.MoteRepository
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 
 fun Application.apiModule(
@@ -177,6 +177,7 @@ fun Application.apiModule(
             registerDialogmoteApiV2(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService,
+                dialogmotestatusService = dialogmotestatusService,
             )
             registerDialogmoteActionsApiV2(
                 dialogmoteService = dialogmoteService,
