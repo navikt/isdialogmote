@@ -1,4 +1,4 @@
-package no.nav.syfo.dialogmote.database
+package no.nav.syfo.dialogmote.database.repository
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList

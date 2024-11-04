@@ -36,6 +36,7 @@ import no.nav.syfo.dialogmote.DialogmoterelasjonService
 import no.nav.syfo.dialogmote.DialogmotestatusService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.*
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateAvlysDialogmoteDTO
@@ -92,6 +93,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
             )
             val dialogmotestatusService = DialogmotestatusService(
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+                moteStatusEndretRepository = MoteStatusEndretRepository(database),
             )
             val arbeidstakerVarselService = ArbeidstakerVarselService(
                 esyfovarselProducer = esyfovarselProducerMock,

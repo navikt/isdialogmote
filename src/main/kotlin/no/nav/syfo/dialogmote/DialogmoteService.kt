@@ -12,6 +12,7 @@ import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.dialogmote.api.domain.*
 import no.nav.syfo.dialogmote.database.*
 import no.nav.syfo.dialogmote.database.domain.toReferat
+import no.nav.syfo.dialogmote.database.repository.MoteRepository
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent

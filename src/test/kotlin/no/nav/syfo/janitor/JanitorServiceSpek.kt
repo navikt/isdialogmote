@@ -17,6 +17,7 @@ import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
 import no.nav.syfo.dialogmote.database.getDialogmoteList
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.janitor.kafka.*
@@ -56,7 +57,10 @@ class JanitorServiceSpek : Spek({
             val eventStatusProducerMock = mockk<JanitorEventStatusProducer>(relaxed = true)
             justRun { eventStatusProducerMock.sendEventStatus(any()) }
 
-            val dialogmotestatusService = DialogmotestatusService(oppfolgingstilfelleClient = mockk(relaxed = true))
+            val dialogmotestatusService = DialogmotestatusService(
+                oppfolgingstilfelleClient = mockk(relaxed = true),
+                moteStatusEndretRepository = MoteStatusEndretRepository(database),
+            )
             val dialogmotedeltakerService =
                 DialogmotedeltakerService(database = database, arbeidstakerVarselService = mockk())
             val dialogmoterelasjonService = DialogmoterelasjonService(

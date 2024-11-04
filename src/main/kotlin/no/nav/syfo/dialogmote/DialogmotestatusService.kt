@@ -1,7 +1,9 @@
 package no.nav.syfo.dialogmote
 
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.dialogmote.api.domain.DialogmoteStatusEndringDTO
 import no.nav.syfo.dialogmote.database.createMoteStatusEndring
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.dialogmote.database.updateMoteStatus
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdent
@@ -9,6 +11,7 @@ import java.sql.Connection
 
 class DialogmotestatusService(
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
+    private val moteStatusEndretRepository: MoteStatusEndretRepository,
 ) {
 
     suspend fun updateMoteStatus(
@@ -70,6 +73,9 @@ class DialogmotestatusService(
         callId = callId,
         token = token,
     )
+
+    fun getMoteStatusEndringer(personident: PersonIdent): List<DialogmoteStatusEndringDTO> =
+        moteStatusEndretRepository.getMoteStatusEndringer(personident)
 
     private suspend fun createMoteStatusEndring(
         connection: Connection,
