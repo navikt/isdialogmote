@@ -16,8 +16,8 @@ import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.PdfService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
-import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.database.getReferat
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -49,6 +49,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
 
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
+            val moteStatusEndretRepository = MoteStatusEndretRepository(database)
 
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -160,7 +161,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
                                 pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId!!)
                             pdf shouldBeEqualTo externalMockEnvironment.ispdfgenMock.pdfReferat
 
-                            val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
+                            val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2
 
                             moteStatusEndretList.forEach { moteStatusEndret ->

@@ -1,9 +1,8 @@
 package no.nav.syfo.dialogmote
 
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.dialogmote.api.domain.DialogmoteStatusEndringDTO
-import no.nav.syfo.dialogmote.database.createMoteStatusEndring
 import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.dialogmote.api.domain.DialogmoteStatusEndringDTO
 import no.nav.syfo.dialogmote.database.updateMoteStatus
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdent
@@ -99,7 +98,8 @@ class DialogmotestatusService(
             )
         }
 
-        connection.createMoteStatusEndring(
+        moteStatusEndretRepository.createMoteStatusEndring(
+            connection = connection,
             commit = false,
             moteId = dialogmoteId,
             opprettetAv = opprettetAv,

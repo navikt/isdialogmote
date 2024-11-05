@@ -2,19 +2,30 @@ package no.nav.syfo.cronjob.statusendring
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
-import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.database.domain.*
-import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.dialogmote.database.domain.PDialogmote
+import no.nav.syfo.dialogmote.database.domain.toDialogmoteStatusEndret
+import no.nav.syfo.dialogmote.database.domain.toDialogmoteTidSted
+import no.nav.syfo.dialogmote.database.getDialogmote
+import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidsgiver
+import no.nav.syfo.dialogmote.database.getMoteDeltakerArbeidstaker
+import no.nav.syfo.dialogmote.database.getTidSted
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.dialogmote.domain.DialogmoteStatusEndret
+import no.nav.syfo.dialogmote.domain.DialogmoteTidSted
+import no.nav.syfo.dialogmote.domain.latest
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
-import java.time.*
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 class PublishDialogmoteStatusEndringService(
     private val database: DatabaseInterface,
     private val dialogmoteStatusEndringProducer: DialogmoteStatusEndringProducer,
+    private val moteStatusEndretRepository: MoteStatusEndretRepository,
 ) {
     fun getDialogmoteStatuEndretToPublishList(): List<DialogmoteStatusEndret> {
-        return database.getMoteStatusEndretNotPublished().map {
+        return moteStatusEndretRepository.getMoteStatusEndretNotPublished().map {
             it.toDialogmoteStatusEndret()
         }
     }
@@ -35,7 +46,7 @@ class PublishDialogmoteStatusEndringService(
         )
         dialogmoteStatusEndringProducer.sendDialogmoteStatusEndring(kDialogmoteStatusEndring)
 
-        database.updateMoteStatusEndretPublishedAt(
+        moteStatusEndretRepository.updateMoteStatusEndretPublishedAt(
             moteStatusEndretId = dialogmoteStatusEndret.id,
         )
     }

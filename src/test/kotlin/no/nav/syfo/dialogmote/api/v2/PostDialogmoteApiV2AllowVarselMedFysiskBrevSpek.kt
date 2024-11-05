@@ -19,7 +19,7 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
@@ -49,6 +49,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
 
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
+            val moteStatusEndretRepository = MoteStatusEndretRepository(database)
 
             val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
             val esyfovarselHendelse = generateInkallingHendelse()
@@ -166,7 +167,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
 
-                            val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
+                            val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 1
 
                             moteStatusEndretList.first().status.name shouldBeEqualTo dialogmoteDTO.status

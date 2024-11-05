@@ -22,7 +22,7 @@ import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -62,6 +62,7 @@ class PostDialogmoteApiV2Spek : Spek({
             val database = externalMockEnvironment.database
 
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
+            val moteStatusEndretRepository = MoteStatusEndretRepository(database)
 
             val esyfovarselHendelse = generateInkallingHendelse()
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
@@ -199,7 +200,7 @@ class PostDialogmoteApiV2Spek : Spek({
                             dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
 
-                            val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
+                            val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 1
 
                             moteStatusEndretList.first().status.name shouldBeEqualTo dialogmoteDTO.status
@@ -373,7 +374,7 @@ class PostDialogmoteApiV2Spek : Spek({
                             clearMocks(esyfovarselProducerMock)
                         }
 
-                        val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
+                        val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
                         moteStatusEndretList.size shouldBeEqualTo 1
 
                         moteStatusEndretList.first().status.name shouldBeEqualTo DialogmoteStatus.INNKALT.name

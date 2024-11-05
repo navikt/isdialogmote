@@ -23,6 +23,7 @@ import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.*
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
@@ -44,6 +45,8 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
 
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
+
+            val moteStatusEndretRepository = MoteStatusEndretRepository(database)
 
             val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(dialogmelding = any()) }
@@ -72,6 +75,7 @@ class PublishDialogmoteStatusEndringCronjobSpek : Spek({
             val publishDialogmoteStatusEndringService = PublishDialogmoteStatusEndringService(
                 database = database,
                 dialogmoteStatusEndringProducer = dialogmoteStatusEndringProducer,
+                moteStatusEndretRepository = moteStatusEndretRepository,
             )
 
             val publishDialogmoteStatusEndringCronjob = PublishDialogmoteStatusEndringCronjob(
