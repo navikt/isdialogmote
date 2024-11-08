@@ -18,7 +18,6 @@ import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
 import no.nav.syfo.dialogmote.database.getDialogmoteList
 import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
-import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.janitor.kafka.*
 import no.nav.syfo.testhelper.*
@@ -57,9 +56,10 @@ class JanitorServiceSpek : Spek({
             val eventStatusProducerMock = mockk<JanitorEventStatusProducer>(relaxed = true)
             justRun { eventStatusProducerMock.sendEventStatus(any()) }
 
+            val moteStatusEndretRepository = MoteStatusEndretRepository(database)
             val dialogmotestatusService = DialogmotestatusService(
                 oppfolgingstilfelleClient = mockk(relaxed = true),
-                moteStatusEndretRepository = MoteStatusEndretRepository(database),
+                moteStatusEndretRepository = moteStatusEndretRepository,
             )
             val dialogmotedeltakerService =
                 DialogmotedeltakerService(database = database, arbeidstakerVarselService = mockk())
@@ -128,7 +128,7 @@ class JanitorServiceSpek : Spek({
                     )
                     runBlocking { janitorService.handle(event) }
 
-                    val motestatusList = database.getMoteStatusEndretNotPublished()
+                    val motestatusList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
                     motestatusList.shouldNotBeEmpty()
                     val motestatus = motestatusList.last()
                     motestatus.status shouldBeEqualTo DialogmoteStatus.LUKKET
@@ -225,7 +225,7 @@ class JanitorServiceSpek : Spek({
                         )
                     }
 
-                    database.getMoteStatusEndretNotPublished().shouldBeEmpty()
+                    moteStatusEndretRepository.getMoteStatusEndretNotPublished().shouldBeEmpty()
                     verify(exactly = 0) { eventStatusProducerMock.sendEventStatus(any()) }
                 }
             }

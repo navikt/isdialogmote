@@ -27,7 +27,7 @@ import no.nav.syfo.dialogmelding.domain.SvarType
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.domain.EndreTidStedBegrunnelseDTO
 import no.nav.syfo.dialogmote.api.domain.EndreTidStedDialogmoteDTO
-import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -56,6 +56,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
             val database = externalMockEnvironment.database
             val esyfovarselEndringHendelse = generateEndringHendelse()
+            val moteStatusEndretRepository = MoteStatusEndretRepository(database)
 
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
@@ -222,7 +223,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                             verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
 
-                            val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
+                            val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2
 
                             moteStatusEndretList.forEach { moteStatusEndret ->

@@ -167,6 +167,7 @@ fun main() {
                 dialogmotestatusService = dialogmotestatusService,
                 dialogmoterelasjonService = dialogmoterelasjonService,
                 arbeidstakerVarselService = arbeidstakerVarselService,
+                moteStatusEndretRepository = moteStatusEndretRepository,
             )
         }
     }

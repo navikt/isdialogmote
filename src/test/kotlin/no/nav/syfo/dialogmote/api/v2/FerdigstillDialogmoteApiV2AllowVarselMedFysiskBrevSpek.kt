@@ -14,8 +14,8 @@ import no.nav.syfo.brev.esyfovarsel.HendelseType
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmote.PdfService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.database.getMoteStatusEndretNotPublished
 import no.nav.syfo.dialogmote.database.getReferat
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.dialogmote.domain.DialogmoteStatus
 import no.nav.syfo.dialogmote.domain.DocumentComponentType
 import no.nav.syfo.testhelper.*
@@ -46,6 +46,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.getInstance()
 
             val database = externalMockEnvironment.database
+            val moteStatusEndretRepository = MoteStatusEndretRepository(database)
 
             val esyfovarselHendelse = generateInkallingHendelse()
             val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
@@ -179,7 +180,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
                                 pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId!!)
                             pdf shouldBeEqualTo externalMockEnvironment.ispdfgenMock.pdfReferat
 
-                            val moteStatusEndretList = database.getMoteStatusEndretNotPublished()
+                            val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2
 
                             moteStatusEndretList.forEach { moteStatusEndret ->

@@ -26,6 +26,7 @@ import no.nav.syfo.cronjob.statusendring.kafkaDialogmoteStatusEndringProducerCon
 import no.nav.syfo.dialogmote.*
 import no.nav.syfo.cronjob.dialogmotesvar.KDialogmotesvar
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
+import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import org.apache.kafka.clients.producer.KafkaProducer
 
 fun Application.cronjobModule(
@@ -36,6 +37,7 @@ fun Application.cronjobModule(
     dialogmotestatusService: DialogmotestatusService,
     dialogmoterelasjonService: DialogmoterelasjonService,
     arbeidstakerVarselService: ArbeidstakerVarselService,
+    moteStatusEndretRepository: MoteStatusEndretRepository,
 ) {
     val azureAdV2Client = AzureAdV2Client(
         aadAppClient = environment.aadAppClient,
@@ -96,6 +98,7 @@ fun Application.cronjobModule(
     val publishDialogmoteStatusEndringService = PublishDialogmoteStatusEndringService(
         database = database,
         dialogmoteStatusEndringProducer = dialogmoteStatusEndringProducer,
+        moteStatusEndretRepository = moteStatusEndretRepository,
     )
     val publishDialogmotesvarService = PublishDialogmotesvarService(
         database = database,
