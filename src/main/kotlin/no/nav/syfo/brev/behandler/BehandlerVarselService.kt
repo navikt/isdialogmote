@@ -45,6 +45,7 @@ class BehandlerVarselService(
                 dialogmeldingKode = varseltype.getDialogMeldingKode().value,
                 dialogmeldingTekst = document.serialize(),
                 dialogmeldingVedlegg = pdf,
+                kilde = "SYFO",
             )
         )
     }

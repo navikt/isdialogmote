@@ -11,4 +11,5 @@ data class KafkaBehandlerDialogmeldingDTO(
     val dialogmeldingKode: Int,
     val dialogmeldingTekst: String?,
     val dialogmeldingVedlegg: ByteArray? = null,
+    val kilde: String?,
 )
