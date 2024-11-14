@@ -9,7 +9,6 @@ import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.brev.domain.BrevType
@@ -50,9 +49,6 @@ import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import redis.clients.jedis.JedisPool
-import redis.clients.jedis.JedisPoolConfig
-import redis.clients.jedis.Protocol
 import java.time.LocalDateTime
 import java.util.*
 
@@ -78,15 +74,6 @@ object NarmesteLederBrevSpek : Spek({
                 altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock,
             )
-            val cache = RedisStore(
-                JedisPool(
-                    JedisPoolConfig(),
-                    externalMockEnvironment.environment.redisHost,
-                    externalMockEnvironment.environment.redisPort,
-                    Protocol.DEFAULT_TIMEOUT,
-                    externalMockEnvironment.environment.redisSecret
-                )
-            )
             val tokendingsClient = TokendingsClient(
                 tokenxClientId = externalMockEnvironment.environment.tokenxClientId,
                 tokenxEndpoint = externalMockEnvironment.environment.tokenxEndpoint,
@@ -96,14 +83,14 @@ object NarmesteLederBrevSpek : Spek({
                 aadAppClient = externalMockEnvironment.environment.aadAppClient,
                 aadAppSecret = externalMockEnvironment.environment.aadAppSecret,
                 aadTokenEndpoint = externalMockEnvironment.environment.aadTokenEndpoint,
-                redisStore = cache,
+                redisStore = externalMockEnvironment.redisCache,
             )
             val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
                 azureAdV2Client = azureAdV2Client,
                 tokendingsClient = tokendingsClient,
                 isoppfolgingstilfelleClientId = externalMockEnvironment.environment.isoppfolgingstilfelleClientId,
                 isoppfolgingstilfelleBaseUrl = externalMockEnvironment.environment.isoppfolgingstilfelleUrl,
-                cache = cache,
+                cache = externalMockEnvironment.redisCache,
             )
             val arbeidstakerVarselService = ArbeidstakerVarselService(
                 esyfovarselProducer = esyfovarselProducer,

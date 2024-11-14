@@ -15,9 +15,7 @@ import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.DialogmoterelasjonService
 import no.nav.syfo.dialogmote.DialogmotestatusService
 import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
-import redis.clients.jedis.JedisPool
-import redis.clients.jedis.JedisPoolConfig
-import redis.clients.jedis.Protocol
+import redis.clients.jedis.*
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
@@ -25,15 +23,18 @@ fun Application.testApiModule(
     altinnMock: ICorrespondenceAgencyExternalBasic = mockk(),
     esyfovarselProducer: EsyfovarselProducer = mockk(relaxed = true),
 ) {
+    val redisConfig = externalMockEnvironment.environment.redisConfig
     val cache = RedisStore(
         JedisPool(
             JedisPoolConfig(),
-            externalMockEnvironment.environment.redisHost,
-            externalMockEnvironment.environment.redisPort,
-            Protocol.DEFAULT_TIMEOUT,
-            externalMockEnvironment.environment.redisSecret
+            HostAndPort(redisConfig.host, redisConfig.port),
+            DefaultJedisClientConfig.builder()
+                .ssl(redisConfig.ssl)
+                .password(redisConfig.redisPassword)
+                .build()
         )
     )
+    externalMockEnvironment.redisCache = cache
     val tokendingsClient = TokendingsClient(
         tokenxClientId = externalMockEnvironment.environment.tokenxClientId,
         tokenxEndpoint = externalMockEnvironment.environment.tokenxEndpoint,

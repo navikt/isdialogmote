@@ -53,9 +53,7 @@ import no.nav.syfo.testdata.reset.kafka.kafkaTestdataResetConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
-import redis.clients.jedis.JedisPool
-import redis.clients.jedis.JedisPoolConfig
-import redis.clients.jedis.Protocol
+import redis.clients.jedis.*
 
 const val applicationPort = 8080
 
@@ -76,14 +74,17 @@ fun main() {
             kafkaEsyfovarselConfig(environment.kafka)
         ),
     )
-
+    val redisConfig = environment.redisConfig
     val cache = RedisStore(
         JedisPool(
             JedisPoolConfig(),
-            environment.redisHost,
-            environment.redisPort,
-            Protocol.DEFAULT_TIMEOUT,
-            environment.redisSecret
+            HostAndPort(redisConfig.host, redisConfig.port),
+            DefaultJedisClientConfig.builder()
+                .ssl(redisConfig.ssl)
+                .user(redisConfig.redisUsername)
+                .password(redisConfig.redisPassword)
+                .database(redisConfig.redisDB)
+                .build()
         )
     )
 

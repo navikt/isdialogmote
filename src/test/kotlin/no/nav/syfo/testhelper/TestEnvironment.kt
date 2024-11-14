@@ -4,7 +4,9 @@ import io.ktor.utils.io.core.*
 import no.nav.syfo.application.ApplicationEnvironmentKafka
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
+import no.nav.syfo.application.cache.RedisConfig
 import java.net.ServerSocket
+import java.net.URI
 import java.time.LocalDate
 
 fun testEnvironment(
@@ -44,9 +46,13 @@ fun testEnvironment(
         aivenTruststoreLocation = "truststore",
         aivenKeystoreLocation = "keystore",
     ),
-    redisHost = "localhost",
-    redisPort = 6599,
-    redisSecret = "password",
+    redisConfig = RedisConfig(
+        redisUri = URI("http://localhost:6379"),
+        redisDB = 0,
+        redisUsername = "redisUser",
+        redisPassword = "redisPassword",
+        ssl = false,
+    ),
     isdialogmoteDbHost = "localhost",
     isdialogmoteDbPort = "5432",
     isdialogmoteDbName = "isdialogmote_dev",

@@ -71,7 +71,6 @@ spec:
       rules:
         - application: digdir-krr-proxy
           namespace: team-rocket
-        - application: isdialogmote-redis
         - application: ispdfgen
         - application: isnarmesteleder
         - application: isoppfolgingstilfelle
@@ -85,19 +84,19 @@ spec:
       claims:
         extra:
           - "NAVident"
+  redis:
+    - instance: cache
+      access: readwrite
   tokenx:
     enabled: true
   envFrom:
     - secret: isdialogmote-serviceuser
-    - secret: isdialogmote-redis-password
     - secret: isdialogmote-altinnuser
   kafka:
     pool: nav-dev
   env:
     - name: KTOR_ENV
       value: production
-    - name: REDIS_HOST
-      value: "isdialogmote-redis.teamsykefravr.svc.cluster.local"
     - name: DOKARKIV_CLIENT_ID
       value: "dev-fss.teamdokumenthandtering.dokarkiv-q1"
     - name: DOKARKIV_URL
