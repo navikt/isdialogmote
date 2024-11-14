@@ -28,10 +28,9 @@ fun Application.testApiModule(
     val cache = RedisStore(
         JedisPool(
             JedisPoolConfig(),
-            externalMockEnvironment.environment.redisHost,
-            externalMockEnvironment.environment.redisPort,
+            externalMockEnvironment.environment.redisConfig.host,
+            externalMockEnvironment.environment.redisConfig.port,
             Protocol.DEFAULT_TIMEOUT,
-            externalMockEnvironment.environment.redisSecret
         )
     )
     val tokendingsClient = TokendingsClient(
