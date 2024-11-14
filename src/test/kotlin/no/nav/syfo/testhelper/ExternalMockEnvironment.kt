@@ -4,7 +4,6 @@ import io.ktor.server.netty.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.testhelper.mock.*
-import redis.embedded.RedisServer
 import java.util.*
 
 class ExternalMockEnvironment private constructor() {
