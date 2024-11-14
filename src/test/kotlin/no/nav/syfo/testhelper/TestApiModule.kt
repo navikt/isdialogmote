@@ -31,7 +31,8 @@ fun Application.testApiModule(
             DefaultJedisClientConfig.builder()
                 .ssl(redisConfig.ssl)
                 .password(redisConfig.redisPassword)
-                .build()        )
+                .build()
+        )
     )
     externalMockEnvironment.redisCache = cache
     val tokendingsClient = TokendingsClient(
