@@ -78,14 +78,6 @@ object NarmesteLederBrevSpek : Spek({
                 altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock,
             )
-            val cache = RedisStore(
-                JedisPool(
-                    JedisPoolConfig(),
-                    externalMockEnvironment.environment.redisConfig.host,
-                    externalMockEnvironment.environment.redisConfig.port,
-                    Protocol.DEFAULT_TIMEOUT,
-                )
-            )
             val tokendingsClient = TokendingsClient(
                 tokenxClientId = externalMockEnvironment.environment.tokenxClientId,
                 tokenxEndpoint = externalMockEnvironment.environment.tokenxEndpoint,
@@ -95,14 +87,14 @@ object NarmesteLederBrevSpek : Spek({
                 aadAppClient = externalMockEnvironment.environment.aadAppClient,
                 aadAppSecret = externalMockEnvironment.environment.aadAppSecret,
                 aadTokenEndpoint = externalMockEnvironment.environment.aadTokenEndpoint,
-                redisStore = cache,
+                redisStore = externalMockEnvironment.redisCache,
             )
             val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
                 azureAdV2Client = azureAdV2Client,
                 tokendingsClient = tokendingsClient,
                 isoppfolgingstilfelleClientId = externalMockEnvironment.environment.isoppfolgingstilfelleClientId,
                 isoppfolgingstilfelleBaseUrl = externalMockEnvironment.environment.isoppfolgingstilfelleUrl,
-                cache = cache,
+                cache = externalMockEnvironment.redisCache,
             )
             val arbeidstakerVarselService = ArbeidstakerVarselService(
                 esyfovarselProducer = esyfovarselProducer,

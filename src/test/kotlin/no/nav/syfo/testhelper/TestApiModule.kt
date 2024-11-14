@@ -33,6 +33,7 @@ fun Application.testApiModule(
                 .password(redisConfig.redisPassword)
                 .build()        )
     )
+    externalMockEnvironment.redisCache = cache
     val tokendingsClient = TokendingsClient(
         tokenxClientId = externalMockEnvironment.environment.tokenxClientId,
         tokenxEndpoint = externalMockEnvironment.environment.tokenxEndpoint,
