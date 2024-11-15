@@ -49,6 +49,7 @@ class ExternalMockEnvironment private constructor() {
         pdlUrl = pdlMock.url,
     )
     lateinit var redisCache: RedisStore
+    val redisServer = testRedis(environment)
 
     val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
     val wellKnownVeilederV2 = wellKnownVeilederV2Mock()
@@ -68,11 +69,13 @@ class ExternalMockEnvironment private constructor() {
 
 fun ExternalMockEnvironment.startExternalMocks() {
     this.externalApplicationMockMap.start()
+    this.redisServer.start()
 }
 
 fun ExternalMockEnvironment.stopExternalMocks() {
     this.externalApplicationMockMap.stop()
     this.database.stop()
+    this.redisServer.stop()
 }
 
 fun HashMap<String, NettyApplicationEngine>.start() {

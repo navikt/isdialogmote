@@ -318,6 +318,7 @@ class PostDialogmoteApiV2Spek : Spek({
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingKode shouldBeEqualTo DialogmeldingKode.INNKALLING.value
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent shouldBeEqualTo null
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
+                            kafkaBehandlerDialogmeldingDTO.kilde shouldBeEqualTo "SYFO"
                         }
                     }
 
