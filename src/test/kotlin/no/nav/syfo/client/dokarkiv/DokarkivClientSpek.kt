@@ -17,57 +17,52 @@ import java.util.*
 class DokarkivClientSpek : Spek({
 
     describe("DokarkivClient") {
+        val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
+        val dokarkivMock = DokarkivMock()
+        val dokarkivClient = DokarkivClient(
+            azureAdV2Client = azureAdV2ClientMock,
+            dokarkivClientId = "dokarkivClientId",
+            dokarkivBaseUrl = dokarkivMock.url,
+        )
+        val pdf = byteArrayOf(23)
 
-        with(TestApplicationEngine()) {
-            start()
+        beforeGroup {
+            dokarkivMock.server.start()
+        }
 
-            val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
-            val dokarkivMock = DokarkivMock()
-            val dokarkivClient = DokarkivClient(
-                azureAdV2Client = azureAdV2ClientMock,
-                dokarkivClientId = "dokarkivClientId",
-                dokarkivBaseUrl = dokarkivMock.url,
+        afterGroup {
+            dokarkivMock.server.stop(1L, 10L)
+        }
+
+        it("journalfører referat") {
+            val journalpostRequestReferat = generateJournalpostRequest(
+                tittel = "Referat fra dialogmøte",
+                brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AT,
+                pdf = pdf,
+                kanal = JournalpostKanal.SENTRAL_UTSKRIFT.value,
+                varselId = UUID.randomUUID()
             )
-            val pdf = byteArrayOf(23)
 
-            beforeGroup {
-                dokarkivMock.server.start()
+            runBlocking {
+                val response = dokarkivClient.journalfor(journalpostRequest = journalpostRequestReferat)
+
+                response?.journalpostId shouldBeEqualTo UserConstants.JOURNALPOSTID_JOURNALFORING
             }
+        }
 
-            afterGroup {
-                dokarkivMock.server.stop(1L, 10L)
-            }
+        it("handles conflict from api when eksternRefeanseId exists by returning journalpostid") {
+            val journalpostRequestReferat = generateJournalpostRequest(
+                tittel = "Referat fra dialogmøte",
+                brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AG,
+                pdf = pdf,
+                kanal = JournalpostKanal.SENTRAL_UTSKRIFT.value,
+                varselId = UserConstants.EXISTING_EKSTERN_REFERANSE_UUID,
+            )
 
-            it("journalfører referat") {
-                val journalpostRequestReferat = generateJournalpostRequest(
-                    tittel = "Referat fra dialogmøte",
-                    brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AT,
-                    pdf = pdf,
-                    kanal = JournalpostKanal.SENTRAL_UTSKRIFT.value,
-                    varselId = UUID.randomUUID()
-                )
+            runBlocking {
+                val response = dokarkivClient.journalfor(journalpostRequest = journalpostRequestReferat)
 
-                runBlocking {
-                    val response = dokarkivClient.journalfor(journalpostRequest = journalpostRequestReferat)
-
-                    response?.journalpostId shouldBeEqualTo UserConstants.JOURNALPOSTID_JOURNALFORING
-                }
-            }
-
-            it("handles conflict from api when eksternRefeanseId exists by returning journalpostid") {
-                val journalpostRequestReferat = generateJournalpostRequest(
-                    tittel = "Referat fra dialogmøte",
-                    brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AG,
-                    pdf = pdf,
-                    kanal = JournalpostKanal.SENTRAL_UTSKRIFT.value,
-                    varselId = UserConstants.EXISTING_EKSTERN_REFERANSE_UUID,
-                )
-
-                runBlocking {
-                    val response = dokarkivClient.journalfor(journalpostRequest = journalpostRequestReferat)
-
-                    response?.journalpostId shouldBeEqualTo UserConstants.JOURNALPOSTID_JOURNALFORING
-                }
+                response?.journalpostId shouldBeEqualTo UserConstants.JOURNALPOSTID_JOURNALFORING
             }
         }
     }

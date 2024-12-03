@@ -15,61 +15,58 @@ import java.util.*
 class MoteRepositorySpek : Spek({
 
     describe(MoteRepositorySpek::class.java.simpleName) {
-        with(TestApplicationEngine()) {
-            start()
-            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
-            val database = externalMockEnvironment.database
-            val moteRepository = MoteRepository(database = database)
-            val newDialogmote = generateNewDialogmote(UserConstants.ARBEIDSTAKER_FNR)
-            val newDialogmoteNotBelongingToArbeidstaker = generateNewDialogmote(UserConstants.ARBEIDSTAKER_ANNEN_FNR)
-            val moteTilhorendeArbeidstaker = newDialogmote.arbeidstaker.personIdent
-            val otherArbeidstakerNoMoter = UserConstants.ARBEIDSTAKER_ANNEN_FNR
+        val externalMockEnvironment = ExternalMockEnvironment.getInstance()
+        val database = externalMockEnvironment.database
+        val moteRepository = MoteRepository(database = database)
+        val newDialogmote = generateNewDialogmote(UserConstants.ARBEIDSTAKER_FNR)
+        val newDialogmoteNotBelongingToArbeidstaker = generateNewDialogmote(UserConstants.ARBEIDSTAKER_ANNEN_FNR)
+        val moteTilhorendeArbeidstaker = newDialogmote.arbeidstaker.personIdent
+        val otherArbeidstakerNoMoter = UserConstants.ARBEIDSTAKER_ANNEN_FNR
 
-            afterEachTest {
-                database.dropData()
+        afterEachTest {
+            database.dropData()
+        }
+
+        describe("Get dialogmote with UUID") {
+
+            it("Successfully get mote with uuid") {
+                val createdDialogmote = database.connection.use { connection ->
+                    connection.createNewDialogmoteWithReferences(newDialogmote = newDialogmote)
+                    connection.createNewDialogmoteWithReferences(newDialogmoteNotBelongingToArbeidstaker)
+                }
+
+                val retrievedMote = moteRepository.getMote(createdDialogmote.dialogmoteIdPair.second)
+
+                retrievedMote.size shouldBe 1
+                retrievedMote.first().opprettetAv shouldBeEqualTo newDialogmote.opprettetAv
+                retrievedMote.first().status shouldBeEqualTo newDialogmote.status.name
+                retrievedMote.first().tildeltEnhet shouldBeEqualTo newDialogmote.tildeltEnhet
+                retrievedMote.first().tildeltVeilederIdent shouldBeEqualTo newDialogmote.tildeltVeilederIdent
             }
 
-            describe("Get dialogmote with UUID") {
-
-                it("Successfully get mote with uuid") {
-                    val createdDialogmote = database.connection.use { connection ->
-                        connection.createNewDialogmoteWithReferences(newDialogmote = newDialogmote)
-                        connection.createNewDialogmoteWithReferences(newDialogmoteNotBelongingToArbeidstaker)
-                    }
-
-                    val retrievedMote = moteRepository.getMote(createdDialogmote.dialogmoteIdPair.second)
-
-                    retrievedMote.size shouldBe 1
-                    retrievedMote.first().opprettetAv shouldBeEqualTo newDialogmote.opprettetAv
-                    retrievedMote.first().status shouldBeEqualTo newDialogmote.status.name
-                    retrievedMote.first().tildeltEnhet shouldBeEqualTo newDialogmote.tildeltEnhet
-                    retrievedMote.first().tildeltVeilederIdent shouldBeEqualTo newDialogmote.tildeltVeilederIdent
+            it("Successfully get moter belonging to person with person ident") {
+                database.connection.use { connection ->
+                    connection.createNewDialogmoteWithReferences(newDialogmote = newDialogmote)
+                    connection.createNewDialogmoteWithReferences(newDialogmoteNotBelongingToArbeidstaker)
                 }
 
-                it("Successfully get moter belonging to person with person ident") {
-                    database.connection.use { connection ->
-                        connection.createNewDialogmoteWithReferences(newDialogmote = newDialogmote)
-                        connection.createNewDialogmoteWithReferences(newDialogmoteNotBelongingToArbeidstaker)
-                    }
+                val retrievedMoter = moteRepository.getMoterFor(moteTilhorendeArbeidstaker)
 
-                    val retrievedMoter = moteRepository.getMoterFor(moteTilhorendeArbeidstaker)
+                retrievedMoter.size shouldBe 1
+                retrievedMoter.first().opprettetAv shouldBeEqualTo newDialogmote.opprettetAv
+                retrievedMoter.first().status shouldBeEqualTo newDialogmote.status.name
+                retrievedMoter.first().tildeltEnhet shouldBeEqualTo newDialogmote.tildeltEnhet
+                retrievedMoter.first().tildeltVeilederIdent shouldBeEqualTo newDialogmote.tildeltVeilederIdent
+            }
 
-                    retrievedMoter.size shouldBe 1
-                    retrievedMoter.first().opprettetAv shouldBeEqualTo newDialogmote.opprettetAv
-                    retrievedMoter.first().status shouldBeEqualTo newDialogmote.status.name
-                    retrievedMoter.first().tildeltEnhet shouldBeEqualTo newDialogmote.tildeltEnhet
-                    retrievedMoter.first().tildeltVeilederIdent shouldBeEqualTo newDialogmote.tildeltVeilederIdent
-                }
+            it("Returns empty list when no uuid exists") {
+                val retrievedMote = moteRepository.getMote(UUID.randomUUID())
+                retrievedMote shouldBeEqualTo emptyList()
+            }
 
-                it("Returns empty list when no uuid exists") {
-                    val retrievedMote = moteRepository.getMote(UUID.randomUUID())
-                    retrievedMote shouldBeEqualTo emptyList()
-                }
-
-                it("Returns empty list when person ident does not exist") {
-                    val retrievedMote = moteRepository.getMoterFor(otherArbeidstakerNoMoter)
-                    retrievedMote shouldBeEqualTo emptyList()
-                }
+            it("Returns empty list when person ident does not exist") {
+                val retrievedMote = moteRepository.getMoterFor(otherArbeidstakerNoMoter)
+                retrievedMote shouldBeEqualTo emptyList()
             }
         }
     }

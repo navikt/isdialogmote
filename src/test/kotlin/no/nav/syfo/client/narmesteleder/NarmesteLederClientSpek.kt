@@ -1,6 +1,5 @@
 package no.nav.syfo.client.narmesteleder
 
-import io.ktor.server.testing.TestApplicationEngine
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
@@ -26,91 +25,86 @@ class NarmesteLederClientSpek : Spek({
     val anyCallId = "callId"
 
     describe(NarmesteLederClientSpek::class.java.simpleName) {
-
-        with(TestApplicationEngine()) {
-            start()
-
-            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
-            val azureAdV2ClientMock = mockk<AzureAdV2Client>()
-            val tokendingsClientMock = mockk<TokendingsClient>()
-            val cacheMock = mockk<RedisStore>()
-            val client = NarmesteLederClient(
-                narmesteLederBaseUrl = externalMockEnvironment.environment.narmestelederUrl,
-                narmestelederClientId = externalMockEnvironment.environment.narmestelederClientId,
-                azureAdV2Client = azureAdV2ClientMock,
-                tokendingsClient = tokendingsClientMock,
-                cache = cacheMock,
+        val externalMockEnvironment = ExternalMockEnvironment.getInstance()
+        val azureAdV2ClientMock = mockk<AzureAdV2Client>()
+        val tokendingsClientMock = mockk<TokendingsClient>()
+        val cacheMock = mockk<RedisStore>()
+        val client = NarmesteLederClient(
+            narmesteLederBaseUrl = externalMockEnvironment.environment.narmestelederUrl,
+            narmestelederClientId = externalMockEnvironment.environment.narmestelederClientId,
+            azureAdV2Client = azureAdV2ClientMock,
+            tokendingsClient = tokendingsClientMock,
+            cache = cacheMock,
+        )
+        val cacheKey =
+            "${NarmesteLederClient.CACHE_NARMESTE_LEDER_AKTIVE_ANSATTE_KEY_PREFIX}${NARMESTELEDER_FNR.value}"
+        val cachedValue = listOf(
+            NarmesteLederRelasjonDTO(
+                uuid = UUID.randomUUID().toString(),
+                arbeidstakerPersonIdentNumber = ARBEIDSTAKER_FNR.value,
+                virksomhetsnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
+                virksomhetsnavn = "",
+                narmesteLederPersonIdentNumber = NARMESTELEDER_FNR.value,
+                narmesteLederTelefonnummer = "",
+                narmesteLederEpost = "",
+                aktivFom = LocalDate.now(),
+                aktivTom = null,
+                timestamp = LocalDateTime.now(),
+                narmesteLederNavn = "",
+                arbeidsgiverForskutterer = true,
+                status = NarmesteLederRelasjonStatus.INNMELDT_AKTIV.name,
             )
-            val cacheKey =
-                "${NarmesteLederClient.CACHE_NARMESTE_LEDER_AKTIVE_ANSATTE_KEY_PREFIX}${NARMESTELEDER_FNR.value}"
-            val cachedValue = listOf(
-                NarmesteLederRelasjonDTO(
-                    uuid = UUID.randomUUID().toString(),
-                    arbeidstakerPersonIdentNumber = ARBEIDSTAKER_FNR.value,
-                    virksomhetsnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
-                    virksomhetsnavn = "",
-                    narmesteLederPersonIdentNumber = NARMESTELEDER_FNR.value,
-                    narmesteLederTelefonnummer = "",
-                    narmesteLederEpost = "",
-                    aktivFom = LocalDate.now(),
-                    aktivTom = null,
-                    timestamp = LocalDateTime.now(),
-                    narmesteLederNavn = "",
-                    arbeidsgiverForskutterer = true,
-                    status = NarmesteLederRelasjonStatus.INNMELDT_AKTIV.name,
-                )
-            )
+        )
 
-            coEvery {
-                azureAdV2ClientMock.getSystemToken(externalMockEnvironment.environment.narmestelederClientId)
-            } returns AzureAdV2Token(
-                accessToken = anyToken,
-                expires = LocalDateTime.now().plusDays(1)
-            )
+        coEvery {
+            azureAdV2ClientMock.getSystemToken(externalMockEnvironment.environment.narmestelederClientId)
+        } returns AzureAdV2Token(
+            accessToken = anyToken,
+            expires = LocalDateTime.now().plusDays(1)
+        )
 
-            coEvery {
-                tokendingsClientMock.getOnBehalfOfToken(externalMockEnvironment.environment.narmestelederClientId, anyToken)
-            } returns TokenendingsToken(
-                accessToken = anyToken,
-                expires = LocalDateTime.now().plusDays(1)
-            )
+        coEvery {
+            tokendingsClientMock.getOnBehalfOfToken(externalMockEnvironment.environment.narmestelederClientId, anyToken)
+        } returns TokenendingsToken(
+            accessToken = anyToken,
+            expires = LocalDateTime.now().plusDays(1)
+        )
 
-            beforeEachTest {
-                clearMocks(cacheMock)
+        beforeEachTest {
+            clearMocks(cacheMock)
+        }
+
+        it("aktive ledere returns cached value") {
+            every { cacheMock.mapper } returns mapper
+            every { cacheMock.get(cacheKey) } returns mapper.writeValueAsString(cachedValue)
+
+            runBlocking {
+                client.getAktiveAnsatte(
+                    narmesteLederIdent = NARMESTELEDER_FNR,
+                    tokenx = anyToken,
+                    callId = anyCallId,
+                ).size shouldBeEqualTo 1
             }
+            verify(exactly = 1) { cacheMock.get(cacheKey) }
+            verify(exactly = 0) { cacheMock.setObject(any(), any() as List<NarmesteLederRelasjonDTO>?, any()) }
+        }
 
-            it("aktive ledere returns cached value") {
-                every { cacheMock.mapper } returns mapper
-                every { cacheMock.get(cacheKey) } returns mapper.writeValueAsString(cachedValue)
+        it("aktive ledere when no cached value") {
+            every { cacheMock.mapper } returns mapper
+            every { cacheMock.get(cacheKey) } returns null
+            justRun { cacheMock.setObject(any(), any() as List<NarmesteLederRelasjonDTO>, any()) }
 
+            runBlocking {
                 runBlocking {
                     client.getAktiveAnsatte(
                         narmesteLederIdent = NARMESTELEDER_FNR,
                         tokenx = anyToken,
                         callId = anyCallId,
-                    ).size shouldBeEqualTo 1
+                    ).size shouldBeEqualTo 2
                 }
-                verify(exactly = 1) { cacheMock.get(cacheKey) }
-                verify(exactly = 0) { cacheMock.setObject(any(), any() as List<NarmesteLederRelasjonDTO>?, any()) }
             }
-
-            it("aktive ledere when no cached value") {
-                every { cacheMock.mapper } returns mapper
-                every { cacheMock.get(cacheKey) } returns null
-                justRun { cacheMock.setObject(any(), any() as List<NarmesteLederRelasjonDTO>, any()) }
-
-                runBlocking {
-                    runBlocking {
-                        client.getAktiveAnsatte(
-                            narmesteLederIdent = NARMESTELEDER_FNR,
-                            tokenx = anyToken,
-                            callId = anyCallId,
-                        ).size shouldBeEqualTo 2
-                    }
-                }
-                verify(exactly = 1) { cacheMock.get(cacheKey) }
-                verify(exactly = 1) { cacheMock.setObject(any(), any() as List<NarmesteLederRelasjonDTO>?, any()) }
-            }
+            verify(exactly = 1) { cacheMock.get(cacheKey) }
+            verify(exactly = 1) { cacheMock.setObject(any(), any() as List<NarmesteLederRelasjonDTO>?, any()) }
         }
     }
 })
