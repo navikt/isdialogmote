@@ -17,63 +17,59 @@ object TestdataResetServiceSpek : Spek({
 
     describe(TestdataResetServiceSpek::class.java.simpleName) {
 
-        with(TestApplicationEngine()) {
-            start()
+        val externalMockEnvironment = ExternalMockEnvironment.getInstance()
+        val database = externalMockEnvironment.database
 
-            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
-            val database = externalMockEnvironment.database
+        val testdataResetService = TestdataResetService(
+            database = database,
+        )
 
-            val testdataResetService = TestdataResetService(
-                database = database,
-            )
+        afterEachTest {
+            database.dropData()
+        }
 
-            afterEachTest {
-                database.dropData()
+        describe("Happy path") {
+            it("Skal slette dialogmøte fra database for oppgitt arbeidstaker") {
+                // Populate database with new dialogmote for arbeidstaker
+                val newDialogmote = generateNewDialogmote(personIdent = ARBEIDSTAKER_FNR)
+                database.connection.use { connection ->
+                    connection.createNewDialogmoteWithReferences(
+                        newDialogmote = newDialogmote,
+                        commit = true,
+                    )
+                }
+
+                // Check that arbeidstaker exist in db before update
+                database.getMotedeltakerArbeidstakerByIdent(ARBEIDSTAKER_FNR).size shouldBeEqualTo 1
+
+                runBlocking {
+                    testdataResetService.resetTestdata(ARBEIDSTAKER_FNR)
+                }
+
+                // Check that arbeidstaker do not exist in db after update
+                database.getMotedeltakerArbeidstakerByIdent(ARBEIDSTAKER_FNR).size shouldBeEqualTo 0
             }
 
-            describe("Happy path") {
-                it("Skal slette dialogmøte fra database for oppgitt arbeidstaker") {
-                    // Populate database with new dialogmote for arbeidstaker
-                    val newDialogmote = generateNewDialogmote(personIdent = ARBEIDSTAKER_FNR)
-                    database.connection.use { connection ->
-                        connection.createNewDialogmoteWithReferences(
-                            newDialogmote = newDialogmote,
-                            commit = true,
-                        )
-                    }
-
-                    // Check that arbeidstaker exist in db before update
-                    database.getMotedeltakerArbeidstakerByIdent(ARBEIDSTAKER_FNR).size shouldBeEqualTo 1
-
-                    runBlocking {
-                        testdataResetService.resetTestdata(ARBEIDSTAKER_FNR)
-                    }
-
-                    // Check that arbeidstaker do not exist in db after update
-                    database.getMotedeltakerArbeidstakerByIdent(ARBEIDSTAKER_FNR).size shouldBeEqualTo 0
+            it("Skal ikke slette dialogmøte på annen arbeidstaker") {
+                // Populate database with new dialogmote for arbeidstaker
+                val newDialogmote = generateNewDialogmote(personIdent = ARBEIDSTAKER_FNR)
+                database.connection.use { connection ->
+                    connection.createNewDialogmoteWithReferences(
+                        newDialogmote = newDialogmote,
+                        commit = true,
+                    )
                 }
 
-                it("Skal ikke slette dialogmøte på annen arbeidstaker") {
-                    // Populate database with new dialogmote for arbeidstaker
-                    val newDialogmote = generateNewDialogmote(personIdent = ARBEIDSTAKER_FNR)
-                    database.connection.use { connection ->
-                        connection.createNewDialogmoteWithReferences(
-                            newDialogmote = newDialogmote,
-                            commit = true,
-                        )
-                    }
+                // Check that arbeidstaker exist in db before update
+                database.getMotedeltakerArbeidstakerByIdent(ARBEIDSTAKER_FNR).size shouldBeEqualTo 1
 
-                    // Check that arbeidstaker exist in db before update
-                    database.getMotedeltakerArbeidstakerByIdent(ARBEIDSTAKER_FNR).size shouldBeEqualTo 1
-
-                    // Delete other arbeidstaker
-                    runBlocking {
-                        testdataResetService.resetTestdata(ARBEIDSTAKER_ANNEN_FNR)
-                    }
-
-                    // Check that arbeidstaker still exist in db after update
-                    database.getMotedeltakerArbeidstakerByIdent(ARBEIDSTAKER_FNR).size shouldBeEqualTo 1
+                // Delete other arbeidstaker
+                runBlocking {
+                    testdataResetService.resetTestdata(ARBEIDSTAKER_ANNEN_FNR)
                 }
+
+                // Check that arbeidstaker still exist in db after update
+                database.getMotedeltakerArbeidstakerByIdent(ARBEIDSTAKER_FNR).size shouldBeEqualTo 1
             }
         }
     }

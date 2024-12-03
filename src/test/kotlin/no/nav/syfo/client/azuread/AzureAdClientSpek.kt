@@ -1,6 +1,5 @@
 package no.nav.syfo.client.azuread
 
-import io.ktor.server.testing.TestApplicationEngine
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.justRun
@@ -25,122 +24,117 @@ class AzureAdClientSpek : Spek({
     val anyToken = "anyToken"
 
     describe(AzureAdClientSpek::class.java.simpleName) {
+        val externalMockEnvironment = ExternalMockEnvironment.getInstance()
+        val cacheMock = mockk<RedisStore>()
 
-        with(TestApplicationEngine()) {
-            start()
+        val azureAdClient = AzureAdV2Client(
+            aadAppClient = externalMockEnvironment.environment.aadAppClient,
+            aadAppSecret = externalMockEnvironment.environment.aadAppSecret,
+            aadTokenEndpoint = externalMockEnvironment.environment.aadTokenEndpoint,
+            redisStore = cacheMock,
+        )
+        val systemTokenCacheKey =
+            "${AzureAdV2Client.CACHE_AZUREAD_TOKEN_SYSTEM_KEY_PREFIX}${externalMockEnvironment.environment.pdlClientId}"
+        val cachedToken = AzureAdV2Token(anyToken, LocalDateTime.now().plusHours(1))
+        val cachedTokenString = mapper.writeValueAsString(cachedToken)
 
-            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
-            val cacheMock = mockk<RedisStore>()
+        beforeEachTest {
+            clearMocks(cacheMock)
+        }
 
-            val azureAdClient = AzureAdV2Client(
-                aadAppClient = externalMockEnvironment.environment.aadAppClient,
-                aadAppSecret = externalMockEnvironment.environment.aadAppSecret,
-                aadTokenEndpoint = externalMockEnvironment.environment.aadTokenEndpoint,
-                redisStore = cacheMock,
-            )
-            val systemTokenCacheKey =
-                "${AzureAdV2Client.CACHE_AZUREAD_TOKEN_SYSTEM_KEY_PREFIX}${externalMockEnvironment.environment.pdlClientId}"
-            val cachedToken = AzureAdV2Token(anyToken, LocalDateTime.now().plusHours(1))
-            val cachedTokenString = mapper.writeValueAsString(cachedToken)
+        it("azureAdClient returns cached system token") {
+            every { cacheMock.mapper } returns mapper
+            every { cacheMock.get(systemTokenCacheKey) } returns cachedTokenString
 
-            beforeEachTest {
-                clearMocks(cacheMock)
+            runBlocking {
+                azureAdClient.getSystemToken(
+                    scopeClientId = externalMockEnvironment.environment.pdlClientId,
+                ) shouldBeEqualTo cachedToken
             }
+            verify(exactly = 1) { cacheMock.get(systemTokenCacheKey) }
+            verify(exactly = 0) { cacheMock.set(any(), any(), any()) }
+        }
 
-            it("azureAdClient returns cached system token") {
-                every { cacheMock.mapper } returns mapper
-                every { cacheMock.get(systemTokenCacheKey) } returns cachedTokenString
+        it("azureAdClient returns new token when cached token missing") {
+            every { cacheMock.mapper } returns mapper
+            every { cacheMock.get(systemTokenCacheKey) } returns null
+            justRun { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
 
-                runBlocking {
-                    azureAdClient.getSystemToken(
-                        scopeClientId = externalMockEnvironment.environment.pdlClientId,
-                    ) shouldBeEqualTo cachedToken
-                }
-                verify(exactly = 1) { cacheMock.get(systemTokenCacheKey) }
-                verify(exactly = 0) { cacheMock.set(any(), any(), any()) }
+            runBlocking {
+                azureAdClient.getSystemToken(
+                    scopeClientId = externalMockEnvironment.environment.pdlClientId,
+                )?.accessToken shouldBeEqualTo AZUREAD_TOKEN
             }
+            verify(exactly = 1) { cacheMock.get(systemTokenCacheKey) }
+            verify(exactly = 1) { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
+        }
+        val expiredToken = AzureAdV2Token(anyToken, LocalDateTime.now())
+        val expiredTokenString = mapper.writeValueAsString(expiredToken)
 
-            it("azureAdClient returns new token when cached token missing") {
-                every { cacheMock.mapper } returns mapper
-                every { cacheMock.get(systemTokenCacheKey) } returns null
-                justRun { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
+        it("azureAdClient returns new token when cached token is expired") {
+            every { cacheMock.mapper } returns mapper
+            every { cacheMock.get(systemTokenCacheKey) } returns expiredTokenString
+            justRun { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
 
-                runBlocking {
-                    azureAdClient.getSystemToken(
-                        scopeClientId = externalMockEnvironment.environment.pdlClientId,
-                    )?.accessToken shouldBeEqualTo AZUREAD_TOKEN
-                }
-                verify(exactly = 1) { cacheMock.get(systemTokenCacheKey) }
-                verify(exactly = 1) { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
+            runBlocking {
+                azureAdClient.getSystemToken(
+                    scopeClientId = externalMockEnvironment.environment.pdlClientId,
+                )?.accessToken shouldBeEqualTo AZUREAD_TOKEN
             }
-            val expiredToken = AzureAdV2Token(anyToken, LocalDateTime.now())
-            val expiredTokenString = mapper.writeValueAsString(expiredToken)
+            verify(exactly = 1) { cacheMock.get(systemTokenCacheKey) }
+            verify(exactly = 1) { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
+        }
+        val validToken = generateJWTNavIdent(
+            externalMockEnvironment.environment.aadAppClient,
+            externalMockEnvironment.wellKnownVeilederV2.issuer,
+            VEILEDER_IDENT,
+        )
 
-            it("azureAdClient returns new token when cached token is expired") {
-                every { cacheMock.mapper } returns mapper
-                every { cacheMock.get(systemTokenCacheKey) } returns expiredTokenString
-                justRun { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
+        val scopeClientId = externalMockEnvironment.environment.syfobehandlendeenhetClientId
+        val oboTokenCacheKey = "$VEILEDER_IDENT-$JWT_AZP-$scopeClientId"
 
-                runBlocking {
-                    azureAdClient.getSystemToken(
-                        scopeClientId = externalMockEnvironment.environment.pdlClientId,
-                    )?.accessToken shouldBeEqualTo AZUREAD_TOKEN
-                }
-                verify(exactly = 1) { cacheMock.get(systemTokenCacheKey) }
-                verify(exactly = 1) { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
+        it("azureAdClient returns cached obo token") {
+            every { cacheMock.mapper } returns mapper
+            every { cacheMock.get(oboTokenCacheKey) } returns cachedTokenString
+
+            runBlocking {
+                azureAdClient.getOnBehalfOfToken(
+                    scopeClientId = scopeClientId,
+                    validToken,
+                ) shouldBeEqualTo cachedToken
             }
-            val validToken = generateJWTNavIdent(
-                externalMockEnvironment.environment.aadAppClient,
-                externalMockEnvironment.wellKnownVeilederV2.issuer,
-                VEILEDER_IDENT,
-            )
+            verify(exactly = 1) { cacheMock.get(oboTokenCacheKey) }
+            verify(exactly = 0) { cacheMock.set(any(), any(), any()) }
+        }
 
-            val scopeClientId = externalMockEnvironment.environment.syfobehandlendeenhetClientId
-            val oboTokenCacheKey = "$VEILEDER_IDENT-$JWT_AZP-$scopeClientId"
+        it("azureAdClient returns new obo token when cached token missing") {
+            every { cacheMock.mapper } returns mapper
+            every { cacheMock.get(oboTokenCacheKey) } returns null
+            justRun { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
 
-            it("azureAdClient returns cached obo token") {
-                every { cacheMock.mapper } returns mapper
-                every { cacheMock.get(oboTokenCacheKey) } returns cachedTokenString
-
-                runBlocking {
-                    azureAdClient.getOnBehalfOfToken(
-                        scopeClientId = scopeClientId,
-                        validToken,
-                    ) shouldBeEqualTo cachedToken
-                }
-                verify(exactly = 1) { cacheMock.get(oboTokenCacheKey) }
-                verify(exactly = 0) { cacheMock.set(any(), any(), any()) }
+            runBlocking {
+                azureAdClient.getOnBehalfOfToken(
+                    scopeClientId = scopeClientId,
+                    validToken,
+                )?.accessToken shouldBeEqualTo AZUREAD_TOKEN
             }
+            verify(exactly = 1) { cacheMock.get(oboTokenCacheKey) }
+            verify(exactly = 1) { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
+        }
 
-            it("azureAdClient returns new obo token when cached token missing") {
-                every { cacheMock.mapper } returns mapper
-                every { cacheMock.get(oboTokenCacheKey) } returns null
-                justRun { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
+        it("azureAdClient returns new obo token when cached token is expired") {
+            every { cacheMock.mapper } returns mapper
+            every { cacheMock.get(oboTokenCacheKey) } returns expiredTokenString
+            justRun { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
 
-                runBlocking {
-                    azureAdClient.getOnBehalfOfToken(
-                        scopeClientId = scopeClientId,
-                        validToken,
-                    )?.accessToken shouldBeEqualTo AZUREAD_TOKEN
-                }
-                verify(exactly = 1) { cacheMock.get(oboTokenCacheKey) }
-                verify(exactly = 1) { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
+            runBlocking {
+                azureAdClient.getOnBehalfOfToken(
+                    scopeClientId = scopeClientId,
+                    validToken,
+                )?.accessToken shouldBeEqualTo AZUREAD_TOKEN
             }
-
-            it("azureAdClient returns new obo token when cached token is expired") {
-                every { cacheMock.mapper } returns mapper
-                every { cacheMock.get(oboTokenCacheKey) } returns expiredTokenString
-                justRun { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
-
-                runBlocking {
-                    azureAdClient.getOnBehalfOfToken(
-                        scopeClientId = scopeClientId,
-                        validToken,
-                    )?.accessToken shouldBeEqualTo AZUREAD_TOKEN
-                }
-                verify(exactly = 1) { cacheMock.get(oboTokenCacheKey) }
-                verify(exactly = 1) { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
-            }
+            verify(exactly = 1) { cacheMock.get(oboTokenCacheKey) }
+            verify(exactly = 1) { cacheMock.setObject(any(), any() as AzureAdV2Token, any()) }
         }
     }
 })

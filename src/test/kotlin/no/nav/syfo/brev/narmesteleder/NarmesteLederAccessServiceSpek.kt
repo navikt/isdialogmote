@@ -22,270 +22,266 @@ import java.time.LocalDate
 
 object NarmesteLederAccessServiceSpek : Spek({
     describe(NarmesteLederAccessServiceSpek::class.java.simpleName) {
-        with(TestApplicationEngine()) {
-            start()
+        val anyToken = "any-token"
+        val anyCallId = "any-call-id"
 
-            val anyToken = "any-token"
-            val anyCallId = "any-call-id"
+        val dialogmotedeltakerArbeidsgiver = generateDialogmotedeltakerArbeidsgiver()
+        val dialogmotedeltakerArbeidstaker = generateDialogmotedeltakerArbeidstaker()
+        val dialogmoteList = listOf(generateDialogmote())
 
-            val dialogmotedeltakerArbeidsgiver = generateDialogmotedeltakerArbeidsgiver()
-            val dialogmotedeltakerArbeidstaker = generateDialogmotedeltakerArbeidstaker()
-            val dialogmoteList = listOf(generateDialogmote())
+        val dialogmotedeltakerServiceMock = mockk<DialogmotedeltakerService>()
+        val narmesteLederClientMock = mockk<NarmesteLederClient>()
+        val oppfolgingstilfelleClientMock = mockk<OppfolgingstilfelleClient>()
+        val referatCreated6MonthsPrior = generateReferat(6L)
+        val referatCreated3MonthsPrior = generateReferat(3L)
 
-            val dialogmotedeltakerServiceMock = mockk<DialogmotedeltakerService>()
-            val narmesteLederClientMock = mockk<NarmesteLederClient>()
-            val oppfolgingstilfelleClientMock = mockk<OppfolgingstilfelleClient>()
-            val referatCreated6MonthsPrior = generateReferat(6L)
-            val referatCreated3MonthsPrior = generateReferat(3L)
+        val narmesteLederAccessService = NarmesteLederAccessService(
+            dialogmotedeltakerServiceMock,
+            narmesteLederClientMock,
+            oppfolgingstilfelleClientMock
+        )
 
-            val narmesteLederAccessService = NarmesteLederAccessService(
-                dialogmotedeltakerServiceMock,
-                narmesteLederClientMock,
-                oppfolgingstilfelleClientMock
-            )
+        beforeEachTest {
+            clearMocks(dialogmotedeltakerServiceMock)
+            clearMocks(narmesteLederClientMock)
+            clearMocks(oppfolgingstilfelleClientMock)
 
-            beforeEachTest {
-                clearMocks(dialogmotedeltakerServiceMock)
-                clearMocks(narmesteLederClientMock)
-                clearMocks(oppfolgingstilfelleClientMock)
+            coEvery {
+                dialogmotedeltakerServiceMock.getDialogmoteDeltakerArbeidsgiverById(
+                    any(),
+                )
+            } returns dialogmotedeltakerArbeidsgiver
 
+            coEvery {
+                dialogmotedeltakerServiceMock.getDialogmoteDeltakerArbeidstaker(
+                    any(),
+                )
+            } returns dialogmotedeltakerArbeidstaker
+        }
+
+        describe("removeExpiredBrevInDialogmoter removes brev created before a validity period") {
+            it("when validity period is extended by oppfolgingstilfelle") {
                 coEvery {
-                    dialogmotedeltakerServiceMock.getDialogmoteDeltakerArbeidsgiverById(
+                    oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
                         any(),
+                        any(),
+                        any(),
+                        any(),
+                        any()
                     )
-                } returns dialogmotedeltakerArbeidsgiver
+                } returns listOf(
+                    Oppfolgingstilfelle(
+                        start = LocalDate.now().minusMonths(5),
+                        end = LocalDate.now().minusMonths(2)
+                    ),
+                    Oppfolgingstilfelle(
+                        start = LocalDate.now().minusMonths(6),
+                        end = LocalDate.now().minusMonths(2)
+                    )
+                )
 
-                coEvery {
-                    dialogmotedeltakerServiceMock.getDialogmoteDeltakerArbeidstaker(
-                        any(),
+                val moteList = runBlocking {
+                    narmesteLederAccessService.removeExpiredBrevInDialogmoter(
+                        moteList = dialogmoteList,
+                        narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
+                        arbeidstakerPersonIdentNumber = UserConstants.ARBEIDSTAKER_FNR,
+                        tokenx = anyToken,
+                        callId = anyCallId
                     )
-                } returns dialogmotedeltakerArbeidstaker
+                }
+                val brev = moteList.toNarmesteLederBrevDTOList()
+
+                brev.size shouldBe 4
             }
 
-            describe("removeExpiredBrevInDialogmoter removes brev created before a validity period") {
-                it("when validity period is extended by oppfolgingstilfelle") {
-                    coEvery {
-                        oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
-                            any(),
-                            any(),
-                            any(),
-                            any(),
-                            any()
-                        )
-                    } returns listOf(
-                        Oppfolgingstilfelle(
-                            start = LocalDate.now().minusMonths(5),
-                            end = LocalDate.now().minusMonths(2)
-                        ),
-                        Oppfolgingstilfelle(
-                            start = LocalDate.now().minusMonths(6),
-                            end = LocalDate.now().minusMonths(2)
-                        )
+            it("when oppfolgingstilfelle does not overlap with grace period") {
+                coEvery {
+                    oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any()
                     )
-
-                    val moteList = runBlocking {
-                        narmesteLederAccessService.removeExpiredBrevInDialogmoter(
-                            moteList = dialogmoteList,
-                            narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
-                            arbeidstakerPersonIdentNumber = UserConstants.ARBEIDSTAKER_FNR,
-                            tokenx = anyToken,
-                            callId = anyCallId
-                        )
-                    }
-                    val brev = moteList.toNarmesteLederBrevDTOList()
-
-                    brev.size shouldBe 4
-                }
-
-                it("when oppfolgingstilfelle does not overlap with grace period") {
-                    coEvery {
-                        oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
-                            any(),
-                            any(),
-                            any(),
-                            any(),
-                            any()
-                        )
-                    } returns listOf(
-                        Oppfolgingstilfelle(
-                            start = LocalDate.now().minusMonths(10),
-                            end = LocalDate.now().minusMonths(6)
-                        )
+                } returns listOf(
+                    Oppfolgingstilfelle(
+                        start = LocalDate.now().minusMonths(10),
+                        end = LocalDate.now().minusMonths(6)
                     )
+                )
 
-                    val moteList = runBlocking {
-                        narmesteLederAccessService.removeExpiredBrevInDialogmoter(
-                            moteList = dialogmoteList,
-                            narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
-                            arbeidstakerPersonIdentNumber = UserConstants.ARBEIDSTAKER_FNR,
-                            tokenx = anyToken,
-                            callId = anyCallId
-                        )
-                    }
-                    val brev = moteList.toNarmesteLederBrevDTOList()
-
-                    brev.size shouldBe 2
+                val moteList = runBlocking {
+                    narmesteLederAccessService.removeExpiredBrevInDialogmoter(
+                        moteList = dialogmoteList,
+                        narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
+                        arbeidstakerPersonIdentNumber = UserConstants.ARBEIDSTAKER_FNR,
+                        tokenx = anyToken,
+                        callId = anyCallId
+                    )
                 }
+                val brev = moteList.toNarmesteLederBrevDTOList()
 
-                it("when there is no oppfolgingstilfelle") {
-                    coEvery {
-                        oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
-                            any(),
-                            any(),
-                            any(),
-                            any(),
-                            any()
-                        )
-                    } returns emptyList()
+                brev.size shouldBe 2
+            }
 
-                    val moteList = runBlocking {
-                        narmesteLederAccessService.removeExpiredBrevInDialogmoter(
-                            moteList = dialogmoteList,
-                            narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
-                            arbeidstakerPersonIdentNumber = UserConstants.ARBEIDSTAKER_FNR,
-                            tokenx = anyToken,
-                            callId = anyCallId
-                        )
-                    }
-                    val brev = moteList.toNarmesteLederBrevDTOList()
+            it("when there is no oppfolgingstilfelle") {
+                coEvery {
+                    oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any()
+                    )
+                } returns emptyList()
 
-                    brev.size shouldBe 2
+                val moteList = runBlocking {
+                    narmesteLederAccessService.removeExpiredBrevInDialogmoter(
+                        moteList = dialogmoteList,
+                        narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
+                        arbeidstakerPersonIdentNumber = UserConstants.ARBEIDSTAKER_FNR,
+                        tokenx = anyToken,
+                        callId = anyCallId
+                    )
                 }
+                val brev = moteList.toNarmesteLederBrevDTOList()
 
-                it("when oppfolgingstilfelle client fails") {
-                    coEvery {
-                        oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
-                            any(),
-                            any(),
-                            any(),
-                            any(),
-                            any()
-                        )
-                    } returns null
+                brev.size shouldBe 2
+            }
 
-                    val moteList = runBlocking {
-                        narmesteLederAccessService.removeExpiredBrevInDialogmoter(
-                            moteList = dialogmoteList,
-                            narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
-                            arbeidstakerPersonIdentNumber = UserConstants.ARBEIDSTAKER_FNR,
-                            tokenx = anyToken,
-                            callId = anyCallId
-                        )
-                    }
-                    val brev = moteList.toNarmesteLederBrevDTOList()
+            it("when oppfolgingstilfelle client fails") {
+                coEvery {
+                    oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any()
+                    )
+                } returns null
 
-                    brev.size shouldBe 2
+                val moteList = runBlocking {
+                    narmesteLederAccessService.removeExpiredBrevInDialogmoter(
+                        moteList = dialogmoteList,
+                        narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
+                        arbeidstakerPersonIdentNumber = UserConstants.ARBEIDSTAKER_FNR,
+                        tokenx = anyToken,
+                        callId = anyCallId
+                    )
                 }
+                val brev = moteList.toNarmesteLederBrevDTOList()
 
-                describe("isBrevExpired") {
-                    describe("returns false when brev is created in a validity period") {
-                        it("and validity period is extended by oppfolgingstilfelle") {
-                            coEvery {
-                                oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
-                                    any(),
-                                    any(),
-                                    any(),
-                                    any(),
-                                    any()
-                                )
-                            } returns listOf(
-                                Oppfolgingstilfelle(
-                                    start = LocalDate.now().minusMonths(5),
-                                    end = LocalDate.now().minusMonths(2)
-                                ),
-                                Oppfolgingstilfelle(
-                                    start = LocalDate.now().minusMonths(6),
-                                    end = LocalDate.now().minusMonths(2)
-                                )
+                brev.size shouldBe 2
+            }
+
+            describe("isBrevExpired") {
+                describe("returns false when brev is created in a validity period") {
+                    it("and validity period is extended by oppfolgingstilfelle") {
+                        coEvery {
+                            oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any()
                             )
+                        } returns listOf(
+                            Oppfolgingstilfelle(
+                                start = LocalDate.now().minusMonths(5),
+                                end = LocalDate.now().minusMonths(2)
+                            ),
+                            Oppfolgingstilfelle(
+                                start = LocalDate.now().minusMonths(6),
+                                end = LocalDate.now().minusMonths(2)
+                            )
+                        )
 
-                            val isBrevExpired = runBlocking {
-                                narmesteLederAccessService.isBrevExpired(
-                                    brev = referatCreated6MonthsPrior,
-                                    narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
-                                    tokenx = anyToken,
-                                    callId = anyCallId
-                                )
-                            }
-
-                            isBrevExpired shouldBe false
+                        val isBrevExpired = runBlocking {
+                            narmesteLederAccessService.isBrevExpired(
+                                brev = referatCreated6MonthsPrior,
+                                narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
+                                tokenx = anyToken,
+                                callId = anyCallId
+                            )
                         }
 
-                        it("when there is no oppfolgingstilfelle") {
-                            coEvery {
-                                oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
-                                    any(),
-                                    any(),
-                                    any(),
-                                    any(),
-                                    any()
-                                )
-                            } returns emptyList()
-
-                            val isBrevExpired = runBlocking {
-                                narmesteLederAccessService.isBrevExpired(
-                                    brev = referatCreated3MonthsPrior,
-                                    narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
-                                    tokenx = anyToken,
-                                    callId = anyCallId
-                                )
-                            }
-
-                            isBrevExpired shouldBe false
-                        }
+                        isBrevExpired shouldBe false
                     }
 
-                    describe("returns true when brev is created before a validity period") {
-                        it("when there is no oppfolgingstilfelle") {
-                            coEvery {
-                                oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
-                                    any(),
-                                    any(),
-                                    any(),
-                                    any(),
-                                    any()
-                                )
-                            } returns emptyList()
-
-                            val isBrevExpired = runBlocking {
-                                narmesteLederAccessService.isBrevExpired(
-                                    brev = referatCreated6MonthsPrior,
-                                    narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
-                                    tokenx = anyToken,
-                                    callId = anyCallId
-                                )
-                            }
-
-                            isBrevExpired shouldBe true
-                        }
-
-                        it("when oppfolgingstilfelle ended before grace period") {
-                            coEvery {
-                                oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
-                                    any(),
-                                    any(),
-                                    any(),
-                                    any(),
-                                    any()
-                                )
-                            } returns listOf(
-                                Oppfolgingstilfelle(
-                                    start = LocalDate.now().minusMonths(10),
-                                    end = LocalDate.now().minusMonths(6)
-                                )
+                    it("when there is no oppfolgingstilfelle") {
+                        coEvery {
+                            oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any()
                             )
+                        } returns emptyList()
 
-                            val isBrevExpired = runBlocking {
-                                narmesteLederAccessService.isBrevExpired(
-                                    brev = referatCreated6MonthsPrior,
-                                    narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
-                                    tokenx = anyToken,
-                                    callId = anyCallId
-                                )
-                            }
-
-                            isBrevExpired shouldBe true
+                        val isBrevExpired = runBlocking {
+                            narmesteLederAccessService.isBrevExpired(
+                                brev = referatCreated3MonthsPrior,
+                                narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
+                                tokenx = anyToken,
+                                callId = anyCallId
+                            )
                         }
+
+                        isBrevExpired shouldBe false
+                    }
+                }
+
+                describe("returns true when brev is created before a validity period") {
+                    it("when there is no oppfolgingstilfelle") {
+                        coEvery {
+                            oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any()
+                            )
+                        } returns emptyList()
+
+                        val isBrevExpired = runBlocking {
+                            narmesteLederAccessService.isBrevExpired(
+                                brev = referatCreated6MonthsPrior,
+                                narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
+                                tokenx = anyToken,
+                                callId = anyCallId
+                            )
+                        }
+
+                        isBrevExpired shouldBe true
+                    }
+
+                    it("when oppfolgingstilfelle ended before grace period") {
+                        coEvery {
+                            oppfolgingstilfelleClientMock.oppfolgingstilfelleTokenx(
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any()
+                            )
+                        } returns listOf(
+                            Oppfolgingstilfelle(
+                                start = LocalDate.now().minusMonths(10),
+                                end = LocalDate.now().minusMonths(6)
+                            )
+                        )
+
+                        val isBrevExpired = runBlocking {
+                            narmesteLederAccessService.isBrevExpired(
+                                brev = referatCreated6MonthsPrior,
+                                narmesteLederPersonIdentNumber = UserConstants.NARMESTELEDER_FNR,
+                                tokenx = anyToken,
+                                callId = anyCallId
+                            )
+                        }
+
+                        isBrevExpired shouldBe true
                     }
                 }
             }
