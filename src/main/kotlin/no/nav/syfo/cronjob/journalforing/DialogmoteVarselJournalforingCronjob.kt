@@ -2,6 +2,7 @@ package no.nav.syfo.cronjob.journalforing
 
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.dokarkiv.DokarkivClient
+import no.nav.syfo.client.dokarkiv.domain.JournalpostRequest
 import no.nav.syfo.client.ereg.EregClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL
@@ -19,6 +20,7 @@ class DialogmoteVarselJournalforingCronjob(
     private val dokarkivClient: DokarkivClient,
     private val pdlClient: PdlClient,
     private val eregClient: EregClient,
+    private val isJournalforingRetryEnabled: Boolean,
 ) : DialogmoteCronjob {
 
     override val initialDelayMinutes: Long = 2
@@ -53,13 +55,12 @@ class DialogmoteVarselJournalforingCronjob(
             try {
                 val navn = pdlClient.navn(personIdent)
                 val pdf = pdfService.getPdf(arbeidstakerVarsel.pdfId)
-                val journalpostId = dokarkivClient.journalfor(
-                    journalpostRequest = arbeidstakerVarsel.toJournalpostRequest(
-                        personIdent = personIdent,
-                        navn = navn,
-                        pdf = pdf,
-                    ),
-                )?.journalpostId
+                val journalpostRequest = arbeidstakerVarsel.toJournalpostRequest(
+                    personIdent = personIdent,
+                    navn = navn,
+                    pdf = pdf,
+                )
+                val journalpostId = journalfor(journalpostRequest)
 
                 journalpostId?.let { it ->
                     dialogmotedeltakerVarselJournalpostService.updateArbeidstakerVarselJournalpostId(
@@ -84,14 +85,13 @@ class DialogmoteVarselJournalforingCronjob(
             try {
                 val virksomhetsnavn = eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer)
                 val pdf = pdfService.getPdf(arbeidsgiverVarsel.pdfId)
-                val journalpostId = dokarkivClient.journalfor(
-                    journalpostRequest = arbeidsgiverVarsel.toJournalpostRequest(
-                        brukerPersonIdent = personIdent,
-                        virksomhetsnummer = virksomhetsnummer,
-                        virksomhetsnavn = virksomhetsnavn?.virksomhetsnavn ?: "",
-                        pdf = pdf,
-                    ),
-                )?.journalpostId
+                val journalpostRequest = arbeidsgiverVarsel.toJournalpostRequest(
+                    brukerPersonIdent = personIdent,
+                    virksomhetsnummer = virksomhetsnummer,
+                    virksomhetsnavn = virksomhetsnavn?.virksomhetsnavn ?: "",
+                    pdf = pdf,
+                )
+                val journalpostId = journalfor(journalpostRequest)
 
                 journalpostId?.let { it ->
                     dialogmotedeltakerVarselJournalpostService.updateArbeidsgiverVarselJournalpostId(
@@ -115,15 +115,13 @@ class DialogmoteVarselJournalforingCronjob(
         behandlerVarselForJournalforingList.forEach { (personIdent, behandler, behandlerVarsel) ->
             try {
                 val pdf = pdfService.getPdf(behandlerVarsel.pdfId)
-                val journalpostId = dokarkivClient.journalfor(
-                    journalpostRequest = behandlerVarsel.toJournalpostRequest(
-                        brukerPersonIdent = personIdent,
-                        behandlerPersonIdent = behandler.personIdent,
-                        behandlerNavn = behandler.behandlerNavn,
-                        pdf = pdf,
-                    ),
-                )?.journalpostId
-
+                val journalpostRequest = behandlerVarsel.toJournalpostRequest(
+                    brukerPersonIdent = personIdent,
+                    behandlerPersonIdent = behandler.personIdent,
+                    behandlerNavn = behandler.behandlerNavn,
+                    pdf = pdf,
+                )
+                val journalpostId = journalfor(journalpostRequest)
                 journalpostId?.let { it ->
                     dialogmotedeltakerVarselJournalpostService.updateBehandlerVarselJournalpostId(
                         behandlerVarsel,
@@ -154,7 +152,7 @@ class DialogmoteVarselJournalforingCronjob(
                     moteTidspunkt = moteTidspunkt,
                 )
                 log.info("Journalfør referat to arbeidstaker with uuid ${referat.uuid} and eksternReferanseId: ${journalpostRequest.eksternReferanseId}")
-                val journalpostId = dokarkivClient.journalfor(journalpostRequest)?.journalpostId
+                val journalpostId = journalfor(journalpostRequest)
 
                 journalpostId?.let { it ->
                     referatJournalpostService.updateJournalpostIdArbeidstakerForReferat(
@@ -187,7 +185,7 @@ class DialogmoteVarselJournalforingCronjob(
                     moteTidspunkt = moteTidspunkt,
                 )
                 log.info("Journalfør referat to arbeidsgiver with uuid ${referat.uuid} and eksternReferanseId: ${journalpostRequest.eksternReferanseId}")
-                val journalpostId = dokarkivClient.journalfor(journalpostRequest)?.journalpostId
+                val journalpostId = journalfor(journalpostRequest)
 
                 journalpostId?.let { it ->
                     referatJournalpostService.updateJournalpostIdArbeidsgiverForReferat(
@@ -219,7 +217,7 @@ class DialogmoteVarselJournalforingCronjob(
                     moteTidspunkt = moteTidspunkt,
                 )
                 log.info("Journalfør referat to behandler with uuid ${referat.uuid} and eksternReferanseId: ${journalpostRequest.eksternReferanseId}")
-                val journalpostId = dokarkivClient.journalfor(journalpostRequest)?.journalpostId
+                val journalpostId = journalfor(journalpostRequest)
 
                 journalpostId?.let { it ->
                     referatJournalpostService.updateJournalpostIdBehandlerForReferat(
@@ -235,7 +233,23 @@ class DialogmoteVarselJournalforingCronjob(
         }
     }
 
+    private suspend fun journalfor(journalpostRequest: JournalpostRequest) =
+        try {
+            dokarkivClient.journalfor(journalpostRequest)?.journalpostId
+        } catch (exc: Exception) {
+            if (isJournalforingRetryEnabled) {
+                throw exc
+            } else {
+                log.error("Journalføring failed, skipping retry (should only happen in dev-gcp)", exc)
+                // Defaulting'en til DEFAULT_FAILED_JP_ID skal bare forekomme i dev-gcp:
+                // Har dette fordi vi ellers spammer ned dokarkiv med forsøk på å journalføre
+                // på personer som mangler aktør-id.
+                DEFAULT_FAILED_JP_ID
+            }
+        }
+
     companion object {
+        private const val DEFAULT_FAILED_JP_ID = 0
         private val log = LoggerFactory.getLogger(DialogmoteVarselJournalforingCronjob::class.java)
     }
 }
