@@ -75,6 +75,7 @@ fun testEnvironment(
     altinnPassword = "password",
     altinnSendingEnabled = true,
     outdatedDialogmoteCutoff = LocalDate.parse("2022-07-01"),
+    isJournalforingRetryEnabled = true,
 )
 
 fun testAppState() = ApplicationState(

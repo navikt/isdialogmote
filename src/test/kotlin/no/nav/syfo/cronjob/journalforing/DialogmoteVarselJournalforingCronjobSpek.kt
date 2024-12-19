@@ -113,6 +113,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                 dokarkivClient = dokarkivClient,
                 pdlClient = pdlClient,
                 eregClient = eregClient,
+                isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
             )
 
             beforeEachTest {

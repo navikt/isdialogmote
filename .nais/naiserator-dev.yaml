@@ -97,6 +97,8 @@ spec:
   env:
     - name: KTOR_ENV
       value: production
+    - name: JOURNALFORING_RETRY_ENABLED
+      value: "false"
     - name: DOKARKIV_CLIENT_ID
       value: "dev-fss.teamdokumenthandtering.dokarkiv-q1"
     - name: DOKARKIV_URL

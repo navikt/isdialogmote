@@ -2,6 +2,7 @@ package no.nav.syfo.cronjob.journalforing
 
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.dokarkiv.DokarkivClient
+import no.nav.syfo.client.dokarkiv.domain.JournalpostRequest
 import no.nav.syfo.client.ereg.EregClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_FAIL
@@ -19,6 +20,7 @@ class DialogmoteVarselJournalforingCronjob(
     private val dokarkivClient: DokarkivClient,
     private val pdlClient: PdlClient,
     private val eregClient: EregClient,
+    private val isJournalforingRetryEnabled: Boolean,
 ) : DialogmoteCronjob {
 
     override val initialDelayMinutes: Long = 2
@@ -53,21 +55,17 @@ class DialogmoteVarselJournalforingCronjob(
             try {
                 val navn = pdlClient.navn(personIdent)
                 val pdf = pdfService.getPdf(arbeidstakerVarsel.pdfId)
-                val journalpostId = dokarkivClient.journalfor(
-                    journalpostRequest = arbeidstakerVarsel.toJournalpostRequest(
-                        personIdent = personIdent,
-                        navn = navn,
-                        pdf = pdf,
-                    ),
-                )?.journalpostId
-
-                journalpostId?.let { it ->
-                    dialogmotedeltakerVarselJournalpostService.updateArbeidstakerVarselJournalpostId(
-                        arbeidstakerVarsel,
-                        it,
-                    )
-                    journalforingResult.updated++
-                } ?: throw RuntimeException("Failed to Journalfor ArbeidstakerVarsel: response missing JournalpostId")
+                val journalpostRequest = arbeidstakerVarsel.toJournalpostRequest(
+                    personIdent = personIdent,
+                    navn = navn,
+                    pdf = pdf,
+                )
+                val journalpostId = journalfor(journalpostRequest)
+                dialogmotedeltakerVarselJournalpostService.updateArbeidstakerVarselJournalpostId(
+                    arbeidstakerVarsel,
+                    journalpostId,
+                )
+                journalforingResult.updated++
             } catch (e: Exception) {
                 log.error("Exception caught while attempting Journalforing of ArbeidstakerVarsel, will try again later", e)
                 journalforingResult.failed++
@@ -84,22 +82,18 @@ class DialogmoteVarselJournalforingCronjob(
             try {
                 val virksomhetsnavn = eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer)
                 val pdf = pdfService.getPdf(arbeidsgiverVarsel.pdfId)
-                val journalpostId = dokarkivClient.journalfor(
-                    journalpostRequest = arbeidsgiverVarsel.toJournalpostRequest(
-                        brukerPersonIdent = personIdent,
-                        virksomhetsnummer = virksomhetsnummer,
-                        virksomhetsnavn = virksomhetsnavn?.virksomhetsnavn ?: "",
-                        pdf = pdf,
-                    ),
-                )?.journalpostId
-
-                journalpostId?.let { it ->
-                    dialogmotedeltakerVarselJournalpostService.updateArbeidsgiverVarselJournalpostId(
-                        arbeidsgiverVarsel,
-                        it,
-                    )
-                    journalforingResult.updated++
-                } ?: throw RuntimeException("Failed to Journalfor ArbeidsgiverVarsel: response missing JournalpostId")
+                val journalpostRequest = arbeidsgiverVarsel.toJournalpostRequest(
+                    brukerPersonIdent = personIdent,
+                    virksomhetsnummer = virksomhetsnummer,
+                    virksomhetsnavn = virksomhetsnavn?.virksomhetsnavn ?: "",
+                    pdf = pdf,
+                )
+                val journalpostId = journalfor(journalpostRequest)
+                dialogmotedeltakerVarselJournalpostService.updateArbeidsgiverVarselJournalpostId(
+                    arbeidsgiverVarsel,
+                    journalpostId,
+                )
+                journalforingResult.updated++
             } catch (e: Exception) {
                 log.error("Exception caught while attempting Journalforing of ArbeidsgiverVarsel", e)
                 journalforingResult.failed++
@@ -115,22 +109,18 @@ class DialogmoteVarselJournalforingCronjob(
         behandlerVarselForJournalforingList.forEach { (personIdent, behandler, behandlerVarsel) ->
             try {
                 val pdf = pdfService.getPdf(behandlerVarsel.pdfId)
-                val journalpostId = dokarkivClient.journalfor(
-                    journalpostRequest = behandlerVarsel.toJournalpostRequest(
-                        brukerPersonIdent = personIdent,
-                        behandlerPersonIdent = behandler.personIdent,
-                        behandlerNavn = behandler.behandlerNavn,
-                        pdf = pdf,
-                    ),
-                )?.journalpostId
-
-                journalpostId?.let { it ->
-                    dialogmotedeltakerVarselJournalpostService.updateBehandlerVarselJournalpostId(
-                        behandlerVarsel,
-                        it,
-                    )
-                    journalforingResult.updated++
-                } ?: throw RuntimeException("Failed to Journalfor BehandlerVarsel: response missing JournalpostId")
+                val journalpostRequest = behandlerVarsel.toJournalpostRequest(
+                    brukerPersonIdent = personIdent,
+                    behandlerPersonIdent = behandler.personIdent,
+                    behandlerNavn = behandler.behandlerNavn,
+                    pdf = pdf,
+                )
+                val journalpostId = journalfor(journalpostRequest)
+                dialogmotedeltakerVarselJournalpostService.updateBehandlerVarselJournalpostId(
+                    behandlerVarsel,
+                    journalpostId,
+                )
+                journalforingResult.updated++
             } catch (e: Exception) {
                 log.error("Exception caught while attempting Journalforing of BehandlerVarsel", e)
                 journalforingResult.failed++
@@ -154,15 +144,12 @@ class DialogmoteVarselJournalforingCronjob(
                     moteTidspunkt = moteTidspunkt,
                 )
                 log.info("Journalfør referat to arbeidstaker with uuid ${referat.uuid} and eksternReferanseId: ${journalpostRequest.eksternReferanseId}")
-                val journalpostId = dokarkivClient.journalfor(journalpostRequest)?.journalpostId
-
-                journalpostId?.let { it ->
-                    referatJournalpostService.updateJournalpostIdArbeidstakerForReferat(
-                        referat,
-                        it,
-                    )
-                    journalforingResult.updated++
-                } ?: throw RuntimeException("Failed to Journalfor Referat: response missing JournalpostId")
+                val journalpostId = journalfor(journalpostRequest)
+                referatJournalpostService.updateJournalpostIdArbeidstakerForReferat(
+                    referat,
+                    journalpostId,
+                )
+                journalforingResult.updated++
             } catch (e: Exception) {
                 log.error("Exception caught while attempting Journalforing of Referat", e)
                 journalforingResult.failed++
@@ -187,15 +174,12 @@ class DialogmoteVarselJournalforingCronjob(
                     moteTidspunkt = moteTidspunkt,
                 )
                 log.info("Journalfør referat to arbeidsgiver with uuid ${referat.uuid} and eksternReferanseId: ${journalpostRequest.eksternReferanseId}")
-                val journalpostId = dokarkivClient.journalfor(journalpostRequest)?.journalpostId
-
-                journalpostId?.let { it ->
-                    referatJournalpostService.updateJournalpostIdArbeidsgiverForReferat(
-                        referat,
-                        it,
-                    )
-                    journalforingResult.updated++
-                } ?: throw RuntimeException("Failed to Journalfor Referat: response missing JournalpostId")
+                val journalpostId = journalfor(journalpostRequest)
+                referatJournalpostService.updateJournalpostIdArbeidsgiverForReferat(
+                    referat,
+                    journalpostId,
+                )
+                journalforingResult.updated++
             } catch (e: Exception) {
                 log.error("Exception caught while attempting Journalforing of Referat", e)
                 journalforingResult.failed++
@@ -219,15 +203,12 @@ class DialogmoteVarselJournalforingCronjob(
                     moteTidspunkt = moteTidspunkt,
                 )
                 log.info("Journalfør referat to behandler with uuid ${referat.uuid} and eksternReferanseId: ${journalpostRequest.eksternReferanseId}")
-                val journalpostId = dokarkivClient.journalfor(journalpostRequest)?.journalpostId
-
-                journalpostId?.let { it ->
-                    referatJournalpostService.updateJournalpostIdBehandlerForReferat(
-                        referat,
-                        it,
-                    )
-                    journalforingResult.updated++
-                } ?: throw RuntimeException("Failed to Journalfor Referat: response missing JournalpostId")
+                val journalpostId = journalfor(journalpostRequest)
+                referatJournalpostService.updateJournalpostIdBehandlerForReferat(
+                    referat,
+                    journalpostId,
+                )
+                journalforingResult.updated++
             } catch (e: Exception) {
                 log.error("Exception caught while attempting Journalforing of Referat", e)
                 journalforingResult.failed++
@@ -235,7 +216,25 @@ class DialogmoteVarselJournalforingCronjob(
         }
     }
 
+    private suspend fun journalfor(journalpostRequest: JournalpostRequest): Int {
+        val journalpostResponse = dokarkivClient.journalfor(journalpostRequest)
+        return if (journalpostResponse?.journalpostId == null) {
+            if (isJournalforingRetryEnabled) {
+                throw RuntimeException("Failed journalforing: response missing journalpostId")
+            } else {
+                log.error("Journalforing failed, skipping retry (should only happen in dev-gcp)")
+                // Defaulting'en til DEFAULT_FAILED_JP_ID skal bare forekomme i dev-gcp:
+                // Har dette fordi vi ellers spammer ned dokarkiv med forsøk på å journalføre
+                // på personer som mangler aktør-id.
+                DEFAULT_FAILED_JP_ID
+            }
+        } else {
+            journalpostResponse.journalpostId
+        }
+    }
+
     companion object {
+        private const val DEFAULT_FAILED_JP_ID = 0
         private val log = LoggerFactory.getLogger(DialogmoteVarselJournalforingCronjob::class.java)
     }
 }

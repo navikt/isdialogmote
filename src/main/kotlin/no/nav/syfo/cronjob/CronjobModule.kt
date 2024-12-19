@@ -78,6 +78,7 @@ fun Application.cronjobModule(
         dokarkivClient = dokarkivClient,
         pdlClient = pdlClient,
         eregClient = eregClient,
+        isJournalforingRetryEnabled = environment.isJournalforingRetryEnabled,
     )
 
     val kafkaDialogmoteStatusEndringProducerProperties = kafkaDialogmoteStatusEndringProducerConfig(environment.kafka)
