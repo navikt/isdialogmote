@@ -35,6 +35,7 @@ class NarmesteLederClientSpek : Spek({
             azureAdV2Client = azureAdV2ClientMock,
             tokendingsClient = tokendingsClientMock,
             cache = cacheMock,
+            httpClient = externalMockEnvironment.mockHttpClient,
         )
         val cacheKey =
             "${NarmesteLederClient.CACHE_NARMESTE_LEDER_AKTIVE_ANSATTE_KEY_PREFIX}${NARMESTELEDER_FNR.value}"

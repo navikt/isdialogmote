@@ -32,6 +32,7 @@ class AzureAdClientSpek : Spek({
             aadAppSecret = externalMockEnvironment.environment.aadAppSecret,
             aadTokenEndpoint = externalMockEnvironment.environment.aadTokenEndpoint,
             redisStore = cacheMock,
+            httpClient = externalMockEnvironment.mockHttpClient,
         )
         val systemTokenCacheKey =
             "${AzureAdV2Client.CACHE_AZUREAD_TOKEN_SYSTEM_KEY_PREFIX}${externalMockEnvironment.environment.pdlClientId}"

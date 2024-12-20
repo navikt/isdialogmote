@@ -28,9 +28,14 @@ import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.esyfovarsel.kafkaEsyfovarselConfig
 import no.nav.syfo.client.altinn.createPort
 import no.nav.syfo.client.azuread.AzureAdV2Client
+import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.pdl.PdlClient
+import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.client.tokendings.TokendingsClient
+import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.cronjob.cronjobModule
 import no.nav.syfo.dialogmelding.DialogmeldingService
 import no.nav.syfo.dialogmelding.kafka.DialogmeldingConsumerService
@@ -107,6 +112,38 @@ fun main() {
         isoppfolgingstilfelleClientId = environment.isoppfolgingstilfelleClientId,
         cache = cache,
     )
+    val pdlClient = PdlClient(
+        azureAdV2Client = azureAdV2Client,
+        pdlClientId = environment.pdlClientId,
+        pdlUrl = environment.pdlUrl,
+        redisStore = cache,
+    )
+    val behandlendeEnhetClient = BehandlendeEnhetClient(
+        azureAdV2Client = azureAdV2Client,
+        syfobehandlendeenhetBaseUrl = environment.syfobehandlendeenhetUrl,
+        syfobehandlendeenhetClientId = environment.syfobehandlendeenhetClientId,
+    )
+    val kontaktinformasjonClient = KontaktinformasjonClient(
+        azureAdV2Client = azureAdV2Client,
+        cache = cache,
+        clientId = environment.krrClientId,
+        baseUrl = environment.krrUrl,
+    )
+    val pdfGenClient = PdfGenClient(
+        pdfGenBaseUrl = environment.ispdfgenUrl
+    )
+    val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
+        azureAdV2Client = azureAdV2Client,
+        tilgangskontrollClientId = environment.istilgangskontrollClientId,
+        tilgangskontrollBaseUrl = environment.istilgangskontrollUrl
+    )
+    val narmesteLederClient = NarmesteLederClient(
+        narmesteLederBaseUrl = environment.narmestelederUrl,
+        narmestelederClientId = environment.narmestelederClientId,
+        azureAdV2Client = azureAdV2Client,
+        tokendingsClient = tokendingsClient,
+        cache = cache,
+    )
 
     lateinit var behandlerVarselService: BehandlerVarselService
     lateinit var dialogmoterelasjonService: DialogmoterelasjonService
@@ -153,12 +190,18 @@ fun main() {
                 environment = environment,
                 wellKnownSelvbetjening = getWellKnown(environment.tokenxWellKnownUrl),
                 wellKnownVeilederV2 = getWellKnown(environment.azureAppWellKnownUrl),
-                cache = cache,
                 altinnSoapClient = altinnSoapClient,
                 dialogmotestatusService = dialogmotestatusService,
                 dialogmoterelasjonService = dialogmoterelasjonService,
                 dialogmotedeltakerService = dialogmotedeltakerService,
                 arbeidstakerVarselService = arbeidstakerVarselService,
+                pdlClient = pdlClient,
+                behandlendeEnhetClient = behandlendeEnhetClient,
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+                kontaktinformasjonClient = kontaktinformasjonClient,
+                pdfGenClient = pdfGenClient,
+                narmesteLederClient = narmesteLederClient,
             )
             cronjobModule(
                 applicationState = applicationState,
@@ -192,12 +235,6 @@ fun main() {
             logger.info("Starting dialogmelding kafka consumer")
             dialogmeldingConsumerService.startConsumer()
         }
-        val pdlClient = PdlClient(
-            azureAdV2Client = azureAdV2Client,
-            pdlClientId = environment.pdlClientId,
-            pdlUrl = environment.pdlUrl,
-            redisStore = cache,
-        )
         val identhendelseService = IdenthendelseService(
             database = applicationDatabase,
             pdlClient = pdlClient,

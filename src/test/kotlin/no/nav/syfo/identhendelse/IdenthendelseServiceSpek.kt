@@ -1,10 +1,8 @@
 package no.nav.syfo.identhendelse
 
-import io.ktor.server.testing.*
 import io.mockk.mockk
-import kotlinx.coroutines.*
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
-import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerByIdent
@@ -19,7 +17,6 @@ import org.amshove.kluent.shouldBeAfter
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import redis.clients.jedis.*
 
 object IdenthendelseServiceSpek : Spek({
 
@@ -28,26 +25,12 @@ object IdenthendelseServiceSpek : Spek({
         val externalMockEnvironment = ExternalMockEnvironment.getInstance()
         val database = externalMockEnvironment.database
         val cacheMock = mockk<RedisStore>()
-        val redisConfig = externalMockEnvironment.environment.redisConfig
         val pdlClient = PdlClient(
-            azureAdV2Client = AzureAdV2Client(
-                aadAppClient = externalMockEnvironment.environment.aadAppClient,
-                aadAppSecret = externalMockEnvironment.environment.aadAppSecret,
-                aadTokenEndpoint = externalMockEnvironment.environment.aadTokenEndpoint,
-                redisStore = RedisStore(
-                    JedisPool(
-                        JedisPoolConfig(),
-                        HostAndPort(redisConfig.host, redisConfig.port),
-                        DefaultJedisClientConfig.builder()
-                            .ssl(redisConfig.ssl)
-                            .password(redisConfig.redisPassword)
-                            .build()
-                    )
-                ),
-            ),
+            azureAdV2Client = externalMockEnvironment.azureAdV2Client,
             pdlClientId = externalMockEnvironment.environment.pdlClientId,
             pdlUrl = externalMockEnvironment.environment.pdlUrl,
             redisStore = cacheMock,
+            httpClient = externalMockEnvironment.mockHttpClient,
         )
 
         val identhendelseService = IdenthendelseService(

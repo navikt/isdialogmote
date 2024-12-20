@@ -1,18 +1,14 @@
 package no.nav.syfo.testhelper.mock
 
+import io.ktor.client.engine.mock.*
+import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import no.nav.syfo.application.api.authentication.installContentNegotiation
 import no.nav.syfo.client.oppfolgingstilfelle.ARBEIDSGIVERPERIODE_DAYS
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_NARMESTELEDER_PATH
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH
-import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleDTO
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfellePersonDTO
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FJERDE_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -23,8 +19,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_TREDJE_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
-import no.nav.syfo.testhelper.getRandomPort
-import no.nav.syfo.util.getPersonIdentHeader
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import java.time.LocalDate
 
 fun oppfolgingstilfellePersonDTO(
@@ -62,43 +57,35 @@ fun oppfolgingstilfelleDTOOverlappingOTList() = listOf(
     )
 )
 
-class IsoppfolgingstilfelleMock {
-    private val port = getRandomPort()
-    val url = "http://localhost:$port"
-    val name = "isoppfolgingstilfelle"
-
-    val server = embeddedServer(
-        factory = Netty,
-        port = port
-    ) {
-        installContentNegotiation()
-        routing {
-            get(ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH) {
-                call.respond(
-                    when (getPersonIdentHeader()) {
-                        ARBEIDSTAKER_FNR.value -> oppfolgingstilfellePersonDTO(ARBEIDSTAKER_FNR)
-                        ARBEIDSTAKER_ANNEN_FNR.value -> oppfolgingstilfellePersonDTO(ARBEIDSTAKER_ANNEN_FNR)
-                        ARBEIDSTAKER_TREDJE_FNR.value -> oppfolgingstilfellePersonDTO(ARBEIDSTAKER_TREDJE_FNR)
-                        ARBEIDSTAKER_FJERDE_FNR.value -> oppfolgingstilfellePersonDTO(ARBEIDSTAKER_FJERDE_FNR)
-                        ARBEIDSTAKER_NO_JOURNALFORING.value -> oppfolgingstilfellePersonDTO(ARBEIDSTAKER_NO_JOURNALFORING)
-                        ARBEIDSTAKER_IKKE_VARSEL.value -> oppfolgingstilfellePersonDTO(ARBEIDSTAKER_IKKE_VARSEL)
-                        ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value -> oppfolgingstilfellePersonDTO(ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
-                        ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE.value -> oppfolgingstilfellePersonDTONoTilfelle(ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE)
-                        ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE.value ->
-                            oppfolgingstilfellePersonDTO(
-                                personIdent = ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE,
-                                end = LocalDate.now().minusDays(ARBEIDSGIVERPERIODE_DAYS + 1),
-                            )
-                        else -> HttpStatusCode.InternalServerError
-                    }
+fun MockRequestHandleScope.oppfolgingstilfelleMockResponse(request: HttpRequestData): HttpResponseData {
+    val requestUrl = request.url.encodedPath
+    val personIdent = request.headers[NAV_PERSONIDENT_HEADER]
+    return when {
+        requestUrl.endsWith(ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH) -> {
+            when (personIdent) {
+                ARBEIDSTAKER_FNR.value -> respondOk(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_FNR))
+                ARBEIDSTAKER_ANNEN_FNR.value -> respondOk(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_ANNEN_FNR))
+                ARBEIDSTAKER_TREDJE_FNR.value -> respondOk(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_TREDJE_FNR))
+                ARBEIDSTAKER_FJERDE_FNR.value -> respondOk(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_FJERDE_FNR))
+                ARBEIDSTAKER_NO_JOURNALFORING.value -> respondOk(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_NO_JOURNALFORING))
+                ARBEIDSTAKER_IKKE_VARSEL.value -> respondOk(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_IKKE_VARSEL))
+                ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value -> respondOk(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER))
+                ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE.value -> respondOk(oppfolgingstilfellePersonDTONoTilfelle(ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE))
+                ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE.value -> respondOk(
+                    oppfolgingstilfellePersonDTO(
+                        personIdent = ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE,
+                        end = LocalDate.now().minusDays(ARBEIDSGIVERPERIODE_DAYS + 1),
+                    )
                 )
-            }
-            get(ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_NARMESTELEDER_PATH) {
-                when (getPersonIdentHeader()) {
-                    ARBEIDSTAKER_FNR.value -> call.respond(oppfolgingstilfelleDTOOverlappingOTList())
-                    else -> call.respond(emptyList<OppfolgingstilfelleDTO>())
-                }
+                else -> respondError(HttpStatusCode.InternalServerError)
             }
         }
+        requestUrl.endsWith(ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_NARMESTELEDER_PATH) -> {
+            when (personIdent) {
+                ARBEIDSTAKER_FNR.value -> respondOk(oppfolgingstilfelleDTOOverlappingOTList())
+                else -> respondOk(emptyList<OppfolgingstilfelleDTO>())
+            }
+        }
+        else -> respondOk(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_FNR))
     }
 }

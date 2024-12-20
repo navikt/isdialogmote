@@ -2,25 +2,16 @@ package no.nav.syfo.cronjob.journalforing
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
+import io.ktor.http.*
+import io.ktor.server.testing.*
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
-import java.time.LocalDateTime
-import java.time.Month
-import java.util.*
 import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
@@ -47,6 +38,9 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDateTime
+import java.time.Month
+import java.util.*
 
 class DialogmoteVarselJournalforingCronjobSpek : Spek({
 
@@ -88,19 +82,20 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             val dokarkivClient = DokarkivClient(
                 azureAdV2Client = azureAdV2Client,
                 dokarkivClientId = externalMockEnvironment.environment.dokarkivClientId,
-                dokarkivBaseUrl = externalMockEnvironment.dokarkivMock.url,
+                dokarkivBaseUrl = externalMockEnvironment.environment.dokarkivUrl,
+                httpClient = externalMockEnvironment.mockHttpClient,
             )
-
-            val cacheMock = mockk<RedisStore>(relaxed = true)
 
             val pdlClient = PdlClient(
                 azureAdV2Client = azureAdV2Client,
                 pdlClientId = externalMockEnvironment.environment.pdlClientId,
-                pdlUrl = externalMockEnvironment.pdlMock.url,
-                redisStore = cacheMock,
+                pdlUrl = externalMockEnvironment.environment.pdlUrl,
+                redisStore = externalMockEnvironment.redisCache,
+                httpClient = externalMockEnvironment.mockHttpClient,
             )
             val eregClient = EregClient(
                 baseUrl = externalMockEnvironment.environment.eregUrl,
+                httpClient = externalMockEnvironment.mockHttpClient,
             )
             val pdfService = PdfService(
                 database = database,

@@ -27,6 +27,7 @@ import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generateJWTNavIdent
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
+import no.nav.syfo.testhelper.mock.pdfReferat
 import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -159,7 +160,7 @@ class FerdigstillDialogmoteApiV2Spek : Spek({
 
                             val pdf =
                                 pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId!!)
-                            pdf shouldBeEqualTo externalMockEnvironment.ispdfgenMock.pdfReferat
+                            pdf shouldBeEqualTo pdfReferat
 
                             val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2

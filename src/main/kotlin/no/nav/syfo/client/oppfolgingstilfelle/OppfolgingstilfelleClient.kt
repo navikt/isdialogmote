@@ -1,5 +1,6 @@
 package no.nav.syfo.client.oppfolgingstilfelle
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -21,7 +22,8 @@ class OppfolgingstilfelleClient(
     private val tokendingsClient: TokendingsClient,
     private val isoppfolgingstilfelleClientId: String,
     isoppfolgingstilfelleBaseUrl: String,
-    private val cache: RedisStore
+    private val cache: RedisStore,
+    private val httpClient: HttpClient = httpClientDefault()
 ) {
     private val personOppfolgingstilfelleUrl: String =
         "$isoppfolgingstilfelleBaseUrl$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH"
@@ -30,8 +32,6 @@ class OppfolgingstilfelleClient(
     private val oppfolgingstilfelleNLUrl: String =
         "$isoppfolgingstilfelleBaseUrl$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_NARMESTELEDER_PATH"
     private val CACHE_OPPFOLGINGSTILFELLE_NL_KEY_PREFIX = "oppfolgingstilfelle-nl-"
-
-    private val httpClient = httpClientDefault()
 
     suspend fun oppfolgingstilfellePerson(
         personIdent: PersonIdent,

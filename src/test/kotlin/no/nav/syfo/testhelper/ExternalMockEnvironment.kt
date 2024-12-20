@@ -3,53 +3,64 @@ package no.nav.syfo.testhelper
 import io.ktor.server.netty.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.client.azuread.AzureAdV2Client
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.client.pdl.PdlClient
+import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.testhelper.mock.*
+import redis.clients.jedis.DefaultJedisClientConfig
+import redis.clients.jedis.HostAndPort
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
 import java.util.*
 
 class ExternalMockEnvironment private constructor() {
     val applicationState: ApplicationState = testAppState()
     val database = TestDatabase()
-    val azureAdV2Mock = AzureAdV2Mock()
-    val tokendingsMock = TokendingsMock()
-    val dokarkivMock = DokarkivMock()
-    val pdlMock = PdlMock()
-    val ispdfgenMock = ispdfgenMock()
-    val isoppfolgingstilfelleMock = IsoppfolgingstilfelleMock()
-    val eregMock = EregMock()
-    val krrMock = KrrMock()
-    val syfobehandlendeenhetMock = SyfobehandlendeenhetMock()
-    val tilgangskontrollMock = VeilederTilgangskontrollMock()
-    var narmesteLederMock = NarmesteLederMock()
 
-    val externalApplicationMockMap = hashMapOf(
-        azureAdV2Mock.name to azureAdV2Mock.server,
-        tokendingsMock.name to tokendingsMock.server,
-        dokarkivMock.name to dokarkivMock.server,
-        ispdfgenMock.name to ispdfgenMock.server,
-        isoppfolgingstilfelleMock.name to isoppfolgingstilfelleMock.server,
-        eregMock.name to eregMock.server,
-        krrMock.name to krrMock.server,
-        syfobehandlendeenhetMock.name to syfobehandlendeenhetMock.server,
-        tilgangskontrollMock.name to tilgangskontrollMock.server,
-        narmesteLederMock.name to narmesteLederMock.server,
-        pdlMock.name to pdlMock.server,
+    var environment = testEnvironment()
+    val mockHttpClient = mockHttpClient(environment = environment)
+    private val redisConfig = environment.redisConfig
+    val redisCache = RedisStore(
+        JedisPool(
+            JedisPoolConfig(),
+            HostAndPort(redisConfig.host, redisConfig.port),
+            DefaultJedisClientConfig.builder()
+                .ssl(redisConfig.ssl)
+                .password(redisConfig.redisPassword)
+                .build()
+        )
     )
-
-    var environment = testEnvironment(
-        azureTokenEndpoint = azureAdV2Mock.url,
-        tokenxEndpoint = tokendingsMock.url,
-        dokarkivUrl = dokarkivMock.url,
-        ispdfgenUrl = ispdfgenMock.url,
-        isoppfolgingstilfelleUrl = isoppfolgingstilfelleMock.url,
-        eregUrl = eregMock.url,
-        krrUrl = krrMock.url,
-        syfobehandlendeenhetUrl = syfobehandlendeenhetMock.url,
-        tilgangskontrollUrl = tilgangskontrollMock.url,
-        narmestelederUrl = narmesteLederMock.url,
-        pdlUrl = pdlMock.url,
-    )
-    lateinit var redisCache: RedisStore
     val redisServer = testRedis(environment)
+
+    val tokendingsClient = TokendingsClient(
+        tokenxClientId = environment.tokenxClientId,
+        tokenxEndpoint = environment.tokenxEndpoint,
+        tokenxPrivateJWK = environment.tokenxPrivateJWK,
+        httpClient = mockHttpClient,
+    )
+    val azureAdV2Client = AzureAdV2Client(
+        aadAppClient = environment.aadAppClient,
+        aadAppSecret = environment.aadAppSecret,
+        aadTokenEndpoint = environment.aadTokenEndpoint,
+        redisStore = redisCache,
+        httpClient = mockHttpClient,
+    )
+    val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
+        azureAdV2Client = azureAdV2Client,
+        tokendingsClient = tokendingsClient,
+        isoppfolgingstilfelleClientId = environment.isoppfolgingstilfelleClientId,
+        isoppfolgingstilfelleBaseUrl = environment.isoppfolgingstilfelleUrl,
+        cache = redisCache,
+        httpClient = mockHttpClient,
+    )
+    val pdlClient = PdlClient(
+        azureAdV2Client = azureAdV2Client,
+        pdlClientId = environment.pdlClientId,
+        pdlUrl = environment.pdlUrl,
+        httpClient = mockHttpClient,
+        redisStore = redisCache,
+    )
 
     val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
     val wellKnownVeilederV2 = wellKnownVeilederV2Mock()
@@ -68,27 +79,11 @@ class ExternalMockEnvironment private constructor() {
 }
 
 fun ExternalMockEnvironment.startExternalMocks() {
-    this.externalApplicationMockMap.start()
     this.redisServer.start()
-}
-
-fun ExternalMockEnvironment.stopExternalMocks() {
-    this.externalApplicationMockMap.stop()
-    this.database.stop()
-    this.redisServer.stop()
 }
 
 fun HashMap<String, NettyApplicationEngine>.start() {
     this.forEach {
         it.value.start()
-    }
-}
-
-fun HashMap<String, NettyApplicationEngine>.stop(
-    gracePeriodMillis: Long = 1L,
-    timeoutMillis: Long = 10L,
-) {
-    this.forEach {
-        it.value.stop(gracePeriodMillis, timeoutMillis)
     }
 }

@@ -1,13 +1,15 @@
 package no.nav.syfo.client.person.kontaktinfo
 
-import io.ktor.server.testing.*
-import io.mockk.*
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient.Companion.CACHE_KONTAKTINFORMASJON_KEY_PREFIX
+import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
-import no.nav.syfo.testhelper.mock.KrrMock
 import no.nav.syfo.testhelper.mock.digitalKontaktinfoBolkKanVarslesTrue
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -24,22 +26,15 @@ class KontaktinformasjonClientSpek : Spek({
 
     describe(KontaktinformasjonClientSpek::class.java.simpleName) {
         val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
-        val krrMock = KrrMock()
         val cacheMock = mockk<RedisStore>(relaxed = true)
+        val externalMockEnvironment = ExternalMockEnvironment.getInstance()
         val client = KontaktinformasjonClient(
             azureAdV2Client = azureAdV2ClientMock,
             cache = cacheMock,
-            clientId = "krrClientId",
-            baseUrl = krrMock.url,
+            clientId = externalMockEnvironment.environment.krrClientId,
+            baseUrl = externalMockEnvironment.environment.krrUrl,
+            httpClient = externalMockEnvironment.mockHttpClient,
         )
-
-        beforeGroup {
-            krrMock.server.start()
-        }
-
-        afterGroup {
-            krrMock.server.stop(1L, 10L)
-        }
 
         beforeEachTest {
             clearMocks(cacheMock)

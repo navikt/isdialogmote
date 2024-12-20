@@ -1,6 +1,5 @@
 package no.nav.syfo.brev.narmesteleder
 
-import io.ktor.server.testing.*
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk

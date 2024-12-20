@@ -15,9 +15,6 @@ import no.nav.syfo.brev.domain.BrevType
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederBrevDTO
-import no.nav.syfo.client.azuread.AzureAdV2Client
-import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.DialogmoterelasjonService
 import no.nav.syfo.dialogmote.DialogmotestatusService
@@ -41,6 +38,8 @@ import no.nav.syfo.testhelper.generator.generateInkallingHendelse
 import no.nav.syfo.testhelper.generator.generateInkallingHendelseOtherVirksomhet
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewReferatDTO
+import no.nav.syfo.testhelper.mock.pdfInnkalling
+import no.nav.syfo.testhelper.mock.pdfReferat
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
@@ -74,29 +73,11 @@ object NarmesteLederBrevSpek : Spek({
                 altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock,
             )
-            val tokendingsClient = TokendingsClient(
-                tokenxClientId = externalMockEnvironment.environment.tokenxClientId,
-                tokenxEndpoint = externalMockEnvironment.environment.tokenxEndpoint,
-                tokenxPrivateJWK = externalMockEnvironment.environment.tokenxPrivateJWK,
-            )
-            val azureAdV2Client = AzureAdV2Client(
-                aadAppClient = externalMockEnvironment.environment.aadAppClient,
-                aadAppSecret = externalMockEnvironment.environment.aadAppSecret,
-                aadTokenEndpoint = externalMockEnvironment.environment.aadTokenEndpoint,
-                redisStore = externalMockEnvironment.redisCache,
-            )
-            val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
-                azureAdV2Client = azureAdV2Client,
-                tokendingsClient = tokendingsClient,
-                isoppfolgingstilfelleClientId = externalMockEnvironment.environment.isoppfolgingstilfelleClientId,
-                isoppfolgingstilfelleBaseUrl = externalMockEnvironment.environment.isoppfolgingstilfelleUrl,
-                cache = externalMockEnvironment.redisCache,
-            )
             val arbeidstakerVarselService = ArbeidstakerVarselService(
                 esyfovarselProducer = esyfovarselProducer,
             )
             val dialogmotestatusService = DialogmotestatusService(
-                oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+                oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
                 moteStatusEndretRepository = MoteStatusEndretRepository(database),
             )
             val dialogmotedeltakerService = DialogmotedeltakerService(
@@ -315,7 +296,7 @@ object NarmesteLederBrevSpek : Spek({
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val pdfContent = response.byteContent!!
-                        pdfContent shouldBeEqualTo externalMockEnvironment.ispdfgenMock.pdfInnkalling
+                        pdfContent shouldBeEqualTo pdfInnkalling
                     }
                     val urlMoteUUIDReferat =
                         "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
@@ -412,7 +393,7 @@ object NarmesteLederBrevSpek : Spek({
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         val pdfContent = response.byteContent!!
-                        pdfContent shouldBeEqualTo externalMockEnvironment.ispdfgenMock.pdfReferat
+                        pdfContent shouldBeEqualTo pdfReferat
                     }
                     val urlMoteUUIDEndreReferat =
                         "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteEndreFerdigstiltPath"

@@ -1,6 +1,5 @@
 package no.nav.syfo.testdata.reset
 
-import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerByIdent

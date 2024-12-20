@@ -1,14 +1,10 @@
 package no.nav.syfo.testhelper.mock
 
-import io.ktor.server.application.call
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
-import io.ktor.server.netty.NettyApplicationEngine
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import no.nav.syfo.application.api.authentication.installContentNegotiation
-import no.nav.syfo.client.narmesteleder.*
+import io.ktor.client.engine.mock.*
+import io.ktor.client.request.*
+import no.nav.syfo.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
+import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonStatus
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
@@ -16,10 +12,10 @@ import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR_2
 import no.nav.syfo.testhelper.UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.PERSON_TLF
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
-import no.nav.syfo.testhelper.getRandomPort
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import java.time.*
-import java.util.UUID
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.*
 
 val narmesteLeder = NarmesteLederRelasjonDTO(
     uuid = UUID.randomUUID().toString(),
@@ -37,44 +33,40 @@ val narmesteLeder = NarmesteLederRelasjonDTO(
     status = NarmesteLederRelasjonStatus.INNMELDT_AKTIV.name,
 )
 
-class NarmesteLederMock {
-    private val port = getRandomPort()
-    val url = "http://localhost:$port"
-    val name = "narmesteleder"
-    val server = mockNarmesteLederServer(port)
-
-    private fun mockNarmesteLederServer(port: Int): NettyApplicationEngine {
-        return embeddedServer(
-            factory = Netty,
-            port = port
-        ) {
-            installContentNegotiation()
-            routing {
-                get(NarmesteLederClient.CURRENT_NARMESTELEDER_PATH) {
-                    if (call.request.headers[NAV_PERSONIDENT_HEADER] == ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value) {
-                        call.respond(HttpStatusCode.NotFound)
-                    } else {
-                        call.respond(
-                            listOf(
-                                narmesteLeder,
-                                narmesteLeder.copy(virksomhetsnummer = OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value),
-                            )
-                        )
-                    }
+fun MockRequestHandleScope.narmestelederMock(request: HttpRequestData): HttpResponseData {
+    val personIdentNumber = request.headers[NAV_PERSONIDENT_HEADER]
+    val requestUrl = request.url.encodedPath
+    return when {
+        requestUrl.endsWith(NarmesteLederClient.CURRENT_NARMESTELEDER_PATH) -> {
+            when (personIdentNumber) {
+                ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER.value -> {
+                    respondOk(emptyList<NarmesteLederRelasjonDTO>())
                 }
-                get(NarmesteLederClient.NARMESTELEDERE_SELVBETJENING_PATH) {
-                    if (call.request.headers[NAV_PERSONIDENT_HEADER] == NARMESTELEDER_FNR_2.value) {
-                        call.respond(emptyList<NarmesteLederRelasjonDTO>())
-                    } else {
-                        call.respond(
-                            listOf(
-                                narmesteLeder,
-                                narmesteLeder.copy(virksomhetsnummer = OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value),
-                            )
+                else -> {
+                    respondOk(
+                        listOf(
+                            narmesteLeder,
+                            narmesteLeder.copy(virksomhetsnummer = OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value),
                         )
-                    }
+                    )
                 }
             }
         }
+        requestUrl.endsWith(NarmesteLederClient.NARMESTELEDERE_SELVBETJENING_PATH) -> {
+            when (personIdentNumber) {
+                NARMESTELEDER_FNR_2.value -> {
+                    respondOk(emptyList<NarmesteLederRelasjonDTO>())
+                }
+                else -> {
+                    respondOk(
+                        listOf(
+                            narmesteLeder,
+                            narmesteLeder.copy(virksomhetsnummer = OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value),
+                        )
+                    )
+                }
+            }
+        }
+        else -> error("Unhandled $requestUrl")
     }
 }

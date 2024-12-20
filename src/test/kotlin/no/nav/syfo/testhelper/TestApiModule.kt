@@ -1,21 +1,21 @@
 package no.nav.syfo.testhelper
 
-import io.ktor.server.application.Application
+import io.ktor.server.application.*
 import io.mockk.mockk
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.application.api.apiModule
-import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.client.azuread.AzureAdV2Client
-import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.client.tokendings.TokendingsClient
+import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.client.pdfgen.PdfGenClient
+import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
+import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.dialogmote.DialogmoterelasjonService
 import no.nav.syfo.dialogmote.DialogmotestatusService
 import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
-import redis.clients.jedis.*
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
@@ -23,38 +23,8 @@ fun Application.testApiModule(
     altinnMock: ICorrespondenceAgencyExternalBasic = mockk(),
     esyfovarselProducer: EsyfovarselProducer = mockk(relaxed = true),
 ) {
-    val redisConfig = externalMockEnvironment.environment.redisConfig
-    val cache = RedisStore(
-        JedisPool(
-            JedisPoolConfig(),
-            HostAndPort(redisConfig.host, redisConfig.port),
-            DefaultJedisClientConfig.builder()
-                .ssl(redisConfig.ssl)
-                .password(redisConfig.redisPassword)
-                .build()
-        )
-    )
-    externalMockEnvironment.redisCache = cache
-    val tokendingsClient = TokendingsClient(
-        tokenxClientId = externalMockEnvironment.environment.tokenxClientId,
-        tokenxEndpoint = externalMockEnvironment.environment.tokenxEndpoint,
-        tokenxPrivateJWK = externalMockEnvironment.environment.tokenxPrivateJWK,
-    )
-    val azureAdV2Client = AzureAdV2Client(
-        aadAppClient = externalMockEnvironment.environment.aadAppClient,
-        aadAppSecret = externalMockEnvironment.environment.aadAppSecret,
-        aadTokenEndpoint = externalMockEnvironment.environment.aadTokenEndpoint,
-        redisStore = cache,
-    )
-    val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
-        azureAdV2Client = azureAdV2Client,
-        tokendingsClient = tokendingsClient,
-        isoppfolgingstilfelleClientId = externalMockEnvironment.environment.isoppfolgingstilfelleClientId,
-        isoppfolgingstilfelleBaseUrl = externalMockEnvironment.environment.isoppfolgingstilfelleUrl,
-        cache = cache,
-    )
     val dialogmotestatusService = DialogmotestatusService(
-        oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+        oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
         moteStatusEndretRepository = MoteStatusEndretRepository(externalMockEnvironment.database),
     )
     val arbeidstakerVarselService = ArbeidstakerVarselService(
@@ -68,6 +38,37 @@ fun Application.testApiModule(
         database = externalMockEnvironment.database,
         dialogmotedeltakerService = dialogmotedeltakerService
     )
+    val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
+        azureAdV2Client = externalMockEnvironment.azureAdV2Client,
+        tilgangskontrollClientId = externalMockEnvironment.environment.istilgangskontrollClientId,
+        tilgangskontrollBaseUrl = externalMockEnvironment.environment.istilgangskontrollUrl,
+        httpClient = externalMockEnvironment.mockHttpClient,
+    )
+    val behandlendeEnhetClient = BehandlendeEnhetClient(
+        azureAdV2Client = externalMockEnvironment.azureAdV2Client,
+        syfobehandlendeenhetClientId = externalMockEnvironment.environment.syfobehandlendeenhetClientId,
+        syfobehandlendeenhetBaseUrl = externalMockEnvironment.environment.syfobehandlendeenhetUrl,
+        httpClient = externalMockEnvironment.mockHttpClient,
+    )
+    val pdfGenClient = PdfGenClient(
+        pdfGenBaseUrl = externalMockEnvironment.environment.ispdfgenUrl,
+        httpClient = externalMockEnvironment.mockHttpClient,
+    )
+    val kontaktinformasjonClient = KontaktinformasjonClient(
+        azureAdV2Client = externalMockEnvironment.azureAdV2Client,
+        clientId = externalMockEnvironment.environment.krrClientId,
+        baseUrl = externalMockEnvironment.environment.krrUrl,
+        cache = externalMockEnvironment.redisCache,
+        httpClient = externalMockEnvironment.mockHttpClient,
+    )
+    val narmesteLederClient = NarmesteLederClient(
+        narmesteLederBaseUrl = externalMockEnvironment.environment.narmestelederUrl,
+        narmestelederClientId = externalMockEnvironment.environment.narmestelederClientId,
+        azureAdV2Client = externalMockEnvironment.azureAdV2Client,
+        tokendingsClient = externalMockEnvironment.tokendingsClient,
+        cache = externalMockEnvironment.redisCache,
+        httpClient = externalMockEnvironment.mockHttpClient,
+    )
 
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,
@@ -77,11 +78,17 @@ fun Application.testApiModule(
         environment = externalMockEnvironment.environment,
         wellKnownSelvbetjening = externalMockEnvironment.wellKnownSelvbetjening,
         wellKnownVeilederV2 = externalMockEnvironment.wellKnownVeilederV2,
-        cache = cache,
         altinnSoapClient = altinnMock,
         dialogmotestatusService = dialogmotestatusService,
         dialogmoterelasjonService = dialogmoterelasjonService,
         dialogmotedeltakerService = dialogmotedeltakerService,
         arbeidstakerVarselService = arbeidstakerVarselService,
+        pdlClient = externalMockEnvironment.pdlClient,
+        oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
+        veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+        behandlendeEnhetClient = behandlendeEnhetClient,
+        pdfGenClient = pdfGenClient,
+        kontaktinformasjonClient = kontaktinformasjonClient,
+        narmesteLederClient = narmesteLederClient,
     )
 }
