@@ -1,5 +1,6 @@
 package no.nav.syfo.client.dokarkiv
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -17,10 +18,9 @@ class DokarkivClient(
     private val azureAdV2Client: AzureAdV2Client,
     private val dokarkivClientId: String,
     dokarkivBaseUrl: String,
+    private val httpClient: HttpClient = httpClientDefault(),
 ) {
     private val journalpostUrl: String = "$dokarkivBaseUrl$JOURNALPOST_PATH"
-
-    private val httpClient = httpClientDefault()
 
     suspend fun journalfor(
         journalpostRequest: JournalpostRequest,

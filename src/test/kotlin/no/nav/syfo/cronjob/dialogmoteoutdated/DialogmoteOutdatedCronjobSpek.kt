@@ -90,6 +90,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
                 isoppfolgingstilfelleClientId = externalMockEnvironment.environment.isoppfolgingstilfelleClientId,
                 isoppfolgingstilfelleBaseUrl = externalMockEnvironment.environment.isoppfolgingstilfelleUrl,
                 cache = mockk<RedisStore>(relaxed = true),
+                httpClient = externalMockEnvironment.mockHttpClient,
             )
             val dialogmotestatusService = DialogmotestatusService(
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,

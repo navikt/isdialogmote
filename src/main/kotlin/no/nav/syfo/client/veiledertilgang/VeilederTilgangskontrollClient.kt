@@ -1,5 +1,6 @@
 package no.nav.syfo.client.veiledertilgang
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -20,8 +21,8 @@ class VeilederTilgangskontrollClient(
     private val azureAdV2Client: AzureAdV2Client,
     private val tilgangskontrollClientId: String,
     tilgangskontrollBaseUrl: String,
+    private val httpClient: HttpClient = httpClientDefault(),
 ) {
-    private val httpClient = httpClientDefault()
 
     private val tilgangskontrollPersonListUrl: String
     private val tilgangskontrollEnhetUrl: String

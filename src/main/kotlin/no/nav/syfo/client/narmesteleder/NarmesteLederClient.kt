@@ -1,5 +1,6 @@
 package no.nav.syfo.client.narmesteleder
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -21,11 +22,10 @@ class NarmesteLederClient(
     private val azureAdV2Client: AzureAdV2Client,
     private val tokendingsClient: TokendingsClient,
     private val cache: RedisStore,
+    private val httpClient: HttpClient = httpClientDefault(),
 ) {
     private val narmesteLederPath = "$narmesteLederBaseUrl$CURRENT_NARMESTELEDER_PATH"
     private val ansatteNarmesteLederSelvbetjeningPath = "$narmesteLederBaseUrl$NARMESTELEDERE_SELVBETJENING_PATH"
-
-    private val httpClient = httpClientDefault()
 
     suspend fun activeLeder(
         personIdent: PersonIdent,

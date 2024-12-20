@@ -1,5 +1,6 @@
 package no.nav.syfo.client.azuread
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -17,8 +18,8 @@ class AzureAdV2Client(
     private val aadAppSecret: String,
     private val aadTokenEndpoint: String,
     private val redisStore: RedisStore,
+    private val httpClient: HttpClient = httpClientProxy(),
 ) {
-    private val httpClient = httpClientProxy()
 
     suspend fun getOnBehalfOfToken(
         scopeClientId: String,

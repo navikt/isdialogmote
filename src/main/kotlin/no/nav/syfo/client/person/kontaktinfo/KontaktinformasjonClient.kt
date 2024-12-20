@@ -1,5 +1,6 @@
 package no.nav.syfo.client.person.kontaktinfo
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -19,11 +20,10 @@ class KontaktinformasjonClient(
     private val azureAdV2Client: AzureAdV2Client,
     private val cache: RedisStore,
     private val clientId: String,
-    baseUrl: String
+    baseUrl: String,
+    private val httpClient: HttpClient = httpClientDefault()
 ) {
     private val personKontaktinfoUrl: String = "$baseUrl$KRR_KONTAKTINFORMASJON_BOLK_PATH"
-
-    private val httpClient = httpClientDefault()
 
     suspend fun isDigitalVarselEnabled(
         personIdent: PersonIdent,

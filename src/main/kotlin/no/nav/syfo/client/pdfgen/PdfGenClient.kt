@@ -1,5 +1,6 @@
 package no.nav.syfo.client.pdfgen
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -16,10 +17,9 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
 class PdfGenClient(
-    private val pdfGenBaseUrl: String
+    private val pdfGenBaseUrl: String,
+    private val httpClient: HttpClient = httpClientDefault()
 ) {
-
-    private val httpClient = httpClientDefault()
 
     suspend fun pdfAvlysning(
         callId: String,

@@ -25,6 +25,7 @@ import no.nav.syfo.testhelper.generator.generateInkallingHendelse
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewReferatDTO
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
+import no.nav.syfo.testhelper.mock.pdfReferat
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
@@ -178,7 +179,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
 
                             val pdf =
                                 pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId!!)
-                            pdf shouldBeEqualTo externalMockEnvironment.ispdfgenMock.pdfReferat
+                            pdf shouldBeEqualTo pdfReferat
 
                             val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
                             moteStatusEndretList.size shouldBeEqualTo 2

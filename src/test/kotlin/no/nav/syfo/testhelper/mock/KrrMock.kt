@@ -1,15 +1,11 @@
 package no.nav.syfo.testhelper.mock
 
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import no.nav.syfo.application.api.authentication.installContentNegotiation
-import no.nav.syfo.client.person.kontaktinfo.*
+import io.ktor.client.engine.mock.*
+import io.ktor.client.request.*
+import no.nav.syfo.client.person.kontaktinfo.DigitalKontaktinfo
+import no.nav.syfo.client.person.kontaktinfo.DigitalKontaktinfoBolk
+import no.nav.syfo.client.person.kontaktinfo.DigitalKontaktinfoBolkRequestBody
 import no.nav.syfo.testhelper.UserConstants
-import no.nav.syfo.testhelper.getRandomPort
 
 fun digitalKontaktinfoBolkKanVarslesTrue(
     personIdent: String,
@@ -43,26 +39,17 @@ val digitalKontaktinfoBolkFeil = DigitalKontaktinfoBolk(
     feil = mapOf(UserConstants.ARBEIDSTAKER_DKIF_FEIL.value to "det skjedde en feil")
 )
 
-class KrrMock {
-    private val port = getRandomPort()
-    val url = "http://localhost:$port"
-    val name = "krr"
-    val server = embeddedServer(
-        factory = Netty,
-        port = port
-    ) {
-        installContentNegotiation()
-        routing {
-            post(KontaktinformasjonClient.KRR_KONTAKTINFORMASJON_BOLK_PATH) {
-                val krrRequestBodyPersonIdent = call.receive<DigitalKontaktinfoBolkRequestBody>().personidenter.first()
-                if (krrRequestBodyPersonIdent == UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value) {
-                    call.respond(digitalKontaktinfoBolkKanVarslesFalse)
-                } else if (krrRequestBodyPersonIdent == UserConstants.ARBEIDSTAKER_DKIF_FEIL.value) {
-                    call.respond(digitalKontaktinfoBolkFeil)
-                } else {
-                    call.respond(digitalKontaktinfoBolkKanVarslesTrue(krrRequestBodyPersonIdent))
-                }
-            }
+suspend fun MockRequestHandleScope.krrMock(request: HttpRequestData): HttpResponseData {
+    val krrRequestBodyPersonIdent = request.receiveBody<DigitalKontaktinfoBolkRequestBody>().personidenter.first()
+    return when (krrRequestBodyPersonIdent) {
+        UserConstants.ARBEIDSTAKER_IKKE_VARSEL.value -> {
+            respondOk(digitalKontaktinfoBolkKanVarslesFalse)
+        }
+        UserConstants.ARBEIDSTAKER_DKIF_FEIL.value -> {
+            respondOk(digitalKontaktinfoBolkFeil)
+        }
+        else -> {
+            respondOk(digitalKontaktinfoBolkKanVarslesTrue(krrRequestBodyPersonIdent))
         }
     }
 }

@@ -1,5 +1,6 @@
 package no.nav.syfo.client.pdl
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -20,8 +21,8 @@ class PdlClient(
     private val pdlClientId: String,
     private val pdlUrl: String,
     private val redisStore: RedisStore,
+    private val httpClient: HttpClient = httpClientDefault(),
 ) {
-    private val httpClient = httpClientDefault()
 
     suspend fun navn(
         personIdent: PersonIdent,

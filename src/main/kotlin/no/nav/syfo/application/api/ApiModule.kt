@@ -7,7 +7,6 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.*
-import no.nav.syfo.application.cache.RedisStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.arbeidstaker.registerArbeidstakerBrevApi
@@ -17,14 +16,12 @@ import no.nav.syfo.brev.narmesteleder.NarmesteLederAccessService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.brev.narmesteleder.registerNarmestelederBrevApi
 import no.nav.syfo.client.altinn.AltinnClient
-import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.pdfgen.PdfGenClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient
-import no.nav.syfo.client.tokendings.TokendingsClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.api.v2.registerDialogmoteActionsApiV2
@@ -41,12 +38,18 @@ fun Application.apiModule(
     environment: Environment,
     wellKnownSelvbetjening: WellKnown,
     wellKnownVeilederV2: WellKnown,
-    cache: RedisStore,
     altinnSoapClient: ICorrespondenceAgencyExternalBasic,
     dialogmotestatusService: DialogmotestatusService,
     dialogmoterelasjonService: DialogmoterelasjonService,
     dialogmotedeltakerService: DialogmotedeltakerService,
     arbeidstakerVarselService: ArbeidstakerVarselService,
+    pdlClient: PdlClient,
+    behandlendeEnhetClient: BehandlendeEnhetClient,
+    veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
+    oppfolgingstilfelleClient: OppfolgingstilfelleClient,
+    pdfGenClient: PdfGenClient,
+    kontaktinformasjonClient: KontaktinformasjonClient,
+    narmesteLederClient: NarmesteLederClient,
 ) {
     installMetrics()
     installCallId()
@@ -67,50 +70,6 @@ fun Application.apiModule(
     )
     installStatusPages()
 
-    val azureAdV2Client = AzureAdV2Client(
-        aadAppClient = environment.aadAppClient,
-        aadAppSecret = environment.aadAppSecret,
-        aadTokenEndpoint = environment.aadTokenEndpoint,
-        redisStore = cache,
-    )
-    val tokendingsClient = TokendingsClient(
-        tokenxClientId = environment.tokenxClientId,
-        tokenxEndpoint = environment.tokenxEndpoint,
-        tokenxPrivateJWK = environment.tokenxPrivateJWK,
-    )
-    val pdlClient = PdlClient(
-        azureAdV2Client = azureAdV2Client,
-        pdlClientId = environment.pdlClientId,
-        pdlUrl = environment.pdlUrl,
-        redisStore = cache,
-    )
-    val behandlendeEnhetClient = BehandlendeEnhetClient(
-        azureAdV2Client = azureAdV2Client,
-        syfobehandlendeenhetBaseUrl = environment.syfobehandlendeenhetUrl,
-        syfobehandlendeenhetClientId = environment.syfobehandlendeenhetClientId,
-    )
-    val kontaktinformasjonClient = KontaktinformasjonClient(
-        azureAdV2Client = azureAdV2Client,
-        cache = cache,
-        clientId = environment.krrClientId,
-        baseUrl = environment.krrUrl,
-    )
-    val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
-        azureAdV2Client = azureAdV2Client,
-        tokendingsClient = tokendingsClient,
-        isoppfolgingstilfelleBaseUrl = environment.isoppfolgingstilfelleUrl,
-        isoppfolgingstilfelleClientId = environment.isoppfolgingstilfelleClientId,
-        cache = cache,
-    )
-    val pdfGenClient = PdfGenClient(
-        pdfGenBaseUrl = environment.ispdfgenUrl
-    )
-    val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
-        azureAdV2Client = azureAdV2Client,
-        tilgangskontrollClientId = environment.istilgangskontrollClientId,
-        tilgangskontrollBaseUrl = environment.istilgangskontrollUrl
-    )
-
     val dialogmoteTilgangService = DialogmoteTilgangService(
         veilederTilgangskontrollClient = veilederTilgangskontrollClient,
     )
@@ -119,13 +78,6 @@ fun Application.apiModule(
         esyfovarselProducer = esyfovarselProducer,
     )
 
-    val narmesteLederClient = NarmesteLederClient(
-        narmesteLederBaseUrl = environment.narmestelederUrl,
-        narmestelederClientId = environment.narmestelederClientId,
-        azureAdV2Client = azureAdV2Client,
-        tokendingsClient = tokendingsClient,
-        cache = cache,
-    )
     val pdfService = PdfService(
         database = database,
     )
