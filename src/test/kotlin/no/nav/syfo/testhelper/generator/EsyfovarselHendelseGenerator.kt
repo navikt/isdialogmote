@@ -10,7 +10,8 @@ fun generateAvlysningHendelse() =
     NarmesteLederHendelse(
         type = HendelseType.NL_DIALOGMOTE_AVLYST,
         data = VarselData(
-            narmesteLeder = VarselDataNarmesteLeder("narmesteLederNavn")
+            narmesteLeder = VarselDataNarmesteLeder("narmesteLederNavn"),
+            motetidspunkt = VarselDataMotetidspunkt(DIALOGMOTE_TIDSPUNKT_FIXTURE)
         ),
         narmesteLederFnr = NARMESTELEDER_FNR.value,
         arbeidstakerFnr = ARBEIDSTAKER_FNR.value,
@@ -22,7 +23,8 @@ fun generateInkallingHendelse() =
         type = HendelseType.NL_DIALOGMOTE_INNKALT,
         narmesteLederFnr = NARMESTELEDER_FNR.value,
         data = VarselData(
-            narmesteLeder = VarselDataNarmesteLeder("narmesteLederNavn")
+            narmesteLeder = VarselDataNarmesteLeder("narmesteLederNavn"),
+            motetidspunkt = VarselDataMotetidspunkt(DIALOGMOTE_TIDSPUNKT_FIXTURE)
         ),
         arbeidstakerFnr = ARBEIDSTAKER_FNR.value,
         orgnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value
@@ -33,7 +35,8 @@ fun generateEndringHendelse() =
         type = HendelseType.NL_DIALOGMOTE_NYTT_TID_STED,
         narmesteLederFnr = NARMESTELEDER_FNR.value,
         data = VarselData(
-            narmesteLeder = VarselDataNarmesteLeder("narmesteLederNavn")
+            narmesteLeder = VarselDataNarmesteLeder("narmesteLederNavn"),
+            motetidspunkt = VarselDataMotetidspunkt(DIALOGMOTE_TIDSPUNKT_FIXTURE)
         ),
         arbeidstakerFnr = ARBEIDSTAKER_FNR.value,
         orgnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value
@@ -44,7 +47,8 @@ fun generateInkallingHendelseOtherVirksomhet() =
         type = HendelseType.NL_DIALOGMOTE_INNKALT,
         narmesteLederFnr = NARMESTELEDER_FNR.value,
         data = VarselData(
-            narmesteLeder = VarselDataNarmesteLeder("narmesteLederNavn")
+            narmesteLeder = VarselDataNarmesteLeder("narmesteLederNavn"),
+            motetidspunkt = VarselDataMotetidspunkt(DIALOGMOTE_TIDSPUNKT_FIXTURE)
         ),
         arbeidstakerFnr = ARBEIDSTAKER_FNR.value,
         orgnummer = OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value

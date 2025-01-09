@@ -7,9 +7,11 @@ import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import java.time.LocalDateTime
 import java.util.*
 
+val DIALOGMOTE_TIDSPUNKT_FIXTURE = LocalDateTime.now().plusDays(30L)
+
 fun generateNewDialogmoteTidSted() = NewDialogmoteTidSted(
     sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
-    tid = LocalDateTime.now().plusDays(30),
+    tid = DIALOGMOTE_TIDSPUNKT_FIXTURE,
     videoLink = "https://meet.google.com/xyz"
 )
 

@@ -12,7 +12,6 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.mockk.*
 import java.time.LocalDate
-import java.time.LocalDateTime
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
@@ -35,6 +34,7 @@ import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generateJWTNavIdent
+import no.nav.syfo.testhelper.generator.DIALOGMOTE_TIDSPUNKT_FIXTURE
 import no.nav.syfo.testhelper.generator.generateInkallingHendelse
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithBehandler
@@ -118,7 +118,7 @@ class PostDialogmoteApiV2Spek : Spek({
                     val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
 
                     it("should return OK if request is successful") {
-                        val moteTidspunkt = LocalDateTime.now().plusDays(30)
+                        val moteTidspunkt = DIALOGMOTE_TIDSPUNKT_FIXTURE
                         val newDialogmoteDTO = generateNewDialogmoteDTO(
                             personIdent = ARBEIDSTAKER_FNR,
                             dato = moteTidspunkt,
