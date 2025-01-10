@@ -6,6 +6,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
+import io.ktor.utils.io.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
