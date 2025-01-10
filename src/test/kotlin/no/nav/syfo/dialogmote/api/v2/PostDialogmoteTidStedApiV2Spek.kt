@@ -348,13 +348,11 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             status shouldBeEqualTo HttpStatusCode.OK
                             esyfovarselEndringHendelse.type = HendelseType.NL_DIALOGMOTE_NYTT_TID_STED
                             verify(exactly = 1) {
-                                esyfovarselProducerMock.sendVarselToEsyfovarsel(
-                                    esyfovarselEndringHendelse.copy(
-                                        data = VarselData(
-                                            narmesteLeder = VarselDataNarmesteLeder("narmesteLederNavn"),
-                                            motetidspunkt = VarselDataMotetidspunkt(newDialogmoteTid)
-                                        ),
-                                    )
+                                esyfovarselEndringHendelse.copy(
+                                    data = VarselData(
+                                        narmesteLeder = VarselDataNarmesteLeder("narmesteLederNavn"),
+                                        motetidspunkt = VarselDataMotetidspunkt(newDialogmoteTid)
+                                    ),
                                 )
                             }
                         }
