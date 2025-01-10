@@ -5,9 +5,10 @@ import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
-val DIALOGMOTE_TIDSPUNKT_FIXTURE = LocalDateTime.now().plusDays(30L)
+val DIALOGMOTE_TIDSPUNKT_FIXTURE = LocalDateTime.now().plusDays(30L).truncatedTo(ChronoUnit.MILLIS)
 
 fun generateNewDialogmoteTidSted() = NewDialogmoteTidSted(
     sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
