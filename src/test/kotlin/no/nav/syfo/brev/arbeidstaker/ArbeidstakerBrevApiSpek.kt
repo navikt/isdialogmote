@@ -1,10 +1,11 @@
 package no.nav.syfo.brev.arbeidstaker
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
+import io.ktor.util.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
@@ -20,7 +21,6 @@ import no.nav.syfo.dialogmote.DialogmotestatusService
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteAvlysPath
 import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteFerdigstillPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
 import no.nav.syfo.dialogmote.database.getDialogmote
 import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
@@ -37,9 +37,6 @@ import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewReferatDTO
 import no.nav.syfo.testhelper.mock.pdfInnkalling
 import no.nav.syfo.testhelper.mock.pdfReferat
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.util.bearerHeader
-import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldNotBeNull
@@ -49,101 +46,82 @@ import java.time.LocalDateTime
 import java.util.*
 
 class ArbeidstakerBrevApiSpek : Spek({
-    val objectMapper: ObjectMapper = configuredJacksonMapper()
-
     describe(ArbeidstakerBrevApiSpek::class.java.simpleName) {
+        val externalMockEnvironment = ExternalMockEnvironment.getInstance()
+        val database = externalMockEnvironment.database
 
-        with(TestApplicationEngine()) {
-            start()
+        val esyfovarselProducer = mockk<EsyfovarselProducer>(relaxed = true)
+        val esyfovarselHendelse = mockk<ArbeidstakerHendelse>(relaxed = true)
+        justRun { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
-            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
-            val database = externalMockEnvironment.database
+        val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
-            val esyfovarselProducer = mockk<EsyfovarselProducer>(relaxed = true)
-            val esyfovarselHendelse = mockk<ArbeidstakerHendelse>(relaxed = true)
-            justRun { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+        val arbeidstakerVarselService = ArbeidstakerVarselService(
+            esyfovarselProducer = esyfovarselProducer,
+        )
+        val dialogmotestatusService = DialogmotestatusService(
+            oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
+            moteStatusEndretRepository = MoteStatusEndretRepository(database),
+        )
+        val dialogmotedeltakerService = DialogmotedeltakerService(
+            arbeidstakerVarselService = arbeidstakerVarselService,
+            database = database,
+        )
+        val dialogmoterelasjonService = DialogmoterelasjonService(
+            dialogmotedeltakerService = dialogmotedeltakerService,
+            database = database,
+        )
 
-            val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
+        beforeEachTest {
+            val altinnResponse = ReceiptExternal()
+            altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-            application.testApiModule(
-                externalMockEnvironment = externalMockEnvironment,
-                altinnMock = altinnMock,
+            clearMocks(altinnMock)
+            every {
+                altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
+            } returns altinnResponse
+
+            justRun { esyfovarselProducer.sendVarselToEsyfovarsel(any()) }
+            // Add dummy deltakere so that id for deltaker and mote does not match by accident
+            database.addDummyDeltakere()
+        }
+
+        afterEachTest {
+            database.dropData()
+        }
+
+        describe("Les og respons ArbeidstakerBrev") {
+            val validTokenSelvbetjening = generateJWTTokenx(
+                audience = externalMockEnvironment.environment.tokenxClientId,
+                issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
+                pid = ARBEIDSTAKER_FNR.value,
             )
-            val arbeidstakerVarselService = ArbeidstakerVarselService(
-                esyfovarselProducer = esyfovarselProducer,
+            val validTokenVeileder = generateJWTNavIdent(
+                externalMockEnvironment.environment.aadAppClient,
+                externalMockEnvironment.wellKnownVeilederV2.issuer,
+                UserConstants.VEILEDER_IDENT,
             )
-            val dialogmotestatusService = DialogmotestatusService(
-                oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
-                moteStatusEndretRepository = MoteStatusEndretRepository(database),
-            )
-            val dialogmotedeltakerService = DialogmotedeltakerService(
-                arbeidstakerVarselService = arbeidstakerVarselService,
-                database = database,
-            )
-            val dialogmoterelasjonService = DialogmoterelasjonService(
-                dialogmotedeltakerService = dialogmotedeltakerService,
-                database = database,
-            )
+            describe("Happy path") {
+                val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+                val urlArbeidstakerMoterList = arbeidstakerBrevApiPath
 
-            beforeEachTest {
-                val altinnResponse = ReceiptExternal()
-                altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
+                it("should return OK if request is successful") {
 
-                clearMocks(altinnMock)
-                every {
-                    altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-                } returns altinnResponse
-
-                justRun { esyfovarselProducer.sendVarselToEsyfovarsel(any()) }
-                // Add dummy deltakere so that id for deltaker and mote does not match by accident
-                database.addDummyDeltakere()
-            }
-
-            afterEachTest {
-                database.dropData()
-            }
-
-            describe("Les og respons ArbeidstakerBrev") {
-                val validTokenSelvbetjening = generateJWTTokenx(
-                    audience = externalMockEnvironment.environment.tokenxClientId,
-                    issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
-                    pid = ARBEIDSTAKER_FNR.value,
-                )
-                val validTokenVeileder = generateJWTNavIdent(
-                    externalMockEnvironment.environment.aadAppClient,
-                    externalMockEnvironment.wellKnownVeilederV2.issuer,
-                    UserConstants.VEILEDER_IDENT,
-                )
-                describe("Happy path") {
-                    val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
-                    val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
-                    val urlArbeidstakerMoterList = arbeidstakerBrevApiPath
-
-                    it("should return OK if request is successful") {
+                    testApplication {
                         val createdArbeidstakerBrevUUID: String
+                        val client = setupApiAndClient(
+                            altinnMock = altinnMock,
+                        )
+                        client.postMote(validTokenVeileder, newDialogmoteDTO)
+                        verify(exactly = 0) { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                        clearMocks(esyfovarselProducer)
 
-                        with(
-                            handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(Authorization, bearerHeader(validTokenVeileder))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 0) { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-                            clearMocks(esyfovarselProducer)
-                        }
+                        client.get(urlArbeidstakerMoterList) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
 
-                        with(
-                            handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
-
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
                             arbeidstakerBrevList.size shouldBeEqualTo 1
 
                             val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
@@ -157,24 +135,20 @@ class ArbeidstakerBrevApiSpek : Spek({
                         val urlArbeidstakerBrevUUIDLes =
                             "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
 
-                        with(
-                            handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.post(urlArbeidstakerBrevUUIDLes) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                         }
 
                         var arbeidstakerBrevDTO: ArbeidstakerBrevDTO?
-                        with(
-                            handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                        client.get(urlArbeidstakerMoterList) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
                             arbeidstakerBrevList.size shouldBeEqualTo 1
 
                             arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
@@ -184,76 +158,63 @@ class ArbeidstakerBrevApiSpek : Spek({
                             arbeidstakerBrevDTO!!.svar.shouldBeNull()
                             arbeidstakerBrevDTO!!.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
                             arbeidstakerBrevDTO!!.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
-                            val isTodayBeforeDialogmotetid = LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
+                            val isTodayBeforeDialogmotetid =
+                                LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo true
 
                             clearMocks(esyfovarselProducer)
                         }
-                        with(
-                            handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        client.post(urlArbeidstakerBrevUUIDLes) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                         }
 
-                        with(
-                            handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.get(urlArbeidstakerMoterList) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
 
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
                             arbeidstakerBrevList.size shouldBeEqualTo 1
 
                             val arbeidstakerBrevUpdatedDTO = arbeidstakerBrevList.first()
                             arbeidstakerBrevUpdatedDTO.lestDato shouldBeEqualTo arbeidstakerBrevDTO!!.lestDato
                         }
+
                         val urlArbeidstakerBrevUUIDRespons =
                             "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiResponsPath"
-
-                        with(
-                            handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDRespons) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(
-                                    objectMapper.writeValueAsString(
-                                        ArbeidstakerResponsDTO(
-                                            svarType = DialogmoteSvarType.KOMMER.name,
-                                            svarTekst = "Det passer bra();<code>, med nørskeÆØÅ bokstaver og noen spesialtegn %!()?.",
-                                        )
-                                    )
+                        client.post(urlArbeidstakerBrevUUIDRespons) {
+                            bearerAuth(validTokenSelvbetjening)
+                            contentType(ContentType.Application.Json)
+                            setBody(
+                                ArbeidstakerResponsDTO(
+                                    svarType = DialogmoteSvarType.KOMMER.name,
+                                    svarTekst = "Det passer bra();<code>, med nørskeÆØÅ bokstaver og noen spesialtegn %!()?.",
                                 )
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            )
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                         }
-                        with(
-                            handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                        client.get(urlArbeidstakerMoterList) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
                             arbeidstakerBrevList.size shouldBeEqualTo 1
 
                             arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
                             arbeidstakerBrevDTO.shouldNotBeNull()
                             arbeidstakerBrevDTO!!.svar!!.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
                         }
-                        with(
-                            handleRequest(HttpMethod.Get, "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath") {
-                                addHeader(Authorization, bearerHeader(validTokenVeileder))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
+                        client.getDialogmoter(validTokenVeileder, ARBEIDSTAKER_FNR).apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmoteList = body<List<DialogmoteDTO>>()
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
@@ -262,58 +223,45 @@ class ArbeidstakerBrevApiSpek : Spek({
                             dialogmoteDTO.arbeidstaker.varselList[0].svar!!.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
                             dialogmoteDTO.arbeidstaker.varselList[0].svar!!.svarTekst shouldBeEqualTo "Det passer bra();_code_, med nørskeÆØÅ bokstaver og noen spesialtegn %!()?."
                         }
+
                         // Repeated invocation should fail
-                        with(
-                            handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDRespons) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(
-                                    objectMapper.writeValueAsString(
-                                        ArbeidstakerResponsDTO(
-                                            svarType = DialogmoteSvarType.KOMMER.name,
-                                            svarTekst = "Det passer bra det fortsatt",
-                                        )
-                                    )
+                        val response = client.post(urlArbeidstakerBrevUUIDRespons) {
+                            bearerAuth(validTokenSelvbetjening)
+                            contentType(ContentType.Application.Json)
+                            setBody(
+                                ArbeidstakerResponsDTO(
+                                    svarType = DialogmoteSvarType.KOMMER.name,
+                                    svarTekst = "Det passer bra det fortsatt",
                                 )
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                            )
                         }
+
+                        response.status shouldBeEqualTo HttpStatusCode.BadRequest
                     }
                 }
-                describe("Happy path for arbeidstaker som har byttet fnr") {
-                    val validTokenSelvbetjeningOldFnr = generateJWTTokenx(
-                        audience = externalMockEnvironment.environment.tokenxClientId,
-                        issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
-                        pid = ARBEIDSTAKER_TREDJE_FNR.value,
-                    )
-                    val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FJERDE_FNR)
-                    val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
-                    val urlArbeidstakerMoterList = arbeidstakerBrevApiPath
+            }
+            describe("Happy path for arbeidstaker som har byttet fnr") {
+                val validTokenSelvbetjeningOldFnr = generateJWTTokenx(
+                    audience = externalMockEnvironment.environment.tokenxClientId,
+                    issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
+                    pid = ARBEIDSTAKER_TREDJE_FNR.value,
+                )
+                val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FJERDE_FNR)
+                val urlArbeidstakerMoterList = arbeidstakerBrevApiPath
 
-                    it("should return OK if request is successful") {
+                it("should return OK if request is successful") {
+                    testApplication {
                         val createdArbeidstakerBrevUUID: String
+                        val client = setupApiAndClient(
+                            altinnMock = altinnMock,
+                        )
+                        client.postMote(validTokenVeileder, newDialogmoteDTO)
 
-                        with(
-                            handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(Authorization, bearerHeader(validTokenVeileder))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                        }
-
-                        with(
-                            handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningOldFnr))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
-
+                        client.get(urlArbeidstakerMoterList) {
+                            bearerAuth(validTokenSelvbetjeningOldFnr)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
                             arbeidstakerBrevList.size shouldBeEqualTo 1
 
                             val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
@@ -326,25 +274,19 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                         val urlArbeidstakerBrevUUIDLes =
                             "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
-
-                        with(
-                            handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningOldFnr))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.post(urlArbeidstakerBrevUUIDLes) {
+                            bearerAuth(validTokenSelvbetjeningOldFnr)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                         }
 
                         var arbeidstakerBrevDTO: ArbeidstakerBrevDTO?
-                        with(
-                            handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningOldFnr))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.get(urlArbeidstakerMoterList) {
+                            bearerAuth(validTokenSelvbetjeningOldFnr)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
 
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
                             arbeidstakerBrevList.size shouldBeEqualTo 1
 
                             arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
@@ -357,141 +299,112 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                             clearMocks(esyfovarselProducer)
                         }
-                        with(
-                            handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningOldFnr))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        client.post(urlArbeidstakerBrevUUIDLes) {
+                            bearerAuth(validTokenSelvbetjeningOldFnr)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                         }
 
-                        with(
-                            handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningOldFnr))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                        client.get(urlArbeidstakerMoterList) {
+                            bearerAuth(validTokenSelvbetjeningOldFnr)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
                             arbeidstakerBrevList.size shouldBeEqualTo 1
 
-                            val arbeidstakerBrevUpdatedDTO = arbeidstakerBrevList.first()
+                            val arbeidstakerBrevUpdatedDTO = arbeidstakerBrevList.firstOrNull()
+                            arbeidstakerBrevUpdatedDTO.shouldNotBeNull()
                             arbeidstakerBrevUpdatedDTO.lestDato shouldBeEqualTo arbeidstakerBrevDTO!!.lestDato
                         }
+
                         val urlArbeidstakerBrevUUIDRespons =
                             "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiResponsPath"
-
-                        with(
-                            handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDRespons) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningOldFnr))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(
-                                    objectMapper.writeValueAsString(
-                                        ArbeidstakerResponsDTO(
-                                            svarType = DialogmoteSvarType.KOMMER.name,
-                                            svarTekst = "Det passer bra",
-                                        )
-                                    )
+                        client.post(urlArbeidstakerBrevUUIDRespons) {
+                            bearerAuth(validTokenSelvbetjeningOldFnr)
+                            contentType(ContentType.Application.Json)
+                            setBody(
+                                ArbeidstakerResponsDTO(
+                                    svarType = DialogmoteSvarType.KOMMER.name,
+                                    svarTekst = "Det passer bra",
                                 )
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            )
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                         }
-                        with(
-                            handleRequest(HttpMethod.Get, urlArbeidstakerMoterList) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningOldFnr))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                        client.get(urlArbeidstakerMoterList) {
+                            bearerAuth(validTokenSelvbetjeningOldFnr)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
                             arbeidstakerBrevList.size shouldBeEqualTo 1
 
                             arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
                             arbeidstakerBrevDTO.shouldNotBeNull()
                             arbeidstakerBrevDTO!!.svar!!.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
                         }
-                        with(
-                            handleRequest(HttpMethod.Get, "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath") {
-                                addHeader(Authorization, bearerHeader(validTokenVeileder))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FJERDE_FNR.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
 
-                            dialogmoteList.size shouldBeEqualTo 1
+                        val response = client.getDialogmoter(validTokenVeileder, ARBEIDSTAKER_FJERDE_FNR)
+                        response.status shouldBeEqualTo HttpStatusCode.OK
+                        val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
-                            val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
-                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
-                            dialogmoteDTO.arbeidstaker.varselList[0].svar!!.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
-                            dialogmoteDTO.arbeidstaker.varselList[0].svar!!.svarTekst shouldBeEqualTo "Det passer bra"
-                        }
+                        dialogmoteList.size shouldBeEqualTo 1
+
+                        val dialogmoteDTO = dialogmoteList.first()
+                        dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
+                        dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                        dialogmoteDTO.arbeidstaker.varselList[0].svar!!.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
+                        dialogmoteDTO.arbeidstaker.varselList[0].svar!!.svarTekst shouldBeEqualTo "Det passer bra"
                     }
                 }
-                describe("Happy path med mer enn et møte for aktuell person") {
-                    val newDialogmoteLukket =
-                        generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 0", LocalDateTime.now().plusDays(5))
-                    val newDialogmoteAvlyst1 =
-                        generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 1", LocalDateTime.now().plusDays(10))
-                    val newDialogmoteAvlyst2 =
-                        generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 2", LocalDateTime.now().plusDays(20))
-                    val newDialogmoteInnkalt =
-                        generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 3", LocalDateTime.now().plusDays(30))
-
-                    val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
-                    var createdDialogmoteUUID = ""
-                    var createdDialogmoteDeltakerArbeidstakerUUID = ""
-
-                    it("should return OK if request is successful") {
-                        for (
-                        dialogmoteDTO in listOf(
-                            newDialogmoteLukket,
-                            newDialogmoteAvlyst1,
-                            newDialogmoteAvlyst2,
-                            newDialogmoteInnkalt
+            }
+            describe("Happy path med mer enn et møte for aktuell person") {
+                val newDialogmoteLukket =
+                    generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 0", LocalDateTime.now().plusDays(5))
+                val newDialogmoteAvlyst1 =
+                    generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 1", LocalDateTime.now().plusDays(10))
+                val newDialogmoteAvlyst2 =
+                    generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 2", LocalDateTime.now().plusDays(20))
+                val newDialogmoteInnkalt =
+                    generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted 3", LocalDateTime.now().plusDays(30))
+                val dialogmoteDTOList = listOf(
+                    newDialogmoteLukket,
+                    newDialogmoteAvlyst1,
+                    newDialogmoteAvlyst2,
+                    newDialogmoteInnkalt
+                )
+                it("should return OK if request is successful") {
+                    testApplication {
+                        var createdDialogmoteUUID = ""
+                        var createdDialogmoteDeltakerArbeidstakerUUID = ""
+                        val client = setupApiAndClient(
+                            altinnMock = altinnMock,
                         )
-                        ) {
-                            with(
-                                handleRequest(HttpMethod.Post, urlMote) {
-                                    addHeader(Authorization, bearerHeader(validTokenVeileder))
-                                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                    setBody(objectMapper.writeValueAsString(dialogmoteDTO))
-                                }
-                            ) {
-                                response.status() shouldBeEqualTo HttpStatusCode.OK
-                            }
 
-                            with(
-                                handleRequest(HttpMethod.Get, urlMote) {
-                                    addHeader(Authorization, bearerHeader(validTokenVeileder))
-                                    addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
-                                }
-                            ) {
-                                response.status() shouldBeEqualTo HttpStatusCode.OK
+                        for (dialogmoteDTO in dialogmoteDTOList) {
+                            client.postMote(validTokenVeileder, dialogmoteDTO)
 
-                                val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                            client.getDialogmoter(validTokenVeileder, ARBEIDSTAKER_FNR).apply {
+                                status shouldBeEqualTo HttpStatusCode.OK
+                                val dialogmoteList = body<List<DialogmoteDTO>>()
                                 val dto = dialogmoteList.first()
                                 dto.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
                                 createdDialogmoteUUID = dto.uuid
                                 createdDialogmoteDeltakerArbeidstakerUUID = dto.arbeidstaker.uuid
                             }
+
                             if (dialogmoteDTO != newDialogmoteInnkalt && dialogmoteDTO != newDialogmoteLukket) {
                                 val urlMoteUUIDAvlys =
                                     "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
-                                val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
 
-                                with(
-                                    handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
-                                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                        addHeader(Authorization, bearerHeader(validTokenVeileder))
-                                        setBody(objectMapper.writeValueAsString(avlysDialogMoteDto))
-                                    }
-                                ) {
-                                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                                client.post(urlMoteUUIDAvlys) {
+                                    bearerAuth(validTokenVeileder)
+                                    contentType(ContentType.Application.Json)
+                                    setBody(generateAvlysDialogmoteDTO())
+                                }.apply {
+                                    status shouldBeEqualTo HttpStatusCode.OK
                                 }
                             }
                             if (dialogmoteDTO == newDialogmoteLukket) {
@@ -510,16 +423,14 @@ class ArbeidstakerBrevApiSpek : Spek({
                                 }
                             }
                         }
-                        val createdArbeidstakerBrevUUID: String
-                        with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
 
+                        val createdArbeidstakerBrevUUID: String
+
+                        client.get(arbeidstakerBrevApiPath) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
                             arbeidstakerBrevList.size shouldBeEqualTo 5
 
                             val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
@@ -534,24 +445,17 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                         val urlArbeidstakerBrevUUIDLes =
                             "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
-
-                        with(
-                            handleRequest(HttpMethod.Post, urlArbeidstakerBrevUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.post(urlArbeidstakerBrevUUIDLes) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                         }
 
-                        with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                        client.get(arbeidstakerBrevApiPath) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
                             arbeidstakerBrevList.size shouldBeEqualTo 5
 
                             val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
@@ -570,26 +474,20 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                         val urlMoteUUIDReferat =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
-                        val referatDto = generateNewReferatDTO()
-                        with(
-                            handleRequest(HttpMethod.Post, urlMoteUUIDReferat) {
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                addHeader(Authorization, bearerHeader(validTokenVeileder))
-                                setBody(objectMapper.writeValueAsString(referatDto))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.post(urlMoteUUIDReferat) {
+                            bearerAuth(validTokenVeileder)
+                            contentType(ContentType.Application.Json)
+                            setBody(generateNewReferatDTO())
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                         }
 
                         val createdReferatArbeidstakerBrevUUID: String
-                        with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                        client.get(arbeidstakerBrevApiPath) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
                             arbeidstakerBrevList.size shouldBeEqualTo 6
 
                             val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
@@ -605,24 +503,21 @@ class ArbeidstakerBrevApiSpek : Spek({
                             isCorrectDialogmotetid shouldBeEqualTo true
                             createdReferatArbeidstakerBrevUUID = arbeidstakerBrevDTO.uuid
                         }
+
                         val urlReferatUUIDLes =
                             "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
-                        with(
-                            handleRequest(HttpMethod.Post, urlReferatUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.post(urlReferatUUIDLes) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                         }
+
                         var arbeidstakerBrevDTO: ArbeidstakerBrevDTO?
-                        with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                        client.get(arbeidstakerBrevApiPath) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
                             arbeidstakerBrevList.size shouldBeEqualTo 6
 
                             arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
@@ -630,21 +525,18 @@ class ArbeidstakerBrevApiSpek : Spek({
                             arbeidstakerBrevDTO!!.brevType shouldBeEqualTo MotedeltakerVarselType.REFERAT.name
                             arbeidstakerBrevDTO!!.lestDato.shouldNotBeNull()
                         }
-                        with(
-                            handleRequest(HttpMethod.Post, urlReferatUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        client.post(urlReferatUUIDLes) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                         }
-                        with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+
+                        client.get(arbeidstakerBrevApiPath) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
                             arbeidstakerBrevList.size shouldBeEqualTo 6
 
                             val arbeidstakerBrevUpdatedDTO = arbeidstakerBrevList.firstOrNull()
@@ -652,76 +544,52 @@ class ArbeidstakerBrevApiSpek : Spek({
                             arbeidstakerBrevUpdatedDTO.brevType shouldBeEqualTo MotedeltakerVarselType.REFERAT.name
                             arbeidstakerBrevUpdatedDTO.lestDato shouldBeEqualTo arbeidstakerBrevDTO!!.lestDato
                         }
+
                         val urlPdfForInnkallingNedlasting =
                             "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
-                        with(
-                            handleRequest(HttpMethod.Get, urlPdfForInnkallingNedlasting) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val pdfContent = response.byteContent!!
+                        client.get(urlPdfForInnkallingNedlasting) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val pdfContent = bodyAsChannel().toByteArray()
                             pdfContent shouldBeEqualTo pdfInnkalling
                         }
+
                         val urlPdfForReferatNedlasting =
                             "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
-                        with(
-                            handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val pdfContent = response.byteContent!!
+                        client.get(urlPdfForReferatNedlasting) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val pdfContent = bodyAsChannel().toByteArray()
                             pdfContent shouldBeEqualTo pdfReferat
                         }
                     }
                 }
-                describe("Uautorisert person nektes tilgang") {
-                    val newDialogmoteInnkalt =
-                        generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted", LocalDateTime.now().plusDays(30))
+            }
+            describe("Uautorisert person nektes tilgang") {
+                val newDialogmoteInnkalt =
+                    generateNewDialogmoteDTO(ARBEIDSTAKER_FNR, "Sted", LocalDateTime.now().plusDays(30))
 
-                    val validTokenSelvbetjeningAnnenPerson = generateJWTTokenx(
-                        audience = externalMockEnvironment.environment.tokenxClientId,
-                        issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
-                        pid = ARBEIDSTAKER_ANNEN_FNR.value,
-                    )
+                val validTokenSelvbetjeningAnnenPerson = generateJWTTokenx(
+                    audience = externalMockEnvironment.environment.tokenxClientId,
+                    issuer = externalMockEnvironment.wellKnownSelvbetjening.issuer,
+                    pid = ARBEIDSTAKER_ANNEN_FNR.value,
+                )
 
-                    val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
-                    var createdDialogmoteUUID: String
-
-                    it("should return Forbidden when bearer header contains token for unauthorized person") {
-                        with(
-                            handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(Authorization, bearerHeader(validTokenVeileder))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteInnkalt))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                        }
-                        with(
-                            handleRequest(HttpMethod.Get, urlMote) {
-                                addHeader(Authorization, bearerHeader(validTokenVeileder))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-                            val dto = dialogmoteList.first()
-                            dto.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
-                            createdDialogmoteUUID = dto.uuid
-                        }
-
+                it("should return Forbidden when bearer header contains token for unauthorized person") {
+                    testApplication {
+                        val client = setupApiAndClient(
+                            altinnMock = altinnMock,
+                        )
+                        val createdDialogmoteUUID = client.postAndGetDialogmote(validTokenVeileder, newDialogmoteInnkalt).uuid
                         val createdArbeidstakerBrevUUID: String
-                        with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+
+                        client.get(arbeidstakerBrevApiPath) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
 
                             arbeidstakerBrevList.size shouldBeEqualTo 1
 
@@ -732,48 +600,38 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                         val urlArbeidstakerVarselUUIDLes =
                             "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
-                        with(
-                            handleRequest(HttpMethod.Post, urlArbeidstakerVarselUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                        client.post(urlArbeidstakerVarselUUIDLes) {
+                            bearerAuth(validTokenSelvbetjeningAnnenPerson)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.Forbidden
                         }
 
-                        with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                        client.get(arbeidstakerBrevApiPath) {
+                            bearerAuth(validTokenSelvbetjeningAnnenPerson)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
                             arbeidstakerBrevList.size shouldBeEqualTo 0
                         }
 
                         val urlMoteUUIDReferat =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
-                        val referatDto = generateNewReferatDTO()
-                        with(
-                            handleRequest(HttpMethod.Post, urlMoteUUIDReferat) {
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                addHeader(Authorization, bearerHeader(validTokenVeileder))
-                                setBody(objectMapper.writeValueAsString(referatDto))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                        client.post(urlMoteUUIDReferat) {
+                            bearerAuth(validTokenVeileder)
+                            contentType(ContentType.Application.Json)
+                            setBody(generateNewReferatDTO())
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                         }
 
                         val createdReferatArbeidstakerBrevUUID: String
-                        with(
-                            handleRequest(HttpMethod.Get, arbeidstakerBrevApiPath) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val arbeidstakerBrevList =
-                                objectMapper.readValue<List<ArbeidstakerBrevDTO>>(response.content!!)
+                        client.get(arbeidstakerBrevApiPath) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerBrevList = body<List<ArbeidstakerBrevDTO>>()
+
                             arbeidstakerBrevList.size shouldBeEqualTo 2
 
                             val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
@@ -781,51 +639,42 @@ class ArbeidstakerBrevApiSpek : Spek({
                             arbeidstakerBrevDTO.brevType shouldBeEqualTo MotedeltakerVarselType.REFERAT.name
                             createdReferatArbeidstakerBrevUUID = arbeidstakerBrevDTO.uuid
                         }
+
                         val urlReferatUUIDLes =
                             "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiLesPath"
-                        with(
-                            handleRequest(HttpMethod.Post, urlReferatUUIDLes) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                        client.post(urlReferatUUIDLes) {
+                            bearerAuth(validTokenSelvbetjeningAnnenPerson)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.Forbidden
                         }
 
                         val urlPdfForInnkallingNedlasting =
                             "$arbeidstakerBrevApiPath/$createdArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
-                        with(
-                            handleRequest(HttpMethod.Get, urlPdfForInnkallingNedlasting) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                        client.get(urlPdfForInnkallingNedlasting) {
+                            bearerAuth(validTokenSelvbetjeningAnnenPerson)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.Forbidden
                         }
-                        with(
-                            handleRequest(HttpMethod.Get, urlPdfForInnkallingNedlasting) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val pdfContent = response.byteContent!!
+                        client.get(urlPdfForInnkallingNedlasting) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val pdfContent = bodyAsChannel().toByteArray()
                             pdfContent shouldBeEqualTo pdfInnkalling
                         }
 
                         val urlPdfForReferatNedlasting =
                             "$arbeidstakerBrevApiPath/$createdReferatArbeidstakerBrevUUID$arbeidstakerBrevApiPdfPath"
-                        with(
-                            handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjeningAnnenPerson))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                        client.get(urlPdfForReferatNedlasting) {
+                            bearerAuth(validTokenSelvbetjeningAnnenPerson)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.Forbidden
                         }
-                        with(
-                            handleRequest(HttpMethod.Get, urlPdfForReferatNedlasting) {
-                                addHeader(Authorization, bearerHeader(validTokenSelvbetjening))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            val pdfContent = response.byteContent!!
+                        client.get(urlPdfForReferatNedlasting) {
+                            bearerAuth(validTokenSelvbetjening)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val pdfContent = bodyAsChannel().toByteArray()
                             pdfContent shouldBeEqualTo pdfReferat
                         }
                     }

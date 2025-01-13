@@ -1,19 +1,13 @@
 package no.nav.syfo.dialogmelding
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.server.testing.*
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
-import java.util.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
@@ -26,348 +20,347 @@ import no.nav.syfo.dialogmelding.domain.SvarType
 import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
 import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteAvlysPath
 import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteTidStedPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
 import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.util.bearerHeader
-import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.*
 
 class DialogmeldingServiceSpek : Spek({
-    val objectMapper: ObjectMapper = configuredJacksonMapper()
-
     describe(DialogmeldingServiceSpek::class.java.simpleName) {
-        with(TestApplicationEngine()) {
-            start()
+        val externalMockEnvironment = ExternalMockEnvironment.getInstance()
+        val database = externalMockEnvironment.database
+        val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
+        val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
+        val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
+        justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+        val behandlerVarselService = BehandlerVarselService(
+            database = database,
+            behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
+        )
+        val dialogmeldingService = DialogmeldingService(
+            behandlerVarselService = behandlerVarselService
+        )
 
-            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
-            val database = externalMockEnvironment.database
-            val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
-            val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
-            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
-            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-            val behandlerVarselService = BehandlerVarselService(
-                database = database,
-                behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
-            )
-            val dialogmeldingService = DialogmeldingService(
-                behandlerVarselService = behandlerVarselService
-            )
+        val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
+        val altinnResponse = ReceiptExternal()
+        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-            val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
-            val altinnResponse = ReceiptExternal()
-            altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
+        database.dropData()
 
-            application.testApiModule(
-                externalMockEnvironment = externalMockEnvironment,
-                behandlerVarselService = behandlerVarselService,
-                altinnMock = altinnMock,
-                esyfovarselProducer = esyfovarselProducerMock,
-            )
+        justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+        justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+        clearMocks(altinnMock)
+        every {
+            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
+        } returns altinnResponse
 
-            database.dropData()
+        val validToken = generateJWTNavIdent(
+            externalMockEnvironment.environment.aadAppClient,
+            externalMockEnvironment.wellKnownVeilederV2.issuer,
+            UserConstants.VEILEDER_IDENT,
+        )
 
-            justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-            clearMocks(altinnMock)
-            every {
-                altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-            } returns altinnResponse
+        describe("Håndterer dialogmelding-svar fra behandler på innkalling til dialogmøte") {
+            val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
+            lateinit var createdBehandlerVarselInnkallingUuid: String
+            lateinit var createdDialogmoteUUID: String
 
-            val urlMoter = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
-            val validToken = generateJWTNavIdent(
-                externalMockEnvironment.environment.aadAppClient,
-                externalMockEnvironment.wellKnownVeilederV2.issuer,
-                UserConstants.VEILEDER_IDENT,
-            )
+            beforeGroup {
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
+                    client.postMote(validToken, newDialogmoteDTO)
 
-            describe("Håndterer dialogmelding-svar fra behandler på innkalling til dialogmøte") {
-                val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
-                lateinit var createdBehandlerVarselInnkallingUuid: String
-                lateinit var createdDialogmoteUUID: String
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
 
-                beforeGroup {
-                    with(
-                        handleRequest(HttpMethod.Post, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-                    }
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
-                        val behandlerVarselDTO = dialogmoteList.first().behandler!!.varselList.first()
-                        createdBehandlerVarselInnkallingUuid = behandlerVarselDTO.uuid
-                        createdDialogmoteUUID = dialogmoteList.first().uuid
-                    }
+                    val behandlerVarselDTO = dialogmoteList.first().behandler!!.varselList.first()
+                    createdBehandlerVarselInnkallingUuid = behandlerVarselDTO.uuid
+                    createdDialogmoteUUID = dialogmoteList.first().uuid
                 }
+            }
 
-                afterGroup {
-                    database.dropData()
+            afterGroup {
+                database.dropData()
+            }
+
+            it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker og conversationRef refererer til innkalling-varsel") {
+                val svarTekst = "Fastlegen kommer i møtet"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.INNKALLING,
+                    svarType = SvarType.KOMMER,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = createdBehandlerVarselInnkallingUuid,
+                    parentRef = createdBehandlerVarselInnkallingUuid,
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
+
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+
+                    val innkallingVarsel = dialogmoteList.first().behandler!!.varselList.first()
+                    innkallingVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
+                    val varselSvarDTO = innkallingVarsel.svar.first()
+                    varselSvarDTO.uuid shouldNotBe null
+                    varselSvarDTO.createdAt shouldNotBe null
+                    varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
+                    varselSvarDTO.tekst shouldBeEqualTo svarTekst
                 }
+            }
+            it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker og conversationRef refererer ikke til innkalling-varsel") {
+                val svarTekst = "Fastlegen ønsker nytt tidspunkt"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.INNKALLING,
+                    svarType = SvarType.NYTT_TIDSPUNKT,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = UUID.randomUUID().toString(),
+                    parentRef = UUID.randomUUID().toString(),
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
 
-                it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker og conversationRef refererer til innkalling-varsel") {
-                    val svarTekst = "Fastlegen kommer i møtet"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.INNKALLING,
-                        svarType = SvarType.KOMMER,
-                        svarTekst = svarTekst,
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
                     )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = createdBehandlerVarselInnkallingUuid,
-                        parentRef = createdBehandlerVarselInnkallingUuid,
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
 
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
-                        val innkallingVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                        innkallingVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
-                        val varselSvarDTO = innkallingVarsel.svar.first()
-                        varselSvarDTO.uuid shouldNotBe null
-                        varselSvarDTO.createdAt shouldNotBe null
-                        varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
-                        varselSvarDTO.tekst shouldBeEqualTo svarTekst
-                    }
+                    val innkallingVarsel = dialogmoteList.first().behandler!!.varselList.first()
+                    innkallingVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
+                    val varselSvarDTO = innkallingVarsel.svar.first()
+                    varselSvarDTO.uuid shouldNotBe null
+                    varselSvarDTO.createdAt shouldNotBe null
+                    varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.NYTT_TID_STED.name
+                    varselSvarDTO.tekst shouldBeEqualTo svarTekst
                 }
-                it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker og conversationRef refererer ikke til innkalling-varsel") {
-                    val svarTekst = "Fastlegen ønsker nytt tidspunkt"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.INNKALLING,
-                        svarType = SvarType.NYTT_TIDSPUNKT,
-                        svarTekst = svarTekst,
+            }
+            it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker og mangler conversationRef") {
+                val svarTekst = "Fastlegen kan ikke komme"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.INNKALLING,
+                    svarType = SvarType.KAN_IKKE_KOMME,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = null,
+                    parentRef = null,
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
                     )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = UUID.randomUUID().toString(),
-                        parentRef = UUID.randomUUID().toString(),
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
 
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
-                        val innkallingVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                        innkallingVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
-                        val varselSvarDTO = innkallingVarsel.svar.first()
-                        varselSvarDTO.uuid shouldNotBe null
-                        varselSvarDTO.createdAt shouldNotBe null
-                        varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.NYTT_TID_STED.name
-                        varselSvarDTO.tekst shouldBeEqualTo svarTekst
-                    }
+                    val innkallingVarsel = dialogmoteList.first().behandler!!.varselList.first()
+                    innkallingVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
+                    val varselSvarDTO = innkallingVarsel.svar.first()
+                    varselSvarDTO.uuid shouldNotBe null
+                    varselSvarDTO.createdAt shouldNotBe null
+                    varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER_IKKE.name
+                    varselSvarDTO.tekst shouldBeEqualTo svarTekst
                 }
-                it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker og mangler conversationRef") {
-                    val svarTekst = "Fastlegen kan ikke komme"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.INNKALLING,
-                        svarType = SvarType.KAN_IKKE_KOMME,
-                        svarTekst = svarTekst,
+            }
+            it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker og mangler foresporsel") {
+                val svarTekst = "Fastlegen kan ikke komme og mangler foresporsel"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = null,
+                    svarType = SvarType.KAN_IKKE_KOMME,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = null,
+                    parentRef = null,
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
                     )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = null,
-                        parentRef = null,
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
 
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
-                        val innkallingVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                        innkallingVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
-                        val varselSvarDTO = innkallingVarsel.svar.first()
-                        varselSvarDTO.uuid shouldNotBe null
-                        varselSvarDTO.createdAt shouldNotBe null
-                        varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER_IKKE.name
-                        varselSvarDTO.tekst shouldBeEqualTo svarTekst
-                    }
+                    val innkallingVarsel = dialogmoteList.first().behandler!!.varselList.first()
+                    innkallingVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
+                    val varselSvarDTO = innkallingVarsel.svar.first()
+                    varselSvarDTO.uuid shouldNotBe null
+                    varselSvarDTO.createdAt shouldNotBe null
+                    varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER_IKKE.name
+                    varselSvarDTO.tekst shouldBeEqualTo svarTekst
                 }
-                it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker og mangler foresporsel") {
-                    val svarTekst = "Fastlegen kan ikke komme og mangler foresporsel"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = null,
-                        svarType = SvarType.KAN_IKKE_KOMME,
-                        svarTekst = svarTekst,
+            }
+            it("Oppretter ikke varsel-svar når dialogmelding inneholder annen arbeidstaker og conversationRef refererer til innkalling-varsel") {
+                val svarTekst = "Fastlegen kommer ei"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.INNKALLING,
+                    svarType = SvarType.KAN_IKKE_KOMME,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = createdBehandlerVarselInnkallingUuid,
+                    parentRef = createdBehandlerVarselInnkallingUuid,
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
                     )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = null,
-                        parentRef = null,
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
 
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-
-                        val innkallingVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                        innkallingVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
-                        val varselSvarDTO = innkallingVarsel.svar.first()
-                        varselSvarDTO.uuid shouldNotBe null
-                        varselSvarDTO.createdAt shouldNotBe null
-                        varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER_IKKE.name
-                        varselSvarDTO.tekst shouldBeEqualTo svarTekst
-                    }
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+                    val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
+                    svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
                 }
-                it("Oppretter ikke varsel-svar når dialogmelding inneholder annen arbeidstaker og conversationRef refererer til innkalling-varsel") {
-                    val svarTekst = "Fastlegen kommer ei"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.INNKALLING,
-                        svarType = SvarType.KAN_IKKE_KOMME,
-                        svarTekst = svarTekst,
-                    )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = createdBehandlerVarselInnkallingUuid,
-                        parentRef = createdBehandlerVarselInnkallingUuid,
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+            }
+            it("Oppretter ikke varsel-svar når dialogmelding inneholder annen arbeidstaker og mangler conversationRef") {
+                val svarTekst = "Fastlegens svar"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.INNKALLING,
+                    svarType = SvarType.KOMMER,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = null,
+                    parentRef = null,
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
 
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
 
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-                        val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
-                        svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
-                    }
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+                    val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
+                    svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
                 }
-                it("Oppretter ikke varsel-svar når dialogmelding inneholder annen arbeidstaker og mangler conversationRef") {
-                    val svarTekst = "Fastlegens svar"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.INNKALLING,
-                        svarType = SvarType.KOMMER,
-                        svarTekst = svarTekst,
-                    )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = null,
-                        parentRef = null,
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+            }
+            it("Oppretter ikke varsel-svar når dialogmelding inneholder annen behandler og mangler conversationRef") {
+                val svarTekst = "Annen fastleges svar her"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.INNKALLING,
+                    svarType = SvarType.KOMMER,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_ANNEN_FNR,
+                    conversationRef = null,
+                    parentRef = null,
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
 
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
 
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-                        val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
-                        svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
-                    }
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+                    val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
+                    svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
                 }
-                it("Oppretter ikke varsel-svar når dialogmelding inneholder annen behandler og mangler conversationRef") {
-                    val svarTekst = "Annen fastleges svar her"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.INNKALLING,
-                        svarType = SvarType.KOMMER,
-                        svarTekst = svarTekst,
-                    )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_ANNEN_FNR,
-                        conversationRef = null,
-                        parentRef = null,
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+            }
+            it("Oppretter ikke varsel-svar når dialogmelding mangler conversationRef og møtet er avlyst") {
+                val urlMoteUUIDAvlys = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
 
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
 
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-                        val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
-                        svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
-                    }
-                }
-                it("Oppretter ikke varsel-svar når dialogmelding mangler conversationRef og møtet er avlyst") {
-                    val urlMoteUUIDAvlys = "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
-                    val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
-                    with(
-                        handleRequest(HttpMethod.Post, urlMoteUUIDAvlys) {
-                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            setBody(objectMapper.writeValueAsString(avlysDialogMoteDto))
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    client.post(urlMoteUUIDAvlys) {
+                        bearerAuth(validToken)
+                        contentType(ContentType.Application.Json)
+                        setBody(avlysDialogMoteDto)
+                    }.apply {
+                        status shouldBeEqualTo HttpStatusCode.OK
                     }
 
                     val svarTekst = "Svar på avlyst møte"
@@ -386,435 +379,426 @@ class DialogmeldingServiceSpek : Spek({
                     )
                     dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
 
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
 
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-                        val svarList = dialogmoteList.first().behandler!!.varselList.find { it.varselType == MotedeltakerVarselType.INNKALT.name }!!.svar
-                        svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
-                    }
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+                    val svarList = dialogmoteList.first().behandler!!.varselList.find { it.varselType == MotedeltakerVarselType.INNKALT.name }!!.svar
+                    svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
                 }
             }
-            describe("Håndterer dialogmelding-svar fra behandler på endring av dialogmøte") {
-                val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
-                lateinit var createdBehandlerVarselInnkallingUuid: String
-                lateinit var createdBehandlerVarselEndringUuid: String
-                lateinit var createdDialogmoteUUID: String
+        }
+        describe("Håndterer dialogmelding-svar fra behandler på endring av dialogmøte") {
+            val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
+            lateinit var createdBehandlerVarselInnkallingUuid: String
+            lateinit var createdBehandlerVarselEndringUuid: String
+            lateinit var createdDialogmoteUUID: String
 
-                beforeGroup {
-                    with(
-                        handleRequest(HttpMethod.Post, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-                    }
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+            beforeGroup {
+                testApplication {
+                    val client = setupApiAndClient(
+                        behandlerVarselService = behandlerVarselService,
+                        altinnMock = altinnMock,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
+                    client.postMote(validToken, newDialogmoteDTO)
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
 
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                    response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        createdDialogmoteUUID = dialogmoteList.first().uuid
-                        val behandlerVarselDTO = dialogmoteList.first().behandler!!.varselList.first()
-                        createdBehandlerVarselInnkallingUuid = behandlerVarselDTO.uuid
-                    }
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+
+                    createdDialogmoteUUID = dialogmoteList.first().uuid
+                    val behandlerVarselDTO = dialogmoteList.first().behandler!!.varselList.first()
+                    createdBehandlerVarselInnkallingUuid = behandlerVarselDTO.uuid
 
                     val urlMoteUUIDPostTidSted =
                         "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                     val newDialogmoteTidSted = generateEndreDialogmoteTidStedDTOWithBehandler()
-                    with(
-                        handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
-                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            setBody(objectMapper.writeValueAsString(newDialogmoteTidSted))
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                    client.post(urlMoteUUIDPostTidSted) {
+                        bearerAuth(validToken)
+                        contentType(ContentType.Application.Json)
+                        setBody(newDialogmoteTidSted)
+                    }.apply {
+                        status shouldBeEqualTo HttpStatusCode.OK
                     }
 
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR).apply {
+                        status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-
-                        val varselList = dialogmoteList.first().behandler!!.varselList
-                        val behandlerVarselDTO = varselList.first()
-                        createdBehandlerVarselEndringUuid = behandlerVarselDTO.uuid
-                    }
-                }
-
-                afterGroup {
-                    database.dropData()
-                }
-
-                it("Oppretter varsel-svar når dialogmelding inneholder parentRef som refererer til endring-varsel") {
-                    val svarTekst = "Fastlegen kommer"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.ENDRING,
-                        svarType = SvarType.KOMMER,
-                        svarTekst = svarTekst,
-                    )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = createdBehandlerVarselInnkallingUuid,
-                        parentRef = createdBehandlerVarselEndringUuid,
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
-
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-
-                        val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                        endringVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.NYTT_TID_STED.name
-                        val varselSvarDTO = endringVarsel.svar.first()
-                        varselSvarDTO.uuid shouldNotBe null
-                        varselSvarDTO.createdAt shouldNotBe null
-                        varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
-                        varselSvarDTO.tekst shouldBeEqualTo svarTekst
-                    }
-                }
-                it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker og conversationRef refererer til innkalling-varsel og finnes endrings-varsel for arbeidstaker i samme møte") {
-                    val svarTekst = "Fastlegen ønsker endret sted"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.ENDRING,
-                        svarType = SvarType.NYTT_TIDSPUNKT,
-                        svarTekst = svarTekst,
-                    )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = createdBehandlerVarselInnkallingUuid,
-                        parentRef = UUID.randomUUID().toString(),
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
-
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-
-                        val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                        endringVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.NYTT_TID_STED.name
-                        val varselSvarDTO = endringVarsel.svar.first()
-                        varselSvarDTO.uuid shouldNotBe null
-                        varselSvarDTO.createdAt shouldNotBe null
-                        varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.NYTT_TID_STED.name
-                        varselSvarDTO.tekst shouldBeEqualTo svarTekst
-                    }
-                }
-                it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker, men parentRef og conversationRef referer ikke til innkalling- eller endring-varsler") {
-                    val svarTekst = "Fastlegen kommer ikke"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.ENDRING,
-                        svarType = SvarType.KAN_IKKE_KOMME,
-                        svarTekst = svarTekst,
-                    )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = UUID.randomUUID().toString(),
-                        parentRef = UUID.randomUUID().toString(),
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
-
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-
-                        val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                        endringVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.NYTT_TID_STED.name
-                        val varselSvarDTO = endringVarsel.svar.first()
-                        varselSvarDTO.uuid shouldNotBe null
-                        varselSvarDTO.createdAt shouldNotBe null
-                        varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER_IKKE.name
-                        varselSvarDTO.tekst shouldBeEqualTo svarTekst
-                    }
-                }
-                it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker, men parentRef og conversationRef mangler") {
-                    val svarTekst = "Fastlegen kommer ikke"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.ENDRING,
-                        svarType = SvarType.KAN_IKKE_KOMME,
-                        svarTekst = svarTekst,
-                    )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = null,
-                        parentRef = null,
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
-
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-
-                        val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                        endringVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.NYTT_TID_STED.name
-                        val varselSvarDTO = endringVarsel.svar.first()
-                        varselSvarDTO.uuid shouldNotBe null
-                        varselSvarDTO.createdAt shouldNotBe null
-                        varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER_IKKE.name
-                        varselSvarDTO.tekst shouldBeEqualTo svarTekst
-                    }
-                }
-                it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker, men parentRef, conversationRef og foresporsel mangler") {
-                    val svarTekst = "Fastlegen kommer ikke endring uten foresporsel"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = null,
-                        svarType = SvarType.KAN_IKKE_KOMME,
-                        svarTekst = svarTekst,
-                    )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = null,
-                        parentRef = null,
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
-
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-
-                        val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                        endringVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.NYTT_TID_STED.name
-                        val varselSvarDTO = endringVarsel.svar.first()
-                        varselSvarDTO.uuid shouldNotBe null
-                        varselSvarDTO.createdAt shouldNotBe null
-                        varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER_IKKE.name
-                        varselSvarDTO.tekst shouldBeEqualTo svarTekst
-                    }
-                }
-                it("Oppretter ikke varsel-svar når dialogmelding inneholder annen arbeidstaker og parentRef refererer til endring-varsel") {
-                    val svarTekst = "Fastlegen kan ikke møte på dette tidspunktet"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.ENDRING,
-                        svarType = SvarType.NYTT_TIDSPUNKT,
-                        svarTekst = svarTekst,
-                    )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = createdBehandlerVarselInnkallingUuid,
-                        parentRef = createdBehandlerVarselEndringUuid,
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
-
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-                        val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
-                        svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
-                    }
-                }
-                it("Oppretter ikke varsel-svar når dialogmelding inneholder annen arbeidstaker og parentRef og conversationRef mangler") {
-                    val svarTekst = "Fastlegens svar her"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.ENDRING,
-                        svarType = SvarType.KAN_IKKE_KOMME,
-                        svarTekst = svarTekst,
-                    )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = null,
-                        parentRef = null,
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
-
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-                        val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
-                        svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
-                    }
-                }
-                it("Oppretter ikke varsel-svar når dialogmelding inneholder annen behandler og parentRef og conversationRef mangler") {
-                    val svarTekst = "Annen fastleges svar her"
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.ENDRING,
-                        svarType = SvarType.KAN_IKKE_KOMME,
-                        svarTekst = svarTekst,
-                    )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_ANNEN_FNR,
-                        conversationRef = null,
-                        parentRef = null,
-                        innkallingMoterespons = innkallingMoterespons,
-                    )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
-
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-                        val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
-                        svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
+                        val varselList = body<List<DialogmoteDTO>>().first().behandler!!.varselList
+                        createdBehandlerVarselEndringUuid = varselList.first().uuid
                     }
                 }
             }
-            describe("Unhappy paths") {
-                val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
 
-                beforeGroup {
-                    with(
-                        handleRequest(HttpMethod.Post, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-                    }
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-                    }
-                }
+            afterGroup {
+                database.dropData()
+            }
 
-                it("Oppretter ikke varsel-svar når dialogmelding mangler innkalling-møterespons") {
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_SVAR",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = null,
-                        parentRef = null,
-                        innkallingMoterespons = null,
+            it("Oppretter varsel-svar når dialogmelding inneholder parentRef som refererer til endring-varsel") {
+                val svarTekst = "Fastlegen kommer"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.ENDRING,
+                    svarType = SvarType.KOMMER,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = createdBehandlerVarselInnkallingUuid,
+                    parentRef = createdBehandlerVarselEndringUuid,
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
                     )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
 
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-                        val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
-                        svarList.size shouldBeEqualTo 0
-                    }
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+
+                    val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
+                    endringVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.NYTT_TID_STED.name
+                    val varselSvarDTO = endringVarsel.svar.first()
+                    varselSvarDTO.uuid shouldNotBe null
+                    varselSvarDTO.createdAt shouldNotBe null
+                    varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
+                    varselSvarDTO.tekst shouldBeEqualTo svarTekst
                 }
-                it("Oppretter ikke varsel-svar når dialogmelding ikke har msgType DIALOG_SVAR") {
-                    val innkallingMoterespons = generateInnkallingMoterespons(
-                        foresporselType = ForesporselType.INNKALLING,
-                        svarType = SvarType.KOMMER,
-                        svarTekst = null,
+            }
+            it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker og conversationRef refererer til innkalling-varsel og finnes endrings-varsel for arbeidstaker i samme møte") {
+                val svarTekst = "Fastlegen ønsker endret sted"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.ENDRING,
+                    svarType = SvarType.NYTT_TIDSPUNKT,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = createdBehandlerVarselInnkallingUuid,
+                    parentRef = UUID.randomUUID().toString(),
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
                     )
-                    val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
-                        msgType = "DIALOG_NOTAT",
-                        personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
-                        personIdentBehandler = UserConstants.BEHANDLER_FNR,
-                        conversationRef = null,
-                        parentRef = null,
-                        innkallingMoterespons = innkallingMoterespons,
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
+
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+
+                    val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
+                    endringVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.NYTT_TID_STED.name
+                    val varselSvarDTO = endringVarsel.svar.first()
+                    varselSvarDTO.uuid shouldNotBe null
+                    varselSvarDTO.createdAt shouldNotBe null
+                    varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.NYTT_TID_STED.name
+                    varselSvarDTO.tekst shouldBeEqualTo svarTekst
+                }
+            }
+            it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker, men parentRef og conversationRef referer ikke til innkalling- eller endring-varsler") {
+                val svarTekst = "Fastlegen kommer ikke"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.ENDRING,
+                    svarType = SvarType.KAN_IKKE_KOMME,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = UUID.randomUUID().toString(),
+                    parentRef = UUID.randomUUID().toString(),
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
                     )
-                    dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
 
-                    with(
-                        handleRequest(HttpMethod.Get, urlMoter) {
-                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                            addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_FNR.value)
-                        }
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-                        val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
-                        svarList.size shouldBeEqualTo 0
-                    }
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+
+                    val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
+                    endringVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.NYTT_TID_STED.name
+                    val varselSvarDTO = endringVarsel.svar.first()
+                    varselSvarDTO.uuid shouldNotBe null
+                    varselSvarDTO.createdAt shouldNotBe null
+                    varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER_IKKE.name
+                    varselSvarDTO.tekst shouldBeEqualTo svarTekst
                 }
+            }
+            it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker, men parentRef og conversationRef mangler") {
+                val svarTekst = "Fastlegen kommer ikke"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.ENDRING,
+                    svarType = SvarType.KAN_IKKE_KOMME,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = null,
+                    parentRef = null,
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
 
-                afterGroup {
-                    database.dropData()
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
+
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+
+                    val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
+                    endringVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.NYTT_TID_STED.name
+                    val varselSvarDTO = endringVarsel.svar.first()
+                    varselSvarDTO.uuid shouldNotBe null
+                    varselSvarDTO.createdAt shouldNotBe null
+                    varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER_IKKE.name
+                    varselSvarDTO.tekst shouldBeEqualTo svarTekst
                 }
+            }
+            it("Oppretter varsel-svar når dialogmelding inneholder aktuell arbeidstaker, men parentRef, conversationRef og foresporsel mangler") {
+                val svarTekst = "Fastlegen kommer ikke endring uten foresporsel"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = null,
+                    svarType = SvarType.KAN_IKKE_KOMME,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = null,
+                    parentRef = null,
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
+
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+
+                    val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
+                    endringVarsel.varselType shouldBeEqualTo MotedeltakerVarselType.NYTT_TID_STED.name
+                    val varselSvarDTO = endringVarsel.svar.first()
+                    varselSvarDTO.uuid shouldNotBe null
+                    varselSvarDTO.createdAt shouldNotBe null
+                    varselSvarDTO.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER_IKKE.name
+                    varselSvarDTO.tekst shouldBeEqualTo svarTekst
+                }
+            }
+            it("Oppretter ikke varsel-svar når dialogmelding inneholder annen arbeidstaker og parentRef refererer til endring-varsel") {
+                val svarTekst = "Fastlegen kan ikke møte på dette tidspunktet"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.ENDRING,
+                    svarType = SvarType.NYTT_TIDSPUNKT,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = createdBehandlerVarselInnkallingUuid,
+                    parentRef = createdBehandlerVarselEndringUuid,
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
+
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+                    val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
+                    svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
+                }
+            }
+            it("Oppretter ikke varsel-svar når dialogmelding inneholder annen arbeidstaker og parentRef og conversationRef mangler") {
+                val svarTekst = "Fastlegens svar her"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.ENDRING,
+                    svarType = SvarType.KAN_IKKE_KOMME,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_ANNEN_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = null,
+                    parentRef = null,
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
+
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+                    val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
+                    svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
+                }
+            }
+            it("Oppretter ikke varsel-svar når dialogmelding inneholder annen behandler og parentRef og conversationRef mangler") {
+                val svarTekst = "Annen fastleges svar her"
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.ENDRING,
+                    svarType = SvarType.KAN_IKKE_KOMME,
+                    svarTekst = svarTekst,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_ANNEN_FNR,
+                    conversationRef = null,
+                    parentRef = null,
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
+
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+                    val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
+                    svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
+                }
+            }
+        }
+        describe("Unhappy paths") {
+            val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
+
+            beforeGroup {
+                testApplication {
+                    val client = setupApiAndClient(
+                        behandlerVarselService = behandlerVarselService,
+                        altinnMock = altinnMock,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
+                    client.postMote(validToken, newDialogmoteDTO)
+                }
+            }
+
+            it("Oppretter ikke varsel-svar når dialogmelding mangler innkalling-møterespons") {
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = null,
+                    parentRef = null,
+                    innkallingMoterespons = null,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
+
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+                    val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
+                    svarList.size shouldBeEqualTo 0
+                }
+            }
+            it("Oppretter ikke varsel-svar når dialogmelding ikke har msgType DIALOG_SVAR") {
+                val innkallingMoterespons = generateInnkallingMoterespons(
+                    foresporselType = ForesporselType.INNKALLING,
+                    svarType = SvarType.KOMMER,
+                    svarTekst = null,
+                )
+                val dialogmeldingDTO = generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_NOTAT",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = null,
+                    parentRef = null,
+                    innkallingMoterespons = innkallingMoterespons,
+                )
+                dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
+
+                testApplication {
+                    val client = setupApiAndClient(
+                        altinnMock = altinnMock,
+                        behandlerVarselService = behandlerVarselService,
+                        esyfovarselProducer = esyfovarselProducerMock,
+                    )
+                    val response = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
+
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+
+                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+                    val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
+                    svarList.size shouldBeEqualTo 0
+                }
+            }
+
+            afterGroup {
+                database.dropData()
             }
         }
     }

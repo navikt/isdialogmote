@@ -1,17 +1,9 @@
 package no.nav.syfo.dialogmote.api.v2
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpHeaders.Authorization
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
+import io.ktor.client.call.*
+import io.ktor.http.*
+import io.ktor.server.testing.*
 import io.mockk.*
-import java.time.LocalDate
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
@@ -30,213 +22,164 @@ import no.nav.syfo.testhelper.generator.generateInkallingHendelse
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithMissingValues
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.util.bearerHeader
-import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 
 class PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek : Spek({
-    val objectMapper: ObjectMapper = configuredJacksonMapper()
-
     describe(PostDialogmoteApiV2AllowVarselMedFysiskBrevSpek::class.java.simpleName) {
+        val externalMockEnvironment = ExternalMockEnvironment.getInstance()
+        val database = externalMockEnvironment.database
+        val moteStatusEndretRepository = MoteStatusEndretRepository(database)
 
-        with(TestApplicationEngine()) {
-            start()
+        val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
+        val esyfovarselHendelse = generateInkallingHendelse()
 
-            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
-            val database = externalMockEnvironment.database
-            val moteStatusEndretRepository = MoteStatusEndretRepository(database)
+        val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
+        justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
-            val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
-            val esyfovarselHendelse = generateInkallingHendelse()
-
-            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
-            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-
-            application.testApiModule(
-                externalMockEnvironment = externalMockEnvironment,
-                altinnMock = altinnMock,
-                esyfovarselProducer = esyfovarselProducerMock,
+        describe("Create Dialogmote for PersonIdent payload") {
+            val validToken = generateJWTNavIdent(
+                externalMockEnvironment.environment.aadAppClient,
+                externalMockEnvironment.wellKnownVeilederV2.issuer,
+                VEILEDER_IDENT,
             )
 
-            val urlMote = "$dialogmoteApiV2Basepath/$dialogmoteApiPersonIdentUrlPath"
+            beforeEachTest {
+                val altinnResponse = ReceiptExternal()
+                altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-            describe("Create Dialogmote for PersonIdent payload") {
-                val validToken = generateJWTNavIdent(
-                    externalMockEnvironment.environment.aadAppClient,
-                    externalMockEnvironment.wellKnownVeilederV2.issuer,
-                    VEILEDER_IDENT,
-                )
+                clearMocks(altinnMock)
+                every {
+                    altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
+                } returns altinnResponse
+            }
 
-                beforeEachTest {
-                    val altinnResponse = ReceiptExternal()
-                    altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
+            afterEachTest {
+                database.dropData()
+            }
 
-                    clearMocks(altinnMock)
-                    every {
-                        altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-                    } returns altinnResponse
-                }
+            beforeEachGroup {
+                database.dropData()
+            }
 
-                afterEachTest {
-                    database.dropData()
-                }
+            describe("Happy path") {
+                it("should return OK if request is successful even if ikke-varsle") {
+                    val moteTidspunkt = DIALOGMOTE_TIDSPUNKT_FIXTURE
+                    val newDialogmoteDTO = generateNewDialogmoteDTO(
+                        personIdent = ARBEIDSTAKER_IKKE_VARSEL,
+                        dato = moteTidspunkt,
+                    )
 
-                beforeEachGroup {
-                    database.dropData()
-                }
-
-                describe("Happy path") {
-
-                    val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
-
-                    it("should return OK if request is successful even if ikke-varsle") {
-                        val moteTidspunkt = DIALOGMOTE_TIDSPUNKT_FIXTURE
-                        val newDialogmoteDTO = generateNewDialogmoteDTO(
-                            personIdent = ARBEIDSTAKER_IKKE_VARSEL,
-                            dato = moteTidspunkt,
+                    testApplication {
+                        val client = setupApiAndClient(
+                            altinnMock = altinnMock,
+                            esyfovarselProducer = esyfovarselProducerMock
                         )
+                        client.postMote(validToken, newDialogmoteDTO)
+                        verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
-                        with(
-                            handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-                        }
                         val varselUuid: String
-                        with(
-                            handleRequest(HttpMethod.Get, urlMoter) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_IKKE_VARSEL.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val response = client.getDialogmoter(validToken, ARBEIDSTAKER_IKKE_VARSEL)
 
-                            dialogmoteList.size shouldBeEqualTo 1
+                        response.status shouldBeEqualTo HttpStatusCode.OK
 
-                            val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.tildeltEnhet shouldBeEqualTo ENHET_NR.value
-                            dialogmoteDTO.tildeltVeilederIdent shouldBeEqualTo VEILEDER_IDENT
+                        val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
-                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
-                            dialogmoteDTO.arbeidstaker.varselList.size shouldBeEqualTo 1
+                        dialogmoteList.size shouldBeEqualTo 1
 
-                            val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
-                            varselUuid = arbeidstakerVarselDTO.uuid
-                            arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
-                            arbeidstakerVarselDTO.digitalt shouldBeEqualTo false
-                            arbeidstakerVarselDTO.lestDato.shouldBeNull()
-                            arbeidstakerVarselDTO.fritekst shouldBeEqualTo "Ipsum lorum arbeidstaker"
+                        val dialogmoteDTO = dialogmoteList.first()
+                        dialogmoteDTO.tildeltEnhet shouldBeEqualTo ENHET_NR.value
+                        dialogmoteDTO.tildeltVeilederIdent shouldBeEqualTo VEILEDER_IDENT
 
-                            arbeidstakerVarselDTO.document.size shouldBeEqualTo 5
-                            arbeidstakerVarselDTO.document[0].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
-                            arbeidstakerVarselDTO.document[0].title shouldBeEqualTo "Tittel innkalling"
-                            arbeidstakerVarselDTO.document[0].texts shouldBeEqualTo emptyList()
-                            arbeidstakerVarselDTO.document[1].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
-                            arbeidstakerVarselDTO.document[1].title shouldBeEqualTo "Møtetid:"
-                            arbeidstakerVarselDTO.document[1].texts shouldBeEqualTo listOf("5. mai 2021")
-                            arbeidstakerVarselDTO.document[2].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
-                            arbeidstakerVarselDTO.document[2].texts shouldBeEqualTo listOf("Brødtekst")
-                            arbeidstakerVarselDTO.document[3].type shouldBeEqualTo DocumentComponentType.LINK
-                            arbeidstakerVarselDTO.document[3].texts shouldBeEqualTo listOf("https://nav.no/")
-                            arbeidstakerVarselDTO.document[4].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
-                            arbeidstakerVarselDTO.document[4].texts shouldBeEqualTo listOf(
-                                "Vennlig hilsen",
-                                "NAV Staden",
-                                "Kari Saksbehandler"
-                            )
-                            arbeidstakerVarselDTO.brevBestiltTidspunkt shouldBeEqualTo null
+                        dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
+                        dialogmoteDTO.arbeidstaker.varselList.size shouldBeEqualTo 1
 
-                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
-                            dialogmoteDTO.arbeidsgiver.varselList.size shouldBeEqualTo 1
-                            val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.first()
-                            arbeidsgiverVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
-                            arbeidsgiverVarselDTO.lestDato.shouldBeNull()
-                            arbeidsgiverVarselDTO.fritekst shouldBeEqualTo "Ipsum lorum arbeidsgiver"
+                        val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
+                        varselUuid = arbeidstakerVarselDTO.uuid
+                        arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
+                        arbeidstakerVarselDTO.digitalt shouldBeEqualTo false
+                        arbeidstakerVarselDTO.lestDato.shouldBeNull()
+                        arbeidstakerVarselDTO.fritekst shouldBeEqualTo "Ipsum lorum arbeidstaker"
 
-                            dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
-                            dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
+                        arbeidstakerVarselDTO.document.size shouldBeEqualTo 5
+                        arbeidstakerVarselDTO.document[0].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
+                        arbeidstakerVarselDTO.document[0].title shouldBeEqualTo "Tittel innkalling"
+                        arbeidstakerVarselDTO.document[0].texts shouldBeEqualTo emptyList()
+                        arbeidstakerVarselDTO.document[1].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
+                        arbeidstakerVarselDTO.document[1].title shouldBeEqualTo "Møtetid:"
+                        arbeidstakerVarselDTO.document[1].texts shouldBeEqualTo listOf("5. mai 2021")
+                        arbeidstakerVarselDTO.document[2].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
+                        arbeidstakerVarselDTO.document[2].texts shouldBeEqualTo listOf("Brødtekst")
+                        arbeidstakerVarselDTO.document[3].type shouldBeEqualTo DocumentComponentType.LINK
+                        arbeidstakerVarselDTO.document[3].texts shouldBeEqualTo listOf("https://nav.no/")
+                        arbeidstakerVarselDTO.document[4].type shouldBeEqualTo DocumentComponentType.PARAGRAPH
+                        arbeidstakerVarselDTO.document[4].texts shouldBeEqualTo listOf(
+                            "Vennlig hilsen",
+                            "NAV Staden",
+                            "Kari Saksbehandler"
+                        )
+                        arbeidstakerVarselDTO.brevBestiltTidspunkt shouldBeEqualTo null
 
-                            val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
-                            moteStatusEndretList.size shouldBeEqualTo 1
+                        dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                        dialogmoteDTO.arbeidsgiver.varselList.size shouldBeEqualTo 1
+                        val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.first()
+                        arbeidsgiverVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
+                        arbeidsgiverVarselDTO.lestDato.shouldBeNull()
+                        arbeidsgiverVarselDTO.fritekst shouldBeEqualTo "Ipsum lorum arbeidsgiver"
 
-                            moteStatusEndretList.first().status.name shouldBeEqualTo dialogmoteDTO.status
-                            moteStatusEndretList.first().opprettetAv shouldBeEqualTo VEILEDER_IDENT
-                            moteStatusEndretList.first().tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start
-                        }
+                        dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                        dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/xyz"
+
+                        val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
+                        moteStatusEndretList.size shouldBeEqualTo 1
+
+                        moteStatusEndretList.first().status.name shouldBeEqualTo dialogmoteDTO.status
+                        moteStatusEndretList.first().opprettetAv shouldBeEqualTo VEILEDER_IDENT
+                        moteStatusEndretList.first().tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start
+
                         database.setMotedeltakerArbeidstakerVarselBrevBestilt(varselUuid)
-                        with(
-                            handleRequest(HttpMethod.Get, urlMoter) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_IKKE_VARSEL.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-
-                            dialogmoteList.size shouldBeEqualTo 1
-
-                            val dialogmoteDTO = dialogmoteList.first()
-                            val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
-                            arbeidstakerVarselDTO.brevBestiltTidspunkt shouldNotBe null
-                            arbeidstakerVarselDTO.brevBestiltTidspunkt!!.toLocalDate() shouldBeEqualTo LocalDate.now()
+                        client.getDialogmoter(validToken, ARBEIDSTAKER_IKKE_VARSEL).apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            val arbeidstakerVarselDTOBrevBestilt = body<List<DialogmoteDTO>>().first().arbeidstaker.varselList.first()
+                            arbeidstakerVarselDTOBrevBestilt.brevBestiltTidspunkt shouldNotBe null
+                            arbeidstakerVarselDTOBrevBestilt.brevBestiltTidspunkt!!.toLocalDate() shouldBeEqualTo LocalDate.now()
                         }
                     }
+                }
 
-                    it("should return OK if request is successful: optional values missing") {
-                        val newDialogmoteDTO = generateNewDialogmoteDTOWithMissingValues(ARBEIDSTAKER_IKKE_VARSEL)
+                it("should return OK if request is successful: optional values missing") {
+                    val newDialogmoteDTO = generateNewDialogmoteDTOWithMissingValues(ARBEIDSTAKER_IKKE_VARSEL)
 
-                        with(
-                            handleRequest(HttpMethod.Post, urlMote) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                        }
+                    testApplication {
+                        val client = setupApiAndClient(
+                            altinnMock = altinnMock,
+                            esyfovarselProducer = esyfovarselProducerMock
+                        )
+                        val dialogmoteDTO =
+                            client.postAndGetDialogmote(validToken, newDialogmoteDTO, ARBEIDSTAKER_IKKE_VARSEL)
 
-                        with(
-                            handleRequest(HttpMethod.Get, urlMoter) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_IKKE_VARSEL.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        dialogmoteDTO.tildeltEnhet shouldBeEqualTo ENHET_NR.value
+                        dialogmoteDTO.tildeltVeilederIdent shouldBeEqualTo VEILEDER_IDENT
 
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
+                        dialogmoteDTO.arbeidstaker.varselList.size shouldBeEqualTo 1
 
-                            dialogmoteList.size shouldBeEqualTo 1
+                        val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
+                        arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
+                        arbeidstakerVarselDTO.digitalt shouldBeEqualTo false
+                        arbeidstakerVarselDTO.lestDato.shouldBeNull()
+                        arbeidstakerVarselDTO.fritekst shouldBeEqualTo ""
 
-                            val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.tildeltEnhet shouldBeEqualTo ENHET_NR.value
-                            dialogmoteDTO.tildeltVeilederIdent shouldBeEqualTo VEILEDER_IDENT
+                        dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
 
-                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
-                            dialogmoteDTO.arbeidstaker.varselList.size shouldBeEqualTo 1
-
-                            val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
-                            arbeidstakerVarselDTO.varselType shouldBeEqualTo MotedeltakerVarselType.INNKALT.name
-                            arbeidstakerVarselDTO.digitalt shouldBeEqualTo false
-                            arbeidstakerVarselDTO.lestDato.shouldBeNull()
-                            arbeidstakerVarselDTO.fritekst shouldBeEqualTo ""
-
-                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
-
-                            dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
-                            dialogmoteDTO.videoLink shouldBeEqualTo ""
-                        }
+                        dialogmoteDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                        dialogmoteDTO.videoLink shouldBeEqualTo ""
                     }
                 }
             }
