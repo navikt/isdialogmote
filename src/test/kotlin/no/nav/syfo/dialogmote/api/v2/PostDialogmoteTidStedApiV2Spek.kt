@@ -31,6 +31,7 @@ import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 class PostDialogmoteTidStedApiV2Spek : Spek({
@@ -235,7 +236,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
 
                         val urlMoteUUIDPostTidSted =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
-                        val newDialogmoteTid = newDialogmoteDTO.tidSted.tid.plusDays(1)
+                        val newDialogmoteTid = newDialogmoteDTO.tidSted.tid.plusDays(1).truncatedTo(ChronoUnit.MILLIS)
                         val newDialogmoteTidSted = EndreTidStedDialogmoteDTO(
                             sted = "Et annet sted",
                             tid = newDialogmoteTid,
