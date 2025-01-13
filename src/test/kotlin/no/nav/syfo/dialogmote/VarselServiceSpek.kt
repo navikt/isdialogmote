@@ -90,7 +90,7 @@ object VarselServiceSpek : Spek({
                     behandlerbrevId = null,
                     behandlerbrevParentId = null,
                     behandlerInnkallingUuid = null,
-                    motetidspunkt = LocalDateTime.now().plusDays(1L),
+                    motetidspunkt = DIALOGMOTE_TIDSPUNKT_FIXTURE,
                     token = "token",
                     callId = "callId",
                 )
@@ -148,7 +148,7 @@ object VarselServiceSpek : Spek({
                         altinnMelding
                     )
                 }
-                verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), DIALOGMOTE_TIDSPUNKT_FIXTURE) }
+                verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), any()) }
             }
         }
 
