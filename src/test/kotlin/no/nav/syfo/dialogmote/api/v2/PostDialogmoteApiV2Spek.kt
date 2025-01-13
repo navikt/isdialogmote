@@ -36,6 +36,7 @@ import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 
 class PostDialogmoteApiV2Spek : Spek({
     describe(PostDialogmoteApiV2Spek::class.java.simpleName) {
