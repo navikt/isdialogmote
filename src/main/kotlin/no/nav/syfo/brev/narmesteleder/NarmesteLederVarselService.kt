@@ -3,18 +3,21 @@ package no.nav.syfo.brev.narmesteleder
 import no.nav.syfo.brev.esyfovarsel.*
 import no.nav.syfo.client.narmesteleder.*
 import no.nav.syfo.dialogmote.domain.*
+import java.time.LocalDateTime
 
 class NarmesteLederVarselService(
     private val esyfovarselProducer: EsyfovarselProducer,
 ) {
     fun sendVarsel(
         narmesteLeder: NarmesteLederRelasjonDTO,
-        varseltype: MotedeltakerVarselType
+        varseltype: MotedeltakerVarselType,
+        motetidspunkt: LocalDateTime?,
     ) {
         val hendelse = NarmesteLederHendelse(
             type = getNaermesteLederVarselType(varseltype),
             data = VarselData(
-                narmesteLeder = VarselDataNarmesteLeder(narmesteLeder.narmesteLederNavn)
+                narmesteLeder = VarselDataNarmesteLeder(narmesteLeder.narmesteLederNavn),
+                motetidspunkt = motetidspunkt?.let { VarselDataMotetidspunkt(it) }
             ),
             narmesteLederFnr = narmesteLeder.narmesteLederPersonIdentNumber,
             arbeidstakerFnr = narmesteLeder.arbeidstakerPersonIdentNumber,

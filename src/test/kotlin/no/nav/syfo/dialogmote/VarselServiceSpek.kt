@@ -21,6 +21,7 @@ import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_NO_NARMESTELEDER
+import no.nav.syfo.testhelper.generator.DIALOGMOTE_TIDSPUNKT_FIXTURE
 import no.nav.syfo.testhelper.mock.narmesteLeder
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -54,7 +55,7 @@ object VarselServiceSpek : Spek({
             clearMocks(oppfolgingstilfelleClient)
 
             justRun { arbeidstakerVarselService.sendVarsel(any(), any(), any(), any(), any()) }
-            justRun { narmesteLederVarselService.sendVarsel(any(), any()) }
+            justRun { narmesteLederVarselService.sendVarsel(any(), any(), any()) }
             justRun { behandlerVarselService.sendVarsel(any(), any(), any(), any(), any(), any(), any(), any()) }
             justRun { altinnClient.sendToVirksomhet(any()) }
         }
@@ -104,7 +105,8 @@ object VarselServiceSpek : Spek({
                 verify(exactly = 1) {
                     narmesteLederVarselService.sendVarsel(
                         narmesteLeder,
-                        MotedeltakerVarselType.INNKALT
+                        MotedeltakerVarselType.INNKALT,
+                        DIALOGMOTE_TIDSPUNKT_FIXTURE
                     )
                 }
             }
@@ -156,7 +158,7 @@ object VarselServiceSpek : Spek({
                         altinnMelding
                     )
                 }
-                verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any()) }
+                verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), DIALOGMOTE_TIDSPUNKT_FIXTURE) }
             }
         }
 
@@ -206,7 +208,7 @@ object VarselServiceSpek : Spek({
                         altinnMelding
                     )
                 }
-                verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any()) }
+                verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), any()) }
             }
         }
 
@@ -253,7 +255,7 @@ object VarselServiceSpek : Spek({
                         altinnMelding
                     )
                 }
-                verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any()) }
+                verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), any()) }
             }
         }
     }

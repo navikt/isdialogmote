@@ -77,6 +77,7 @@ class VarselService(
             narmesteLederVarselService.sendVarsel(
                 narmesteLeder = narmesteLeder,
                 varseltype = varselType,
+                motetidspunkt = motetidspunkt
             )
         }
         if (isDigitalVarselEnabledForArbeidstaker) {

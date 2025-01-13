@@ -42,12 +42,12 @@ fun generateNewDialogmoteTidStedDTO(
 
 fun generateNewDialogmoteTidStedDTONoVideoLink() = NewDialogmoteTidStedDTO(
     sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
-    tid = LocalDateTime.now().plusDays(30),
+    tid = DIALOGMOTE_TIDSPUNKT_FIXTURE,
     videoLink = null
 )
 
 fun generateEndreDialogmoteTidStedDTO(
-    tid: LocalDateTime = LocalDateTime.now().plusDays(30),
+    tid: LocalDateTime = DIALOGMOTE_TIDSPUNKT_FIXTURE,
 ) = EndreTidStedDialogmoteDTO(
     sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
     tid = tid,
@@ -65,7 +65,7 @@ fun generateEndreDialogmoteTidStedDTO(
 
 fun generateEndreDialogmoteTidStedDTOWithBehandler() = EndreTidStedDialogmoteDTO(
     sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
-    tid = LocalDateTime.now().plusDays(30),
+    tid = DIALOGMOTE_TIDSPUNKT_FIXTURE,
     videoLink = "https://meet.google.com/xyz",
     arbeidstaker = EndreTidStedBegrunnelseDTO(
         begrunnelse = "",
@@ -153,7 +153,7 @@ fun generateMotedeltakerArbeidsgiverDTOMissingValues() = NewDialogmotedeltakerAr
 fun generateNewDialogmoteDTO(
     personIdent: PersonIdent,
     sted: String = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
-    dato: LocalDateTime = LocalDateTime.now().plusDays(30),
+    dato: LocalDateTime = DIALOGMOTE_TIDSPUNKT_FIXTURE,
     virksomhetsnummer: String = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
 ): NewDialogmoteDTO {
     return NewDialogmoteDTO(

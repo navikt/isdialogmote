@@ -18,8 +18,7 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
 import no.nav.syfo.brev.behandler.kafka.KafkaBehandlerDialogmeldingDTO
-import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.brev.esyfovarsel.HendelseType
+import no.nav.syfo.brev.esyfovarsel.*
 import no.nav.syfo.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.dialogmelding.DialogmeldingService
 import no.nav.syfo.dialogmelding.domain.ForesporselType
@@ -273,9 +272,10 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                         }
                         val urlMoteUUIDPostTidSted =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                        val newDialogmoteTid = newDialogmoteDTO.tidSted.tid.plusDays(1)
                         val newDialogmoteTidSted = EndreTidStedDialogmoteDTO(
                             sted = "Et annet sted",
-                            tid = newDialogmoteDTO.tidSted.tid.plusDays(1),
+                            tid = newDialogmoteTid,
                             videoLink = "https://meet.google.com/zyx",
                             arbeidstaker = EndreTidStedBegrunnelseDTO(
                                 begrunnelse = "begrunnelse arbeidstaker",
@@ -391,7 +391,16 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
                             esyfovarselEndringHendelse.type = HendelseType.NL_DIALOGMOTE_NYTT_TID_STED
-                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
+                            verify(exactly = 1) {
+                                esyfovarselProducerMock.sendVarselToEsyfovarsel(
+                                    esyfovarselEndringHendelse.copy(
+                                        data = VarselData(
+                                            narmesteLeder = VarselDataNarmesteLeder("narmesteLederNavn"),
+                                            motetidspunkt = VarselDataMotetidspunkt(newDialogmoteTid)
+                                        ),
+                                    )
+                                )
+                            }
                         }
 
                         with(
