@@ -3,6 +3,11 @@ package no.nav.syfo.dialogmote
 import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.exception.ConflictException
+import no.nav.syfo.brev.esyfovarsel.HendelseType
+import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
+import no.nav.syfo.brev.esyfovarsel.VarselData
+import no.nav.syfo.brev.esyfovarsel.VarselDataDialogmoteSvar
+import no.nav.syfo.brev.narmesteleder.domain.NarmesteLederResponsDTO
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
@@ -841,6 +846,33 @@ class DialogmoteService(
             personIdent = personIdent,
             token = token,
             callId = callId,
+        )
+    }
+
+    fun publishNarmesteLederSvarMelding(
+        brev: NarmesteLederBrev,
+        responsDTO: NarmesteLederResponsDTO,
+        narmesteLederPersonIdent: PersonIdent,
+    ) {
+        val dialogmoteDeltagerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(
+            motedeltakerArbeidsgiverId = brev.motedeltakerArbeidsgiverId,
+        )
+        val arbeidstakerPersonIdent = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(
+            moteId = dialogmoteDeltagerArbeidsgiver.moteId,
+        ).personIdent.value
+
+        varselService.sendNarmesteLederEsyfovarselMelding(
+            NarmesteLederHendelse(
+                type = HendelseType.NL_DIALOGMOTE_SVAR,
+                data = VarselData(
+                    dialogmoteSvar = VarselDataDialogmoteSvar(
+                        svar = DialogmoteSvarType.valueOf(responsDTO.svarType),
+                    )
+                ),
+                narmesteLederFnr = narmesteLederPersonIdent.value,
+                arbeidstakerFnr = arbeidstakerPersonIdent,
+                orgnummer = dialogmoteDeltagerArbeidsgiver.virksomhetsnummer.value,
+            )
         )
     }
 }

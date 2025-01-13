@@ -26,6 +26,10 @@ class NarmesteLederVarselService(
         esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
     }
 
+    fun sendMelding(hendelse: EsyfovarselHendelse) {
+        esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
+    }
+
     private fun getNaermesteLederVarselType(motedeltakerVarselType: MotedeltakerVarselType): HendelseType {
         return when (motedeltakerVarselType) {
             MotedeltakerVarselType.INNKALT -> HendelseType.NL_DIALOGMOTE_INNKALT

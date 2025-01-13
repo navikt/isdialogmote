@@ -3,6 +3,7 @@ package no.nav.syfo.dialogmote
 import java.util.*
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
+import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
 import no.nav.syfo.client.altinn.AltinnClient
 import no.nav.syfo.client.altinn.createAltinnMelding
@@ -105,5 +106,10 @@ class VarselService(
                 )
             }
         }
+    }
+    fun sendNarmesteLederEsyfovarselMelding(
+        hendelse: NarmesteLederHendelse
+    ) {
+        narmesteLederVarselService.sendMelding(hendelse)
     }
 }

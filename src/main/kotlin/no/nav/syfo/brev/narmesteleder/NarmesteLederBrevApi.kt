@@ -177,6 +177,11 @@ fun Route.registerNarmestelederBrevApi(
                         svarTekst = responsDTO.svarTekst,
                     )
                     if (updated) {
+                        dialogmoteService.publishNarmesteLederSvarMelding(
+                            brev = brev,
+                            responsDTO = responsDTO,
+                            narmesteLederPersonIdent = narmesteLederPersonIdent,
+                        )
                         call.respond(HttpStatusCode.OK)
                     } else {
                         throw IllegalArgumentException("Response already stored")
