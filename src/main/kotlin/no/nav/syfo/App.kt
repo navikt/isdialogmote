@@ -3,10 +3,7 @@ package no.nav.syfo
 import com.typesafe.config.ConfigFactory
 import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.config.HoconApplicationConfig
-import io.ktor.server.engine.applicationEngineEnvironment
-import io.ktor.server.engine.connector
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.engine.stop
+import io.ktor.server.engine.*
 import io.ktor.server.netty.Netty
 import java.util.concurrent.TimeUnit
 import no.nav.syfo.application.ApplicationState
@@ -149,13 +146,22 @@ fun main() {
     lateinit var dialogmoterelasjonService: DialogmoterelasjonService
     lateinit var dialogmotestatusService: DialogmotestatusService
 
-    val applicationEngineEnvironment = applicationEngineEnvironment {
+    val applicationEngineEnvironment = applicationEnvironment {
         log = logger
         config = HoconApplicationConfig(ConfigFactory.load())
-        connector {
-            port = applicationPort
-        }
-        module {
+    }
+    val server = embeddedServer(
+        factory = Netty,
+        environment = applicationEngineEnvironment,
+        configure = {
+            connector {
+                port = applicationPort
+            }
+            connectionGroupSize = 8
+            workerGroupSize = 8
+            callGroupSize = 16
+        },
+        module = {
             databaseModule(
                 environment = environment
             )
@@ -213,84 +219,74 @@ fun main() {
                 arbeidstakerVarselService = arbeidstakerVarselService,
                 moteStatusEndretRepository = moteStatusEndretRepository,
             )
-        }
-    }
+            monitor.subscribe(ApplicationStarted) {
+                applicationState.ready = true
+                logger.info(
+                    "Application is ready, running Java VM ${Runtime.version()} on this number of processors: ${
+                    Runtime.getRuntime().availableProcessors()
+                    }"
+                )
+                val dialogmeldingService = DialogmeldingService(
+                    behandlerVarselService = behandlerVarselService,
+                )
+                val dialogmeldingConsumerService = DialogmeldingConsumerService(
+                    kafkaConsumer = KafkaConsumer(kafkaDialogmeldingConsumerConfig(environment.kafka)),
+                    applicationState = applicationState,
+                    dialogmeldingService = dialogmeldingService
+                )
+                launchBackgroundTask(applicationState = applicationState) {
+                    logger.info("Starting dialogmelding kafka consumer")
+                    dialogmeldingConsumerService.startConsumer()
+                }
+                val identhendelseService = IdenthendelseService(
+                    database = applicationDatabase,
+                    pdlClient = pdlClient,
+                )
+                val identhendelseConsumerService = IdenthendelseConsumerService(
+                    kafkaConsumer = KafkaConsumer(kafkaIdenthendelseConsumerConfig(environment.kafka)),
+                    applicationState = applicationState,
+                    identhendelseService = identhendelseService,
+                )
+                launchBackgroundTask(applicationState = applicationState) {
+                    identhendelseConsumerService.startConsumer()
+                }
 
-    applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) {
-        applicationState.ready = true
-        logger.info(
-            "Application is ready, running Java VM ${Runtime.version()} on this number of processors: ${
-            Runtime.getRuntime().availableProcessors()
-            }"
-        )
-        val dialogmeldingService = DialogmeldingService(
-            behandlerVarselService = behandlerVarselService,
-        )
-        val dialogmeldingConsumerService = DialogmeldingConsumerService(
-            kafkaConsumer = KafkaConsumer(kafkaDialogmeldingConsumerConfig(environment.kafka)),
-            applicationState = applicationState,
-            dialogmeldingService = dialogmeldingService
-        )
-        launchBackgroundTask(applicationState = applicationState) {
-            logger.info("Starting dialogmelding kafka consumer")
-            dialogmeldingConsumerService.startConsumer()
-        }
-        val identhendelseService = IdenthendelseService(
-            database = applicationDatabase,
-            pdlClient = pdlClient,
-        )
-        val identhendelseConsumerService = IdenthendelseConsumerService(
-            kafkaConsumer = KafkaConsumer(kafkaIdenthendelseConsumerConfig(environment.kafka)),
-            applicationState = applicationState,
-            identhendelseService = identhendelseService,
-        )
-        launchBackgroundTask(applicationState = applicationState) {
-            identhendelseConsumerService.startConsumer()
-        }
+                val janitorService = JanitorService(
+                    database = applicationDatabase,
+                    dialogmotestatusService = dialogmotestatusService,
+                    dialogmoterelasjonService = dialogmoterelasjonService,
+                    janitorEventStatusProducer = JanitorEventStatusProducer(
+                        kafkaProducer = KafkaProducer(kafkaJanitorEventProducerConfig(environment.kafka)),
+                    ),
+                )
 
-        val janitorService = JanitorService(
-            database = applicationDatabase,
-            dialogmotestatusService = dialogmotestatusService,
-            dialogmoterelasjonService = dialogmoterelasjonService,
-            janitorEventStatusProducer = JanitorEventStatusProducer(
-                kafkaProducer = KafkaProducer(kafkaJanitorEventProducerConfig(environment.kafka)),
-            ),
-        )
+                val janitorEventConsumer = JanitorEventConsumer(
+                    kafkaConsumer = KafkaConsumer(kafkaJanitorEventConsumerConfig(environment.kafka)),
+                    applicationState = applicationState,
+                    janitorService = janitorService,
+                )
+                launchBackgroundTask(applicationState = applicationState) {
+                    janitorEventConsumer.startConsumer()
+                }
 
-        val janitorEventConsumer = JanitorEventConsumer(
-            kafkaConsumer = KafkaConsumer(kafkaJanitorEventConsumerConfig(environment.kafka)),
-            applicationState = applicationState,
-            janitorService = janitorService,
-        )
-        launchBackgroundTask(applicationState = applicationState) {
-            janitorEventConsumer.startConsumer()
-        }
+                if (environment.isDevGcp()) {
+                    val testdataResetService = TestdataResetService(
+                        database = applicationDatabase,
+                    )
 
-        if (environment.isDevGcp()) {
-            val testdataResetService = TestdataResetService(
-                database = applicationDatabase,
-            )
+                    val testdataResetConsumer = TestdataResetConsumer(
+                        kafkaConsumer = KafkaConsumer(kafkaTestdataResetConsumerConfig(environment.kafka)),
+                        applicationState = applicationState,
+                        testdataResetService = testdataResetService,
+                    )
 
-            val testdataResetConsumer = TestdataResetConsumer(
-                kafkaConsumer = KafkaConsumer(kafkaTestdataResetConsumerConfig(environment.kafka)),
-                applicationState = applicationState,
-                testdataResetService = testdataResetService,
-            )
-
-            launchBackgroundTask(applicationState = applicationState) {
-                testdataResetConsumer.startConsumer()
+                    launchBackgroundTask(applicationState = applicationState) {
+                        testdataResetConsumer.startConsumer()
+                    }
+                }
             }
         }
-    }
-
-    val server = embeddedServer(
-        factory = Netty,
-        environment = applicationEngineEnvironment,
-    ) {
-        connectionGroupSize = 8
-        workerGroupSize = 8
-        callGroupSize = 16
-    }
+    )
 
     Runtime.getRuntime().addShutdownHook(
         Thread {

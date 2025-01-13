@@ -1,14 +1,7 @@
 package no.nav.syfo.dialogmote
 
 import io.mockk.*
-import kotlinx.coroutines.DelicateCoroutinesApi
-import java.time.LocalDate
-import java.util.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import no.nav.syfo.application.Unbounded
-import no.nav.syfo.application.database.Database
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
@@ -25,7 +18,9 @@ import no.nav.syfo.testhelper.generator.DIALOGMOTE_TIDSPUNKT_FIXTURE
 import no.nav.syfo.testhelper.mock.narmesteLeder
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
 object VarselServiceSpek : Spek({
 
@@ -36,7 +31,10 @@ object VarselServiceSpek : Spek({
         val behandlerVarselService = mockk<BehandlerVarselService>()
         val altinnClient = mockk<AltinnClient>()
         val oppfolgingstilfelleClient = mockk<OppfolgingstilfelleClient>()
-        val database: Database = mockk()
+        val anyOppfolgingstilfelle = Oppfolgingstilfelle(
+            start = LocalDate.now().minusDays(10),
+            end = LocalDate.now().plusDays(10),
+        )
 
         val varselService = VarselService(
             arbeidstakerVarselService = arbeidstakerVarselService,
@@ -61,10 +59,7 @@ object VarselServiceSpek : Spek({
         }
 
         it("Send varsel to nærmeste leder") {
-            coEvery { oppfolgingstilfelleClient.oppfolgingstilfellePerson(any(), any(), any()) } returns Oppfolgingstilfelle(
-                start = LocalDate.MIN,
-                end = LocalDate.MAX,
-            )
+            coEvery { oppfolgingstilfelleClient.oppfolgingstilfellePerson(any(), any(), any()) } returns anyOppfolgingstilfelle
             val virksomhetsbrevId = UUID.randomUUID()
             val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
             val altinnMelding = createAltinnMelding(
@@ -77,8 +72,7 @@ object VarselServiceSpek : Spek({
                 true
             )
 
-            @OptIn(DelicateCoroutinesApi::class)
-            GlobalScope.launch(Dispatchers.Unbounded) {
+            runBlocking {
                 varselService.sendVarsel(
                     varselType = MotedeltakerVarselType.INNKALT,
                     isDigitalVarselEnabledForArbeidstaker = false,
@@ -96,7 +90,7 @@ object VarselServiceSpek : Spek({
                     behandlerbrevId = null,
                     behandlerbrevParentId = null,
                     behandlerInnkallingUuid = null,
-                    motetidspunkt = LocalDateTime.now().plusDays(1L),
+                    motetidspunkt = DIALOGMOTE_TIDSPUNKT_FIXTURE,
                     token = "token",
                     callId = "callId",
                 )
@@ -113,10 +107,7 @@ object VarselServiceSpek : Spek({
         }
 
         it("Send brev to Altinn when no nærmeste leder") {
-            coEvery { oppfolgingstilfelleClient.oppfolgingstilfellePerson(any(), any(), any()) } returns Oppfolgingstilfelle(
-                start = LocalDate.MIN,
-                end = LocalDate.MAX,
-            )
+            coEvery { oppfolgingstilfelleClient.oppfolgingstilfellePerson(any(), any(), any()) } returns anyOppfolgingstilfelle
             val virksomhetsbrevId = UUID.randomUUID()
             val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
             val altinnMelding = createAltinnMelding(
@@ -129,8 +120,7 @@ object VarselServiceSpek : Spek({
                 false
             )
 
-            @OptIn(DelicateCoroutinesApi::class)
-            GlobalScope.launch(Dispatchers.Unbounded) {
+            runBlocking {
                 varselService.sendVarsel(
                     varselType = MotedeltakerVarselType.INNKALT,
                     isDigitalVarselEnabledForArbeidstaker = false,
@@ -158,7 +148,7 @@ object VarselServiceSpek : Spek({
                         altinnMelding
                     )
                 }
-                verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), DIALOGMOTE_TIDSPUNKT_FIXTURE) }
+                verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), any()) }
             }
         }
 
@@ -179,8 +169,7 @@ object VarselServiceSpek : Spek({
                 false
             )
 
-            @OptIn(DelicateCoroutinesApi::class)
-            GlobalScope.launch(Dispatchers.Unbounded) {
+            runBlocking {
                 varselService.sendVarsel(
                     varselType = MotedeltakerVarselType.INNKALT,
                     isDigitalVarselEnabledForArbeidstaker = false,
@@ -226,8 +215,7 @@ object VarselServiceSpek : Spek({
                 false
             )
 
-            @OptIn(DelicateCoroutinesApi::class)
-            GlobalScope.launch(Dispatchers.Unbounded) {
+            runBlocking {
                 varselService.sendVarsel(
                     varselType = MotedeltakerVarselType.INNKALT,
                     isDigitalVarselEnabledForArbeidstaker = false,

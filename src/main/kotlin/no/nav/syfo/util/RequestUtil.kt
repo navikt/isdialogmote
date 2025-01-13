@@ -2,13 +2,13 @@ package no.nav.syfo.util
 
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.application.*
-import io.ktor.util.pipeline.*
+import io.ktor.server.routing.*
 import net.logstash.logback.argument.StructuredArguments
 
 const val NAV_PERSONIDENT_HEADER = "nav-personident"
 const val NAV_VIRKSOMHETSNUMMER = "nav-virksomhetsnummer"
 const val NAV_CALL_ID_HEADER = "Nav-Call-Id"
-fun PipelineContext<out Unit, ApplicationCall>.getCallId(): String {
+fun RoutingContext.getCallId(): String {
     return this.call.getCallId()
 }
 
@@ -31,10 +31,10 @@ fun ApplicationCall.getBearerHeader(): String? {
     return getHeader(Authorization)?.removePrefix("Bearer ")
 }
 
-fun PipelineContext<out Unit, ApplicationCall>.getBearerHeader(): String? {
+fun RoutingContext.getBearerHeader(): String? {
     return this.call.getBearerHeader()
 }
 
-fun PipelineContext<out Unit, ApplicationCall>.getPersonIdentHeader(): String? {
+fun RoutingContext.getPersonIdentHeader(): String? {
     return this.call.getHeader(NAV_PERSONIDENT_HEADER)
 }

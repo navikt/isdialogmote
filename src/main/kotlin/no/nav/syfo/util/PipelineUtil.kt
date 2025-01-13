@@ -1,12 +1,11 @@
 package no.nav.syfo.util
 
-import io.ktor.server.application.*
-import io.ktor.util.pipeline.*
+import io.ktor.server.routing.*
 import no.nav.syfo.application.api.authentication.ForbiddenAccessVeilederException
 import no.nav.syfo.dialogmote.tilgang.DialogmoteTilgangService
 import no.nav.syfo.domain.PersonIdent
 
-suspend fun PipelineContext<out Unit, ApplicationCall>.validateVeilederAccess(
+suspend fun RoutingContext.validateVeilederAccess(
     dialogmoteTilgangService: DialogmoteTilgangService,
     personIdentToAccess: PersonIdent,
     action: String,

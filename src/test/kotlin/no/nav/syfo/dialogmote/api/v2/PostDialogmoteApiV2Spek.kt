@@ -26,6 +26,10 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTEL
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.*
+import no.nav.syfo.testhelper.generator.generateInkallingHendelse
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithBehandler
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithMissingValues
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeNull
