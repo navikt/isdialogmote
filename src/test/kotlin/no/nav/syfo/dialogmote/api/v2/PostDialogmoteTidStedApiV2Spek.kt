@@ -1,17 +1,11 @@
 package no.nav.syfo.dialogmote.api.v2
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpHeaders.Authorization
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.server.testing.*
 import io.mockk.*
-import java.util.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
@@ -28,109 +22,87 @@ import no.nav.syfo.dialogmote.api.domain.EndreTidStedBegrunnelseDTO
 import no.nav.syfo.dialogmote.api.domain.EndreTidStedDialogmoteDTO
 import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.dialogmote.domain.*
-import no.nav.syfo.testhelper.ExternalMockEnvironment
+import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.dropData
-import no.nav.syfo.testhelper.generateJWTNavIdent
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
-import no.nav.syfo.testhelper.testApiModule
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.util.bearerHeader
-import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.*
 
 class PostDialogmoteTidStedApiV2Spek : Spek({
-    val objectMapper: ObjectMapper = configuredJacksonMapper()
-
     describe(PostDialogmoteTidStedApiV2Spek::class.java.simpleName) {
 
-        with(TestApplicationEngine()) {
-            start()
+        val externalMockEnvironment = ExternalMockEnvironment.getInstance()
+        val database = externalMockEnvironment.database
+        val esyfovarselEndringHendelse = generateEndringHendelse()
+        val moteStatusEndretRepository = MoteStatusEndretRepository(database)
 
-            val externalMockEnvironment = ExternalMockEnvironment.getInstance()
-            val database = externalMockEnvironment.database
-            val esyfovarselEndringHendelse = generateEndringHendelse()
-            val moteStatusEndretRepository = MoteStatusEndretRepository(database)
+        val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
+        justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
+        justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
 
-            val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
+        val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
+        justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+
+        val behandlerVarselService = BehandlerVarselService(
+            database = database,
+            behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
+        )
+        val dialogmeldingService = DialogmeldingService(
+            behandlerVarselService = behandlerVarselService
+        )
+
+        val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
+        val altinnResponse = ReceiptExternal()
+        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
+
+        afterEachTest {
+            database.dropData()
+            clearAllMocks()
+        }
+        beforeEachTest {
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
-            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
 
-            val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+            clearMocks(altinnMock)
+            every {
+                altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
+            } returns altinnResponse
+        }
 
-            val behandlerVarselService = BehandlerVarselService(
-                database = database,
-                behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
+        describe("Post DialogmoteTidSted") {
+            val validToken = generateJWTNavIdent(
+                externalMockEnvironment.environment.aadAppClient,
+                externalMockEnvironment.wellKnownVeilederV2.issuer,
+                VEILEDER_IDENT,
             )
-            val dialogmeldingService = DialogmeldingService(
-                behandlerVarselService = behandlerVarselService
-            )
+            describe("Happy path") {
+                val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
 
-            val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
-            val altinnResponse = ReceiptExternal()
-            altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
+                it("should return OK if request is successful") {
 
-            application.testApiModule(
-                externalMockEnvironment = externalMockEnvironment,
-                behandlerVarselService = behandlerVarselService,
-                altinnMock = altinnMock,
-                esyfovarselProducer = esyfovarselProducerMock,
-            )
-
-            afterEachTest {
-                database.dropData()
-                clearAllMocks()
-            }
-            beforeEachTest {
-                justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
-
-                justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-                clearMocks(altinnMock)
-                every {
-                    altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-                } returns altinnResponse
-            }
-
-            describe("Post DialogmoteTidSted") {
-                val validToken = generateJWTNavIdent(
-                    externalMockEnvironment.environment.aadAppClient,
-                    externalMockEnvironment.wellKnownVeilederV2.issuer,
-                    VEILEDER_IDENT,
-                )
-                describe("Happy path") {
-                    val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
-                    val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
-
-                    it("should return OK if request is successful") {
+                    testApplication {
                         val createdDialogmoteUUID: String
+                        val client = setupApiAndClient(
+                            behandlerVarselService = behandlerVarselService,
+                            altinnMock = altinnMock,
+                            esyfovarselProducer = esyfovarselProducerMock,
+                        )
 
-                        with(
-                            handleRequest(HttpMethod.Post, urlMoter) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.postMote(validToken, newDialogmoteDTO).apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                             esyfovarselEndringHendelse.type = HendelseType.NL_DIALOGMOTE_INNKALT
                             verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                         }
 
-                        with(
-                            handleRequest(HttpMethod.Get, urlMoter) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
 
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                            val dialogmoteList = body<List<DialogmoteDTO>>()
 
                             dialogmoteList.size shouldBeEqualTo 1
 
@@ -169,99 +141,89 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             behandler = null,
                         )
 
-                        with(
-                            handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                addHeader(Authorization, bearerHeader(validToken))
-                                setBody(objectMapper.writeValueAsString(newDialogmoteTidSted))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.post(urlMoteUUIDPostTidSted) {
+                            bearerAuth(validToken)
+                            contentType(ContentType.Application.Json)
+                            setBody(newDialogmoteTidSted)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                             verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                         }
 
-                        with(
-                            handleRequest(HttpMethod.Get, urlMoter) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val response = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR)
+                        response.status shouldBeEqualTo HttpStatusCode.OK
 
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                        val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
-                            dialogmoteList.size shouldBeEqualTo 1
+                        dialogmoteList.size shouldBeEqualTo 1
 
-                            val dialogmoteDTO = dialogmoteList.first()
-                            dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.NYTT_TID_STED.name
+                        val dialogmoteDTO = dialogmoteList.first()
+                        dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.NYTT_TID_STED.name
 
-                            dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
-                            val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
-                                it.varselType == MotedeltakerVarselType.NYTT_TID_STED.name
-                            }
-                            arbeidstakerVarselDTO.shouldNotBeNull()
-                            arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
-                            arbeidstakerVarselDTO.lestDato.shouldBeNull()
-                            arbeidstakerVarselDTO.fritekst shouldBeEqualTo "begrunnelse arbeidstaker"
-                            arbeidstakerVarselDTO.document.isEmpty() shouldNotBeEqualTo true
-                            arbeidstakerVarselDTO.document.first().texts shouldBeEqualTo listOf("dokumenttekst arbeidstaker")
+                        dialogmoteDTO.arbeidstaker.personIdent shouldBeEqualTo newDialogmoteDTO.arbeidstaker.personIdent
+                        val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
+                            it.varselType == MotedeltakerVarselType.NYTT_TID_STED.name
+                        }
+                        arbeidstakerVarselDTO.shouldNotBeNull()
+                        arbeidstakerVarselDTO.digitalt shouldBeEqualTo true
+                        arbeidstakerVarselDTO.lestDato.shouldBeNull()
+                        arbeidstakerVarselDTO.fritekst shouldBeEqualTo "begrunnelse arbeidstaker"
+                        arbeidstakerVarselDTO.document.isEmpty() shouldNotBeEqualTo true
+                        arbeidstakerVarselDTO.document.first().texts shouldBeEqualTo listOf("dokumenttekst arbeidstaker")
 
-                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
-                            val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.find {
-                                it.varselType == MotedeltakerVarselType.NYTT_TID_STED.name
-                            }
-                            arbeidsgiverVarselDTO.shouldNotBeNull()
-                            arbeidsgiverVarselDTO.lestDato.shouldBeNull()
-                            arbeidsgiverVarselDTO.fritekst shouldBeEqualTo "begrunnelse arbeidsgiver"
-                            arbeidsgiverVarselDTO.document.isEmpty() shouldNotBeEqualTo true
-                            arbeidsgiverVarselDTO.document.first().texts shouldBeEqualTo listOf("dokumenttekst arbeidsgiver")
+                        dialogmoteDTO.arbeidsgiver.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                        val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.find {
+                            it.varselType == MotedeltakerVarselType.NYTT_TID_STED.name
+                        }
+                        arbeidsgiverVarselDTO.shouldNotBeNull()
+                        arbeidsgiverVarselDTO.lestDato.shouldBeNull()
+                        arbeidsgiverVarselDTO.fritekst shouldBeEqualTo "begrunnelse arbeidsgiver"
+                        arbeidsgiverVarselDTO.document.isEmpty() shouldNotBeEqualTo true
+                        arbeidsgiverVarselDTO.document.first().texts shouldBeEqualTo listOf("dokumenttekst arbeidsgiver")
 
-                            dialogmoteDTO.sted shouldBeEqualTo newDialogmoteTidSted.sted
-                            dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/zyx"
+                        dialogmoteDTO.sted shouldBeEqualTo newDialogmoteTidSted.sted
+                        dialogmoteDTO.videoLink shouldBeEqualTo "https://meet.google.com/zyx"
 
-                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
-                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
+                        verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
+                        verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
 
-                            val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
-                            moteStatusEndretList.size shouldBeEqualTo 2
+                        val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
+                        moteStatusEndretList.size shouldBeEqualTo 2
 
-                            moteStatusEndretList.forEach { moteStatusEndret ->
-                                moteStatusEndret.opprettetAv shouldBeEqualTo VEILEDER_IDENT
-                                moteStatusEndret.tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start
-                            }
+                        moteStatusEndretList.forEach { moteStatusEndret ->
+                            moteStatusEndret.opprettetAv shouldBeEqualTo VEILEDER_IDENT
+                            moteStatusEndret.tilfelleStart shouldBeEqualTo oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start
                         }
                     }
                 }
-                describe("With behandler") {
-                    val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
-                    val urlMoter = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
+            }
+            describe("With behandler") {
+                val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
 
-                    it("should return OK if request is successful") {
+                it("should return OK if request is successful") {
+                    testApplication {
                         val createdDialogmoteUUID: String
-
-                        with(
-                            handleRequest(HttpMethod.Post, urlMoter) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
+                        val client = setupApiAndClient(
+                            behandlerVarselService = behandlerVarselService,
+                            altinnMock = altinnMock,
+                            esyfovarselProducer = esyfovarselProducerMock,
+                        )
+                        client.postMote(validToken, newDialogmoteDTO).apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) {
+                                esyfovarselProducerMock.sendVarselToEsyfovarsel(
+                                    esyfovarselEndringHendelse
+                                )
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                             verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                             clearMocks(behandlerDialogmeldingProducer)
                             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                         }
 
-                        with(
-                            handleRequest(HttpMethod.Get, urlMoter) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
 
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                            val dialogmoteList = body<List<DialogmoteDTO>>()
 
                             dialogmoteList.size shouldBeEqualTo 1
 
@@ -270,6 +232,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
 
                             createdDialogmoteUUID = dialogmoteDTO.uuid
                         }
+
                         val urlMoteUUIDPostTidSted =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                         val newDialogmoteTid = newDialogmoteDTO.tidSted.tid.plusDays(1)
@@ -309,28 +272,24 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             ),
                         )
 
-                        with(
-                            handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                addHeader(Authorization, bearerHeader(validToken))
-                                setBody(objectMapper.writeValueAsString(newDialogmoteTidSted))
+                        client.post(urlMoteUUIDPostTidSted) {
+                            bearerAuth(validToken)
+                            contentType(ContentType.Application.Json)
+                            setBody(newDialogmoteTidSted)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
+                            verify(exactly = 1) {
+                                esyfovarselProducerMock.sendVarselToEsyfovarsel(
+                                    esyfovarselEndringHendelse
+                                )
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-                            verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                         }
 
                         val createdDialogmote: DialogmoteDTO
-                        with(
-                            handleRequest(HttpMethod.Get, urlMoter) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
 
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-
+                            val dialogmoteList = body<List<DialogmoteDTO>>()
                             dialogmoteList.size shouldBeEqualTo 1
 
                             createdDialogmote = dialogmoteList.first()
@@ -354,7 +313,6 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation shouldBeEqualTo createdDialogmote.behandler!!.varselList[1].uuid
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
                         }
-
                         clearAllMocks()
                         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
 
@@ -382,14 +340,12 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                         )
                         dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
 
-                        with(
-                            handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                addHeader(Authorization, bearerHeader(validToken))
-                                setBody(objectMapper.writeValueAsString(newDialogmoteTidSted))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.post(urlMoteUUIDPostTidSted) {
+                            bearerAuth(validToken)
+                            contentType(ContentType.Application.Json)
+                            setBody(newDialogmoteTidSted)
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                             esyfovarselEndringHendelse.type = HendelseType.NL_DIALOGMOTE_NYTT_TID_STED
                             verify(exactly = 1) {
                                 esyfovarselProducerMock.sendVarselToEsyfovarsel(
@@ -402,17 +358,10 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                                 )
                             }
                         }
+                        client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
 
-                        with(
-                            handleRequest(HttpMethod.Get, urlMoter) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
-
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
-
+                            val dialogmoteList = body<List<DialogmoteDTO>>()
                             dialogmoteList.size shouldBeEqualTo 1
 
                             val dialogmoteDTO = dialogmoteList.first()
@@ -436,17 +385,17 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg shouldNotBeEqualTo null
                         }
                     }
-                    it("should throw exception if mote with behandler and endring missing behandler") {
+                }
+                it("should throw exception if mote with behandler and endring missing behandler") {
+                    testApplication {
                         val createdDialogmoteUUID: String
-
-                        with(
-                            handleRequest(HttpMethod.Post, urlMoter) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                setBody(objectMapper.writeValueAsString(newDialogmoteDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        val client = setupApiAndClient(
+                            behandlerVarselService = behandlerVarselService,
+                            altinnMock = altinnMock,
+                            esyfovarselProducer = esyfovarselProducerMock,
+                        )
+                        client.postMote(validToken, newDialogmoteDTO).apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
                             esyfovarselEndringHendelse.type = HendelseType.NL_DIALOGMOTE_INNKALT
                             verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
                             verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
@@ -454,15 +403,10 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
                         }
 
-                        with(
-                            handleRequest(HttpMethod.Get, urlMoter) {
-                                addHeader(Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                        client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).apply {
+                            status shouldBeEqualTo HttpStatusCode.OK
 
-                            val dialogmoteList = objectMapper.readValue<List<DialogmoteDTO>>(response.content!!)
+                            val dialogmoteList = body<List<DialogmoteDTO>>()
 
                             dialogmoteList.size shouldBeEqualTo 1
 
@@ -501,16 +445,14 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
                             behandler = null,
                         )
 
-                        with(
-                            handleRequest(HttpMethod.Post, urlMoteUUIDPostTidSted) {
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                addHeader(Authorization, bearerHeader(validToken))
-                                setBody(objectMapper.writeValueAsString(newDialogmoteTidStedNoBehandler))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                            response.content!! shouldContain "Failed to change tid/sted: missing behandler"
+                        val response = client.post(urlMoteUUIDPostTidSted) {
+                            bearerAuth(validToken)
+                            contentType(ContentType.Application.Json)
+                            setBody(newDialogmoteTidStedNoBehandler)
                         }
+
+                        response.status shouldBeEqualTo HttpStatusCode.BadRequest
+                        response.bodyAsText() shouldContain "Failed to change tid/sted: missing behandler"
                     }
                 }
             }
