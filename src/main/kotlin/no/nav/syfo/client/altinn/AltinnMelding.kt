@@ -140,6 +140,7 @@ private fun toVarselTypeTitle(varseltype: MotedeltakerVarselType, isCopy: Boolea
         MotedeltakerVarselType.NYTT_TID_STED -> TITTEL_NYTT_TID_STED_COPY.takeIf { isCopy } ?: TITTEL_NYTT_TID_STED
         MotedeltakerVarselType.AVLYST -> TITTEL_AVLYST_COPY.takeIf { isCopy } ?: TITTEL_AVLYST
         MotedeltakerVarselType.REFERAT -> TITTEL_REFERAT_COPY.takeIf { isCopy } ?: TITTEL_REFERAT
+        MotedeltakerVarselType.REFERAT_ENDRET -> TITTEL_REFERAT_COPY.takeIf { isCopy } ?: TITTEL_REFERAT
     }
 }
 
@@ -162,6 +163,7 @@ private fun toFilename(varseltype: MotedeltakerVarselType): String {
         MotedeltakerVarselType.NYTT_TID_STED -> FILNAVN_NYTT_TID_STED
         MotedeltakerVarselType.AVLYST -> FILNAVN_AVLYST
         MotedeltakerVarselType.REFERAT -> FILNAVN_REFERAT
+        MotedeltakerVarselType.REFERAT_ENDRET -> FILNAVN_REFERAT
     }
 }
 
@@ -175,6 +177,7 @@ private fun toMessageBody(varseltype: MotedeltakerVarselType, isCopy: Boolean): 
         MotedeltakerVarselType.NYTT_TID_STED -> BODY_KREVER_HANDLING
         MotedeltakerVarselType.AVLYST -> BODY_FERDIGSTILL
         MotedeltakerVarselType.REFERAT -> BODY_FERDIGSTILL
+        MotedeltakerVarselType.REFERAT_ENDRET -> BODY_FERDIGSTILL
     }
 }
 
@@ -184,6 +187,7 @@ private fun toEmailTitle(varseltype: MotedeltakerVarselType): String {
         MotedeltakerVarselType.NYTT_TID_STED -> EMAIL_TITTEL_NYTT_TID_STED
         MotedeltakerVarselType.AVLYST -> EMAIL_TITTEL_AVLYST
         MotedeltakerVarselType.REFERAT -> EMAIL_TITTEL_REFERAT
+        MotedeltakerVarselType.REFERAT_ENDRET -> EMAIL_TITTEL_REFERAT
     }
 }
 
@@ -193,6 +197,7 @@ private fun toEmailBody(varseltype: MotedeltakerVarselType): String {
         MotedeltakerVarselType.NYTT_TID_STED -> EMAIL_BODY_NYTT_TID_STED
         MotedeltakerVarselType.AVLYST -> EMAIL_BODY_AVLYST
         MotedeltakerVarselType.REFERAT -> EMAIL_BODY_REFERAT
+        MotedeltakerVarselType.REFERAT_ENDRET -> EMAIL_BODY_REFERAT
     }
 }
 
@@ -202,5 +207,6 @@ private fun toSMSBody(varseltype: MotedeltakerVarselType): String {
         MotedeltakerVarselType.NYTT_TID_STED -> SMS_BODY_NYTT_TID_STED
         MotedeltakerVarselType.AVLYST -> SMS_BODY_AVLYST
         MotedeltakerVarselType.REFERAT -> SMS_BODY_REFERAT
+        MotedeltakerVarselType.REFERAT_ENDRET -> SMS_BODY_REFERAT
     }
 }
