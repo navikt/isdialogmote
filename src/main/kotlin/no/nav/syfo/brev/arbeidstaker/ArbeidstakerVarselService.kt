@@ -56,5 +56,6 @@ fun getArbeidstakerHendelseType(motedeltakerVarselType: MotedeltakerVarselType):
         MotedeltakerVarselType.AVLYST -> HendelseType.SM_DIALOGMOTE_AVLYST
         MotedeltakerVarselType.NYTT_TID_STED -> HendelseType.SM_DIALOGMOTE_NYTT_TID_STED
         MotedeltakerVarselType.REFERAT -> HendelseType.SM_DIALOGMOTE_REFERAT
+        MotedeltakerVarselType.REFERAT_ENDRET -> HendelseType.SM_DIALOGMOTE_REFERAT_ENDRET
     }
 }

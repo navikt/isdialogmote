@@ -752,7 +752,7 @@ class DialogmoteService(
             val sisteMotetidspunkt = dialogmote.tidStedList.maxBy { tidSted -> tidSted.tid }.tid
 
             varselService.sendVarsel(
-                varselType = MotedeltakerVarselType.REFERAT,
+                varselType = MotedeltakerVarselType.REFERAT_ENDRET,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
                 arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
                 arbeidstakernavn = arbeidstakernavn,
