@@ -9,6 +9,7 @@ import no.nav.syfo.client.altinn.createAltinnMelding
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.oppfolgingstilfelle.isInactive
+import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
 import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.domain.PersonIdent
@@ -105,5 +106,19 @@ class VarselService(
                 )
             }
         }
+    }
+
+    fun sendNarmesteLederSvarVarselHendelse(
+        narmesteLederSvar: DialogmoteSvarType,
+        narmesteLederPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: PersonIdent,
+        virksomhetsnummer: Virksomhetsnummer
+    ) {
+        narmesteLederVarselService.sendNarmesteLederSvarVarselHendelse(
+            narmesteLederSvar = narmesteLederSvar,
+            narmesteLederPersonIdent = narmesteLederPersonIdent,
+            arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+            virksomhetsnummer = virksomhetsnummer,
+        )
     }
 }
