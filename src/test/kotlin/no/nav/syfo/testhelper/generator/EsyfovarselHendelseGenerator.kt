@@ -1,6 +1,7 @@
 package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.brev.esyfovarsel.*
+import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
 import no.nav.syfo.testhelper.UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
@@ -60,6 +61,17 @@ fun generateReferatHendelse() =
         narmesteLederFnr = NARMESTELEDER_FNR.value,
         data = VarselData(
             narmesteLeder = VarselDataNarmesteLeder("narmesteLederNavn")
+        ),
+        arbeidstakerFnr = ARBEIDSTAKER_FNR.value,
+        orgnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value
+    )
+
+fun generateKommerSvarHendelse() =
+    NarmesteLederHendelse(
+        type = HendelseType.NL_DIALOGMOTE_SVAR,
+        narmesteLederFnr = NARMESTELEDER_FNR.value,
+        data = VarselData(
+            dialogmoteSvar = VarselDataDialogmoteSvar(DialogmoteSvarType.KOMMER)
         ),
         arbeidstakerFnr = ARBEIDSTAKER_FNR.value,
         orgnummer = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value

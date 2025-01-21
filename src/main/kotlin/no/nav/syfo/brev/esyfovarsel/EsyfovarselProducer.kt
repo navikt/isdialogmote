@@ -1,6 +1,7 @@
 package no.nav.syfo.brev.esyfovarsel
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
 import java.io.Serializable
 import java.util.*
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -55,7 +56,8 @@ data class ArbeidstakerHendelse(
 data class VarselData(
     val journalpost: VarselDataJournalpost? = null,
     val narmesteLeder: VarselDataNarmesteLeder? = null,
-    val motetidspunkt: VarselDataMotetidspunkt? = null
+    val motetidspunkt: VarselDataMotetidspunkt? = null,
+    val dialogmoteSvar: VarselDataDialogmoteSvar? = null
 )
 
 data class VarselDataJournalpost(
@@ -71,6 +73,10 @@ data class VarselDataMotetidspunkt(
     val tidspunkt: LocalDateTime
 )
 
+data class VarselDataDialogmoteSvar(
+    val svar: DialogmoteSvarType
+)
+
 enum class HendelseType {
     NL_DIALOGMOTE_INNKALT,
     SM_DIALOGMOTE_INNKALT,
@@ -81,4 +87,5 @@ enum class HendelseType {
     NL_DIALOGMOTE_NYTT_TID_STED,
     SM_DIALOGMOTE_NYTT_TID_STED,
     SM_DIALOGMOTE_LEST,
+    NL_DIALOGMOTE_SVAR,
 }

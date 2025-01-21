@@ -78,10 +78,9 @@ class DialogmoteService(
         val personIdent = PersonIdent(newDialogmoteDTO.arbeidstaker.personIdent)
         val virksomhetsnummer = Virksomhetsnummer(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer)
 
-        val anyUnfinishedDialogmote =
-            getDialogmoteList(personIdent).filter {
-                it.arbeidsgiver.virksomhetsnummer == virksomhetsnummer
-            }.anyUnfinished()
+        val anyUnfinishedDialogmote = getDialogmoteList(personIdent).filter {
+            it.arbeidsgiver.virksomhetsnummer == virksomhetsnummer
+        }.anyUnfinished()
 
         if (anyUnfinishedDialogmote) {
             throw ConflictException("Denied access to create Dialogmote: unfinished Dialogmote exists for PersonIdent")
@@ -220,14 +219,13 @@ class DialogmoteService(
             pdfContent = avlysDialogmote.arbeidsgiver.avlysning,
         ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidsgiver")
 
-        val pdfAvlysningBehandler =
-            avlysDialogmote.behandler?.let {
-                pdfGenClient.pdfAvlysning(
-                    callId = callId,
-                    mottakerNavn = dialogmote.behandler?.behandlerNavn,
-                    pdfContent = it.avlysning,
-                ) ?: throw RuntimeException("Failed to request PDF - Avlysning Behandler")
-            }
+        val pdfAvlysningBehandler = avlysDialogmote.behandler?.let {
+            pdfGenClient.pdfAvlysning(
+                callId = callId,
+                mottakerNavn = dialogmote.behandler?.behandlerNavn,
+                pdfContent = it.avlysning,
+            ) ?: throw RuntimeException("Failed to request PDF - Avlysning Behandler")
+        }
 
         val digitalVarsling = isDigitalVarselEnabled(
             personIdent = dialogmote.arbeidstaker.personIdent,
@@ -315,14 +313,13 @@ class DialogmoteService(
             pdfContent = endreDialogmoteTidSted.arbeidsgiver.endringsdokument,
         ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidsgiver")
 
-        val pdfEndringBehandler =
-            endreDialogmoteTidSted.behandler?.let {
-                pdfGenClient.pdfEndringTidSted(
-                    callId = callId,
-                    mottakerNavn = dialogmote.behandler?.behandlerNavn,
-                    pdfContent = it.endringsdokument,
-                ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Behandler")
-            }
+        val pdfEndringBehandler = endreDialogmoteTidSted.behandler?.let {
+            pdfGenClient.pdfEndringTidSted(
+                callId = callId,
+                mottakerNavn = dialogmote.behandler?.behandlerNavn,
+                pdfContent = it.endringsdokument,
+            ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Behandler")
+        }
 
         val digitalVarsling = isDigitalVarselEnabled(
             personIdent = dialogmote.arbeidstaker.personIdent,
@@ -841,6 +838,26 @@ class DialogmoteService(
             personIdent = personIdent,
             token = token,
             callId = callId,
+        )
+    }
+
+    fun publishNarmesteLederSvarVarselHendelse(
+        brev: NarmesteLederBrev,
+        narmesteLederSvar: DialogmoteSvarType,
+        narmesteLederPersonIdent: PersonIdent,
+    ) {
+        val dialogmoteDeltagerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(
+            motedeltakerArbeidsgiverId = brev.motedeltakerArbeidsgiverId,
+        )
+        val arbeidstakerPersonIdent = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(
+            moteId = dialogmoteDeltagerArbeidsgiver.moteId,
+        ).personIdent
+
+        varselService.sendNarmesteLederSvarVarselHendelse(
+            narmesteLederSvar = narmesteLederSvar,
+            narmesteLederPersonIdent = narmesteLederPersonIdent,
+            arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+            virksomhetsnummer = dialogmoteDeltagerArbeidsgiver.virksomhetsnummer,
         )
     }
 }

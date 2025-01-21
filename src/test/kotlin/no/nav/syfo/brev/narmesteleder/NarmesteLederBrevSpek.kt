@@ -36,10 +36,7 @@ import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR_2
 import no.nav.syfo.testhelper.UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.generator.generateInkallingHendelse
-import no.nav.syfo.testhelper.generator.generateInkallingHendelseOtherVirksomhet
-import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
-import no.nav.syfo.testhelper.generator.generateNewReferatDTO
+import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.pdfInnkalling
 import no.nav.syfo.testhelper.mock.pdfReferat
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
@@ -199,6 +196,12 @@ object NarmesteLederBrevSpek : Spek({
                             )
                         )
                     }.apply {
+                        verify(exactly = 1) {
+                            esyfovarselProducerMock.sendVarselToEsyfovarsel(
+                                generateKommerSvarHendelse()
+                            )
+                        }
+                        clearMocks(esyfovarselProducerMock)
                         status shouldBeEqualTo HttpStatusCode.OK
                     }
 

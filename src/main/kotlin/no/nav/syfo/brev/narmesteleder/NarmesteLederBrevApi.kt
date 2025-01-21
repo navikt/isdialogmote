@@ -1,7 +1,6 @@
 package no.nav.syfo.brev.narmesteleder
 
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -171,12 +170,18 @@ fun Route.registerNarmestelederBrevApi(
                     narmesteLederPersonIdent = narmesteLederPersonIdent,
                 )
                 if (hasAccessToBrev) {
+                    val narmesteLederSvar = DialogmoteSvarType.valueOf(responsDTO.svarType)
                     val updated = dialogmotedeltakerService.updateArbeidsgiverBrevWithRespons(
                         brevUuid = brevUuid,
-                        svarType = DialogmoteSvarType.valueOf(responsDTO.svarType),
+                        svarType = narmesteLederSvar,
                         svarTekst = responsDTO.svarTekst,
                     )
                     if (updated) {
+                        dialogmoteService.publishNarmesteLederSvarVarselHendelse(
+                            brev = brev,
+                            narmesteLederSvar = narmesteLederSvar,
+                            narmesteLederPersonIdent = narmesteLederPersonIdent,
+                        )
                         call.respond(HttpStatusCode.OK)
                     } else {
                         throw IllegalArgumentException("Response already stored")

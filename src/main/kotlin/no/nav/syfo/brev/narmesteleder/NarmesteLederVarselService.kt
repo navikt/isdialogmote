@@ -3,6 +3,8 @@ package no.nav.syfo.brev.narmesteleder
 import no.nav.syfo.brev.esyfovarsel.*
 import no.nav.syfo.client.narmesteleder.*
 import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 
 class NarmesteLederVarselService(
@@ -24,6 +26,27 @@ class NarmesteLederVarselService(
             orgnummer = narmesteLeder.virksomhetsnummer
         )
         esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
+    }
+
+    fun sendNarmesteLederSvarVarselHendelse(
+        narmesteLederSvar: DialogmoteSvarType,
+        narmesteLederPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: PersonIdent,
+        virksomhetsnummer: Virksomhetsnummer
+    ) {
+        esyfovarselProducer.sendVarselToEsyfovarsel(
+            NarmesteLederHendelse(
+                type = HendelseType.NL_DIALOGMOTE_SVAR,
+                data = VarselData(
+                    dialogmoteSvar = VarselDataDialogmoteSvar(
+                        svar = narmesteLederSvar,
+                    )
+                ),
+                narmesteLederFnr = narmesteLederPersonIdent.value,
+                arbeidstakerFnr = arbeidstakerPersonIdent.value,
+                orgnummer = virksomhetsnummer.value,
+            )
+        )
     }
 
     private fun getNaermesteLederVarselType(motedeltakerVarselType: MotedeltakerVarselType): HendelseType {
