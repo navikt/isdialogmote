@@ -49,6 +49,8 @@ class VarselService(
         token: String,
         callId: String,
     ) {
+        //TODO:remove
+        log.info("MF: Skal sende varsel ${varselType.name} til $arbeidstakerPersonIdent")
         val altinnMelding = createAltinnMelding(
             virksomhetsbrevId,
             virksomhetsnummer,
