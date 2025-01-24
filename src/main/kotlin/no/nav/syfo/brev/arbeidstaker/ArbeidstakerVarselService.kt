@@ -30,6 +30,7 @@ class ArbeidstakerVarselService(
             orgnummer = null,
         )
         log.info("Skal sende ${getArbeidstakerHendelseType(varseltype)} til esyfovarselProducer. Journalpostid: $journalpostId")
+        log.info("dummy log")
         esyfovarselProducer.sendVarselToEsyfovarsel(hendelse)
     }
 
