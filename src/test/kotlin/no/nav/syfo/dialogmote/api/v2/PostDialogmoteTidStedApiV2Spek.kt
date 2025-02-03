@@ -236,7 +236,7 @@ class PostDialogmoteTidStedApiV2Spek : Spek({
 
                         val urlMoteUUIDPostTidSted =
                             "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
-                        val newDialogmoteTid = newDialogmoteDTO.tidSted.tid.plusDays(1).truncatedTo(ChronoUnit.MILLIS)
+                        val newDialogmoteTid = newDialogmoteDTO.tidSted.tid.plusDays(1).truncatedTo(ChronoUnit.SECONDS)
                         val newDialogmoteTidSted = EndreTidStedDialogmoteDTO(
                             sted = "Et annet sted",
                             tid = newDialogmoteTid,
