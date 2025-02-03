@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-val DIALOGMOTE_TIDSPUNKT_FIXTURE = LocalDateTime.now().plusDays(30L).truncatedTo(ChronoUnit.MILLIS)
+val DIALOGMOTE_TIDSPUNKT_FIXTURE = LocalDateTime.now().plusDays(30L).truncatedTo(ChronoUnit.SECONDS)
 
 fun generateNewDialogmoteTidSted() = NewDialogmoteTidSted(
     sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",

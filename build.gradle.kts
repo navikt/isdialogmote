@@ -4,15 +4,15 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
-val cxfVersion = "3.6.4"
-val confluentVersion = "7.6.1"
-val flywayVersion = "10.17.3"
-val hikariVersion = "5.1.0"
+val cxfVersion = "3.6.5"
+val confluentVersion = "7.8.0"
+val flywayVersion = "11.3.0"
+val hikariVersion = "6.2.1"
 val isdialogmoteSchemaVersion = "1.0.5"
-val jacksonDataTypeVersion = "2.17.2"
-val jedisVersion = "5.1.3"
-val jsonVersion = "20240303"
-val jettyVersion = "9.4.56.v20240826"
+val jacksonDataTypeVersion = "2.18.2"
+val jedisVersion = "5.2.0"
+val jsonVersion = "20250107"
+val jettyVersion = "9.4.57.v20241219"
 val joseVersion = "0.9.4"
 val kafkaVersion = "3.7.0"
 val ktorVersion = "3.0.3"
@@ -20,22 +20,23 @@ val kluentVersion = "1.73"
 val jaxbApiVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.3.6"
 val jaxsWsApiVersion = "2.3.1"
-val jaxwsToolsVersion = "2.3.5"
-val logbackVersion = "1.5.6"
-val logstashEncoderVersion = "7.4"
-val micrometerRegistryVersion = "1.12.7"
-val mockkVersion = "1.13.11"
-val nimbusjosejwtVersion = "9.40"
-val postgresEmbeddedVersion = "2.0.7"
-val postgresVersion = "42.7.4"
+val jaxwsToolsVersion = "4.0.3"
+val logbackVersion = "1.5.16"
+val logstashEncoderVersion = "8.0"
+val micrometerRegistryVersion = "1.12.13"
+val mockkVersion = "1.13.16"
+val nimbusjosejwtVersion = "10.0.1"
+val postgresEmbeddedVersion = "2.1.0"
+val postgresVersion = "42.7.5"
 val redisEmbeddedVersion = "0.7.3"
 val spekVersion = "2.0.19"
 val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
 
 plugins {
-    kotlin("jvm") version "2.0.20"
-    id("com.gradleup.shadow") version "8.3.2"
+    kotlin("jvm") version "2.1.10"
+    id("com.gradleup.shadow") version "8.3.5"
     id("org.jlleitschuh.gradle.ktlint") version "11.4.2"
+    id("com.github.ben-manes.versions") version "0.52.0"
 }
 
 repositories {
@@ -106,13 +107,13 @@ dependencies {
         implementation("org.apache.commons:commons-compress") {
             because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
             version {
-                require("1.26.0")
+                require("1.27.1")
             }
         }
         implementation("com.google.guava:guava") {
             because("com.google.guava:guava:30.1.1-jre -> https://www.cve.org/CVERecord?id=CVE-2020-8908")
             version {
-                require("32.1.3-jre")
+                require("33.4.0-jre")
             }
         }
     }
@@ -121,7 +122,7 @@ dependencies {
         implementation("org.yaml:snakeyaml") {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-25857/")
             version {
-                require("1.31")
+                require("2.3")
             }
         }
         implementation("org.glassfish:jakarta.el") {
@@ -133,13 +134,25 @@ dependencies {
         implementation("com.google.protobuf:protobuf-java") {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2022-3510")
             version {
-                require("3.25.1")
+                require("3.25.6")
             }
         }
         implementation("org.apache.zookeeper:zookeeper") {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
             version {
-                require("3.7.2")
+                require("3.9.3")
+            }
+        }
+        implementation("org.apache.mina:mina-core") {
+            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2024-52046")
+            version {
+                require("2.2.4")
+            }
+        }
+        implementation("io.github.classgraph:classgraph") {
+            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
+            version {
+                require("4.8.179")
             }
         }
         implementation("org.eclipse.jetty:jetty-server") {
