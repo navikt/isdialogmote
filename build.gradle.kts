@@ -143,6 +143,18 @@ dependencies {
                 require("3.9.3")
             }
         }
+        implementation("org.apache.mina:mina-core") {
+            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2024-52046")
+            version {
+                require("2.2.4")
+            }
+        }
+        implementation("io.github.classgraph:classgraph") {
+            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
+            version {
+                require("4.8.179")
+            }
+        }
         implementation("org.eclipse.jetty:jetty-server") {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
             version {
