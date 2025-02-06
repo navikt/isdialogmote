@@ -3,7 +3,7 @@ package no.nav.syfo.testhelper
 import no.nav.syfo.application.ApplicationEnvironmentKafka
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
-import no.nav.syfo.application.cache.RedisConfig
+import no.nav.syfo.application.cache.ValkeyConfig
 import java.net.URI
 import java.time.LocalDate
 
@@ -32,11 +32,11 @@ fun testEnvironment() = Environment(
         aivenTruststoreLocation = "truststore",
         aivenKeystoreLocation = "keystore",
     ),
-    redisConfig = RedisConfig(
-        redisUri = URI("http://localhost:6379"),
-        redisDB = 0,
-        redisUsername = "redisUser",
-        redisPassword = "redisPassword",
+    valkeyConfig = ValkeyConfig(
+        valkeyUri = URI("http://localhost:6379"),
+        valkeyDB = 0,
+        valkeyUsername = "valkeyUser",
+        valkeyPassword = "valkeyPassword",
         ssl = false,
     ),
     isdialogmoteDbHost = "localhost",

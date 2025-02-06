@@ -5,7 +5,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.application.cache.ValkeyStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.azuread.AzureAdV2Token
 import no.nav.syfo.client.httpClientDefault
@@ -20,7 +20,7 @@ class PdlClient(
     private val azureAdV2Client: AzureAdV2Client,
     private val pdlClientId: String,
     private val pdlUrl: String,
-    private val redisStore: RedisStore,
+    private val valkeyStore: ValkeyStore,
     private val httpClient: HttpClient = httpClientDefault(),
 ) {
 
@@ -28,7 +28,7 @@ class PdlClient(
         personIdent: PersonIdent,
     ): String {
         val cacheKey = "$NAVN_CACHE_KEY_PREFIX${personIdent.value}"
-        val cachedNavn: String? = redisStore.get(key = cacheKey)
+        val cachedNavn: String? = valkeyStore.get(key = cacheKey)
         return if (cachedNavn != null) {
             cachedNavn
         } else {
@@ -36,7 +36,7 @@ class PdlClient(
                 ?: throw RuntimeException("Failed to send request to PDL: No token was found")
             val navn = person(personIdent, token)?.fullName()
                 ?: throw RuntimeException("PDL returned empty navn for given fnr")
-            redisStore.set(cacheKey, navn, CACHE_EXPIRE_SECONDS)
+            valkeyStore.set(cacheKey, navn, CACHE_EXPIRE_SECONDS)
             navn
         }
     }
@@ -46,7 +46,7 @@ class PdlClient(
         callId: String,
     ): Set<PersonIdent> {
         val cacheKey = "$FOLKEREG_IDENTER_CACHE_KEY_PREFIX${personIdent.value}"
-        val cachedIdenter: Set<PersonIdent>? = redisStore.getSetObject(key = cacheKey)
+        val cachedIdenter: Set<PersonIdent>? = valkeyStore.getSetObject(key = cacheKey)
         return if (cachedIdenter != null) {
             cachedIdenter
         } else {
@@ -62,7 +62,7 @@ class PdlClient(
                     } ?: emptySet()
                 )
             }.toSet().also {
-                redisStore.setObject(cacheKey, it, CACHE_EXPIRE_SECONDS)
+                valkeyStore.setObject(cacheKey, it, CACHE_EXPIRE_SECONDS)
             }
         }
     }

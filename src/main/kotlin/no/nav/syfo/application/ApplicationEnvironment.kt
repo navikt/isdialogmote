@@ -1,7 +1,7 @@
 package no.nav.syfo.application
 
 import io.ktor.server.application.*
-import no.nav.syfo.application.cache.RedisConfig
+import no.nav.syfo.application.cache.ValkeyConfig
 import java.net.URI
 import java.time.LocalDate
 
@@ -29,11 +29,11 @@ data class Environment(
         aivenTruststoreLocation = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
         aivenKeystoreLocation = getEnvVar("KAFKA_KEYSTORE_PATH"),
     ),
-    val redisConfig: RedisConfig = RedisConfig(
-        redisUri = URI(getEnvVar("REDIS_URI_CACHE")),
-        redisDB = 7, // se https://github.com/navikt/istilgangskontroll/blob/master/README.md
-        redisUsername = getEnvVar("REDIS_USERNAME_CACHE"),
-        redisPassword = getEnvVar("REDIS_PASSWORD_CACHE"),
+    val valkeyConfig: ValkeyConfig = ValkeyConfig(
+        valkeyUri = URI(getEnvVar("VALKEY_URI_CACHE")),
+        valkeyDB = 7, // se https://github.com/navikt/istilgangskontroll/blob/master/README.md
+        valkeyUsername = getEnvVar("VALKEY_USERNAME_CACHE"),
+        valkeyPassword = getEnvVar("VALKEY_PASSWORD_CACHE"),
     ),
     val isdialogmoteDbHost: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTE_ISDIALOGMOTE_DB_HOST"),
     val isdialogmoteDbPort: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTE_ISDIALOGMOTE_DB_PORT"),

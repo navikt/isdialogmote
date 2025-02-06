@@ -72,7 +72,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             azureAdV2Client = azureAdV2Client,
             pdlClientId = externalMockEnvironment.environment.pdlClientId,
             pdlUrl = externalMockEnvironment.environment.pdlUrl,
-            redisStore = externalMockEnvironment.redisCache,
+            valkeyStore = externalMockEnvironment.redisCache,
             httpClient = externalMockEnvironment.mockHttpClient,
         )
         val eregClient = EregClient(

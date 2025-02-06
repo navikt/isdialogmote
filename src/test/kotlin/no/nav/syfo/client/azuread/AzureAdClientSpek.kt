@@ -7,7 +7,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.time.LocalDateTime
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.application.cache.ValkeyStore
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.AZUREAD_TOKEN
 import no.nav.syfo.testhelper.UserConstants.JWT_AZP
@@ -25,13 +25,13 @@ class AzureAdClientSpek : Spek({
 
     describe(AzureAdClientSpek::class.java.simpleName) {
         val externalMockEnvironment = ExternalMockEnvironment.getInstance()
-        val cacheMock = mockk<RedisStore>()
+        val cacheMock = mockk<ValkeyStore>()
 
         val azureAdClient = AzureAdV2Client(
             aadAppClient = externalMockEnvironment.environment.aadAppClient,
             aadAppSecret = externalMockEnvironment.environment.aadAppSecret,
             aadTokenEndpoint = externalMockEnvironment.environment.aadTokenEndpoint,
-            redisStore = cacheMock,
+            valkeyStore = cacheMock,
             httpClient = externalMockEnvironment.mockHttpClient,
         )
         val systemTokenCacheKey =

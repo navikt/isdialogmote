@@ -7,7 +7,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.application.cache.ValkeyStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.client.person.COUNT_CALL_PERSON_KONTAKTINFORMASJON_FAIL
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
 
 class KontaktinformasjonClient(
     private val azureAdV2Client: AzureAdV2Client,
-    private val cache: RedisStore,
+    private val cache: ValkeyStore,
     private val clientId: String,
     baseUrl: String,
     private val httpClient: HttpClient = httpClientDefault()
