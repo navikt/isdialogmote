@@ -7,7 +7,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.application.cache.ValkeyStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.client.tokendings.TokendingsClient
@@ -21,7 +21,7 @@ class NarmesteLederClient(
     private val narmestelederClientId: String,
     private val azureAdV2Client: AzureAdV2Client,
     private val tokendingsClient: TokendingsClient,
-    private val cache: RedisStore,
+    private val cache: ValkeyStore,
     private val httpClient: HttpClient = httpClientDefault(),
 ) {
     private val narmesteLederPath = "$narmesteLederBaseUrl$CURRENT_NARMESTELEDER_PATH"

@@ -2,7 +2,7 @@ package no.nav.syfo.identhendelse
 
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.application.cache.ValkeyStore
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerByIdent
@@ -24,12 +24,12 @@ object IdenthendelseServiceSpek : Spek({
 
         val externalMockEnvironment = ExternalMockEnvironment.getInstance()
         val database = externalMockEnvironment.database
-        val cacheMock = mockk<RedisStore>()
+        val cacheMock = mockk<ValkeyStore>()
         val pdlClient = PdlClient(
             azureAdV2Client = externalMockEnvironment.azureAdV2Client,
             pdlClientId = externalMockEnvironment.environment.pdlClientId,
             pdlUrl = externalMockEnvironment.environment.pdlUrl,
-            redisStore = cacheMock,
+            valkeyStore = cacheMock,
             httpClient = externalMockEnvironment.mockHttpClient,
         )
 

@@ -12,7 +12,7 @@ import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.application.cache.ValkeyStore
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.brev.behandler.BehandlerVarselService
 import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
@@ -72,7 +72,7 @@ class DialogmoteOutdatedCronjobSpek : Spek({
             tokendingsClient = tokendingsClient,
             isoppfolgingstilfelleClientId = externalMockEnvironment.environment.isoppfolgingstilfelleClientId,
             isoppfolgingstilfelleBaseUrl = externalMockEnvironment.environment.isoppfolgingstilfelleUrl,
-            cache = mockk<RedisStore>(relaxed = true),
+            cache = mockk<ValkeyStore>(relaxed = true),
             httpClient = externalMockEnvironment.mockHttpClient,
         )
         val dialogmotestatusService = DialogmotestatusService(

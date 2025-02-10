@@ -3,7 +3,7 @@ package no.nav.syfo.cronjob
 import io.ktor.server.application.Application
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
-import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.application.cache.ValkeyStore
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.launchBackgroundTask
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
@@ -33,7 +33,7 @@ fun Application.cronjobModule(
     applicationState: ApplicationState,
     database: DatabaseInterface,
     environment: Environment,
-    cache: RedisStore,
+    cache: ValkeyStore,
     dialogmotestatusService: DialogmotestatusService,
     dialogmoterelasjonService: DialogmoterelasjonService,
     arbeidstakerVarselService: ArbeidstakerVarselService,
@@ -43,7 +43,7 @@ fun Application.cronjobModule(
         aadAppClient = environment.aadAppClient,
         aadAppSecret = environment.aadAppSecret,
         aadTokenEndpoint = environment.aadTokenEndpoint,
-        redisStore = cache,
+        valkeyStore = cache,
     )
     val dokarkivClient = DokarkivClient(
         azureAdV2Client = azureAdV2Client,
@@ -54,7 +54,7 @@ fun Application.cronjobModule(
         azureAdV2Client = azureAdV2Client,
         pdlClientId = environment.pdlClientId,
         pdlUrl = environment.pdlUrl,
-        redisStore = cache,
+        valkeyStore = cache,
     )
     val eregClient = EregClient(
         baseUrl = environment.eregUrl,

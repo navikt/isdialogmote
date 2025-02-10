@@ -2,7 +2,7 @@ package no.nav.syfo.testhelper
 
 import io.ktor.server.netty.*
 import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.application.cache.ValkeyStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.pdl.PdlClient
@@ -20,18 +20,18 @@ class ExternalMockEnvironment private constructor() {
 
     var environment = testEnvironment()
     val mockHttpClient = mockHttpClient(environment = environment)
-    private val redisConfig = environment.redisConfig
-    val redisCache = RedisStore(
+    private val redisConfig = environment.valkeyConfig
+    val redisCache = ValkeyStore(
         JedisPool(
             JedisPoolConfig(),
             HostAndPort(redisConfig.host, redisConfig.port),
             DefaultJedisClientConfig.builder()
                 .ssl(redisConfig.ssl)
-                .password(redisConfig.redisPassword)
+                .password(redisConfig.valkeyPassword)
                 .build()
         )
     )
-    val redisServer = testRedis(environment)
+    val redisServer = testValkey(environment)
 
     val tokendingsClient = TokendingsClient(
         tokenxClientId = environment.tokenxClientId,
@@ -43,7 +43,7 @@ class ExternalMockEnvironment private constructor() {
         aadAppClient = environment.aadAppClient,
         aadAppSecret = environment.aadAppSecret,
         aadTokenEndpoint = environment.aadTokenEndpoint,
-        redisStore = redisCache,
+        valkeyStore = redisCache,
         httpClient = mockHttpClient,
     )
     val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
@@ -59,7 +59,7 @@ class ExternalMockEnvironment private constructor() {
         pdlClientId = environment.pdlClientId,
         pdlUrl = environment.pdlUrl,
         httpClient = mockHttpClient,
-        redisStore = redisCache,
+        valkeyStore = redisCache,
     )
 
     val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()

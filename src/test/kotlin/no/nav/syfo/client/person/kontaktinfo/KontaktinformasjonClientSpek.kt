@@ -5,7 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.application.cache.ValkeyStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.person.kontaktinfo.KontaktinformasjonClient.Companion.CACHE_KONTAKTINFORMASJON_KEY_PREFIX
 import no.nav.syfo.testhelper.ExternalMockEnvironment
@@ -26,7 +26,7 @@ class KontaktinformasjonClientSpek : Spek({
 
     describe(KontaktinformasjonClientSpek::class.java.simpleName) {
         val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
-        val cacheMock = mockk<RedisStore>(relaxed = true)
+        val cacheMock = mockk<ValkeyStore>(relaxed = true)
         val externalMockEnvironment = ExternalMockEnvironment.getInstance()
         val client = KontaktinformasjonClient(
             azureAdV2Client = azureAdV2ClientMock,

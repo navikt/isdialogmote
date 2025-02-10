@@ -7,7 +7,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.application.cache.RedisStore
+import no.nav.syfo.application.cache.ValkeyStore
 import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.domain.PersonIdent
@@ -22,7 +22,7 @@ class OppfolgingstilfelleClient(
     private val tokendingsClient: TokendingsClient,
     private val isoppfolgingstilfelleClientId: String,
     isoppfolgingstilfelleBaseUrl: String,
-    private val cache: RedisStore,
+    private val cache: ValkeyStore,
     private val httpClient: HttpClient = httpClientDefault()
 ) {
     private val personOppfolgingstilfelleUrl: String =
