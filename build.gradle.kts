@@ -3,7 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransf
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val altinnCorrespondenceAgencyExternalVersion = "1.2021.02.22-10.45-4201aaea72fb"
+val altinnCorrespondenceAgencyExternalVersion = "1.2020.01.20-15.44-063ae9f84815"
 val cxfVersion = "3.6.5"
 val confluentVersion = "7.9.0"
 val flywayVersion = "11.6.0"
@@ -30,7 +30,7 @@ val postgresEmbeddedVersion = "2.1.0"
 val postgresVersion = "42.7.5"
 val redisEmbeddedVersion = "0.7.3"
 val spekVersion = "2.0.19"
-val tjenesteSpesifikasjonerGithubVersion = "1.2021.02.22-10.45-4201aaea72fb"
+val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
 
 plugins {
     kotlin("jvm") version "2.1.20"
