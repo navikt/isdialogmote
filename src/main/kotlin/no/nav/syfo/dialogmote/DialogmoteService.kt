@@ -4,6 +4,7 @@ import no.nav.syfo.application.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.client.behandlendeenhet.getEnhetId
 import no.nav.syfo.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.client.pdfgen.PdfGenClient
@@ -95,7 +96,7 @@ class DialogmoteService(
 
         val arbeidstakernavn = pdlClient.navn(personIdent)
 
-        val behandlendeEnhet = behandlendeEnhetClient.getEnhet(
+        val behandlendeEnhetDTO = behandlendeEnhetClient.getEnhet(
             callId = callId,
             personIdent = personIdent,
             token = token,
@@ -103,7 +104,7 @@ class DialogmoteService(
 
         val newDialogmote = newDialogmoteDTO.toNewDialogmote(
             requestByNAVIdent = getNAVIdentFromToken(token),
-            navEnhet = EnhetNr(behandlendeEnhet.enhetId),
+            navEnhet = EnhetNr(behandlendeEnhetDTO.getEnhetId()),
         )
 
         val pdfInnkallingArbeidstaker = pdfGenClient.pdfInnkalling(

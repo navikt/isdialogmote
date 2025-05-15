@@ -4,6 +4,7 @@ import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetDTO
+import no.nav.syfo.client.behandlendeenhet.EnhetDTO
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FJERDE_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -18,8 +19,11 @@ import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 
 val mockBehandlendeEnhetDTO = BehandlendeEnhetDTO(
-    enhetId = ENHET_NR.value,
-    navn = "Enheten",
+    geografiskEnhet = EnhetDTO(
+        enhetId = ENHET_NR.value,
+        navn = "enhet",
+    ),
+    oppfolgingsenhetDTO = null,
 )
 
 fun MockRequestHandleScope.getBehandlendeEnhetResponse(request: HttpRequestData): HttpResponseData {
