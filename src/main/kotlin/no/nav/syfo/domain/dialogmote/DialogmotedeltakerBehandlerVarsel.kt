@@ -37,11 +37,13 @@ fun DialogmotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandlerVarselDTO() =
 fun DialogmotedeltakerBehandlerVarsel.toJournalpostRequest(
     brukerPersonIdent: PersonIdent,
     behandlerPersonIdent: PersonIdent?,
+    behandlerHprId: Int?,
     behandlerNavn: String,
     pdf: ByteArray,
 ) = createJournalpostRequest(
     brukerPersonIdent = brukerPersonIdent,
     mottakerPersonIdent = behandlerPersonIdent,
+    mottakerHprId = behandlerHprId,
     mottakerNavn = behandlerNavn,
     digitalt = true,
     dokumentName = this.varselType.toJournalpostTittel(),

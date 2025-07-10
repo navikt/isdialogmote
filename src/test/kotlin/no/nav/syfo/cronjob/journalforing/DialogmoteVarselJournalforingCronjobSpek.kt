@@ -16,6 +16,7 @@ import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
+import no.nav.syfo.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
@@ -83,6 +84,12 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             baseUrl = externalMockEnvironment.environment.eregUrl,
             httpClient = externalMockEnvironment.mockHttpClient,
         )
+        val dialogmeldingClient = DialogmeldingClient(
+            azureAdClient = azureAdV2Client,
+            clientId = externalMockEnvironment.environment.dialogmeldingClientId,
+            url = externalMockEnvironment.environment.dialogmeldingUrl,
+            client = externalMockEnvironment.mockHttpClient,
+        )
         val pdfService = PdfService(
             database = database,
         )
@@ -94,6 +101,7 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             dokarkivClient = dokarkivClient,
             pdlClient = pdlClient,
             eregClient = eregClient,
+            dialogmeldingClient = dialogmeldingClient,
             isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
         )
 
