@@ -23,4 +23,3 @@ val mockBehandlerDTO = BehandlerDTO(
 
 fun MockRequestHandleScope.getBehandlerResponse(request: HttpRequestData): HttpResponseData =
     respondOk(mockBehandlerDTO)
-
