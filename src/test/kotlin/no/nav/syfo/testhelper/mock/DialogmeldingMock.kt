@@ -3,13 +3,13 @@ package no.nav.syfo.testhelper.mock
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import no.nav.syfo.client.dialogmelding.BehandlerDTO
-import java.util.UUID
+import no.nav.syfo.testhelper.UserConstants
 
 val mockBehandlerDTO = BehandlerDTO(
-    behandlerRef = UUID.randomUUID().toString(),
+    behandlerRef = UserConstants.BEHANDLER_REF,
     kategori = "LE",
     fnr = null,
-    hprId = 123456,
+    hprId = UserConstants.BEHANDLER_HPRID,
     fornavn = "Fornavn",
     mellomnavn = null,
     etternavn = "Etternavn",
