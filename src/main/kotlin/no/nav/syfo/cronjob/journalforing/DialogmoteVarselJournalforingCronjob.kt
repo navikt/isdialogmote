@@ -1,6 +1,7 @@
 package no.nav.syfo.cronjob.journalforing
 
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.dokarkiv.domain.JournalpostRequest
 import no.nav.syfo.client.ereg.EregClient
@@ -12,6 +13,7 @@ import no.nav.syfo.cronjob.DialogmoteCronjobResult
 import no.nav.syfo.dialogmote.*
 import no.nav.syfo.dialogmote.domain.*
 import org.slf4j.LoggerFactory
+import java.util.UUID
 
 class DialogmoteVarselJournalforingCronjob(
     private val dialogmotedeltakerVarselJournalpostService: DialogmotedeltakerVarselJournalpostService,
@@ -20,6 +22,7 @@ class DialogmoteVarselJournalforingCronjob(
     private val dokarkivClient: DokarkivClient,
     private val pdlClient: PdlClient,
     private val eregClient: EregClient,
+    private val dialogmeldingClient: DialogmeldingClient,
     private val isJournalforingRetryEnabled: Boolean,
 ) : DialogmoteCronjob {
 
@@ -109,9 +112,11 @@ class DialogmoteVarselJournalforingCronjob(
         behandlerVarselForJournalforingList.forEach { (personIdent, behandler, behandlerVarsel) ->
             try {
                 val pdf = pdfService.getPdf(behandlerVarsel.pdfId)
+                val behandlerDTO = dialogmeldingClient.getBehandler(UUID.fromString(behandler.behandlerRef))
                 val journalpostRequest = behandlerVarsel.toJournalpostRequest(
                     brukerPersonIdent = personIdent,
                     behandlerPersonIdent = behandler.personIdent,
+                    behandlerHprId = behandlerDTO?.hprId,
                     behandlerNavn = behandler.behandlerNavn,
                     pdf = pdf,
                 )

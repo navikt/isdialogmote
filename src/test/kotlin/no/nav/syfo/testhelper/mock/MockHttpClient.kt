@@ -30,6 +30,7 @@ fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
                 requestUrl.startsWith("/${environment.pdlUrl}") -> pdlMockResponse(request)
                 requestUrl.startsWith("/${environment.eregUrl}") -> eregMockResponse(request)
                 requestUrl.startsWith("/${environment.ispdfgenUrl}") -> pdfGenMockResponse(request)
+                requestUrl.startsWith("/${environment.dialogmeldingUrl}") -> getBehandlerResponse(request)
 
                 else -> error("Unhandled ${request.url.encodedPath}")
             }

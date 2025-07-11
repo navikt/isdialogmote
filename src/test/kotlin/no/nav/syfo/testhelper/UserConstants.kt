@@ -27,7 +27,8 @@ object UserConstants {
 
     val BEHANDLER_FNR = PersonIdent("19122002920")
     val BEHANDLER_ANNEN_FNR = PersonIdent(BEHANDLER_FNR.value.replace("2", "4"))
-    val BEHANDLER_REF = "behref"
+    val BEHANDLER_REF = UUID.randomUUID().toString()
+    val BEHANDLER_HPRID = 123456
     val BEHANDLER_NAVN = "Navn Lege"
     val BEHANDLER_KONTOR = "Legekontoret"
 

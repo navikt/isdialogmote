@@ -84,6 +84,7 @@ spec:
         - application: isoppfolgingstilfelle
         - application: syfobehandlendeenhet
         - application: istilgangskontroll
+        - application: isdialogmelding
   azure:
     application:
       allowAllUsers: true
@@ -137,6 +138,10 @@ spec:
       value: "http://isnarmesteleder"
     - name: NARMESTELEDER_CLIENT_ID
       value: "dev-gcp.teamsykefravr.isnarmesteleder"
+    - name: DIALOGMELDING_URL
+      value: "http://isdialogmelding"
+    - name: DIALOGMELDING_CLIENT_ID
+      value: "dev-gcp.teamsykefravr.isdialogmelding"
     - name: ALTINN_WS_URL
       value: "https://tt02.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternalBasic.svc"
     - name: OUTDATED_DIALOGMOTE_CUTOFF
