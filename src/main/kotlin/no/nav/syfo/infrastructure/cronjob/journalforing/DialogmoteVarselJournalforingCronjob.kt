@@ -32,7 +32,7 @@ class DialogmoteVarselJournalforingCronjob(
 ) : DialogmoteCronjob {
 
     override val initialDelayMinutes: Long = 2
-    override val intervalDelayMinutes: Long = 2
+    override val intervalDelayMinutes: Long = 20
 
     override suspend fun run() {
         val journalforingResult = DialogmoteCronjobResult()
@@ -227,7 +227,6 @@ class DialogmoteVarselJournalforingCronjob(
     }
 
     private suspend fun journalfor(journalpostRequest: JournalpostRequest): Int {
-        log.info("Journalforing: ${journalpostRequest.avsenderMottaker.idType} : ${journalpostRequest.avsenderMottaker.id}")
         val journalpostResponse = dokarkivClient.journalfor(journalpostRequest)
         return if (journalpostResponse?.journalpostId == null) {
             if (isJournalforingRetryEnabled) {

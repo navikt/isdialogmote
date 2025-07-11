@@ -4,34 +4,34 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.clearMocks
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.api.endpoints.dialogmoteApiMoteAvlysPath
-import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
-import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
-import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
-import no.nav.syfo.application.BehandlerVarselService
+import no.nav.syfo.brev.behandler.BehandlerVarselService
+import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
+import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
+import no.nav.syfo.client.azuread.AzureAdV2Client
 import no.nav.syfo.client.dialogmelding.DialogmeldingClient
-import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
-import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
-import no.nav.syfo.infrastructure.client.dokarkiv.DokarkivClient
-import no.nav.syfo.infrastructure.client.ereg.EregClient
-import no.nav.syfo.infrastructure.client.pdl.PdlClient
-import no.nav.syfo.infrastructure.cronjob.DialogmoteCronjobResult
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerVarselJournalpostService
-import no.nav.syfo.infrastructure.database.dialogmote.PdfService
-import no.nav.syfo.infrastructure.database.dialogmote.ReferatJournalpostService
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
-import no.nav.syfo.domain.dialogmote.Referat
-import no.nav.syfo.domain.dialogmote.toJournalpostTittel
-import no.nav.syfo.infrastructure.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
+import no.nav.syfo.client.dokarkiv.DokarkivClient
+import no.nav.syfo.client.dokarkiv.domain.BrukerIdType
+import no.nav.syfo.client.dokarkiv.domain.JournalpostRequest
+import no.nav.syfo.client.ereg.EregClient
+import no.nav.syfo.client.pdl.PdlClient
+import no.nav.syfo.cronjob.DialogmoteCronjobResult
+import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.dialogmote.PdfService
+import no.nav.syfo.dialogmote.ReferatJournalpostService
+import no.nav.syfo.dialogmote.api.v2.*
+import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.dialogmote.domain.Referat
+import no.nav.syfo.dialogmote.domain.toJournalpostTittel
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
 import org.amshove.kluent.shouldBeEqualTo
@@ -43,6 +43,8 @@ import java.util.*
 
 class DialogmoteVarselJournalforingCronjobSpek : Spek({
     describe(DialogmoteVarselJournalforingCronjobSpek::class.java.simpleName) {
+        lateinit var dokarkivClient: DokarkivClient
+        lateinit var dialogmoteVarselJournalforingCronjob: DialogmoteVarselJournalforingCronjob
 
         val externalMockEnvironment = ExternalMockEnvironment.getInstance()
         val database = externalMockEnvironment.database
@@ -66,12 +68,6 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             database = database,
         )
         val azureAdV2Client = mockk<AzureAdV2Client>(relaxed = true)
-        val dokarkivClient = DokarkivClient(
-            azureAdV2Client = azureAdV2Client,
-            dokarkivClientId = externalMockEnvironment.environment.dokarkivClientId,
-            dokarkivBaseUrl = externalMockEnvironment.environment.dokarkivUrl,
-            httpClient = externalMockEnvironment.mockHttpClient,
-        )
 
         val pdlClient = PdlClient(
             azureAdV2Client = azureAdV2Client,
@@ -94,17 +90,6 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             database = database,
         )
 
-        val dialogmoteVarselJournalforingCronjob = DialogmoteVarselJournalforingCronjob(
-            dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
-            referatJournalpostService = referatJournalpostService,
-            pdfService = pdfService,
-            dokarkivClient = dokarkivClient,
-            pdlClient = pdlClient,
-            eregClient = eregClient,
-            dialogmeldingClient = dialogmeldingClient,
-            isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
-        )
-
         beforeEachTest {
             val altinnResponse = ReceiptExternal()
             altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
@@ -113,6 +98,23 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             every {
                 altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
             } returns altinnResponse
+
+            dokarkivClient = DokarkivClient(
+                azureAdV2Client = azureAdV2Client,
+                dokarkivClientId = externalMockEnvironment.environment.dokarkivClientId,
+                dokarkivBaseUrl = externalMockEnvironment.environment.dokarkivUrl,
+                httpClient = externalMockEnvironment.mockHttpClient,
+            )
+            dialogmoteVarselJournalforingCronjob = DialogmoteVarselJournalforingCronjob(
+                dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
+                referatJournalpostService = referatJournalpostService,
+                pdfService = pdfService,
+                dokarkivClient = dokarkivClient,
+                pdlClient = pdlClient,
+                eregClient = eregClient,
+                dialogmeldingClient = dialogmeldingClient,
+                isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
+            )
         }
 
         afterEachTest {
@@ -207,6 +209,20 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
             }
             it("should update journalpost when behandler") {
                 val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
+                val journalpostRequestSlot = slot<JournalpostRequest>()
+
+                dokarkivClient = mockk<DokarkivClient>(relaxed = true)
+
+                dialogmoteVarselJournalforingCronjob = DialogmoteVarselJournalforingCronjob(
+                    dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
+                    referatJournalpostService = referatJournalpostService,
+                    pdfService = pdfService,
+                    dokarkivClient = dokarkivClient,
+                    pdlClient = pdlClient,
+                    eregClient = eregClient,
+                    dialogmeldingClient = dialogmeldingClient,
+                    isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
+                )
 
                 testApplication {
                     val client = setupApiAndClient(
@@ -219,9 +235,19 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                     runBlocking {
                         val result = DialogmoteCronjobResult()
                         dialogmoteVarselJournalforingCronjob.dialogmoteBehandlerVarselJournalforingJob(result)
+                        coVerify(exactly = 1) {
+                            dokarkivClient.journalfor(
+                                capture(
+                                    journalpostRequestSlot
+                                )
+                            )
+                        }
 
                         result.failed shouldBeEqualTo 0
                         result.updated shouldBeEqualTo 1
+
+                        journalpostRequestSlot.captured.avsenderMottaker.idType shouldBeEqualTo BrukerIdType.HPRNR.value
+                        journalpostRequestSlot.captured.avsenderMottaker.id!! shouldBeEqualTo "000${UserConstants.BEHANDLER_HPRID}"
                     }
 
                     val urlMoteUUIDPostTidSted =
