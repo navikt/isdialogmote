@@ -68,6 +68,7 @@ data class JournalpostRequest private constructor(
 fun createJournalpostRequest(
     brukerPersonIdent: PersonIdent,
     mottakerPersonIdent: PersonIdent? = null,
+    mottakerHprId: Int? = null,
     mottakerVirksomhetsnummer: Virksomhetsnummer? = null,
     mottakerNavn: String,
     brevkodeType: BrevkodeType,
@@ -78,8 +79,12 @@ fun createJournalpostRequest(
     varselUuid: UUID,
 ): JournalpostRequest {
     val avsenderMottaker = AvsenderMottaker.create(
-        id = mottakerPersonIdent?.value ?: mottakerVirksomhetsnummer?.value,
-        idType = mottakerPersonIdent?.let {
+        id = mottakerHprId?.let {
+            hprNrWithNineDigits(it.toString())
+        } ?: mottakerPersonIdent?.value ?: mottakerVirksomhetsnummer?.value,
+        idType = mottakerHprId?.let {
+            BrukerIdType.HPRNR
+        } ?: mottakerPersonIdent?.let {
             BrukerIdType.PERSON_IDENT
         } ?: mottakerVirksomhetsnummer?.let {
             BrukerIdType.VIRKSOMHETSNUMMER
@@ -137,4 +142,8 @@ private fun createDokumentList(
             tittel = dokumentNavn,
         )
     )
+}
+
+private fun hprNrWithNineDigits(hprnummer: String): String {
+    return hprnummer.padStart(9, '0')
 }

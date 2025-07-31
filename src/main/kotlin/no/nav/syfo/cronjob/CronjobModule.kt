@@ -8,6 +8,7 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.launchBackgroundTask
 import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
 import no.nav.syfo.client.azuread.AzureAdV2Client
+import no.nav.syfo.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.client.dokarkiv.DokarkivClient
 import no.nav.syfo.client.ereg.EregClient
 import no.nav.syfo.client.pdl.PdlClient
@@ -71,6 +72,11 @@ fun Application.cronjobModule(
     val leaderPodClient = LeaderPodClient(
         environment = environment,
     )
+    val dialogmeldingClient = DialogmeldingClient(
+        azureAdClient = azureAdV2Client,
+        url = environment.dialogmeldingUrl,
+        clientId = environment.dialogmeldingClientId,
+    )
     val journalforDialogmoteVarslerCronjob = DialogmoteVarselJournalforingCronjob(
         dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
         referatJournalpostService = referatJournalpostService,
@@ -78,6 +84,7 @@ fun Application.cronjobModule(
         dokarkivClient = dokarkivClient,
         pdlClient = pdlClient,
         eregClient = eregClient,
+        dialogmeldingClient = dialogmeldingClient,
         isJournalforingRetryEnabled = environment.isJournalforingRetryEnabled,
     )
 
