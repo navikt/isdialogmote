@@ -2,8 +2,8 @@ package no.nav.syfo.testhelper.mock
 
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
-import no.nav.syfo.application.api.authentication.WellKnown
-import no.nav.syfo.client.azuread.AzureAdV2TokenResponse
+import no.nav.syfo.api.authentication.WellKnown
+import no.nav.syfo.infrastructure.client.azuread.AzureAdV2TokenResponse
 import no.nav.syfo.testhelper.UserConstants.AZUREAD_TOKEN
 import java.nio.file.Paths
 

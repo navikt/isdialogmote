@@ -1,7 +1,21 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.dialogmote.domain.*
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.dialogmote.Dialogmote
+import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
+import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
+import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
+import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiverVarsel
+import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
+import no.nav.syfo.domain.dialogmote.DialogmotedeltakerType
+import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
+import no.nav.syfo.domain.dialogmote.NewDialogmote
+import no.nav.syfo.domain.dialogmote.NewDialogmoteTidSted
+import no.nav.syfo.domain.dialogmote.NewDialogmotedeltakerArbeidsgiver
+import no.nav.syfo.domain.dialogmote.NewDialogmotedeltakerArbeidstaker
+import no.nav.syfo.domain.dialogmote.NewDialogmotedeltakerBehandler
+import no.nav.syfo.domain.dialogmote.Referat
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import java.time.LocalDateTime

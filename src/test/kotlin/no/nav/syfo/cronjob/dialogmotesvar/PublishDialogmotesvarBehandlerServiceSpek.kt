@@ -1,9 +1,13 @@
 package no.nav.syfo.cronjob.dialogmotesvar
 
 import io.mockk.*
-import no.nav.syfo.dialogmote.database.getMotedeltakerBehandlerVarselSvar
-import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerBehandlerVarselSvar
+import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
+import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.Dialogmotesvar
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.DialogmotesvarProducer
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.PublishDialogmotesvarService
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.SenderType
 import no.nav.syfo.testhelper.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe

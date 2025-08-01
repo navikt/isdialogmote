@@ -1,12 +1,15 @@
 package no.nav.syfo.brev.behandler
 
 import io.mockk.*
-import no.nav.syfo.application.database.Database
-import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
-import no.nav.syfo.dialogmote.database.createMotedeltakerBehandlerVarselSvar
-import no.nav.syfo.dialogmote.database.getMote
-import no.nav.syfo.dialogmote.database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid
-import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.application.BehandlerVarselService
+import no.nav.syfo.infrastructure.database.Database
+import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
+import no.nav.syfo.infrastructure.database.dialogmote.database.createMotedeltakerBehandlerVarselSvar
+import no.nav.syfo.infrastructure.database.dialogmote.database.getMote
+import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid
+import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
+import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.generator.generateDialogmoteSvar
 import no.nav.syfo.testhelper.generator.generatePDialogmote
@@ -26,17 +29,17 @@ class BehandlerVarselServiceSpek : Spek({
     )
 
     beforeEachTest {
-        mockkStatic("no.nav.syfo.dialogmote.database.MoteQueryKt")
-        mockkStatic("no.nav.syfo.dialogmote.database.MotedeltakerBehandlerVarselQueryKt")
-        mockkStatic("no.nav.syfo.dialogmote.database.MotedeltakerBehandlerVarselSvarQueryKt")
+        mockkStatic("no.nav.syfo.infrastructure.database.dialogmote.database.MoteQueryKt")
+        mockkStatic("no.nav.syfo.infrastructure.database.dialogmote.database.MotedeltakerBehandlerVarselQueryKt")
+        mockkStatic("no.nav.syfo.infrastructure.database.dialogmote.database.MotedeltakerBehandlerVarselSvarQueryKt")
     }
 
     afterEachTest {
         clearMocks(database)
         clearMocks(behandlerDialogmeldingProducer)
-        unmockkStatic("no.nav.syfo.dialogmote.database.MoteQueryKt")
-        unmockkStatic("no.nav.syfo.dialogmote.database.MotedeltakerBehandlerVarselQueryKt")
-        unmockkStatic("no.nav.syfo.dialogmote.database.MotedeltakerBehandlerVarselSvarQueryKt")
+        unmockkStatic("no.nav.syfo.infrastructure.database.dialogmote.database.MoteQueryKt")
+        unmockkStatic("no.nav.syfo.infrastructure.database.dialogmote.database.MotedeltakerBehandlerVarselQueryKt")
+        unmockkStatic("no.nav.syfo.infrastructure.database.dialogmote.database.MotedeltakerBehandlerVarselSvarQueryKt")
     }
 
     describe("BehandlerVarselService handles sending of varsler to behandler and storing svar") {

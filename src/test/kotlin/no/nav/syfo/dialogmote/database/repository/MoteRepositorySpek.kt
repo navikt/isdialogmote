@@ -1,6 +1,7 @@
 package no.nav.syfo.dialogmote.database.repository
 
-import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteRepository
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.dropData

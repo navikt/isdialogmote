@@ -1,10 +1,19 @@
 package no.nav.syfo.testhelper
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
-import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.application.database.toList
-import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.toList
+import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
+import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
+import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmote
+import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerVarsel
+import no.nav.syfo.infrastructure.database.dialogmote.database.getReferat
+import no.nav.syfo.infrastructure.database.dialogmote.database.updateMoteStatus
+import no.nav.syfo.infrastructure.database.dialogmote.database.updateMotedeltakerArbeidstakerBrevBestilt
+import no.nav.syfo.infrastructure.database.dialogmote.database.updateMotedeltakerArbeidstakerVarselJournalpostId
+import no.nav.syfo.infrastructure.database.dialogmote.database.updateReferatBrevBestilt
+import no.nav.syfo.infrastructure.database.dialogmote.database.updateReferatJournalpostIdArbeidstaker
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 import java.sql.Timestamp

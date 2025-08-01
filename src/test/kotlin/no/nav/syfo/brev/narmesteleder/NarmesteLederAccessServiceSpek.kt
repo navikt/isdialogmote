@@ -4,11 +4,12 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.client.narmesteleder.NarmesteLederClient
-import no.nav.syfo.client.oppfolgingstilfelle.Oppfolgingstilfelle
-import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.dialogmote.domain.toNarmesteLederBrevDTOList
+import no.nav.syfo.application.NarmesteLederAccessService
+import no.nav.syfo.domain.dialogmote.toNarmesteLederBrevDTOList
+import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.Oppfolgingstilfelle
+import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.generator.generateDialogmote
 import no.nav.syfo.testhelper.generator.generateDialogmotedeltakerArbeidsgiver

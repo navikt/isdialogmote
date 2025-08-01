@@ -1,7 +1,12 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.brev.esyfovarsel.*
-import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
+import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.HendelseType
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.VarselData
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.VarselDataDialogmoteSvar
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.VarselDataMotetidspunkt
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.VarselDataNarmesteLeder
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
 import no.nav.syfo.testhelper.UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER

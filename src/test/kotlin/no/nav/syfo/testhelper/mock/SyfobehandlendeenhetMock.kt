@@ -3,8 +3,8 @@ package no.nav.syfo.testhelper.mock
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import no.nav.syfo.client.behandlendeenhet.BehandlendeEnhetDTO
-import no.nav.syfo.client.behandlendeenhet.EnhetDTO
+import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetDTO
+import no.nav.syfo.infrastructure.client.behandlendeenhet.EnhetDTO
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FJERDE_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -16,7 +16,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_TREDJE_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 
 val mockBehandlendeEnhetDTO = BehandlendeEnhetDTO(
     geografiskEnhet = EnhetDTO(

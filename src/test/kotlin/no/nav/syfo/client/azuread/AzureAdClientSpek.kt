@@ -7,13 +7,15 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.time.LocalDateTime
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.application.cache.ValkeyStore
+import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
+import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Token
+import no.nav.syfo.infrastructure.client.cache.ValkeyStore
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.AZUREAD_TOKEN
 import no.nav.syfo.testhelper.UserConstants.JWT_AZP
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generateJWTNavIdent
-import no.nav.syfo.util.configuredJacksonMapper
+import no.nav.syfo.api.authentication.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe

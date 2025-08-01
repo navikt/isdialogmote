@@ -1,7 +1,7 @@
 package no.nav.syfo.testdata.reset.kafka
 
 import kotlinx.coroutines.delay
-import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.ApplicationState
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.testdata.reset.TestdataResetService
 import org.apache.kafka.clients.consumer.KafkaConsumer

@@ -2,9 +2,9 @@ package no.nav.syfo.testhelper.mock
 
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
-import no.nav.syfo.client.veiledertilgang.Tilgang
-import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient.Companion.TILGANGSKONTROLL_ENHET_PATH
-import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient.Companion.TILGANGSKONTROLL_PERSON_LIST_PATH
+import no.nav.syfo.infrastructure.client.veiledertilgang.Tilgang
+import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient.Companion.TILGANGSKONTROLL_ENHET_PATH
+import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient.Companion.TILGANGSKONTROLL_PERSON_LIST_PATH
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FJERDE_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -36,13 +36,13 @@ fun MockRequestHandleScope.tilgangskontrollResponse(request: HttpRequestData): H
             )
         )
 
-        requestUrl.endsWith("$TILGANGSKONTROLL_ENHET_PATH/${ENHET_NR.value}") -> respondOk(
+        requestUrl.endsWith("$TILGANGSKONTROLL_ENHET_PATH/$ENHET_NR.value") -> respondOk(
             Tilgang(
                 erGodkjent = true,
             )
         )
 
-        requestUrl.endsWith("$TILGANGSKONTROLL_ENHET_PATH/${ENHET_NR_NO_ACCESS.value}") -> respondOk(
+        requestUrl.endsWith("$TILGANGSKONTROLL_ENHET_PATH/$ENHET_NR_NO_ACCESS.value") -> respondOk(
             Tilgang(erGodkjent = false)
         )
 

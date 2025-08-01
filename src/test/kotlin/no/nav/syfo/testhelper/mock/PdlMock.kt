@@ -2,7 +2,7 @@ package no.nav.syfo.testhelper.mock
 
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
-import no.nav.syfo.client.pdl.PdlRequest
+import no.nav.syfo.infrastructure.client.pdl.PdlRequest
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.generator.generatePdlError
 import no.nav.syfo.testhelper.generator.generatePdlIdenter

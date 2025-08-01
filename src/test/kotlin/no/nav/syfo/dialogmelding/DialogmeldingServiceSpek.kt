@@ -11,18 +11,19 @@ import io.mockk.mockk
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.brev.behandler.BehandlerVarselService
-import no.nav.syfo.brev.behandler.kafka.BehandlerDialogmeldingProducer
-import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
-import no.nav.syfo.dialogmelding.domain.ForesporselType
-import no.nav.syfo.dialogmelding.domain.SvarType
-import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteAvlysPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteTidStedPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
-import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.application.DialogmeldingService
+import no.nav.syfo.application.BehandlerVarselService
+import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
+import no.nav.syfo.domain.ForesporselType
+import no.nav.syfo.domain.SvarType
+import no.nav.syfo.api.dto.DialogmoteDTO
+import no.nav.syfo.api.endpoints.dialogmoteApiMoteAvlysPath
+import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
+import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
+import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
+import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
 import org.amshove.kluent.shouldBeEqualTo
@@ -384,7 +385,8 @@ class DialogmeldingServiceSpek : Spek({
                     response.status shouldBeEqualTo HttpStatusCode.OK
 
                     val dialogmoteList = response.body<List<DialogmoteDTO>>()
-                    val svarList = dialogmoteList.first().behandler!!.varselList.find { it.varselType == MotedeltakerVarselType.INNKALT.name }!!.svar
+                    val svarList =
+                        dialogmoteList.first().behandler!!.varselList.find { it.varselType == MotedeltakerVarselType.INNKALT.name }!!.svar
                     svarList.any { svar -> svar.tekst == svarTekst } shouldBeEqualTo false
                 }
             }

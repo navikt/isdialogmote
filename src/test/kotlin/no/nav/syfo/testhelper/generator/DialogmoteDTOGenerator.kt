@@ -1,8 +1,18 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.dialogmote.api.domain.*
-import no.nav.syfo.dialogmote.domain.DocumentComponentDTO
-import no.nav.syfo.dialogmote.domain.DocumentComponentType
+import no.nav.syfo.api.dto.AvlysDialogmoteDTO
+import no.nav.syfo.api.dto.AvlysningDTO
+import no.nav.syfo.api.dto.EndreTidStedBegrunnelseDTO
+import no.nav.syfo.api.dto.EndreTidStedDialogmoteDTO
+import no.nav.syfo.api.dto.NewDialogmoteDTO
+import no.nav.syfo.api.dto.NewDialogmoteTidStedDTO
+import no.nav.syfo.api.dto.NewDialogmotedeltakerAnnenDTO
+import no.nav.syfo.api.dto.NewDialogmotedeltakerArbeidsgiverDTO
+import no.nav.syfo.api.dto.NewDialogmotedeltakerArbeidstakerDTO
+import no.nav.syfo.api.dto.NewDialogmotedeltakerBehandlerDTO
+import no.nav.syfo.api.dto.NewReferatDTO
+import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
+import no.nav.syfo.domain.dialogmote.DocumentComponentType
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_FNR
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_KONTOR

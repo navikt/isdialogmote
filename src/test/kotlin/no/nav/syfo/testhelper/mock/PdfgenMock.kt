@@ -2,10 +2,10 @@ package no.nav.syfo.testhelper.mock
 
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
-import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.AVLYSNING_PATH
-import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.ENDRING_TIDSTED_PATH
-import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.INNKALLING_PATH
-import no.nav.syfo.client.pdfgen.PdfGenClient.Companion.REFERAT_PATH
+import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient.Companion.AVLYSNING_PATH
+import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient.Companion.ENDRING_TIDSTED_PATH
+import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient.Companion.INNKALLING_PATH
+import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient.Companion.REFERAT_PATH
 
 val pdfAvlysning = byteArrayOf(0x2E, 0x33)
 val pdfEndringTidSted = byteArrayOf(0x2E, 0x30)

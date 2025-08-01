@@ -3,8 +3,8 @@ package no.nav.syfo.testhelper.mock
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import no.nav.syfo.client.dokarkiv.domain.JournalpostRequest
-import no.nav.syfo.client.dokarkiv.domain.JournalpostResponse
+import no.nav.syfo.infrastructure.client.dokarkiv.domain.JournalpostRequest
+import no.nav.syfo.infrastructure.client.dokarkiv.domain.JournalpostResponse
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING
 
@@ -17,7 +17,9 @@ suspend fun MockRequestHandleScope.dokarkivMock(request: HttpRequestData): HttpR
     return when {
         journalpostRequest.bruker?.id == ARBEIDSTAKER_NO_JOURNALFORING.value -> respondError(HttpStatusCode.InternalServerError)
         journalpostRequest.sak.sakstype.trim().isEmpty() -> respondError(HttpStatusCode.BadRequest)
-        journalpostRequest.eksternReferanseId == UserConstants.EXISTING_EKSTERN_REFERANSE_UUID.toString() -> respondConflict(journalpostResponse)
+        journalpostRequest.eksternReferanseId == UserConstants.EXISTING_EKSTERN_REFERANSE_UUID.toString() -> respondConflict(
+            journalpostResponse
+        )
         else -> respondOk(journalpostResponse)
     }
 }

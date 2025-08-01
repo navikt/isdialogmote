@@ -3,7 +3,7 @@ package no.nav.syfo.testhelper.mock
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import no.nav.syfo.util.configuredJacksonMapper
+import no.nav.syfo.api.authentication.configuredJacksonMapper
 
 val mapper = configuredJacksonMapper()
 

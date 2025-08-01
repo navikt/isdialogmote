@@ -4,8 +4,8 @@ import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.jackson.*
-import no.nav.syfo.application.Environment
-import no.nav.syfo.util.configure
+import no.nav.syfo.Environment
+import no.nav.syfo.api.authentication.configure
 
 fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
     install(ContentNegotiation) {

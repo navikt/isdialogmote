@@ -1,7 +1,7 @@
 package no.nav.syfo.testdata.reset
 
-import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.dialogmote.database.getDialogmoteList
+import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmoteList
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.testdata.reset.database.deleteMote
 import org.slf4j.LoggerFactory

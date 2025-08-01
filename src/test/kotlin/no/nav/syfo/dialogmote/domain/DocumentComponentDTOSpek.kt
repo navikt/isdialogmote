@@ -1,6 +1,8 @@
 package no.nav.syfo.dialogmote.domain
 
-import no.nav.syfo.client.pdfgen.sanitizeForPdfGen
+import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
+import no.nav.syfo.domain.dialogmote.DocumentComponentType
+import no.nav.syfo.infrastructure.client.pdfgen.sanitizeForPdfGen
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe

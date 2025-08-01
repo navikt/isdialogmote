@@ -8,11 +8,14 @@ import io.mockk.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
-import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.domain.OvertaDialogmoterDTO
-import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
+import no.nav.syfo.api.endpoints.dialogmoteActionsApiOvertaPath
+import no.nav.syfo.api.endpoints.dialogmoteApiEnhetUrlPath
+import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
+import no.nav.syfo.api.dto.DialogmoteDTO
+import no.nav.syfo.api.dto.OvertaDialogmoterDTO
+import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -58,7 +61,7 @@ class OvertaDialogmoteApiV2Spek : Spek({
                 externalMockEnvironment.wellKnownVeilederV2.issuer,
                 UserConstants.VEILEDER_IDENT_2,
             )
-            val urlMoterEnhet = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR.value}"
+            val urlMoterEnhet = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/$ENHET_NR.value"
             val urlOvertaMoter = "$dialogmoteApiV2Basepath$dialogmoteActionsApiOvertaPath"
             val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
             val newDialogmoteDTOAnnenArbeidstaker = generateNewDialogmoteDTO(ARBEIDSTAKER_ANNEN_FNR)
