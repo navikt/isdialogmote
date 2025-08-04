@@ -79,7 +79,7 @@ class ExternalMockEnvironment private constructor() {
 }
 
 fun ExternalMockEnvironment.startExternalMocks() {
-    // this.redisServer.start()
+    this.redisServer.start()
 }
 
 fun HashMap<String, NettyApplicationEngine>.start() {

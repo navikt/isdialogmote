@@ -61,7 +61,7 @@ class OvertaDialogmoteApiV2Spek : Spek({
                 externalMockEnvironment.wellKnownVeilederV2.issuer,
                 UserConstants.VEILEDER_IDENT_2,
             )
-            val urlMoterEnhet = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/$ENHET_NR.value"
+            val urlMoterEnhet = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR.value}"
             val urlOvertaMoter = "$dialogmoteApiV2Basepath$dialogmoteActionsApiOvertaPath"
             val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
             val newDialogmoteDTOAnnenArbeidstaker = generateNewDialogmoteDTO(ARBEIDSTAKER_ANNEN_FNR)

@@ -36,15 +36,11 @@ fun MockRequestHandleScope.tilgangskontrollResponse(request: HttpRequestData): H
             )
         )
 
-        requestUrl.endsWith("$TILGANGSKONTROLL_ENHET_PATH/$ENHET_NR.value") -> respondOk(
-            Tilgang(
-                erGodkjent = true,
-            )
-        )
+        requestUrl.endsWith("$TILGANGSKONTROLL_ENHET_PATH/${ENHET_NR.value}") ->
+            respondOk(Tilgang(erGodkjent = true))
 
-        requestUrl.endsWith("$TILGANGSKONTROLL_ENHET_PATH/$ENHET_NR_NO_ACCESS.value") -> respondOk(
-            Tilgang(erGodkjent = false)
-        )
+        requestUrl.endsWith("$TILGANGSKONTROLL_ENHET_PATH/${ENHET_NR_NO_ACCESS.value}") ->
+            respondOk(Tilgang(erGodkjent = false))
 
         else -> error("Unhandled $requestUrl")
     }
