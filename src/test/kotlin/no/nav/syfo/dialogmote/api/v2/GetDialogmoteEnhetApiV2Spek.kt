@@ -10,9 +10,11 @@ import io.mockk.mockk
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.api.endpoints.dialogmoteApiEnhetUrlPath
+import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
+import no.nav.syfo.api.dto.DialogmoteDTO
+import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
+import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR

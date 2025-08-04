@@ -1,9 +1,9 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.dialogmelding.domain.DialogmeldingSvar
-import no.nav.syfo.dialogmelding.domain.ForesporselType
-import no.nav.syfo.dialogmelding.domain.InnkallingDialogmoteSvar
-import no.nav.syfo.dialogmelding.domain.SvarType
+import no.nav.syfo.domain.DialogmeldingSvar
+import no.nav.syfo.domain.ForesporselType
+import no.nav.syfo.domain.InnkallingDialogmoteSvar
+import no.nav.syfo.domain.SvarType
 import no.nav.syfo.testhelper.UserConstants
 import java.time.LocalDateTime
 

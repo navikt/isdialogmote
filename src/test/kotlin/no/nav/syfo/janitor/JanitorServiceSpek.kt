@@ -3,19 +3,24 @@ package no.nav.syfo.janitor
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.dialogmote.DialogmoterelasjonService
-import no.nav.syfo.dialogmote.DialogmotestatusService
-import no.nav.syfo.dialogmote.api.domain.toNewDialogmote
-import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
-import no.nav.syfo.dialogmote.database.domain.PDialogmote
-import no.nav.syfo.dialogmote.database.getDialogmoteList
-import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.janitor.kafka.*
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmoterelasjonService
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
+import no.nav.syfo.api.dto.toNewDialogmote
+import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
+import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmoteList
+import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.application.JanitorService
+import no.nav.syfo.infrastructure.kafka.janitor.JanitorAction
+import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventDTO
+import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventStatus
+import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventStatusDTO
+import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventStatusProducer
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
-import no.nav.syfo.util.configuredJacksonMapper
+import no.nav.syfo.api.authentication.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEmpty
@@ -85,7 +90,14 @@ class JanitorServiceSpek : Spek({
                 motestatus.opprettetAv shouldBeEqualTo UserConstants.VEILEDER_IDENT
                 motestatus.moteId shouldBeEqualTo mote.id
 
-                verify { eventStatusProducerMock.sendEventStatus(JanitorEventStatusDTO(eventUUID = event.eventUUID, status = JanitorEventStatus.OK)) }
+                verify {
+                    eventStatusProducerMock.sendEventStatus(
+                        JanitorEventStatusDTO(
+                            eventUUID = event.eventUUID,
+                            status = JanitorEventStatus.OK
+                        )
+                    )
+                }
             }
 
             it("produces event status FAILED if mote not found") {
@@ -95,7 +107,14 @@ class JanitorServiceSpek : Spek({
                 )
                 runBlocking { janitorService.handle(event) }
 
-                verify { eventStatusProducerMock.sendEventStatus(JanitorEventStatusDTO(eventUUID = event.eventUUID, status = JanitorEventStatus.FAILED)) }
+                verify {
+                    eventStatusProducerMock.sendEventStatus(
+                        JanitorEventStatusDTO(
+                            eventUUID = event.eventUUID,
+                            status = JanitorEventStatus.FAILED
+                        )
+                    )
+                }
             }
 
             it("produces event status FAILED if mote finished") {
@@ -110,7 +129,14 @@ class JanitorServiceSpek : Spek({
 
                 runBlocking { janitorService.handle(event) }
 
-                verify { eventStatusProducerMock.sendEventStatus(JanitorEventStatusDTO(eventUUID = event.eventUUID, status = JanitorEventStatus.FAILED)) }
+                verify {
+                    eventStatusProducerMock.sendEventStatus(
+                        JanitorEventStatusDTO(
+                            eventUUID = event.eventUUID,
+                            status = JanitorEventStatus.FAILED
+                        )
+                    )
+                }
             }
 
             it("produces event status FAILED if mote on wrong person") {
@@ -123,7 +149,14 @@ class JanitorServiceSpek : Spek({
 
                 runBlocking { janitorService.handle(event) }
 
-                verify { eventStatusProducerMock.sendEventStatus(JanitorEventStatusDTO(eventUUID = event.eventUUID, status = JanitorEventStatus.FAILED)) }
+                verify {
+                    eventStatusProducerMock.sendEventStatus(
+                        JanitorEventStatusDTO(
+                            eventUUID = event.eventUUID,
+                            status = JanitorEventStatus.FAILED
+                        )
+                    )
+                }
             }
         }
 

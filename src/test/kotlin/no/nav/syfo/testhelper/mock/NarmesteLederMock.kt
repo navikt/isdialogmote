@@ -2,9 +2,9 @@ package no.nav.syfo.testhelper.mock
 
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
-import no.nav.syfo.client.narmesteleder.NarmesteLederClient
-import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonDTO
-import no.nav.syfo.client.narmesteleder.NarmesteLederRelasjonStatus
+import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederRelasjonDTO
+import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederRelasjonStatus
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
@@ -12,7 +12,7 @@ import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR_2
 import no.nav.syfo.testhelper.UserConstants.OTHER_VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.PERSON_TLF
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*

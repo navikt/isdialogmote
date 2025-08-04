@@ -2,10 +2,11 @@ package no.nav.syfo.identhendelse
 
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.application.cache.ValkeyStore
-import no.nav.syfo.client.pdl.PdlClient
-import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
-import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerByIdent
+import no.nav.syfo.application.IdenthendelseService
+import no.nav.syfo.infrastructure.client.cache.ValkeyStore
+import no.nav.syfo.infrastructure.client.pdl.PdlClient
+import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerByIdent
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants

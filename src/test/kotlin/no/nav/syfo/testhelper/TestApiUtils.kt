@@ -10,17 +10,17 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.brev.behandler.BehandlerVarselService
-import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.domain.NewDialogmoteDTO
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiPersonIdentUrlPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
+import no.nav.syfo.application.BehandlerVarselService
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.api.dto.DialogmoteDTO
+import no.nav.syfo.api.dto.NewDialogmoteDTO
+import no.nav.syfo.api.endpoints.dialogmoteApiPersonIdentUrlPath
+import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
+import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.util.configure
+import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.api.authentication.configure
 import org.amshove.kluent.shouldBeEqualTo
 
 fun ApplicationTestBuilder.setupApiAndClient(

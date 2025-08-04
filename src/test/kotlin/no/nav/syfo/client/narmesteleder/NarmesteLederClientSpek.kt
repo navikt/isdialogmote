@@ -2,16 +2,19 @@ package no.nav.syfo.client.narmesteleder
 
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.application.cache.ValkeyStore
-import no.nav.syfo.client.azuread.AzureAdV2Client
-import no.nav.syfo.client.azuread.AzureAdV2Token
-import no.nav.syfo.client.tokendings.TokendingsClient
-import no.nav.syfo.client.tokendings.TokenendingsToken
+import no.nav.syfo.infrastructure.client.cache.ValkeyStore
+import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
+import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Token
+import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
+import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederRelasjonDTO
+import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederRelasjonStatus
+import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
+import no.nav.syfo.infrastructure.client.tokendings.TokenendingsToken
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
-import no.nav.syfo.util.configuredJacksonMapper
+import no.nav.syfo.api.authentication.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe

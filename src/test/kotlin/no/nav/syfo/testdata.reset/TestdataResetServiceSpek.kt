@@ -1,8 +1,8 @@
 package no.nav.syfo.testdata.reset
 
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.dialogmote.database.createNewDialogmoteWithReferences
-import no.nav.syfo.dialogmote.database.getMotedeltakerArbeidstakerByIdent
+import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerByIdent
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR

@@ -1,8 +1,15 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.dialogmelding.domain.*
-import no.nav.syfo.dialogmelding.kafka.*
+import no.nav.syfo.domain.ForesporselType
+import no.nav.syfo.domain.Kodeverk
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.SvarType
+import no.nav.syfo.infrastructure.kafka.dialogmelding.Dialogmelding
+import no.nav.syfo.infrastructure.kafka.dialogmelding.Foresporsel
+import no.nav.syfo.infrastructure.kafka.dialogmelding.InnkallingMoterespons
+import no.nav.syfo.infrastructure.kafka.dialogmelding.KafkaDialogmeldingDTO
+import no.nav.syfo.infrastructure.kafka.dialogmelding.TemaKode
+import no.nav.syfo.infrastructure.kafka.dialogmelding.TypeForesp
 import java.time.LocalDateTime
 import java.util.*
 

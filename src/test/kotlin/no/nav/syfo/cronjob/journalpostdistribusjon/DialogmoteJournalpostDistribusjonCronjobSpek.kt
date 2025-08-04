@@ -9,16 +9,17 @@ import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.brev.esyfovarsel.NarmesteLederHendelse
-import no.nav.syfo.dialogmote.DialogmotedeltakerVarselJournalpostService
-import no.nav.syfo.dialogmote.ReferatJournalpostService
-import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteFerdigstillPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteTidStedPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.application.ArbeidstakerVarselService
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.infrastructure.database.dialogmote.ReferatJournalpostService
+import no.nav.syfo.api.dto.DialogmoteDTO
+import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
+import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
+import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
+import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
+import no.nav.syfo.infrastructure.cronjob.journalpostdistribusjon.DialogmoteJournalpostDistribusjonCronjob
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
@@ -80,7 +81,8 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         altinnMock = altinnMock,
                         esyfovarselProducer = esyfovarselProducerMock
                     )
-                    val createdDialogmoteUUID = client.postAndGetDialogmote(validToken, newDialogmoteDTO, UserConstants.ARBEIDSTAKER_IKKE_VARSEL).uuid
+                    val createdDialogmoteUUID =
+                        client.postAndGetDialogmote(validToken, newDialogmoteDTO, UserConstants.ARBEIDSTAKER_IKKE_VARSEL).uuid
 
                     val urlMoteUUIDPostTidSted =
                         "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
@@ -128,8 +130,24 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         result.updated shouldBeEqualTo 2
                     }
 
-                    coVerify(exactly = 1) { arbeidstakerVarselServiceMock.sendVarsel(MotedeltakerVarselType.NYTT_TID_STED, any(), any(), any(), any()) }
-                    coVerify(exactly = 1) { arbeidstakerVarselServiceMock.sendVarsel(MotedeltakerVarselType.INNKALT, any(), any(), any(), any()) }
+                    coVerify(exactly = 1) {
+                        arbeidstakerVarselServiceMock.sendVarsel(
+                            MotedeltakerVarselType.NYTT_TID_STED,
+                            any(),
+                            any(),
+                            any(),
+                            any()
+                        )
+                    }
+                    coVerify(exactly = 1) {
+                        arbeidstakerVarselServiceMock.sendVarsel(
+                            MotedeltakerVarselType.INNKALT,
+                            any(),
+                            any(),
+                            any(),
+                            any()
+                        )
+                    }
 
                     runBlocking {
                         val result = journalpostDistribusjonCronjob.referatJournalpostDistribusjon()
@@ -137,7 +155,15 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         result.updated shouldBeEqualTo 1
                     }
 
-                    coVerify(exactly = 1) { arbeidstakerVarselServiceMock.sendVarsel(MotedeltakerVarselType.REFERAT, any(), any(), any(), any()) }
+                    coVerify(exactly = 1) {
+                        arbeidstakerVarselServiceMock.sendVarsel(
+                            MotedeltakerVarselType.REFERAT,
+                            any(),
+                            any(),
+                            any(),
+                            any()
+                        )
+                    }
 
                     client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_IKKE_VARSEL).apply {
                         status shouldBeEqualTo HttpStatusCode.OK
@@ -161,7 +187,12 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                     val varselUuids = dialogmoteDTO.arbeidstaker.varselList.map { it.uuid }
                     dialogmoteDTO.arbeidstaker.varselList.first().brevBestiltTidspunkt.shouldBeNull()
 
-                    varselUuids.forEach { database.setMotedeltakerArbeidstakerVarselJournalfort(it, UserConstants.JOURNALPOST_ID_MOTTAKER_GONE) }
+                    varselUuids.forEach {
+                        database.setMotedeltakerArbeidstakerVarselJournalfort(
+                            it,
+                            UserConstants.JOURNALPOST_ID_MOTTAKER_GONE
+                        )
+                    }
 
                     runBlocking {
                         val result = journalpostDistribusjonCronjob.dialogmoteVarselJournalpostDistribusjon()
@@ -183,7 +214,8 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         altinnMock = altinnMock,
                         esyfovarselProducer = esyfovarselProducerMock
                     )
-                    val createdDialogmoteUUID = client.postAndGetDialogmote(validToken, newDialogmoteDTO, UserConstants.ARBEIDSTAKER_IKKE_VARSEL).uuid
+                    val createdDialogmoteUUID =
+                        client.postAndGetDialogmote(validToken, newDialogmoteDTO, UserConstants.ARBEIDSTAKER_IKKE_VARSEL).uuid
 
                     val urlMoteUUIDFerdigstill =
                         "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
@@ -228,7 +260,8 @@ class DialogmoteJournalpostDistribusjonCronjobSpek : Spek({
                         altinnMock = altinnMock,
                         esyfovarselProducer = esyfovarselProducerMock
                     )
-                    val createdDialogmoteUUID = client.postAndGetDialogmote(validToken, newDialogmoteDTO, UserConstants.ARBEIDSTAKER_IKKE_VARSEL).uuid
+                    val createdDialogmoteUUID =
+                        client.postAndGetDialogmote(validToken, newDialogmoteDTO, UserConstants.ARBEIDSTAKER_IKKE_VARSEL).uuid
 
                     val urlMoteUUIDFerdigstill =
                         "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"

@@ -1,7 +1,7 @@
 package no.nav.syfo.testdata.reset.kafka
 
-import no.nav.syfo.application.ApplicationEnvironmentKafka
-import no.nav.syfo.application.kafka.commonKafkaAivenConfig
+import no.nav.syfo.ApplicationEnvironmentKafka
+import no.nav.syfo.infrastructure.kafka.commonKafkaAivenConfig
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import java.util.*

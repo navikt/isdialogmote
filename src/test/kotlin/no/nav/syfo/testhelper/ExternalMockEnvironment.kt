@@ -1,12 +1,12 @@
 package no.nav.syfo.testhelper
 
 import io.ktor.server.netty.*
-import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.cache.ValkeyStore
-import no.nav.syfo.client.azuread.AzureAdV2Client
-import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.client.pdl.PdlClient
-import no.nav.syfo.client.tokendings.TokendingsClient
+import no.nav.syfo.ApplicationState
+import no.nav.syfo.infrastructure.client.cache.ValkeyStore
+import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
+import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.infrastructure.client.pdl.PdlClient
+import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
 import no.nav.syfo.testhelper.mock.*
 import redis.clients.jedis.DefaultJedisClientConfig
 import redis.clients.jedis.HostAndPort

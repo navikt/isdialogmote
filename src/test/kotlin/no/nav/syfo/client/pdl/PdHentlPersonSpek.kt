@@ -1,5 +1,9 @@
 package no.nav.syfo.client.pdl
 
+import no.nav.syfo.infrastructure.client.pdl.PdlHentPerson
+import no.nav.syfo.infrastructure.client.pdl.PdlPerson
+import no.nav.syfo.infrastructure.client.pdl.PdlPersonNavn
+import no.nav.syfo.infrastructure.client.pdl.fullName
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe

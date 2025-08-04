@@ -2,15 +2,16 @@ package no.nav.syfo.dialogmote
 
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.brev.arbeidstaker.ArbeidstakerVarselService
-import no.nav.syfo.brev.behandler.BehandlerVarselService
-import no.nav.syfo.brev.narmesteleder.NarmesteLederVarselService
-import no.nav.syfo.client.altinn.AltinnClient
-import no.nav.syfo.client.altinn.createAltinnMelding
-import no.nav.syfo.client.oppfolgingstilfelle.ARBEIDSGIVERPERIODE_DAYS
-import no.nav.syfo.client.oppfolgingstilfelle.Oppfolgingstilfelle
-import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.application.ArbeidstakerVarselService
+import no.nav.syfo.application.BehandlerVarselService
+import no.nav.syfo.application.NarmesteLederVarselService
+import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
+import no.nav.syfo.infrastructure.client.altinn.AltinnClient
+import no.nav.syfo.infrastructure.client.altinn.createAltinnMelding
+import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.ARBEIDSGIVERPERIODE_DAYS
+import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.Oppfolgingstilfelle
+import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.infrastructure.database.dialogmote.VarselService
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_NO_NARMESTELEDER

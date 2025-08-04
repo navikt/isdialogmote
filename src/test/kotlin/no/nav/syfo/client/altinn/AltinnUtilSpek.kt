@@ -1,7 +1,9 @@
 package no.nav.syfo.client.altinn
 
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
 import no.nav.syfo.domain.Virksomhetsnummer
+import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
+import no.nav.syfo.infrastructure.client.altinn.createAltinnMelding
+import no.nav.syfo.infrastructure.client.altinn.mapToInsertCorrespondenceV2WS
 import no.nav.syfo.testhelper.UserConstants
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -16,7 +18,8 @@ object AltinnUtilSpek : Spek({
             val brevId = UUID.randomUUID()
             val brev = byteArrayOf(0x2E, 0x38)
             val virksomhetsnummer = Virksomhetsnummer("123456785")
-            val expectedInnkallingstittel = "Innkalling til dialogmøte - ${UserConstants.ARBEIDSTAKERNAVN} (${UserConstants.ARBEIDSTAKER_FNR.value})"
+            val expectedInnkallingstittel =
+                "Innkalling til dialogmøte - ${UserConstants.ARBEIDSTAKERNAVN} (${UserConstants.ARBEIDSTAKER_FNR.value})"
 
             val altinnMelding = createAltinnMelding(
                 brevId,

@@ -1,8 +1,18 @@
 package no.nav.syfo.cronjob.dialogmotesvar
 
 import io.mockk.*
-import no.nav.syfo.dialogmote.database.*
-import no.nav.syfo.dialogmote.domain.*
+import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
+import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.Dialogmotesvar
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.DialogmotesvarProducer
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.KDialogmotesvar
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.PublishDialogmotesvarService
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.SenderType
+import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidsgiverVarsel
+import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerVarsel
+import no.nav.syfo.infrastructure.database.dialogmote.database.updateBehandlersvarPublishedAt
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteWithBehandler
 import org.amshove.kluent.shouldBeEqualTo

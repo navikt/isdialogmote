@@ -1,0 +1,178 @@
+package no.nav.syfo.api.endpoints
+
+import io.ktor.http.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import no.nav.syfo.api.authentication.personIdent
+import no.nav.syfo.api.callIdArgument
+import no.nav.syfo.api.getCallId
+import no.nav.syfo.domain.ArbeidstakerResponsDTO
+import no.nav.syfo.domain.PdfContent
+import no.nav.syfo.infrastructure.client.pdl.PdlClient
+import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
+import no.nav.syfo.domain.dialogmote.toArbeidstakerBrevDTOList
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmoteService
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.infrastructure.database.dialogmote.PdfService
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.util.*
+
+private val log: Logger = LoggerFactory.getLogger("no.nav.syfo")
+
+const val arbeidstakerBrevApiPath = "/api/v2/arbeidstaker/brev"
+const val arbeidstakerBrevApiBrevParam = "brevuuid"
+const val arbeidstakerBrevApiLesPath = "/les"
+const val arbeidstakerBrevApiResponsPath = "/respons"
+const val arbeidstakerBrevApiPdfPath = "/pdf"
+
+fun Route.registerArbeidstakerBrevApi(
+    dialogmoteService: DialogmoteService,
+    dialogmotedeltakerService: DialogmotedeltakerService,
+    pdfService: PdfService,
+    pdlClient: PdlClient,
+) {
+    route(arbeidstakerBrevApiPath) {
+        get {
+            val callId = getCallId()
+            try {
+                val requestPersonIdent = call.personIdent()
+                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+                val allPersonIdents = pdlClient.hentFolkeregisterIdenter(
+                    personIdent = requestPersonIdent,
+                    callId = callId,
+                )
+                val arbeidstakerBrevDTOList = allPersonIdents.flatMap { personIdent ->
+                    dialogmoteService.getDialogmoteList(
+                        personIdent = personIdent,
+                    ).filter { dialogmote ->
+                        dialogmote.status != DialogmoteStatus.LUKKET
+                    }.toArbeidstakerBrevDTOList()
+                }
+                call.respond(arbeidstakerBrevDTOList)
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Could not retrieve list of brev"
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
+        }
+
+        get("/{$arbeidstakerBrevApiBrevParam}$arbeidstakerBrevApiPdfPath") {
+            val callId = getCallId()
+            try {
+                val requestPersonIdent = call.personIdent()
+                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+                val allPersonIdents = pdlClient.hentFolkeregisterIdenter(
+                    personIdent = requestPersonIdent,
+                    callId = callId,
+                )
+
+                val brevUuid = UUID.fromString(call.parameters[arbeidstakerBrevApiBrevParam])
+
+                val brev = dialogmoteService.getArbeidstakerBrevFromUuid(brevUuid)
+
+                val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerById(
+                    moteDeltakerArbeidstakerId = brev.motedeltakerArbeidstakerId
+                )
+
+                val hasAccessToBrev = allPersonIdents.contains(motedeltakerArbeidstaker.personIdent)
+                if (hasAccessToBrev && brev.pdfId != null) {
+                    val pdf = pdfService.getPdf(brev.pdfId!!)
+                    call.respond(PdfContent(pdf))
+                } else {
+                    val accessDeniedMessage = "Denied access to pdf for brev with uuid $brevUuid"
+                    log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
+                    call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
+                }
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Could not get pdf for brev with uuid"
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
+        }
+
+        post("/{$arbeidstakerBrevApiBrevParam}$arbeidstakerBrevApiLesPath") {
+            val callId = getCallId()
+            try {
+                val requestPersonIdent = call.personIdent()
+                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+
+                val allPersonIdents = pdlClient.hentFolkeregisterIdenter(
+                    personIdent = requestPersonIdent,
+                    callId = callId,
+                )
+
+                val brevUuid = UUID.fromString(call.parameters[arbeidstakerBrevApiBrevParam])
+
+                val brev = dialogmoteService.getArbeidstakerBrevFromUuid(brevUuid)
+
+                val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerById(
+                    moteDeltakerArbeidstakerId = brev.motedeltakerArbeidstakerId
+                )
+
+                val hasAccessToBrev = allPersonIdents.contains(motedeltakerArbeidstaker.personIdent)
+                if (hasAccessToBrev) {
+                    if (brev.lestDatoArbeidstaker == null) {
+                        dialogmotedeltakerService.updateArbeidstakerBrevSettSomLest(
+                            personIdent = requestPersonIdent,
+                            brevUuid = brevUuid,
+                        )
+                    }
+                    call.respond(HttpStatusCode.OK)
+                } else {
+                    val accessDeniedMessage = "Denied access to brev with uuid"
+                    log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
+                    call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
+                }
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Could not set brev with uuid as lest"
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
+        }
+
+        post("/{$arbeidstakerBrevApiBrevParam}$arbeidstakerBrevApiResponsPath") {
+            val callId = getCallId()
+            try {
+                val requestPersonIdent = call.personIdent()
+                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+                val allPersonIdents = pdlClient.hentFolkeregisterIdenter(
+                    personIdent = requestPersonIdent,
+                    callId = callId,
+                )
+                val brevUuid = UUID.fromString(call.parameters[arbeidstakerBrevApiBrevParam])
+                val responsDTO = call.receive<ArbeidstakerResponsDTO>()
+
+                val brev = dialogmoteService.getArbeidstakerBrevFromUuid(brevUuid)
+
+                val motedeltakerArbeidstaker = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstakerById(
+                    moteDeltakerArbeidstakerId = brev.motedeltakerArbeidstakerId
+                )
+
+                val hasAccessToBrev = allPersonIdents.contains(motedeltakerArbeidstaker.personIdent)
+                if (hasAccessToBrev) {
+                    val updated = dialogmotedeltakerService.updateArbeidstakerBrevWithRespons(
+                        brevUuid = brevUuid,
+                        svarType = DialogmoteSvarType.valueOf(responsDTO.svarType),
+                        svarTekst = responsDTO.svarTekst,
+                    )
+                    if (updated) {
+                        call.respond(HttpStatusCode.OK)
+                    } else {
+                        throw IllegalArgumentException("Response already stored")
+                    }
+                } else {
+                    val accessDeniedMessage = "Denied access to brev with uuid"
+                    log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
+                    call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
+                }
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Could not store response for brev with uuid"
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
+        }
+    }
+}

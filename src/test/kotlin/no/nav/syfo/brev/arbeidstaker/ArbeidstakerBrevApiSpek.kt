@@ -5,29 +5,33 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.ktor.util.*
 import io.ktor.utils.io.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerBrevDTO
-import no.nav.syfo.brev.arbeidstaker.domain.ArbeidstakerResponsDTO
-import no.nav.syfo.brev.esyfovarsel.ArbeidstakerHendelse
-import no.nav.syfo.brev.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.dialogmote.DialogmoterelasjonService
-import no.nav.syfo.dialogmote.DialogmotestatusService
-import no.nav.syfo.dialogmote.api.domain.DialogmoteDTO
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteAvlysPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiMoteFerdigstillPath
-import no.nav.syfo.dialogmote.api.v2.dialogmoteApiV2Basepath
-import no.nav.syfo.dialogmote.database.getDialogmote
-import no.nav.syfo.dialogmote.database.repository.MoteStatusEndretRepository
-import no.nav.syfo.dialogmote.domain.DialogmoteStatus
-import no.nav.syfo.dialogmote.domain.DialogmoteSvarType
-import no.nav.syfo.dialogmote.domain.MotedeltakerVarselType
+import no.nav.syfo.api.endpoints.arbeidstakerBrevApiLesPath
+import no.nav.syfo.api.endpoints.arbeidstakerBrevApiPath
+import no.nav.syfo.api.endpoints.arbeidstakerBrevApiPdfPath
+import no.nav.syfo.api.endpoints.arbeidstakerBrevApiResponsPath
+import no.nav.syfo.domain.ArbeidstakerBrevDTO
+import no.nav.syfo.domain.ArbeidstakerResponsDTO
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerHendelse
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmoterelasjonService
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
+import no.nav.syfo.api.dto.DialogmoteDTO
+import no.nav.syfo.api.endpoints.dialogmoteApiMoteAvlysPath
+import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
+import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
+import no.nav.syfo.application.ArbeidstakerVarselService
+import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmote
+import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
+import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FJERDE_FNR
@@ -154,11 +158,11 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                             arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
                             arbeidstakerBrevDTO.shouldNotBeNull()
-                            arbeidstakerBrevDTO!!.digitalt shouldBeEqualTo true
-                            arbeidstakerBrevDTO!!.lestDato.shouldNotBeNull()
-                            arbeidstakerBrevDTO!!.svar.shouldBeNull()
-                            arbeidstakerBrevDTO!!.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
-                            arbeidstakerBrevDTO!!.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            arbeidstakerBrevDTO.digitalt shouldBeEqualTo true
+                            arbeidstakerBrevDTO.lestDato.shouldNotBeNull()
+                            arbeidstakerBrevDTO.svar.shouldBeNull()
+                            arbeidstakerBrevDTO.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                            arbeidstakerBrevDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
                             val isTodayBeforeDialogmotetid =
                                 LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
                             isTodayBeforeDialogmotetid shouldBeEqualTo true
@@ -209,7 +213,7 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                             arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
                             arbeidstakerBrevDTO.shouldNotBeNull()
-                            arbeidstakerBrevDTO!!.svar!!.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
+                            arbeidstakerBrevDTO.svar!!.svarType shouldBeEqualTo DialogmoteSvarType.KOMMER.name
                         }
 
                         client.getDialogmoter(validTokenVeileder, ARBEIDSTAKER_FNR).apply {
@@ -292,11 +296,11 @@ class ArbeidstakerBrevApiSpek : Spek({
 
                             arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
                             arbeidstakerBrevDTO.shouldNotBeNull()
-                            arbeidstakerBrevDTO!!.digitalt shouldBeEqualTo true
-                            arbeidstakerBrevDTO!!.lestDato.shouldNotBeNull()
-                            arbeidstakerBrevDTO!!.svar.shouldBeNull()
-                            arbeidstakerBrevDTO!!.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
-                            arbeidstakerBrevDTO!!.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
+                            arbeidstakerBrevDTO.digitalt shouldBeEqualTo true
+                            arbeidstakerBrevDTO.lestDato.shouldNotBeNull()
+                            arbeidstakerBrevDTO.svar.shouldBeNull()
+                            arbeidstakerBrevDTO.virksomhetsnummer shouldBeEqualTo newDialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                            arbeidstakerBrevDTO.sted shouldBeEqualTo newDialogmoteDTO.tidSted.sted
 
                             clearMocks(esyfovarselProducer)
                         }
