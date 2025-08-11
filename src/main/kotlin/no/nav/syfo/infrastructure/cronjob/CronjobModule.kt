@@ -22,7 +22,6 @@ import no.nav.syfo.infrastructure.cronjob.statusendring.DialogmoteStatusEndringP
 import no.nav.syfo.infrastructure.cronjob.statusendring.PublishDialogmoteStatusEndringCronjob
 import no.nav.syfo.infrastructure.cronjob.statusendring.PublishDialogmoteStatusEndringService
 import no.nav.syfo.infrastructure.cronjob.statusendring.kafkaDialogmoteStatusEndringProducerConfig
-import no.nav.syfo.dialogmote.*
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.KDialogmotesvar
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.infrastructure.client.dokarkiv.DokarkivClient
