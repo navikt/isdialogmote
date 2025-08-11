@@ -130,12 +130,14 @@ fun Referat.toJournalforingRequestArbeidsgiver(
 fun Referat.toJournalforingRequestBehandler(
     brukerPersonIdent: PersonIdent,
     behandlerPersonIdent: PersonIdent?,
+    behandlerHprId: Int?,
     behandlerNavn: String,
     pdf: ByteArray,
     moteTidspunkt: LocalDateTime?,
 ) = createJournalpostRequest(
     brukerPersonIdent = brukerPersonIdent,
     mottakerPersonIdent = behandlerPersonIdent,
+    mottakerHprId = behandlerHprId,
     mottakerNavn = behandlerNavn,
     digitalt = this.digitalt,
     dokumentName = this.toJournalpostTittel(moteTidspunkt),

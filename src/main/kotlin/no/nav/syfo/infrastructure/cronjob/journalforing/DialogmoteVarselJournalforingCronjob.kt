@@ -205,9 +205,11 @@ class DialogmoteVarselJournalforingCronjob(
             try {
                 val pdf = pdfService.getPdf(referat.pdfId!!)
                 val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
+                val behandlerDTO = dialogmeldingClient.getBehandler(UUID.fromString(behandler.behandlerRef))
                 val journalpostRequest = referat.toJournalforingRequestBehandler(
                     brukerPersonIdent = personIdent,
                     behandlerPersonIdent = behandler.personIdent,
+                    behandlerHprId = behandlerDTO?.hprId,
                     behandlerNavn = behandler.behandlerNavn,
                     pdf = pdf,
                     moteTidspunkt = moteTidspunkt,
