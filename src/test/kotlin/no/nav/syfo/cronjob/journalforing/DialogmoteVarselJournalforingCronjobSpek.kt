@@ -306,11 +306,22 @@ class DialogmoteVarselJournalforingCronjobSpek : Spek({
                 }
 
                 runBlocking {
+                    clearMocks(dokarkivClient)
+
                     val result = DialogmoteCronjobResult()
                     dialogmoteVarselJournalforingCronjob.referatJournalforingJobBehandler(result)
+                    coVerify(exactly = 1) {
+                        dokarkivClient.journalfor(
+                            capture(
+                                journalpostRequestSlot
+                            )
+                        )
+                    }
 
                     result.failed shouldBeEqualTo 0
                     result.updated shouldBeEqualTo 1
+                    journalpostRequestSlot.captured.avsenderMottaker.idType shouldBeEqualTo BrukerIdType.HPRNR.value
+                    journalpostRequestSlot.captured.avsenderMottaker.id!! shouldBeEqualTo "000${UserConstants.BEHANDLER_HPRID}"
                 }
             }
 
