@@ -7,6 +7,7 @@ import no.nav.syfo.infrastructure.client.cache.ValkeyStore
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.launchBackgroundTask
 import no.nav.syfo.application.ArbeidstakerVarselService
+import no.nav.syfo.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.cronjob.dialogmoteOutdated.DialogmoteOutdatedCronjob
@@ -21,7 +22,6 @@ import no.nav.syfo.infrastructure.cronjob.statusendring.DialogmoteStatusEndringP
 import no.nav.syfo.infrastructure.cronjob.statusendring.PublishDialogmoteStatusEndringCronjob
 import no.nav.syfo.infrastructure.cronjob.statusendring.PublishDialogmoteStatusEndringService
 import no.nav.syfo.infrastructure.cronjob.statusendring.kafkaDialogmoteStatusEndringProducerConfig
-import no.nav.syfo.dialogmote.*
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.KDialogmotesvar
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.infrastructure.client.dokarkiv.DokarkivClient
@@ -76,6 +76,11 @@ fun Application.cronjobModule(
     val leaderPodClient = LeaderPodClient(
         environment = environment,
     )
+    val dialogmeldingClient = DialogmeldingClient(
+        azureAdClient = azureAdV2Client,
+        url = environment.dialogmeldingUrl,
+        clientId = environment.dialogmeldingClientId,
+    )
     val journalforDialogmoteVarslerCronjob = DialogmoteVarselJournalforingCronjob(
         dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
         referatJournalpostService = referatJournalpostService,
@@ -83,9 +88,9 @@ fun Application.cronjobModule(
         dokarkivClient = dokarkivClient,
         pdlClient = pdlClient,
         eregClient = eregClient,
+        dialogmeldingClient = dialogmeldingClient,
         isJournalforingRetryEnabled = environment.isJournalforingRetryEnabled,
     )
-
     val kafkaDialogmoteStatusEndringProducerProperties = kafkaDialogmoteStatusEndringProducerConfig(environment.kafka)
     val kafkaDialogmoteStatusEndringProducer = KafkaProducer<String, KDialogmoteStatusEndring>(
         kafkaDialogmoteStatusEndringProducerProperties

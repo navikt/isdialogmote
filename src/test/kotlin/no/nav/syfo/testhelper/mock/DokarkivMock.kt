@@ -12,6 +12,7 @@ suspend fun MockRequestHandleScope.dokarkivMock(request: HttpRequestData): HttpR
     val journalpostResponse = JournalpostResponse(
         journalpostId = UserConstants.JOURNALPOSTID_JOURNALFORING,
         journalstatus = "journalstatus",
+        journalpostferdigstilt = true,
     )
     val journalpostRequest = request.receiveBody<JournalpostRequest>()
     return when {

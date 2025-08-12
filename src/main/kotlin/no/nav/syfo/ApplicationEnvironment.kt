@@ -58,6 +58,8 @@ data class Environment(
     val narmestelederClientId: String = getEnvVar("NARMESTELEDER_CLIENT_ID"),
     val pdlUrl: String = getEnvVar("PDL_URL"),
     val pdlClientId: String = getEnvVar("PDL_CLIENT_ID"),
+    val dialogmeldingUrl: String = getEnvVar("DIALOGMELDING_URL"),
+    val dialogmeldingClientId: String = getEnvVar("DIALOGMELDING_CLIENT_ID"),
     val altinnWsUrl: String = getEnvVar("ALTINN_WS_URL"),
     val altinnUsername: String = getEnvVar("ALTINN_USERNAME"),
     val altinnPassword: String = getEnvVar("ALTINN_PASSWORD"),

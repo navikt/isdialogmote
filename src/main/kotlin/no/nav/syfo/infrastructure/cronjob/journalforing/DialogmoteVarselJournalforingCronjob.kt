@@ -1,6 +1,7 @@
 package no.nav.syfo.infrastructure.cronjob.journalforing
 
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.domain.dialogmote.toJournalforingRequestArbeidsgiver
 import no.nav.syfo.domain.dialogmote.toJournalforingRequestArbeidstaker
 import no.nav.syfo.domain.dialogmote.toJournalforingRequestBehandler
@@ -17,6 +18,7 @@ import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerVarselJo
 import no.nav.syfo.infrastructure.database.dialogmote.PdfService
 import no.nav.syfo.infrastructure.database.dialogmote.ReferatJournalpostService
 import org.slf4j.LoggerFactory
+import java.util.UUID
 
 class DialogmoteVarselJournalforingCronjob(
     private val dialogmotedeltakerVarselJournalpostService: DialogmotedeltakerVarselJournalpostService,
@@ -25,6 +27,7 @@ class DialogmoteVarselJournalforingCronjob(
     private val dokarkivClient: DokarkivClient,
     private val pdlClient: PdlClient,
     private val eregClient: EregClient,
+    private val dialogmeldingClient: DialogmeldingClient,
     private val isJournalforingRetryEnabled: Boolean,
 ) : DialogmoteCronjob {
 
@@ -114,9 +117,11 @@ class DialogmoteVarselJournalforingCronjob(
         behandlerVarselForJournalforingList.forEach { (personIdent, behandler, behandlerVarsel) ->
             try {
                 val pdf = pdfService.getPdf(behandlerVarsel.pdfId)
+                val behandlerDTO = dialogmeldingClient.getBehandler(UUID.fromString(behandler.behandlerRef))
                 val journalpostRequest = behandlerVarsel.toJournalpostRequest(
                     brukerPersonIdent = personIdent,
                     behandlerPersonIdent = behandler.personIdent,
+                    behandlerHprId = behandlerDTO?.hprId,
                     behandlerNavn = behandler.behandlerNavn,
                     pdf = pdf,
                 )
@@ -200,14 +205,16 @@ class DialogmoteVarselJournalforingCronjob(
             try {
                 val pdf = pdfService.getPdf(referat.pdfId!!)
                 val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
+                val behandlerDTO = dialogmeldingClient.getBehandler(UUID.fromString(behandler.behandlerRef))
                 val journalpostRequest = referat.toJournalforingRequestBehandler(
                     brukerPersonIdent = personIdent,
                     behandlerPersonIdent = behandler.personIdent,
+                    behandlerHprId = behandlerDTO?.hprId,
                     behandlerNavn = behandler.behandlerNavn,
                     pdf = pdf,
                     moteTidspunkt = moteTidspunkt,
                 )
-                log.info("Journalfør referat to behandler with uuid ${referat.uuid} and eksternReferanseId: ${journalpostRequest.eksternReferanseId}")
+                log.info("Journalfør referat to behandler with uuid ${referat.uuid} and eksternReferanseId: ${journalpostRequest.eksternReferanseId} using hprid ${behandlerDTO?.hprId != null}")
                 val journalpostId = journalfor(journalpostRequest)
                 referatJournalpostService.updateJournalpostIdBehandlerForReferat(
                     referat,
