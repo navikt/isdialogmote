@@ -214,7 +214,7 @@ class DialogmoteVarselJournalforingCronjob(
                     pdf = pdf,
                     moteTidspunkt = moteTidspunkt,
                 )
-                log.info("Journalfør referat to behandler with uuid ${referat.uuid} and eksternReferanseId: ${journalpostRequest.eksternReferanseId}")
+                log.info("Journalfør referat to behandler with uuid ${referat.uuid} and eksternReferanseId: ${journalpostRequest.eksternReferanseId} using hprid ${behandlerDTO?.hprId != null}")
                 val journalpostId = journalfor(journalpostRequest)
                 referatJournalpostService.updateJournalpostIdBehandlerForReferat(
                     referat,
