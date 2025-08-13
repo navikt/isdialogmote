@@ -1,4 +1,4 @@
-package no.nav.syfo.client.dialogmelding
+package no.nav.syfo.infrastructure.client.dialogmelding
 
 data class BehandlerDTO(
     val behandlerRef: String,
