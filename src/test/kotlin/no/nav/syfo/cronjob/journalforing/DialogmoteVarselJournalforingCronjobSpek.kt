@@ -18,7 +18,7 @@ import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.client.dialogmelding.DialogmeldingClient
+import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.Referat
 import no.nav.syfo.domain.dialogmote.toJournalpostTittel

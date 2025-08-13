@@ -1,7 +1,7 @@
 package no.nav.syfo.infrastructure.cronjob.journalforing
 
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.client.dialogmelding.DialogmeldingClient
+import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.domain.dialogmote.toJournalforingRequestArbeidsgiver
 import no.nav.syfo.domain.dialogmote.toJournalforingRequestArbeidstaker
 import no.nav.syfo.domain.dialogmote.toJournalforingRequestBehandler

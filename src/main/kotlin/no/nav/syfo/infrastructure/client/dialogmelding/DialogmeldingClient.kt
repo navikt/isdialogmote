@@ -1,4 +1,4 @@
-package no.nav.syfo.client.dialogmelding
+package no.nav.syfo.infrastructure.client.dialogmelding
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

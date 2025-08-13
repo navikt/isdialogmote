@@ -2,7 +2,7 @@ package no.nav.syfo.testhelper.mock
 
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
-import no.nav.syfo.client.dialogmelding.BehandlerDTO
+import no.nav.syfo.infrastructure.client.dialogmelding.BehandlerDTO
 import no.nav.syfo.testhelper.UserConstants
 
 val mockBehandlerDTO = BehandlerDTO(
