@@ -6,16 +6,15 @@ version = "1.0.0"
 val altinnCorrespondenceAgencyExternalVersion = "1.2021.02.22-10.45-4201aaea72fb"
 val cxfVersion = "3.6.5"
 val confluentVersion = "7.9.0"
-val flywayVersion = "11.10.1"
+val flywayVersion = "11.13.1"
 val hikariVersion = "6.3.0"
 val isdialogmoteSchemaVersion = "1.0.5"
 val jacksonDataTypeVersion = "2.19.1"
 val jedisVersion = "5.2.0"
 val jsonVersion = "20250107"
-val jettyVersion = "9.4.57.v20241219"
 val joseVersion = "0.9.4"
-val kafkaVersion = "3.7.0"
-val ktorVersion = "3.2.1"
+val kafkaVersion = "3.9.0"
+val ktorVersion = "3.3.0"
 val kluentVersion = "1.73"
 val jaxbApiVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.3.6"
@@ -23,11 +22,11 @@ val jaxsWsApiVersion = "2.3.1"
 val jaxwsToolsVersion = "4.0.3"
 val logbackVersion = "1.5.18"
 val logstashEncoderVersion = "8.1"
-val micrometerRegistryVersion = "1.15.1"
-val mockkVersion = "1.14.4"
-val nimbusjosejwtVersion = "10.3.1"
+val micrometerRegistryVersion = "1.12.13"
+val mockkVersion = "1.14.5"
+val nimbusjosejwtVersion = "10.5"
 val postgresEmbeddedVersion = "2.1.0"
-val postgresVersion = "42.7.7"
+val postgresVersion = "42.7.8"
 val postgresRuntimeVersion = "17.5.0"
 val redisEmbeddedVersion = "0.7.3"
 val spekVersion = "2.0.19"
@@ -155,30 +154,6 @@ dependencies {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
             version {
                 require("4.8.179")
-            }
-        }
-        implementation("org.eclipse.jetty:jetty-server") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
-            version {
-                require(jettyVersion)
-            }
-        }
-        implementation("org.eclipse.jetty:jetty-xml") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
-            version {
-                require(jettyVersion)
-            }
-        }
-        implementation("org.eclipse.jetty:jetty-servlets") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
-            version {
-                require(jettyVersion)
-            }
-        }
-        implementation("org.eclipse.jetty.http2:http2-server") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
-            version {
-                require(jettyVersion)
             }
         }
     }
