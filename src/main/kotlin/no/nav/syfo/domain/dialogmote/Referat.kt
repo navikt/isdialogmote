@@ -107,7 +107,8 @@ fun Referat.toJournalforingRequestArbeidstaker(
     dokumentName = this.toJournalpostTittel(moteTidspunkt),
     brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AT,
     dokumentPdf = pdf,
-    varselUuid = UUID.nameUUIDFromBytes((this.uuid.toString() + "arbeidstaker").toByteArray())
+    varselUuid = UUID.nameUUIDFromBytes((this.uuid.toString() + "arbeidstaker").toByteArray()),
+    kanal = JournalpostKanal.DITT_NAV,
 )
 
 fun Referat.toJournalforingRequestArbeidsgiver(
@@ -124,7 +125,8 @@ fun Referat.toJournalforingRequestArbeidsgiver(
     dokumentName = this.toJournalpostTittel(moteTidspunkt),
     brevkodeType = BrevkodeType.DIALOGMOTE_REFERAT_AG,
     dokumentPdf = pdf,
-    varselUuid = UUID.nameUUIDFromBytes((this.uuid.toString() + "arbeidsgiver").toByteArray())
+    varselUuid = UUID.nameUUIDFromBytes((this.uuid.toString() + "arbeidsgiver").toByteArray()),
+    kanal = JournalpostKanal.DITT_NAV,
 )
 
 fun Referat.toJournalforingRequestBehandler(

@@ -8,6 +8,7 @@ import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.domain.ArbeidstakerBrevSvarDTO
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.DialogmoteDeltakerType
+import no.nav.syfo.infrastructure.client.dokarkiv.domain.JournalpostKanal
 import java.time.LocalDateTime
 import java.util.*
 
@@ -90,4 +91,5 @@ fun DialogmotedeltakerArbeidstakerVarsel.toJournalpostRequest(
     brevkodeType = this.varselType.toBrevkodeType(DialogmoteDeltakerType.ARBEIDSTAKER),
     dokumentPdf = pdf,
     varselUuid = this.uuid,
+    kanal = JournalpostKanal.DITT_NAV,
 )
