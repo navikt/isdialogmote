@@ -75,7 +75,7 @@ fun createJournalpostRequest(
     digitalt: Boolean,
     dokumentName: String,
     dokumentPdf: ByteArray,
-    kanal: JournalpostKanal? = null,
+    kanal: JournalpostKanal,
     varselUuid: UUID,
 ): JournalpostRequest {
     val avsenderMottaker = AvsenderMottaker.create(
