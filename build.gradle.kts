@@ -12,7 +12,6 @@ val isdialogmoteSchemaVersion = "1.0.5"
 val jacksonDataTypeVersion = "2.19.1"
 val jedisVersion = "5.2.0"
 val jsonVersion = "20250107"
-val joseVersion = "0.9.4"
 val kafkaVersion = "3.9.0"
 val ktorVersion = "3.3.0"
 val kluentVersion = "1.73"
@@ -96,19 +95,37 @@ dependencies {
     }
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", excludeLog4j)
     constraints {
-        implementation("org.bitbucket.b_c:jose4j") {
-            because("org.bitbucket.b_c:jose4j:0.9.3 -> https://ossindex.sonatype.org/vulnerability/CVE-2023-51775")
+        implementation("org.apache.zookeeper:zookeeper") {
+            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
             version {
-                require("$joseVersion")
+                require("3.9.4")
+            }
+        }
+        implementation("commons-beanutils:commons-beanutils") {
+            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
+            version {
+                require("1.11.0")
             }
         }
     }
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion", excludeLog4j)
     constraints {
+        implementation("org.apache.avro:avro") {
+            because("io.confluent:kafka-avro-serializer:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
+            version {
+                require("1.12.0")
+            }
+        }
         implementation("org.apache.commons:commons-compress") {
             because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
             version {
                 require("1.27.1")
+            }
+        }
+        implementation("org.apache.commons:commons-lang3") {
+            because("org.apache.commons:commons-lang3:3.16.0 -> https://www.cve.org/CVERecord?id=CVE-2025-48924")
+            version {
+                require("3.19.0")
             }
         }
         implementation("com.google.guava:guava") {
@@ -136,12 +153,6 @@ dependencies {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2022-3510")
             version {
                 require("3.25.6")
-            }
-        }
-        implementation("org.apache.zookeeper:zookeeper") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
-            version {
-                require("3.9.3")
             }
         }
         implementation("org.apache.mina:mina-core") {
