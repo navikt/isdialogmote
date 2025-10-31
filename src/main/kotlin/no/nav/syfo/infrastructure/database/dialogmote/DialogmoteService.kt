@@ -53,20 +53,18 @@ class DialogmoteService(
 
     fun getDialogmoteList(
         enhetNr: EnhetNr,
-    ): List<Dialogmote> {
-        return database.getDialogmoteList(enhetNr).map { pDialogmote ->
+    ): List<Dialogmote> =
+        moteRepository.getDialogmoteList(enhetNr).map { pDialogmote ->
             dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
         }
-    }
 
-    fun getDialogmoteUnfinishedList(enhetNr: EnhetNr): List<Dialogmote> {
-        return database.getDialogmoteUnfinishedList(enhetNr).map { pDialogmote ->
+    fun getDialogmoteUnfinishedList(enhetNr: EnhetNr): List<Dialogmote> =
+        moteRepository.getUnfinishedMoterForEnhet(enhetNr).map { pDialogmote ->
             dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
         }
-    }
 
     fun getDialogmoteUnfinishedListForVeilederIdent(veilederIdent: String): List<Dialogmote> {
-        return database.getDialogmoteUnfinishedListForVeilederIdent(veilederIdent).map { pDialogmote ->
+        return moteRepository.getUnfinishedMoterForVeileder(veilederIdent).map { pDialogmote ->
             dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
         }
     }
@@ -79,11 +77,11 @@ class DialogmoteService(
         val personIdent = PersonIdent(newDialogmoteDTO.arbeidstaker.personIdent)
         val virksomhetsnummer = Virksomhetsnummer(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer)
 
-        val anyUnfinishedDialogmote = getDialogmoteList(personIdent).filter {
+        val isAnyUnfinishedDialogmoter = getDialogmoteList(personIdent).filter {
             it.arbeidsgiver.virksomhetsnummer == virksomhetsnummer
         }.anyUnfinished()
 
-        if (anyUnfinishedDialogmote) {
+        if (isAnyUnfinishedDialogmoter) {
             throw ConflictException("Denied access to create Dialogmote: unfinished Dialogmote exists for PersonIdent")
         }
 

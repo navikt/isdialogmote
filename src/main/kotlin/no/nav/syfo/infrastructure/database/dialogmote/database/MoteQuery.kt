@@ -1,16 +1,15 @@
 package no.nav.syfo.infrastructure.database.dialogmote.database
 
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.toList
-import no.nav.syfo.infrastructure.cronjob.statusendring.toInstantOslo
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.toPDialogmote
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.NewDialogmote
 import no.nav.syfo.domain.dialogmote.TidStedDTO
-import no.nav.syfo.domain.EnhetNr
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.infrastructure.cronjob.statusendring.toInstantOslo
+import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
+import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
+import no.nav.syfo.infrastructure.database.dialogmote.database.repository.toPDialogmote
+import no.nav.syfo.infrastructure.database.toList
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.Timestamp
@@ -63,57 +62,6 @@ fun DatabaseInterface.getDialogmoteList(personIdent: PersonIdent): List<PDialogm
     return connection.use { connection ->
         connection.prepareStatement(queryGetDialogmoteListForPersonIdent).use {
             it.setString(1, personIdent.value)
-            it.executeQuery().toList { toPDialogmote() }
-        }
-    }
-}
-
-const val queryGetDialogmoteListForEnhetNr =
-    """
-        SELECT *
-        FROM MOTE
-        WHERE tildelt_enhet = ?
-        ORDER BY MOTE.created_at DESC
-    """
-
-fun DatabaseInterface.getDialogmoteList(enhetNr: EnhetNr): List<PDialogmote> {
-    return connection.use { connection ->
-        connection.prepareStatement(queryGetDialogmoteListForEnhetNr).use {
-            it.setString(1, enhetNr.value)
-            it.executeQuery().toList { toPDialogmote() }
-        }
-    }
-}
-
-const val queryGetDialogmoteUnfinishedListForEnhetNr =
-    """
-        SELECT *
-        FROM MOTE
-        WHERE tildelt_enhet = ? AND status IN ('INNKALT', 'NYTT_TID_STED')
-        ORDER BY MOTE.created_at DESC
-    """
-
-fun DatabaseInterface.getDialogmoteUnfinishedList(enhetNr: EnhetNr): List<PDialogmote> {
-    return connection.use { connection ->
-        connection.prepareStatement(queryGetDialogmoteUnfinishedListForEnhetNr).use {
-            it.setString(1, enhetNr.value)
-            it.executeQuery().toList { toPDialogmote() }
-        }
-    }
-}
-
-const val queryGetDialogmoteUnfinishedListForVeilederIdent =
-    """
-        SELECT *
-        FROM MOTE
-        WHERE tildelt_veileder_ident = ? AND status IN ('INNKALT', 'NYTT_TID_STED')
-        ORDER BY MOTE.created_at DESC
-    """
-
-fun DatabaseInterface.getDialogmoteUnfinishedListForVeilederIdent(veilederIdent: String): List<PDialogmote> {
-    return connection.use { connection ->
-        connection.prepareStatement(queryGetDialogmoteUnfinishedListForVeilederIdent).use {
-            it.setString(1, veilederIdent)
             it.executeQuery().toList { toPDialogmote() }
         }
     }

@@ -1,14 +1,17 @@
 package no.nav.syfo.testhelper
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
+import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
+import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
 import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmote
 import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerVarsel
 import no.nav.syfo.infrastructure.database.dialogmote.database.getReferat
+import no.nav.syfo.infrastructure.database.dialogmote.database.repository.toPDialogmote
 import no.nav.syfo.infrastructure.database.dialogmote.database.updateMoteStatus
 import no.nav.syfo.infrastructure.database.dialogmote.database.updateMotedeltakerArbeidstakerBrevBestilt
 import no.nav.syfo.infrastructure.database.dialogmote.database.updateMotedeltakerArbeidstakerVarselJournalpostId
@@ -257,4 +260,21 @@ fun Connection.createBehandlerVarselSvar(
         it.execute()
     }
     commit()
+}
+
+const val queryGetDialogmoteListForEnhetNr =
+    """
+        SELECT *
+        FROM MOTE
+        WHERE tildelt_enhet = ?
+        ORDER BY MOTE.created_at DESC
+    """
+
+fun DatabaseInterface.getDialogmoteList(enhetNr: EnhetNr): List<PDialogmote> {
+    return connection.use { connection ->
+        connection.prepareStatement(queryGetDialogmoteListForEnhetNr).use {
+            it.setString(1, enhetNr.value)
+            it.executeQuery().toList { toPDialogmote() }
+        }
+    }
 }

@@ -7,6 +7,7 @@ import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
+import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteRepository
 import no.nav.syfo.testhelper.mock.*
 import redis.clients.jedis.DefaultJedisClientConfig
 import redis.clients.jedis.HostAndPort
@@ -62,14 +63,14 @@ class ExternalMockEnvironment private constructor() {
         valkeyStore = redisCache,
     )
 
+    val moteRepository = MoteRepository(database)
+
     val wellKnownSelvbetjening = wellKnownSelvbetjeningMock()
     val wellKnownVeilederV2 = wellKnownVeilederV2Mock()
 
     companion object {
         private val singletonInstance: ExternalMockEnvironment by lazy {
-            ExternalMockEnvironment().also {
-                it.startExternalMocks()
-            }
+            ExternalMockEnvironment().also { it.startExternalMocks() }
         }
 
         fun getInstance(): ExternalMockEnvironment {
