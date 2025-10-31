@@ -9,7 +9,6 @@ import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
 import no.nav.syfo.api.dto.toNewDialogmote
 import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
-import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmoteList
 import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.application.JanitorService
@@ -21,6 +20,7 @@ import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventStatusProducer
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.api.authentication.configuredJacksonMapper
+import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmoteList
 import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEmpty

@@ -19,7 +19,6 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.dto.TildelDialogmoterDTO
 import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
-import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmoteUnfinishedList
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmote
@@ -32,6 +31,7 @@ class TildelDialogmoteApiV2Spek : Spek({
     describe(TildelDialogmoteApiV2Spek::class.java.simpleName) {
         val externalMockEnvironment = ExternalMockEnvironment.getInstance()
         val database = externalMockEnvironment.database
+        val moteRepository = externalMockEnvironment.moteRepository
 
         val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
         val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
@@ -105,7 +105,7 @@ class TildelDialogmoteApiV2Spek : Spek({
                         }
                     }
 
-                    val dialogmoter = database.getDialogmoteUnfinishedList(EnhetNr(UserConstants.ENHET_NR.value))
+                    val dialogmoter = moteRepository.getUnfinishedMoterForEnhet(EnhetNr(UserConstants.ENHET_NR.value))
                     dialogmoter.size shouldBeEqualTo 2
                     dialogmoter.all { dialogmote -> dialogmote.tildeltVeilederIdent == veilederIdentTildelesMoter } shouldBeEqualTo true
                     dialogmoter.all { dialogmote -> dialogmote.tildeltVeilederIdent == veilederCallerIdent } shouldBeEqualTo false

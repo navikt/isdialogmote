@@ -11,12 +11,12 @@ import no.nav.syfo.api.NAV_CALL_ID_HEADER
 import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.api.bearerHeader
 import no.nav.syfo.api.callIdArgument
-import no.nav.syfo.infrastructure.client.cache.ValkeyStore
-import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
-import no.nav.syfo.infrastructure.client.httpClientDefault
-import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
+import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
+import no.nav.syfo.infrastructure.client.cache.ValkeyStore
+import no.nav.syfo.infrastructure.client.httpClientDefault
+import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
 import org.slf4j.LoggerFactory
 
 class NarmesteLederClient(
