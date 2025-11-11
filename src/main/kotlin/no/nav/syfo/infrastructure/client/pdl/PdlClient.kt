@@ -165,9 +165,8 @@ class PdlClient(
         private val CACHE_EXPIRE_SECONDS = 24L * 3600
         private val logger = LoggerFactory.getLogger(PdlClient::class.java)
 
-        // Se behandlingskatalog https://behandlingskatalog.intern.nav.no/
-        // Behandling: Vurdere behov for, innkalle og gjennomføre dialogmøter, samt vurdere behov for arbeidsrettede tiltak, jf. § 8-7 a.
+        // Se behandlingskatalog https://behandlingskatalog.intern.nav.no/process/purpose/SYFO/60868e2d-b151-47a3-a1a6-1d896fc3a88d
         private const val BEHANDLINGSNUMMER_HEADER_KEY = "behandlingsnummer"
-        private const val BEHANDLINGSNUMMER_HEADER_VALUE = "B380"
+        private const val BEHANDLINGSNUMMER_HEADER_VALUE = "B426"
     }
 }
