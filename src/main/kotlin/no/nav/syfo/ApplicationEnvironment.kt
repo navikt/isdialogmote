@@ -64,9 +64,13 @@ data class Environment(
     val altinnUsername: String = getEnvVar("ALTINN_USERNAME"),
     val altinnPassword: String = getEnvVar("ALTINN_PASSWORD"),
     val altinnSendingEnabled: Boolean = getEnvVar("ALTINN_SENDING_ENABLED").toBoolean(),
+    val arkivportenUrl: String = getEnvVar("ARKIVPORTEN_URL"),
+    val arkivportenScope: String = getEnvVar("ARKIVPORTEN_SCOPE"),
+    val arkivportenSendingEnabled: Boolean = getEnvVar("DIALOGPORTEN_SENDING_ENABLED").toBoolean(),
     val outdatedDialogmoteCutoff: LocalDate = LocalDate.parse(getEnvVar("OUTDATED_DIALOGMOTE_CUTOFF")),
     val isJournalforingRetryEnabled: Boolean = getEnvVar("JOURNALFORING_RETRY_ENABLED").toBoolean(),
 ) {
+
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$isdialogmoteDbHost:$isdialogmoteDbPort/$isdialogmoteDbName"
     }
