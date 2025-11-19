@@ -38,7 +38,6 @@ class ArkivportenClient(
                 setBody(document)
             }
         } catch (e: Exception) {
-            log.error("Exception while getting behandler", e)
             throw ArkivportenClientException(GENERIC_ERROR_MESSAGE, e)
         }
 

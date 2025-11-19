@@ -66,7 +66,7 @@ data class Environment(
     val altinnSendingEnabled: Boolean = getEnvVar("ALTINN_SENDING_ENABLED").toBoolean(),
     val arkivportenUrl: String = getEnvVar("ARKIVPORTEN_URL"),
     val arkivportenScope: String = getEnvVar("ARKIVPORTEN_SCOPE"),
-    val arkivportenSendingEnabled: Boolean = getEnvVar("DIALOGPORTEN_SENDING_ENABLED").toBoolean(),
+    val arkivportenSendingEnabled: Boolean = getEnvVar("ARKIVPORTEN_SENDING_ENABLED").toBoolean(),
     val outdatedDialogmoteCutoff: LocalDate = LocalDate.parse(getEnvVar("OUTDATED_DIALOGMOTE_CUTOFF")),
     val isJournalforingRetryEnabled: Boolean = getEnvVar("JOURNALFORING_RETRY_ENABLED").toBoolean(),
 ) {
