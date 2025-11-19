@@ -42,8 +42,10 @@ object VarselServiceSpek : Spek({
             narmesteLederVarselService = narmesteLederVarselService,
             behandlerVarselService = behandlerVarselService,
             altinnClient = altinnClient,
+            arkivportenClient = mockk(relaxed = true),
             oppfolgingstilfelleClient = oppfolgingstilfelleClient,
             isAltinnSendingEnabled = true,
+            isArkivportenSendingEnabled = false,
         )
 
         beforeEachTest {

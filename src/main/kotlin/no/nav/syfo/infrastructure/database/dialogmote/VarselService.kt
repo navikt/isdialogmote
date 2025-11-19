@@ -17,14 +17,18 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
+import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClient
+import no.nav.syfo.infrastructure.client.arkivporten.createArkivportenDokument
 
 class VarselService(
     private val arbeidstakerVarselService: ArbeidstakerVarselService,
     private val narmesteLederVarselService: NarmesteLederVarselService,
     private val behandlerVarselService: BehandlerVarselService,
     private val altinnClient: AltinnClient,
+    private val arkivportenClient: ArkivportenClient,
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     private val isAltinnSendingEnabled: Boolean,
+    private val isArkivportenSendingEnabled: Boolean,
 ) {
     private val log: Logger = LoggerFactory.getLogger(VarselService::class.java)
 
@@ -71,6 +75,20 @@ class VarselService(
         if (isAltinnSendingEnabled) {
             altinnClient.sendToVirksomhet(
                 altinnMelding = altinnMelding,
+            )
+        }
+
+        if (isArkivportenSendingEnabled) {
+            arkivportenClient.sendDocument(
+                createArkivportenDokument(
+                    reference = virksomhetsbrevId,
+                    virksomhetsnummer = virksomhetsnummer,
+                    file = virksomhetsPdf,
+                    varseltype = varselType,
+                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                    arbeidstakernavn = arbeidstakernavn,
+                    hasNarmesteLeder = narmesteLeder != null,
+                )
             )
         }
 
