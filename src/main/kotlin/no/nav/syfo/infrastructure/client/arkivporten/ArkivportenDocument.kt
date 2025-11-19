@@ -73,7 +73,6 @@ data class ArkivportenDocument(
     }
 }
 
-
 fun createArkivportenDokument(
     reference: UUID,
     virksomhetsnummer: Virksomhetsnummer,
@@ -82,7 +81,7 @@ fun createArkivportenDokument(
     arbeidstakerPersonIdent: PersonIdent,
     arbeidstakernavn: String,
     hasNarmesteLeder: Boolean,
-) : ArkivportenDocument {
+): ArkivportenDocument {
     return ArkivportenDocument(
         documentId = reference,
         type = ArkivportenDocument.DocumentType.DIALOGMOTE,
