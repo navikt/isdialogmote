@@ -35,6 +35,7 @@ plugins {
     id("com.gradleup.shadow") version "8.3.8"
     id("org.jlleitschuh.gradle.ktlint") version "11.4.2"
     id("com.github.ben-manes.versions") version "0.52.0"
+    id("com.adarshr.test-logger") version "4.0.0"
 }
 
 repositories {
@@ -234,6 +235,9 @@ tasks {
         useJUnitPlatform {
             includeEngines("spek2")
         }
-        testLogging.showStandardStreams = true
+        testlogger {
+            showFullStackTraces = true
+            showPassed = false
+        }
     }
 }
