@@ -32,7 +32,6 @@ class ExternalMockEnvironment private constructor() {
                 .build()
         )
     )
-    val redisServer = testValkey(environment)
 
     val tokendingsClient = TokendingsClient(
         tokenxClientId = environment.tokenxClientId,
@@ -70,17 +69,13 @@ class ExternalMockEnvironment private constructor() {
 
     companion object {
         private val singletonInstance: ExternalMockEnvironment by lazy {
-            ExternalMockEnvironment().also { it.startExternalMocks() }
+            ExternalMockEnvironment()
         }
 
         fun getInstance(): ExternalMockEnvironment {
             return singletonInstance
         }
     }
-}
-
-fun ExternalMockEnvironment.startExternalMocks() {
-    this.redisServer.start()
 }
 
 fun HashMap<String, NettyApplicationEngine>.start() {

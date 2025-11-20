@@ -27,7 +27,6 @@ val nimbusjosejwtVersion = "10.5"
 val postgresEmbeddedVersion = "2.1.0"
 val postgresVersion = "42.7.8"
 val postgresRuntimeVersion = "17.5.0"
-val redisEmbeddedVersion = "0.7.3"
 val spekVersion = "2.0.19"
 val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
 
@@ -80,7 +79,6 @@ dependencies {
 
     // Cache
     implementation("redis.clients:jedis:$jedisVersion")
-    testImplementation("it.ozimov:embedded-redis:$redisEmbeddedVersion")
 
     // Database
     implementation("org.postgresql:postgresql:$postgresVersion")
