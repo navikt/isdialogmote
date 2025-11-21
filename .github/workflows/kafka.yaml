@@ -16,7 +16,7 @@ jobs:
     name: Deploy Kafka topic to NAIS dev-gcp
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: deploy statusendring dev
         uses: nais/deploy/actions/deploy@v2
@@ -38,7 +38,7 @@ jobs:
     needs: deploy-kafka-dev
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: deploy statusendring prod
         uses: nais/deploy/actions/deploy@v2
