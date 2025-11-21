@@ -92,6 +92,10 @@ class ArbeidstakerBrevApiSpek : Spek({
             database.addDummyDeltakere()
         }
 
+        afterEachTest {
+            database.dropData()
+        }
+
         describe("Les og respons ArbeidstakerBrev") {
             val validTokenSelvbetjening = generateJWTTokenx(
                 audience = externalMockEnvironment.environment.tokenxClientId,
