@@ -6,25 +6,6 @@ import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 
-//private const val TITTEL_INNKALT = "Innkalling til dialogmøte"
-//private const val TITTEL_NYTT_TID_STED = "Endring av dialogmøte"
-//private const val TITTEL_AVLYST = "Avlysning av dialogmøte"
-//private const val TITTEL_REFERAT = "Referat fra dialogmøte"
-//
-//private const val TITTEL_INNKALT_COPY = "Innkalling til dialogmøte (kopi)"
-//private const val TITTEL_NYTT_TID_STED_COPY = "Endring av dialogmøte (kopi)"
-//private const val TITTEL_AVLYST_COPY = "Avlysning av dialogmøte (kopi)"
-//private const val TITTEL_REFERAT_COPY = "Referat fra dialogmøte (kopi)"
-//
-//private const val BODY_FERDIGSTILL = ""
-//private const val BODY_KREVER_HANDLING = """
-//    Det er ikke registrert en nærmeste leder for denne arbeidstakeren. For å svare på innkallingen må det registreres
-//    en leder, og deretter kan lederen gå inn på Dine Sykmeldte hos NAV.
-//"""
-//private const val BODY_DUPLICATE_BREV = """
-//    Dette er en kopi av et brev som er tilgjengelig for nærmeste leder på Dine Sykmeldte hos NAV.
-//"""
-
 data class ArkivportenDocument(
     val documentId: UUID,
     val type: DocumentType,
@@ -97,14 +78,6 @@ fun createArkivportenDokument(
         fullName = arbeidstakernavn,
     )
 }
-//private fun toVarselTypeTitle(varseltype: MotedeltakerVarselType, isCopy: Boolean): String {
-//    return when (varseltype) {
-//        MotedeltakerVarselType.INNKALT -> TITTEL_INNKALT_COPY.takeIf { isCopy } ?: TITTEL_INNKALT
-//        MotedeltakerVarselType.NYTT_TID_STED -> TITTEL_NYTT_TID_STED_COPY.takeIf { isCopy } ?: TITTEL_NYTT_TID_STED
-//        MotedeltakerVarselType.AVLYST -> TITTEL_AVLYST_COPY.takeIf { isCopy } ?: TITTEL_AVLYST
-//        MotedeltakerVarselType.REFERAT -> TITTEL_REFERAT_COPY.takeIf { isCopy } ?: TITTEL_REFERAT
-//    }
-//}
 
 fun MotedeltakerVarselType.toDescription(): String {
     return when (this) {
@@ -123,28 +96,6 @@ private fun title(type: MotedeltakerVarselType, navn: String): String {
     return "${type.toDescription().capitalizeFirstLetter()} til arbeidsgiveren angående $navn. Hvis nærmeste leder er meldt inn til Nav, mottar lederen ${type.toDescription()} på \"Dine sykmeldte\" hos Nav."
 }
 
-//private fun toDialogTitle(
-//    varseltype: MotedeltakerVarselType,
-//    personIdent: PersonIdent,
-//    navn: String?,
-//    isCopy: Boolean,
-//): String {
-//    return "${toVarselTypeTitle(varseltype, isCopy)} - $navn (${personIdent.value})"
-//}
-
 fun String.capitalizeFirstLetter(): String {
     return this.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 }
-
-//private fun toDialogSummary(varseltype: MotedeltakerVarselType, isCopy: Boolean): String {
-//    if (isCopy) {
-//        return BODY_DUPLICATE_BREV
-//    }
-//
-//    return when (varseltype) {
-//        MotedeltakerVarselType.INNKALT -> BODY_KREVER_HANDLING
-//        MotedeltakerVarselType.NYTT_TID_STED -> BODY_KREVER_HANDLING
-//        MotedeltakerVarselType.AVLYST -> BODY_FERDIGSTILL
-//        MotedeltakerVarselType.REFERAT -> BODY_FERDIGSTILL
-//    }
-//}
