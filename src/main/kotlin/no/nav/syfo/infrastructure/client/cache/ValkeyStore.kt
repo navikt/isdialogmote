@@ -8,7 +8,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException
 
 class ValkeyStore(private val jedisPool: JedisPool) {
 
-    private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.application.cache")
+    private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.infrastructure.client.cache")
     val mapper = configuredJacksonMapper()
 
     inline fun <reified T> getObject(key: String): T? {

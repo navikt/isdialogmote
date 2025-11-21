@@ -59,7 +59,7 @@ class ArbeidstakerBrevApiSpek : Spek({
         val esyfovarselHendelse = mockk<ArbeidstakerHendelse>(relaxed = true)
         justRun { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
-        val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
+        val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>(relaxed = true)
 
         val arbeidstakerVarselService = ArbeidstakerVarselService(
             esyfovarselProducer = esyfovarselProducer,
@@ -78,10 +78,11 @@ class ArbeidstakerBrevApiSpek : Spek({
         )
 
         beforeEachTest {
+            database.dropData()
             val altinnResponse = ReceiptExternal()
             altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-            clearMocks(altinnMock)
+            clearMocks(altinnMock, esyfovarselProducer, esyfovarselHendelse)
             every {
                 altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
             } returns altinnResponse
