@@ -72,7 +72,7 @@ fun Application.testApiModule(
     val arkivportenClient = no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClient(
         baseUrl = externalMockEnvironment.environment.arkivportenUrl,
         azureAdV2Client = externalMockEnvironment.azureAdV2Client,
-        arkivportenScope = externalMockEnvironment.environment.arkivportenScope,
+        clientId = externalMockEnvironment.environment.arkivportenClientId,
         client = externalMockEnvironment.mockHttpClient,
     )
 

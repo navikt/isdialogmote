@@ -17,7 +17,7 @@ private const val GENERIC_ERROR_MESSAGE = "Error sending document to Arkivporten
 class ArkivportenClient(
     private val baseUrl: String,
     private val azureAdV2Client: AzureAdV2Client,
-    private val arkivportenScope: String,
+    private val clientId: String,
     private val client: HttpClient = httpClientDefault(),
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -25,7 +25,7 @@ class ArkivportenClient(
     suspend fun sendDocument(
         document: ArkivportenDocument,
     ) {
-        val token = azureAdV2Client.getSystemToken(arkivportenScope)?.accessToken
+        val token = azureAdV2Client.getSystemToken(clientId)?.accessToken
             ?: throw ArkivportenClientException("$GENERIC_ERROR_MESSAGE: No token was found")
         val requestUrl = "$baseUrl/$ARKIVPORTEN_DOCUMENT_PATH"
 

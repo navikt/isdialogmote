@@ -23,7 +23,7 @@ class ArkivportenClientSpek : Spek({
         val arkivportenClient = ArkivportenClient(
             azureAdV2Client = azureAdV2ClientMock,
             baseUrl = externalMockEnvironment.environment.arkivportenUrl,
-            arkivportenScope = externalMockEnvironment.environment.arkivportenScope,
+            clientId = externalMockEnvironment.environment.arkivportenClientId,
             client = externalMockEnvironment.mockHttpClient,
         )
         val pdf = byteArrayOf(23, 45, 67, 89)
