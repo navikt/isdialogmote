@@ -25,7 +25,7 @@ import no.nav.syfo.testhelper.setupApiAndClient
 import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
+import org.junit.jupiter.api.Assertions.*
 
 class GetDialogmoteStatusEndringApiV2Test {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()

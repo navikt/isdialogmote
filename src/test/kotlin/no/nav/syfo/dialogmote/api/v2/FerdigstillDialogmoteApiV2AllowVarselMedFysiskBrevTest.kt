@@ -8,17 +8,17 @@ import io.mockk.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
+import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.HendelseType
-import no.nav.syfo.infrastructure.database.dialogmote.PdfService
-import no.nav.syfo.api.dto.DialogmoteDTO
-import no.nav.syfo.infrastructure.database.dialogmote.database.getReferat
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.DocumentComponentType
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
+import no.nav.syfo.infrastructure.database.dialogmote.PdfService
+import no.nav.syfo.infrastructure.database.dialogmote.database.getReferat
+import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.HendelseType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
@@ -28,13 +28,13 @@ import no.nav.syfo.testhelper.generator.generateNewReferatDTO
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import no.nav.syfo.testhelper.mock.pdfReferat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.*
-import kotlin.test.*
 
 class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
@@ -100,7 +100,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
 
                         val dialogmoteDTO = dialogmoteList.first()
                         assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
-                        assertEquals(emptyList(), dialogmoteDTO.referatList)
+                        assertTrue(dialogmoteDTO.referatList.isEmpty())
 
                         createdDialogmoteUUID = dialogmoteDTO.uuid
                     }
@@ -126,7 +126,10 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
                         val dialogmoteDTO = dialogmoteList.first()
                         assertEquals(DialogmoteStatus.FERDIGSTILT.name, dialogmoteDTO.status)
                         assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
-                        assertEquals(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer, dialogmoteDTO.arbeidsgiver.virksomhetsnummer)
+                        assertEquals(
+                            newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
+                            dialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                        )
 
                         assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO.sted)
 
@@ -158,7 +161,10 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
 
                         moteStatusEndretList.forEach { moteStatusEndret ->
                             assertEquals(VEILEDER_IDENT, moteStatusEndret.opprettetAv)
-                            assertEquals(oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start, moteStatusEndret.tilfelleStart)
+                            assertEquals(
+                                oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start,
+                                moteStatusEndret.tilfelleStart
+                            )
                         }
                     }
                     database.setReferatBrevBestilt(referatUuid)

@@ -23,15 +23,16 @@ import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithMissingValues
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
+import org.junit.jupiter.api.assertNull
 import java.time.LocalDate
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
@@ -118,7 +119,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
                     assertEquals(5, arbeidstakerVarselDTO.document.size)
                     assertEquals(DocumentComponentType.PARAGRAPH, arbeidstakerVarselDTO.document[0].type)
                     assertEquals("Tittel innkalling", arbeidstakerVarselDTO.document[0].title)
-                    assertEquals(emptyList(), arbeidstakerVarselDTO.document[0].texts)
+                    assertTrue(arbeidstakerVarselDTO.document[0].texts.isEmpty())
                     assertEquals(DocumentComponentType.PARAGRAPH, arbeidstakerVarselDTO.document[1].type)
                     assertEquals("Møtetid:", arbeidstakerVarselDTO.document[1].title)
                     assertEquals(listOf("5. mai 2021"), arbeidstakerVarselDTO.document[1].texts)

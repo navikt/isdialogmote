@@ -4,30 +4,33 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.mockk.*
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.justRun
+import io.mockk.mockk
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
+import no.nav.syfo.api.dto.DialogmoteDTO
+import no.nav.syfo.api.dto.OvertaDialogmoterDTO
 import no.nav.syfo.api.endpoints.dialogmoteActionsApiOvertaPath
 import no.nav.syfo.api.endpoints.dialogmoteApiEnhetUrlPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
+import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
-import no.nav.syfo.api.dto.DialogmoteDTO
-import no.nav.syfo.api.dto.OvertaDialogmoterDTO
-import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.generator.generateNewDialogmote
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class OvertaDialogmoteApiV2Test {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()

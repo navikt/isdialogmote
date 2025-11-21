@@ -9,26 +9,16 @@ import io.mockk.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.api.endpoints.dialogmoteApiMoteAvlysPath
-import no.nav.syfo.api.endpoints.dialogmoteApiMoteEndreFerdigstiltPath
-import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
-import no.nav.syfo.api.endpoints.dialogmoteApiMoteMellomlagrePath
-import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
-import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
+import no.nav.syfo.api.dto.DialogmoteDTO
+import no.nav.syfo.api.endpoints.*
 import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
-import no.nav.syfo.infrastructure.kafka.behandler.KafkaBehandlerDialogmeldingDTO
+import no.nav.syfo.domain.dialogmote.*
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.infrastructure.database.dialogmote.PdfService
-import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.infrastructure.database.dialogmote.database.getReferat
 import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
-import no.nav.syfo.domain.dialogmote.DialogmeldingKode
-import no.nav.syfo.domain.dialogmote.DialogmeldingKodeverk
-import no.nav.syfo.domain.dialogmote.DialogmeldingType
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
-import no.nav.syfo.domain.dialogmote.DocumentComponentType
-import no.nav.syfo.domain.dialogmote.serialize
+import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
+import no.nav.syfo.infrastructure.kafka.behandler.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
@@ -37,12 +27,12 @@ import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import no.nav.syfo.testhelper.mock.pdfReferat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.util.*
-import kotlin.test.*
 
 class FerdigstillDialogmoteApiV2Test {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
@@ -130,7 +120,10 @@ class FerdigstillDialogmoteApiV2Test {
                     val dialogmoteDTO = dialogmoteList.first()
                     assertEquals(DialogmoteStatus.FERDIGSTILT.name, dialogmoteDTO.status)
                     assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
-                    assertEquals(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer, dialogmoteDTO.arbeidsgiver.virksomhetsnummer)
+                    assertEquals(
+                        newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
+                        dialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                    )
 
                     assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO.sted)
 
@@ -163,7 +156,10 @@ class FerdigstillDialogmoteApiV2Test {
 
                     moteStatusEndretList.forEach { moteStatusEndret ->
                         assertEquals(VEILEDER_IDENT, moteStatusEndret.opprettetAv)
-                        assertEquals(oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start, moteStatusEndret.tilfelleStart)
+                        assertEquals(
+                            oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start,
+                            moteStatusEndret.tilfelleStart
+                        )
                     }
 
                     client.post(urlMoteUUIDFerdigstill) {
@@ -289,16 +285,31 @@ class FerdigstillDialogmoteApiV2Test {
                             )
                         }
                         val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
-                        assertEquals(newDialogmoteDTO.behandler!!.behandlerRef, kafkaBehandlerDialogmeldingDTO.behandlerRef)
+                        assertEquals(
+                            newDialogmoteDTO.behandler!!.behandlerRef,
+                            kafkaBehandlerDialogmeldingDTO.behandlerRef
+                        )
                         assertEquals(referatBehandlerVarselUUID, kafkaBehandlerDialogmeldingDTO.dialogmeldingUuid)
-                        assertEquals(newReferatDTO.document.serialize(), kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst)
-                        assertEquals(DialogmeldingType.DIALOG_NOTAT.name, kafkaBehandlerDialogmeldingDTO.dialogmeldingType)
+                        assertEquals(
+                            newReferatDTO.document.serialize(),
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst
+                        )
+                        assertEquals(
+                            DialogmeldingType.DIALOG_NOTAT.name,
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingType
+                        )
                         assertEquals(DialogmeldingKode.REFERAT.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
                         assertNotEquals(endreTidStedBehandlerVarselUUID, innkallingBehandlerVarselUUID)
                         assertNotEquals(endreTidStedBehandlerVarselUUID, referatBehandlerVarselUUID)
                         assertNotEquals(referatBehandlerVarselUUID, innkallingBehandlerVarselUUID)
-                        assertEquals(endreTidStedBehandlerVarselUUID, kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent)
-                        assertEquals(innkallingBehandlerVarselUUID, kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation)
+                        assertEquals(
+                            endreTidStedBehandlerVarselUUID,
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent
+                        )
+                        assertEquals(
+                            innkallingBehandlerVarselUUID,
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation
+                        )
                         assertNotNull(kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg)
                     }
 
@@ -344,16 +355,31 @@ class FerdigstillDialogmoteApiV2Test {
                             )
                         }
                         val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
-                        assertEquals(newDialogmoteDTO.behandler!!.behandlerRef, kafkaBehandlerDialogmeldingDTO.behandlerRef)
+                        assertEquals(
+                            newDialogmoteDTO.behandler!!.behandlerRef,
+                            kafkaBehandlerDialogmeldingDTO.behandlerRef
+                        )
                         assertEquals(newReferatBehandlerVarselUUID, kafkaBehandlerDialogmeldingDTO.dialogmeldingUuid)
-                        assertEquals(endretReferatDTO.document.serialize(), kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst)
-                        assertEquals(DialogmeldingType.DIALOG_NOTAT.name, kafkaBehandlerDialogmeldingDTO.dialogmeldingType)
+                        assertEquals(
+                            endretReferatDTO.document.serialize(),
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst
+                        )
+                        assertEquals(
+                            DialogmeldingType.DIALOG_NOTAT.name,
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingType
+                        )
                         assertEquals(DialogmeldingKode.REFERAT.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
                         assertNotEquals(endreTidStedBehandlerVarselUUID, innkallingBehandlerVarselUUID)
                         assertNotEquals(endreTidStedBehandlerVarselUUID, referatBehandlerVarselUUID)
                         assertNotEquals(referatBehandlerVarselUUID, innkallingBehandlerVarselUUID)
-                        assertEquals(endreTidStedBehandlerVarselUUID, kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent)
-                        assertEquals(innkallingBehandlerVarselUUID, kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation)
+                        assertEquals(
+                            endreTidStedBehandlerVarselUUID,
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent
+                        )
+                        assertEquals(
+                            innkallingBehandlerVarselUUID,
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation
+                        )
                         assertNotNull(kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg)
                     }
                 }
@@ -556,9 +582,15 @@ class FerdigstillDialogmoteApiV2Test {
                     assertEquals(referatBehandlerVarselUUID, kafkaBehandlerDialogmeldingDTO.dialogmeldingUuid)
                     assertEquals(newReferatDTO.document.serialize(), kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst)
                     assertEquals(DialogmeldingType.DIALOG_NOTAT.name, kafkaBehandlerDialogmeldingDTO.dialogmeldingType)
-                    assertEquals(DialogmeldingKodeverk.HENVENDELSE.name, kafkaBehandlerDialogmeldingDTO.dialogmeldingKodeverk)
+                    assertEquals(
+                        DialogmeldingKodeverk.HENVENDELSE.name,
+                        kafkaBehandlerDialogmeldingDTO.dialogmeldingKodeverk
+                    )
                     assertEquals(DialogmeldingKode.REFERAT.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
-                    assertEquals(innkallingBehandlerVarselUUID, kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation)
+                    assertEquals(
+                        innkallingBehandlerVarselUUID,
+                        kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation
+                    )
                     assertNotNull(kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg)
                 }
             }

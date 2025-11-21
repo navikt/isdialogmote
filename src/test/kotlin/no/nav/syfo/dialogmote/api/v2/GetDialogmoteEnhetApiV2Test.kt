@@ -23,12 +23,12 @@ import no.nav.syfo.testhelper.UserConstants.ENHET_NR_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.generateNewDialogmote
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class GetDialogmoteEnhetApiV2Test {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()

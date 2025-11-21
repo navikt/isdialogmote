@@ -43,13 +43,16 @@ import no.nav.syfo.testhelper.generator.generateNewReferatDTO
 import no.nav.syfo.testhelper.mock.pdfInnkalling
 import no.nav.syfo.testhelper.mock.pdfReferat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
+import org.junit.jupiter.api.assertNull
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.test.*
 
 class ArbeidstakerBrevApiTest {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()

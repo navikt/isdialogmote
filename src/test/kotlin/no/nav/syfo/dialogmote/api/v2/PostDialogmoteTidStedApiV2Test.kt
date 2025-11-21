@@ -9,32 +9,21 @@ import io.mockk.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
-import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
-import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
-import no.nav.syfo.infrastructure.kafka.behandler.KafkaBehandlerDialogmeldingDTO
-import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
-import no.nav.syfo.application.DialogmeldingService
-import no.nav.syfo.domain.ForesporselType
-import no.nav.syfo.domain.SvarType
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.dto.EndreTidStedBegrunnelseDTO
 import no.nav.syfo.api.dto.EndreTidStedDialogmoteDTO
+import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
+import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
+import no.nav.syfo.application.BehandlerVarselService
+import no.nav.syfo.application.DialogmeldingService
+import no.nav.syfo.domain.ForesporselType
+import no.nav.syfo.domain.SvarType
+import no.nav.syfo.domain.dialogmote.*
+import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
-import no.nav.syfo.domain.dialogmote.DialogmeldingKode
-import no.nav.syfo.domain.dialogmote.DialogmeldingKodeverk
-import no.nav.syfo.domain.dialogmote.DialogmeldingType
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
-import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
-import no.nav.syfo.domain.dialogmote.DocumentComponentType
-import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
-import no.nav.syfo.domain.dialogmote.serialize
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.HendelseType
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.VarselData
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.VarselDataMotetidspunkt
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.VarselDataNarmesteLeder
+import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
+import no.nav.syfo.infrastructure.kafka.behandler.KafkaBehandlerDialogmeldingDTO
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_FNR
@@ -42,13 +31,13 @@ import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.test.*
 
 class PostDialogmoteTidStedApiV2Test {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
@@ -186,21 +175,24 @@ class PostDialogmoteTidStedApiV2Test {
                         it.varselType == MotedeltakerVarselType.NYTT_TID_STED.name
                     }
                     assertNotNull(arbeidstakerVarselDTO)
-                    assertTrue(arbeidstakerVarselDTO.digitalt)
+                    assertTrue(arbeidstakerVarselDTO?.digitalt!!)
                     assertNull(arbeidstakerVarselDTO.lestDato)
                     assertEquals("begrunnelse arbeidstaker", arbeidstakerVarselDTO.fritekst)
                     assertFalse(arbeidstakerVarselDTO.document.isEmpty())
                     assertEquals(listOf("dokumenttekst arbeidstaker"), arbeidstakerVarselDTO.document.first().texts)
 
-                    assertEquals(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer, dialogmoteDTO.arbeidsgiver.virksomhetsnummer)
+                    assertEquals(
+                        newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
+                        dialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                    )
                     val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.find {
                         it.varselType == MotedeltakerVarselType.NYTT_TID_STED.name
                     }
                     assertNotNull(arbeidsgiverVarselDTO)
-                    assertNull(arbeidsgiverVarselDTO.lestDato)
-                    assertEquals("begrunnelse arbeidsgiver", arbeidsgiverVarselDTO.fritekst)
-                    assertFalse(arbeidsgiverVarselDTO.document.isEmpty())
-                    assertEquals(listOf("dokumenttekst arbeidsgiver"), arbeidsgiverVarselDTO.document.first().texts)
+                    assertNull(arbeidsgiverVarselDTO?.lestDato)
+                    assertEquals("begrunnelse arbeidsgiver", arbeidsgiverVarselDTO?.fritekst)
+                    assertFalse(arbeidsgiverVarselDTO?.document?.isEmpty()!!)
+                    assertEquals(listOf("dokumenttekst arbeidsgiver"), arbeidsgiverVarselDTO?.document?.first()?.texts)
 
                     assertEquals(newDialogmoteTidSted.sted, dialogmoteDTO.sted)
                     assertEquals("https://meet.google.com/zyx", dialogmoteDTO.videoLink)
@@ -213,7 +205,10 @@ class PostDialogmoteTidStedApiV2Test {
 
                     moteStatusEndretList.forEach { moteStatusEndret ->
                         assertEquals(VEILEDER_IDENT, moteStatusEndret.opprettetAv)
-                        assertEquals(oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start, moteStatusEndret.tilfelleStart)
+                        assertEquals(
+                            oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start,
+                            moteStatusEndret.tilfelleStart
+                        )
                     }
                 }
             }
@@ -329,13 +324,31 @@ class PostDialogmoteTidStedApiV2Test {
                             )
                         }
                         val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
-                        assertEquals(newDialogmoteDTO.behandler!!.behandlerRef, kafkaBehandlerDialogmeldingDTO.behandlerRef)
-                        assertEquals(newDialogmoteTidSted.behandler!!.endringsdokument.serialize(), kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst)
-                        assertEquals(DialogmeldingType.DIALOG_FORESPORSEL.name, kafkaBehandlerDialogmeldingDTO.dialogmeldingType)
-                        assertEquals(DialogmeldingKodeverk.DIALOGMOTE.name, kafkaBehandlerDialogmeldingDTO.dialogmeldingKodeverk)
+                        assertEquals(
+                            newDialogmoteDTO.behandler!!.behandlerRef,
+                            kafkaBehandlerDialogmeldingDTO.behandlerRef
+                        )
+                        assertEquals(
+                            newDialogmoteTidSted.behandler!!.endringsdokument.serialize(),
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst
+                        )
+                        assertEquals(
+                            DialogmeldingType.DIALOG_FORESPORSEL.name,
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingType
+                        )
+                        assertEquals(
+                            DialogmeldingKodeverk.DIALOGMOTE.name,
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingKodeverk
+                        )
                         assertEquals(DialogmeldingKode.TIDSTED.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
-                        assertEquals(createdDialogmote.behandler!!.varselList[1].uuid, kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent)
-                        assertEquals(createdDialogmote.behandler!!.varselList[1].uuid, kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation)
+                        assertEquals(
+                            createdDialogmote.behandler!!.varselList[1].uuid,
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent
+                        )
+                        assertEquals(
+                            createdDialogmote.behandler!!.varselList[1].uuid,
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation
+                        )
                         assertNotNull(kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg)
                     }
                     clearAllMocks()
@@ -401,12 +414,24 @@ class PostDialogmoteTidStedApiV2Test {
                             )
                         }
                         val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
-                        assertEquals(newDialogmoteDTO.behandler!!.behandlerRef, kafkaBehandlerDialogmeldingDTO.behandlerRef)
-                        assertEquals(newDialogmoteTidSted.behandler!!.endringsdokument.serialize(), kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst)
-                        assertEquals(DialogmeldingType.DIALOG_FORESPORSEL.name, kafkaBehandlerDialogmeldingDTO.dialogmeldingType)
+                        assertEquals(
+                            newDialogmoteDTO.behandler!!.behandlerRef,
+                            kafkaBehandlerDialogmeldingDTO.behandlerRef
+                        )
+                        assertEquals(
+                            newDialogmoteTidSted.behandler!!.endringsdokument.serialize(),
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst
+                        )
+                        assertEquals(
+                            DialogmeldingType.DIALOG_FORESPORSEL.name,
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingType
+                        )
                         assertEquals(DialogmeldingKode.TIDSTED.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
                         assertEquals(dialogmeldingDTO.msgId, kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent)
-                        assertEquals(dialogmeldingDTO.conversationRef, kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation)
+                        assertEquals(
+                            dialogmeldingDTO.conversationRef,
+                            kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation
+                        )
                         assertNotNull(kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg)
                     }
                 }

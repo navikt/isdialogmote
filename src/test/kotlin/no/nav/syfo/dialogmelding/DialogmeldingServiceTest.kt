@@ -27,12 +27,14 @@ import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
 import java.util.*
-import kotlin.test.*
 
 class DialogmeldingServiceTest {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
