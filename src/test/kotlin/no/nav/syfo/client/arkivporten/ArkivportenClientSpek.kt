@@ -2,7 +2,7 @@ package no.nav.syfo.client.arkivporten
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.mockk
-import java.util.UUID
+import java.util.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClient
 import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClientException
@@ -13,7 +13,6 @@ import no.nav.syfo.testhelper.UserConstants
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeNull
-import org.junit.jupiter.api.Test
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
