@@ -9,8 +9,8 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generator.generateNewDialogmote
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class TestdataResetServiceTest {
 

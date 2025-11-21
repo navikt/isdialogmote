@@ -11,23 +11,19 @@ import io.mockk.mockk
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
+import no.nav.syfo.api.dto.DialogmoteDTO
+import no.nav.syfo.api.dto.TildelDialogmoterDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiEnhetUrlPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.api.endpoints.dialogmoteTildelPath
+import no.nav.syfo.domain.EnhetNr
+import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
-import no.nav.syfo.api.dto.DialogmoteDTO
-import no.nav.syfo.api.dto.TildelDialogmoterDTO
-import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
-import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmote
-import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
 import java.util.*
 
 class TildelDialogmoteApiV2Test {

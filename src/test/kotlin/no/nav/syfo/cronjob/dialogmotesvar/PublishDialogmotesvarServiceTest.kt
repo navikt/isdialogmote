@@ -1,14 +1,13 @@
 package no.nav.syfo.cronjob.dialogmotesvar
 
-import io.mockk.*
+import io.mockk.clearMocks
+import io.mockk.justRun
+import io.mockk.mockk
+import io.mockk.verify
 import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
-import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.Dialogmotesvar
-import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.DialogmotesvarProducer
-import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.KDialogmotesvar
-import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.PublishDialogmotesvarService
-import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.SenderType
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.*
 import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerVarsel
@@ -16,7 +15,7 @@ import no.nav.syfo.infrastructure.database.dialogmote.database.updateBehandlersv
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteWithBehandler
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import java.time.OffsetDateTime
 import java.util.*
 

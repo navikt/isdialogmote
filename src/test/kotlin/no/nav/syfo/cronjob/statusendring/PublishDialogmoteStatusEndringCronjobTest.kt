@@ -16,17 +16,17 @@ import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.cronjob.statusendring.DialogmoteStatusEndringProducer
 import no.nav.syfo.infrastructure.cronjob.statusendring.PublishDialogmoteStatusEndringCronjob
 import no.nav.syfo.infrastructure.cronjob.statusendring.PublishDialogmoteStatusEndringService
+import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 
 class PublishDialogmoteStatusEndringCronjobTest {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()

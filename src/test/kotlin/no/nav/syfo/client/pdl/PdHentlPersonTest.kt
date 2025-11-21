@@ -4,8 +4,8 @@ import no.nav.syfo.infrastructure.client.pdl.PdlHentPerson
 import no.nav.syfo.infrastructure.client.pdl.PdlPerson
 import no.nav.syfo.infrastructure.client.pdl.PdlPersonNavn
 import no.nav.syfo.infrastructure.client.pdl.fullName
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class PdHentlPersonTest {
 

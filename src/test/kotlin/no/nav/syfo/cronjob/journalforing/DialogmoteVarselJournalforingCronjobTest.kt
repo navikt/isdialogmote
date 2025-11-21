@@ -3,12 +3,7 @@ package no.nav.syfo.cronjob.journalforing
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.mockk.clearMocks
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.slot
+import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
@@ -18,11 +13,11 @@ import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.Referat
 import no.nav.syfo.domain.dialogmote.toJournalpostTittel
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
+import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.infrastructure.client.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.BrukerIdType
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.JournalpostRequest
@@ -257,7 +252,10 @@ class DialogmoteVarselJournalforingCronjobTest {
                 assertEquals(1, result.updated)
 
                 assertEquals(BrukerIdType.HPRNR.value, journalpostRequestSlot.captured.avsenderMottaker.idType)
-                assertEquals("000${UserConstants.BEHANDLER_HPRID}", journalpostRequestSlot.captured.avsenderMottaker.id!!)
+                assertEquals(
+                    "000${UserConstants.BEHANDLER_HPRID}",
+                    journalpostRequestSlot.captured.avsenderMottaker.id!!
+                )
             }
 
             val urlMoteUUIDPostTidSted =

@@ -7,12 +7,12 @@ import io.mockk.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.api.dto.DialogmoteDTO
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.domain.dialogmote.DocumentComponentType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
+import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_IKKE_VARSEL
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
@@ -22,14 +22,10 @@ import no.nav.syfo.testhelper.generator.generateInkallingHendelse
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithMissingValues
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
-import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertNull
 import java.time.LocalDate
@@ -137,7 +133,10 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
                     )
                     assertNull(arbeidstakerVarselDTO.brevBestiltTidspunkt)
 
-                    assertEquals(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer, dialogmoteDTO.arbeidsgiver.virksomhetsnummer)
+                    assertEquals(
+                        newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
+                        dialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                    )
                     assertEquals(1, dialogmoteDTO.arbeidsgiver.varselList.size)
                     val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.first()
                     assertEquals(MotedeltakerVarselType.INNKALT.name, arbeidsgiverVarselDTO.varselType)
@@ -161,9 +160,13 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
 
                     client.getDialogmoter(validToken, ARBEIDSTAKER_IKKE_VARSEL).apply {
                         assertEquals(HttpStatusCode.OK, status)
-                        val arbeidstakerVarselDTOBrevBestilt = body<List<DialogmoteDTO>>().first().arbeidstaker.varselList.first()
+                        val arbeidstakerVarselDTOBrevBestilt =
+                            body<List<DialogmoteDTO>>().first().arbeidstaker.varselList.first()
                         assertNotNull(arbeidstakerVarselDTOBrevBestilt.brevBestiltTidspunkt)
-                        assertEquals(LocalDate.now(), arbeidstakerVarselDTOBrevBestilt.brevBestiltTidspunkt!!.toLocalDate())
+                        assertEquals(
+                            LocalDate.now(),
+                            arbeidstakerVarselDTOBrevBestilt.brevBestiltTidspunkt!!.toLocalDate()
+                        )
                     }
                 }
             }
@@ -192,7 +195,10 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
                     assertNull(arbeidstakerVarselDTO.lestDato)
                     assertEquals("", arbeidstakerVarselDTO.fritekst)
 
-                    assertEquals(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer, dialogmoteDTO.arbeidsgiver.virksomhetsnummer)
+                    assertEquals(
+                        newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
+                        dialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                    )
 
                     assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO.sted)
                     assertEquals("", dialogmoteDTO.videoLink)

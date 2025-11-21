@@ -3,31 +3,23 @@ package no.nav.syfo.janitor
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.api.authentication.configuredJacksonMapper
+import no.nav.syfo.api.dto.toNewDialogmote
+import no.nav.syfo.application.JanitorService
+import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.infrastructure.database.dialogmote.DialogmoterelasjonService
 import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
-import no.nav.syfo.api.dto.toNewDialogmote
 import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
+import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmoteList
 import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
-import no.nav.syfo.application.JanitorService
-import no.nav.syfo.infrastructure.kafka.janitor.JanitorAction
-import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventDTO
-import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventStatus
-import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventStatusDTO
-import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventStatusProducer
+import no.nav.syfo.infrastructure.kafka.janitor.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
-import no.nav.syfo.api.authentication.configuredJacksonMapper
-import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmoteList
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import java.util.UUID
+import java.util.*
 
 fun generateJanitorEventDTO(action: String, referenceUuid: String): JanitorEventDTO = JanitorEventDTO(
     referenceUUID = referenceUuid,

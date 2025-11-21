@@ -3,8 +3,8 @@ package no.nav.syfo.dialogmote.domain
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.DocumentComponentType
 import no.nav.syfo.infrastructure.client.pdfgen.sanitizeForPdfGen
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class DocumentComponentDTOTest {
 

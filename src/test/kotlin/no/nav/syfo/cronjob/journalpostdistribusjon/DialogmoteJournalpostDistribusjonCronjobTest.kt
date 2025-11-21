@@ -9,17 +9,17 @@ import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.application.ArbeidstakerVarselService
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerVarselJournalpostService
-import no.nav.syfo.infrastructure.database.dialogmote.ReferatJournalpostService
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
+import no.nav.syfo.application.ArbeidstakerVarselService
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.cronjob.journalpostdistribusjon.DialogmoteJournalpostDistribusjonCronjob
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.infrastructure.database.dialogmote.ReferatJournalpostService
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateEndreDialogmoteTidStedDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
@@ -89,7 +89,11 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 val createdDialogmoteUUID =
-                    client.postAndGetDialogmote(validToken, newDialogmoteDTO, UserConstants.ARBEIDSTAKER_IKKE_VARSEL).uuid
+                    client.postAndGetDialogmote(
+                        validToken,
+                        newDialogmoteDTO,
+                        UserConstants.ARBEIDSTAKER_IKKE_VARSEL
+                    ).uuid
 
                 val urlMoteUUIDPostTidSted =
                     "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
@@ -192,7 +196,8 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
                     altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
-                val dialogmoteDTO = client.postAndGetDialogmote(validToken, newDialogmoteDTO, UserConstants.ARBEIDSTAKER_IKKE_VARSEL)
+                val dialogmoteDTO =
+                    client.postAndGetDialogmote(validToken, newDialogmoteDTO, UserConstants.ARBEIDSTAKER_IKKE_VARSEL)
                 val varselUuids = dialogmoteDTO.arbeidstaker.varselList.map { it.uuid }
                 assertNull(dialogmoteDTO.arbeidstaker.varselList.first().brevBestiltTidspunkt)
 
@@ -225,7 +230,11 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 val createdDialogmoteUUID =
-                    client.postAndGetDialogmote(validToken, newDialogmoteDTO, UserConstants.ARBEIDSTAKER_IKKE_VARSEL).uuid
+                    client.postAndGetDialogmote(
+                        validToken,
+                        newDialogmoteDTO,
+                        UserConstants.ARBEIDSTAKER_IKKE_VARSEL
+                    ).uuid
 
                 val urlMoteUUIDFerdigstill =
                     "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
@@ -271,7 +280,11 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 val createdDialogmoteUUID =
-                    client.postAndGetDialogmote(validToken, newDialogmoteDTO, UserConstants.ARBEIDSTAKER_IKKE_VARSEL).uuid
+                    client.postAndGetDialogmote(
+                        validToken,
+                        newDialogmoteDTO,
+                        UserConstants.ARBEIDSTAKER_IKKE_VARSEL
+                    ).uuid
 
                 val urlMoteUUIDFerdigstill =
                     "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"

@@ -5,16 +5,18 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.infrastructure.client.cache.ValkeyStore
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
+import no.nav.syfo.infrastructure.client.cache.ValkeyStore
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.DigitalKontaktinfoBolk
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient.Companion.CACHE_KONTAKTINFORMASJON_KEY_PREFIX
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.mock.digitalKontaktinfoBolkKanVarslesTrue
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class KontaktinformasjonClientTest {
 

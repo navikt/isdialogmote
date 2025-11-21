@@ -3,22 +3,19 @@ package no.nav.syfo.identhendelse
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.IdenthendelseService
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.infrastructure.client.cache.ValkeyStore
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerByIdent
-import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generator.generateKafkaIdenthendelseDTOGenerator
 import no.nav.syfo.testhelper.generator.generateNewDialogmote
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 
 class IdenthendelseServiceTest {
 

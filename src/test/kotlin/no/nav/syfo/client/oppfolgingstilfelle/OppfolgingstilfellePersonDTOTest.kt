@@ -4,8 +4,8 @@ import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.Oppfolgingstilfelle
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfellePersonDTO
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.testhelper.UserConstants
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class OppfolgingstilfellePersonDTOTest {

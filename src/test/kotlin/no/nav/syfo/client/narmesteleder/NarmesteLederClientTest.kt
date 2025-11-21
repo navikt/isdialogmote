@@ -2,9 +2,10 @@ package no.nav.syfo.client.narmesteleder
 
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.infrastructure.client.cache.ValkeyStore
+import no.nav.syfo.api.authentication.configuredJacksonMapper
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Token
+import no.nav.syfo.infrastructure.client.cache.ValkeyStore
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederRelasjonStatus
@@ -14,11 +15,12 @@ import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER
-import no.nav.syfo.api.authentication.configuredJacksonMapper
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
-import java.time.*
-import java.util.UUID
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.*
 
 class NarmesteLederClientTest {
 
@@ -86,11 +88,13 @@ class NarmesteLederClientTest {
         every { cacheMock.get(cacheKey) } returns mapper.writeValueAsString(cachedValue)
 
         runBlocking {
-            assertEquals(1, client.getAktiveAnsatte(
-                narmesteLederIdent = NARMESTELEDER_FNR,
-                tokenx = anyToken,
-                callId = anyCallId,
-            ).size)
+            assertEquals(
+                1, client.getAktiveAnsatte(
+                    narmesteLederIdent = NARMESTELEDER_FNR,
+                    tokenx = anyToken,
+                    callId = anyCallId,
+                ).size
+            )
         }
         verify(exactly = 1) { cacheMock.get(cacheKey) }
         verify(exactly = 0) { cacheMock.setObject(any(), any() as List<NarmesteLederRelasjonDTO>?, any()) }
@@ -104,11 +108,13 @@ class NarmesteLederClientTest {
 
         runBlocking {
             runBlocking {
-                assertEquals(2, client.getAktiveAnsatte(
-                    narmesteLederIdent = NARMESTELEDER_FNR,
-                    tokenx = anyToken,
-                    callId = anyCallId,
-                ).size)
+                assertEquals(
+                    2, client.getAktiveAnsatte(
+                        narmesteLederIdent = NARMESTELEDER_FNR,
+                        tokenx = anyToken,
+                        callId = anyCallId,
+                    ).size
+                )
             }
         }
         verify(exactly = 1) { cacheMock.get(cacheKey) }

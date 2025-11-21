@@ -11,28 +11,23 @@ import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
+import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.api.dto.DialogmoteDTO
+import no.nav.syfo.api.endpoints.*
 import no.nav.syfo.application.ArbeidstakerVarselService
 import no.nav.syfo.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.domain.BrevType
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.domain.NarmesteLederBrevDTO
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmoterelasjonService
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
-import no.nav.syfo.api.dto.DialogmoteDTO
-import no.nav.syfo.api.endpoints.dialogmoteApiMoteEndreFerdigstiltPath
-import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
-import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
-import no.nav.syfo.api.endpoints.narmesteLederBrevApiBasePath
-import no.nav.syfo.api.endpoints.narmesteLederBrevApiLesPath
-import no.nav.syfo.api.endpoints.narmesteLederBrevApiPdfPath
-import no.nav.syfo.api.endpoints.narmesteLederBrevApiResponsPath
-import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmote
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmoterelasjonService
+import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
+import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmote
+import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.NARMESTELEDER_FNR
@@ -42,9 +37,10 @@ import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.pdfInnkalling
 import no.nav.syfo.testhelper.mock.pdfReferat
-import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import java.time.LocalDateTime
 import java.util.*
 
@@ -235,9 +231,18 @@ class NarmesteLederBrevTest {
                     assertEquals(1, dialogmoteList.size)
 
                     val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer, dialogmoteDTO.arbeidsgiver.virksomhetsnummer)
-                    assertEquals(DialogmoteSvarType.KOMMER.name, dialogmoteDTO.arbeidsgiver.varselList[0].svar!!.svarType)
-                    assertEquals("Det passer bra - det/også _code_", dialogmoteDTO.arbeidsgiver.varselList[0].svar!!.svarTekst)
+                    assertEquals(
+                        newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
+                        dialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                    )
+                    assertEquals(
+                        DialogmoteSvarType.KOMMER.name,
+                        dialogmoteDTO.arbeidsgiver.varselList[0].svar!!.svarType
+                    )
+                    assertEquals(
+                        "Det passer bra - det/også _code_",
+                        dialogmoteDTO.arbeidsgiver.varselList[0].svar!!.svarTekst
+                    )
                 }
 
                 // Repeated invocation should fail
@@ -445,7 +450,8 @@ class NarmesteLederBrevTest {
                     altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
-                val createdDialogmoteUUID: String = client.postAndGetDialogmote(validTokenVeileder, newDialogmoteDTO).uuid
+                val createdDialogmoteUUID: String =
+                    client.postAndGetDialogmote(validTokenVeileder, newDialogmoteDTO).uuid
 
                 val pMote = database.getDialogmote(UUID.fromString(createdDialogmoteUUID)).first()
                 val mote = dialogmoterelasjonService.extendDialogmoteRelations(pMote)

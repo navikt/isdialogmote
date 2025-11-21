@@ -5,8 +5,8 @@ import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.client.altinn.createAltinnMelding
 import no.nav.syfo.infrastructure.client.altinn.mapToInsertCorrespondenceV2WS
 import no.nav.syfo.testhelper.UserConstants
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import java.util.*
 
 class AltinnUtilTest {
@@ -32,7 +32,10 @@ class AltinnUtilTest {
         val mappedObject = mapToInsertCorrespondenceV2WS(altinnMelding)
 
         assertEquals(virksomhetsnummer.value, mappedObject.reportee)
-        assertEquals("$brevId.pdf", mappedObject.content.attachments.binaryAttachments.binaryAttachmentV2.first().sendersReference)
+        assertEquals(
+            "$brevId.pdf",
+            mappedObject.content.attachments.binaryAttachments.binaryAttachmentV2.first().sendersReference
+        )
         assertEquals(brev, mappedObject.content.attachments.binaryAttachments.binaryAttachmentV2.first().data)
         assertEquals(expectedInnkallingstittel, mappedObject.content.messageTitle)
     }

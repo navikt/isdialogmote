@@ -2,20 +2,21 @@ package no.nav.syfo.brev.behandler
 
 import io.mockk.*
 import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.infrastructure.database.Database
-import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
-import no.nav.syfo.infrastructure.database.dialogmote.database.createMotedeltakerBehandlerVarselSvar
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMote
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid
 import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
+import no.nav.syfo.infrastructure.database.Database
+import no.nav.syfo.infrastructure.database.dialogmote.database.createMotedeltakerBehandlerVarselSvar
+import no.nav.syfo.infrastructure.database.dialogmote.database.getMote
+import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid
+import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.generator.generateDialogmoteSvar
 import no.nav.syfo.testhelper.generator.generatePDialogmote
 import no.nav.syfo.testhelper.generator.generatePMotedeltakerBehandlerVarsel
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import java.time.LocalDateTime
 import java.util.*
 
@@ -107,7 +108,10 @@ class BehandlerVarselServiceTest {
                     )
                 } returns Pair(1, pMotedeltakerBehandlerVarsel)
                 every { database.getMote(any()) } returns pDialogmote
-                every { database.createMotedeltakerBehandlerVarselSvar(any(), any(), any(), any()) } returns Pair(1, UUID.randomUUID())
+                every { database.createMotedeltakerBehandlerVarselSvar(any(), any(), any(), any()) } returns Pair(
+                    1,
+                    UUID.randomUUID()
+                )
 
                 val isSvarSaved = behandlerVarselService.finnBehandlerVarselOgOpprettSvar(
                     dialogmeldingSvar = dialogmeldingSvar,
@@ -154,7 +158,10 @@ class BehandlerVarselServiceTest {
                     )
                 } returns Pair(1, pMotedeltakerBehandlerVarsel)
                 every { database.getMote(any()) } returns pDialogmote
-                every { database.createMotedeltakerBehandlerVarselSvar(any(), any(), any(), any()) } returns Pair(1, UUID.randomUUID())
+                every { database.createMotedeltakerBehandlerVarselSvar(any(), any(), any(), any()) } returns Pair(
+                    1,
+                    UUID.randomUUID()
+                )
 
                 val isSvarSaved = behandlerVarselService.finnBehandlerVarselOgOpprettSvar(
                     dialogmeldingSvar = dialogmeldingSvar,
@@ -201,7 +208,10 @@ class BehandlerVarselServiceTest {
                     )
                 } returns Pair(1, pMotedeltakerBehandlerVarsel)
                 every { database.getMote(any()) } returns pDialogmote
-                every { database.createMotedeltakerBehandlerVarselSvar(any(), any(), any(), any()) } returns Pair(1, UUID.randomUUID())
+                every { database.createMotedeltakerBehandlerVarselSvar(any(), any(), any(), any()) } returns Pair(
+                    1,
+                    UUID.randomUUID()
+                )
 
                 val isSvarSaved = behandlerVarselService.finnBehandlerVarselOgOpprettSvar(
                     dialogmeldingSvar = dialogmeldingSvar,

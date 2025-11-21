@@ -1,6 +1,9 @@
 package no.nav.syfo.dialogmote
 
-import io.mockk.*
+import io.mockk.clearMocks
+import io.mockk.coEvery
+import io.mockk.justRun
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.ArbeidstakerVarselService
 import no.nav.syfo.application.BehandlerVarselService
@@ -19,7 +22,6 @@ import no.nav.syfo.testhelper.generator.DIALOGMOTE_TIDSPUNKT_FIXTURE
 import no.nav.syfo.testhelper.mock.narmesteLeder
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.verify
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -61,7 +63,13 @@ class VarselServiceTest {
 
     @Test
     fun `Send varsel to nærmeste leder`() {
-        coEvery { oppfolgingstilfelleClient.oppfolgingstilfellePerson(any(), any(), any()) } returns anyOppfolgingstilfelle
+        coEvery {
+            oppfolgingstilfelleClient.oppfolgingstilfellePerson(
+                any(),
+                any(),
+                any()
+            )
+        } returns anyOppfolgingstilfelle
         val virksomhetsbrevId = UUID.randomUUID()
         val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
         val altinnMelding = createAltinnMelding(
@@ -110,7 +118,13 @@ class VarselServiceTest {
 
     @Test
     fun `Send brev to Altinn when no nærmeste leder`() {
-        coEvery { oppfolgingstilfelleClient.oppfolgingstilfellePerson(any(), any(), any()) } returns anyOppfolgingstilfelle
+        coEvery {
+            oppfolgingstilfelleClient.oppfolgingstilfellePerson(
+                any(),
+                any(),
+                any()
+            )
+        } returns anyOppfolgingstilfelle
         val virksomhetsbrevId = UUID.randomUUID()
         val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
         val altinnMelding = createAltinnMelding(
@@ -157,7 +171,13 @@ class VarselServiceTest {
 
     @Test
     fun `Send brev to Altinn, and not varsel to nærmeste leder when no active tilfelle`() {
-        coEvery { oppfolgingstilfelleClient.oppfolgingstilfellePerson(any(), any(), any()) } returns Oppfolgingstilfelle(
+        coEvery {
+            oppfolgingstilfelleClient.oppfolgingstilfellePerson(
+                any(),
+                any(),
+                any()
+            )
+        } returns Oppfolgingstilfelle(
             start = LocalDate.MIN,
             end = LocalDate.now().minusDays(ARBEIDSGIVERPERIODE_DAYS + 1),
         )
