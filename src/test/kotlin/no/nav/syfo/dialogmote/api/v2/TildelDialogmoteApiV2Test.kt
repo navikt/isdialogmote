@@ -66,152 +66,147 @@ class TildelDialogmoteApiV2Test {
         database.dropData()
     }
 
+    private val urlMoterEnhet = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${UserConstants.ENHET_NR.value}"
+    private val urlTildelMote = "$dialogmoteApiV2Basepath$dialogmoteTildelPath"
+    private val newDialogmote = generateNewDialogmote(UserConstants.ARBEIDSTAKER_FNR)
+    private val newDialogmoteAnnenArbeidstaker = generateNewDialogmote(UserConstants.ARBEIDSTAKER_ANNEN_FNR)
+
     @Nested
-    @DisplayName("Tildel dialogmoter")
-    inner class TildelDialogmoter {
+    @DisplayName("Happy path")
+    inner class HappyPath {
 
-        private val urlMoterEnhet = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${UserConstants.ENHET_NR.value}"
-        private val urlTildelMote = "$dialogmoteApiV2Basepath$dialogmoteTildelPath"
-        private val newDialogmote = generateNewDialogmote(UserConstants.ARBEIDSTAKER_FNR)
-        private val newDialogmoteAnnenArbeidstaker = generateNewDialogmote(UserConstants.ARBEIDSTAKER_ANNEN_FNR)
+        @Test
+        fun `should tildele dialogmoter if request is successful`() {
+            val createdDialogmoterUuids = mutableListOf<UUID>()
+            database.connection.run { this.createNewDialogmoteWithReferences(newDialogmote) }
+            database.connection.run { this.createNewDialogmoteWithReferences(newDialogmoteAnnenArbeidstaker) }
 
-        @Nested
-        @DisplayName("Happy path")
-        inner class HappyPath {
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
 
-            @Test
-            fun `should tildele dialogmoter if request is successful`() {
-                val createdDialogmoterUuids = mutableListOf<UUID>()
-                database.connection.run { this.createNewDialogmoteWithReferences(newDialogmote) }
-                database.connection.run { this.createNewDialogmoteWithReferences(newDialogmoteAnnenArbeidstaker) }
-
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-
-                    val response = client.get(urlMoterEnhet) {
-                        bearerAuth(veilederCallerToken)
-                    }
-                    assertEquals(HttpStatusCode.OK, response.status)
-                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
-
-                    assertEquals(2, dialogmoteList.size)
-                    assertTrue(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == veilederCallerIdent })
-                    assertFalse(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == veilederIdentTildelesMoter })
-
-                    createdDialogmoterUuids.addAll(dialogmoteList.map { UUID.fromString(it.uuid) })
-
-                    client.patch(urlTildelMote) {
-                        bearerAuth(veilederCallerToken)
-                        contentType(ContentType.Application.Json)
-                        setBody(
-                            TildelDialogmoterDTO(
-                                veilederIdent = veilederIdentTildelesMoter,
-                                dialogmoteUuids = createdDialogmoterUuids
-                            )
-                        )
-                    }.apply {
-                        assertEquals(HttpStatusCode.OK, response.status)
-                    }
+                val response = client.get(urlMoterEnhet) {
+                    bearerAuth(veilederCallerToken)
                 }
+                assertEquals(HttpStatusCode.OK, response.status)
+                val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
-                val dialogmoter = moteRepository.getUnfinishedMoterForEnhet(EnhetNr(UserConstants.ENHET_NR.value))
-                assertEquals(2, dialogmoter.size)
-                assertTrue(dialogmoter.all { dialogmote -> dialogmote.tildeltVeilederIdent == veilederIdentTildelesMoter })
-                assertFalse(dialogmoter.all { dialogmote -> dialogmote.tildeltVeilederIdent == veilederCallerIdent })
+                assertEquals(2, dialogmoteList.size)
+                assertTrue(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == veilederCallerIdent })
+                assertFalse(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == veilederIdentTildelesMoter })
+
+                createdDialogmoterUuids.addAll(dialogmoteList.map { UUID.fromString(it.uuid) })
+
+                client.patch(urlTildelMote) {
+                    bearerAuth(veilederCallerToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        TildelDialogmoterDTO(
+                            veilederIdent = veilederIdentTildelesMoter,
+                            dialogmoteUuids = createdDialogmoterUuids
+                        )
+                    )
+                }.apply {
+                    assertEquals(HttpStatusCode.OK, response.status)
+                }
+            }
+
+            val dialogmoter = moteRepository.getUnfinishedMoterForEnhet(EnhetNr(UserConstants.ENHET_NR.value))
+            assertEquals(2, dialogmoter.size)
+            assertTrue(dialogmoter.all { dialogmote -> dialogmote.tildeltVeilederIdent == veilederIdentTildelesMoter })
+            assertFalse(dialogmoter.all { dialogmote -> dialogmote.tildeltVeilederIdent == veilederCallerIdent })
+        }
+    }
+
+    @Nested
+    @DisplayName("Unhappy path")
+    inner class UnhappyPath {
+
+        @Test
+        fun `should return status Unauthorized if no token is supplied`() {
+            testApplication {
+                val client = setupApiAndClient()
+                val response = client.patch(urlTildelMote)
+                assertEquals(HttpStatusCode.Unauthorized, response.status)
             }
         }
 
-        @Nested
-        @DisplayName("Unhappy paths")
-        inner class UnhappyPaths {
-
-            @Test
-            fun `should return status Unauthorized if no token is supplied`() {
-                testApplication {
-                    val client = setupApiAndClient()
-                    val response = client.patch(urlTildelMote)
-                    assertEquals(HttpStatusCode.Unauthorized, response.status)
-                }
-            }
-
-            @Test
-            fun `should return status Bad Request if no dialogmoteUuids supplied`() {
-                testApplication {
-                    val client = setupApiAndClient()
-                    val response = client.patch(urlTildelMote) {
-                        bearerAuth(veilederCallerToken)
-                        contentType(ContentType.Application.Json)
-                        setBody(
-                            TildelDialogmoterDTO(
-                                veilederIdent = veilederIdentTildelesMoter,
-                                dialogmoteUuids = emptyList()
-                            )
+        @Test
+        fun `should return status Bad Request if no dialogmoteUuids supplied`() {
+            testApplication {
+                val client = setupApiAndClient()
+                val response = client.patch(urlTildelMote) {
+                    bearerAuth(veilederCallerToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        TildelDialogmoterDTO(
+                            veilederIdent = veilederIdentTildelesMoter,
+                            dialogmoteUuids = emptyList()
                         )
-                    }
-                    assertEquals(HttpStatusCode.BadRequest, response.status)
-                }
-            }
-
-            @Test
-            fun `should return status Forbidden if denied access to dialogmøte person`() {
-                val createdDialogmoterUuids = mutableListOf<UUID>()
-
-                val newDialogmoteNoVeilederAccess =
-                    generateNewDialogmote(UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS)
-                database.connection.use { connection ->
-                    val (dialogmoteIdPair) = connection.createNewDialogmoteWithReferences(
-                        newDialogmote = newDialogmoteNoVeilederAccess
                     )
-                    createdDialogmoterUuids.add(dialogmoteIdPair.second)
                 }
+                assertEquals(HttpStatusCode.BadRequest, response.status)
+            }
+        }
 
-                testApplication {
-                    val client = setupApiAndClient()
-                    val response = client.patch(urlTildelMote) {
-                        bearerAuth(veilederCallerToken)
-                        contentType(ContentType.Application.Json)
-                        setBody(
-                            TildelDialogmoterDTO(
-                                veilederIdent = veilederIdentTildelesMoter,
-                                dialogmoteUuids = createdDialogmoterUuids,
-                            )
-                        )
-                    }
-                    assertEquals(HttpStatusCode.Forbidden, response.status)
-                }
+        @Test
+        fun `should return status Forbidden if denied access to dialogmøte person`() {
+            val createdDialogmoterUuids = mutableListOf<UUID>()
+
+            val newDialogmoteNoVeilederAccess =
+                generateNewDialogmote(UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS)
+            database.connection.use { connection ->
+                val (dialogmoteIdPair) = connection.createNewDialogmoteWithReferences(
+                    newDialogmote = newDialogmoteNoVeilederAccess
+                )
+                createdDialogmoterUuids.add(dialogmoteIdPair.second)
             }
 
-            @Test
-            fun `should return status Forbidden if contains dialogmøte with denied access to person`() {
-                val createdDialogmoteUuid =
-                    mutableListOf(database.connection.run { this.createNewDialogmoteWithReferences(newDialogmote) }.dialogmoteIdPair.second)
-
-                val newDialogmoteNoVeilederAccess =
-                    generateNewDialogmote(UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS)
-                database.connection.use { connection ->
-                    val (dialogmoteIdPair) = connection.createNewDialogmoteWithReferences(
-                        newDialogmote = newDialogmoteNoVeilederAccess
-                    )
-                    createdDialogmoteUuid.add(dialogmoteIdPair.second)
-                }
-
-                testApplication {
-                    val client = setupApiAndClient()
-                    val response = client.patch(urlTildelMote) {
-                        bearerAuth(veilederCallerToken)
-                        contentType(ContentType.Application.Json)
-                        setBody(
-                            TildelDialogmoterDTO(
-                                veilederIdent = veilederIdentTildelesMoter,
-                                dialogmoteUuids = createdDialogmoteUuid,
-                            )
+            testApplication {
+                val client = setupApiAndClient()
+                val response = client.patch(urlTildelMote) {
+                    bearerAuth(veilederCallerToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        TildelDialogmoterDTO(
+                            veilederIdent = veilederIdentTildelesMoter,
+                            dialogmoteUuids = createdDialogmoterUuids,
                         )
-                    }
-                    assertEquals(HttpStatusCode.Forbidden, response.status)
+                    )
                 }
+                assertEquals(HttpStatusCode.Forbidden, response.status)
+            }
+        }
+
+        @Test
+        fun `should return status Forbidden if contains dialogmøte with denied access to person`() {
+            val createdDialogmoteUuid =
+                mutableListOf(database.connection.run { this.createNewDialogmoteWithReferences(newDialogmote) }.dialogmoteIdPair.second)
+
+            val newDialogmoteNoVeilederAccess =
+                generateNewDialogmote(UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS)
+            database.connection.use { connection ->
+                val (dialogmoteIdPair) = connection.createNewDialogmoteWithReferences(
+                    newDialogmote = newDialogmoteNoVeilederAccess
+                )
+                createdDialogmoteUuid.add(dialogmoteIdPair.second)
+            }
+
+            testApplication {
+                val client = setupApiAndClient()
+                val response = client.patch(urlTildelMote) {
+                    bearerAuth(veilederCallerToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        TildelDialogmoterDTO(
+                            veilederIdent = veilederIdentTildelesMoter,
+                            dialogmoteUuids = createdDialogmoteUuid,
+                        )
+                    )
+                }
+                assertEquals(HttpStatusCode.Forbidden, response.status)
             }
         }
     }

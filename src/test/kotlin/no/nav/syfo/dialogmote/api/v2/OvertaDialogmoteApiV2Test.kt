@@ -52,104 +52,145 @@ class OvertaDialogmoteApiV2Test {
         } returns altinnResponse
     }
 
+    private val validTokenV2 = generateJWTNavIdent(
+        externalMockEnvironment.environment.aadAppClient,
+        externalMockEnvironment.wellKnownVeilederV2.issuer,
+        UserConstants.VEILEDER_IDENT,
+    )
+    private val validTokenV2AnnenVeileder = generateJWTNavIdent(
+        externalMockEnvironment.environment.aadAppClient,
+        externalMockEnvironment.wellKnownVeilederV2.issuer,
+        UserConstants.VEILEDER_IDENT_2,
+    )
+    private val urlMoterEnhet = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR.value}"
+    private val urlOvertaMoter = "$dialogmoteApiV2Basepath$dialogmoteActionsApiOvertaPath"
+    private val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+    private val newDialogmoteDTOAnnenArbeidstaker = generateNewDialogmoteDTO(ARBEIDSTAKER_ANNEN_FNR)
+
     @Nested
-    @DisplayName("Overta Dialogmoter")
-    inner class OvertaDialogmoter {
-        private val validTokenV2 = generateJWTNavIdent(
-            externalMockEnvironment.environment.aadAppClient,
-            externalMockEnvironment.wellKnownVeilederV2.issuer,
-            UserConstants.VEILEDER_IDENT,
-        )
-        private val validTokenV2AnnenVeileder = generateJWTNavIdent(
-            externalMockEnvironment.environment.aadAppClient,
-            externalMockEnvironment.wellKnownVeilederV2.issuer,
-            UserConstants.VEILEDER_IDENT_2,
-        )
-        private val urlMoterEnhet = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR.value}"
-        private val urlOvertaMoter = "$dialogmoteApiV2Basepath$dialogmoteActionsApiOvertaPath"
-        private val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
-        private val newDialogmoteDTOAnnenArbeidstaker = generateNewDialogmoteDTO(ARBEIDSTAKER_ANNEN_FNR)
+    @DisplayName("Happy path")
+    inner class HappyPath {
+        @Test
+        fun `should overta Dialogmoter if request is successfull`() {
+            testApplication {
+                val createdDialogmoterUuids = mutableListOf<String>()
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock
+                )
+                client.postMote(validTokenV2, newDialogmoteDTO)
+                client.postMote(validTokenV2AnnenVeileder, newDialogmoteDTOAnnenArbeidstaker)
 
-        @Nested
-        @DisplayName("Happy path")
-        inner class HappyPath {
-            @Test
-            fun `should overta Dialogmoter if request is successfull`() {
-                testApplication {
-                    val createdDialogmoterUuids = mutableListOf<String>()
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock
-                    )
-                    client.postMote(validTokenV2, newDialogmoteDTO)
-                    client.postMote(validTokenV2AnnenVeileder, newDialogmoteDTOAnnenArbeidstaker)
-
-                    client.get(urlMoterEnhet) {
-                        bearerAuth(validTokenV2)
-                    }.apply {
-                        assertEquals(HttpStatusCode.OK, status)
-                        val dialogmoteList = body<List<DialogmoteDTO>>()
-                        assertEquals(2, dialogmoteList.size)
-                        assertTrue(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == UserConstants.VEILEDER_IDENT })
-                        assertTrue(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == UserConstants.VEILEDER_IDENT_2 })
-
-                        createdDialogmoterUuids.addAll(dialogmoteList.map { it.uuid })
-                    }
-
-                    client.post(urlOvertaMoter) {
-                        bearerAuth(validTokenV2)
-                        contentType(ContentType.Application.Json)
-                        setBody(OvertaDialogmoterDTO(createdDialogmoterUuids))
-                    }.apply {
-                        assertEquals(HttpStatusCode.OK, status)
-                    }
-
-                    val response = client.get(urlMoterEnhet) {
-                        bearerAuth(validTokenV2)
-                    }
-                    assertEquals(HttpStatusCode.OK, response.status)
-                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
-
+                client.get(urlMoterEnhet) {
+                    bearerAuth(validTokenV2)
+                }.apply {
+                    assertEquals(HttpStatusCode.OK, status)
+                    val dialogmoteList = body<List<DialogmoteDTO>>()
                     assertEquals(2, dialogmoteList.size)
-                    assertTrue(dialogmoteList.all { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == UserConstants.VEILEDER_IDENT })
+                    assertTrue(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == UserConstants.VEILEDER_IDENT })
+                    assertTrue(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == UserConstants.VEILEDER_IDENT_2 })
+
+                    createdDialogmoterUuids.addAll(dialogmoteList.map { it.uuid })
+                }
+
+                client.post(urlOvertaMoter) {
+                    bearerAuth(validTokenV2)
+                    contentType(ContentType.Application.Json)
+                    setBody(OvertaDialogmoterDTO(createdDialogmoterUuids))
+                }.apply {
+                    assertEquals(HttpStatusCode.OK, status)
+                }
+
+                val response = client.get(urlMoterEnhet) {
+                    bearerAuth(validTokenV2)
+                }
+                assertEquals(HttpStatusCode.OK, response.status)
+                val dialogmoteList = response.body<List<DialogmoteDTO>>()
+
+                assertEquals(2, dialogmoteList.size)
+                assertTrue(dialogmoteList.all { dialogmoteDTO -> dialogmoteDTO.tildeltVeilederIdent == UserConstants.VEILEDER_IDENT })
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Unhappy path")
+    inner class UnhappyPath {
+        @Test
+        fun `should return status Unauthorized if no token is supplied`() {
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock
+                )
+                val response = client.post(urlOvertaMoter)
+                assertEquals(HttpStatusCode.Unauthorized, response.status)
+            }
+        }
+
+        @Test
+        fun `should return status Bad Request if no dialogmoteUuids supplied`() {
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock
+                )
+                val response = client.post(urlOvertaMoter) {
+                    bearerAuth(validTokenV2)
+                    contentType(ContentType.Application.Json)
+                    setBody(OvertaDialogmoterDTO(emptyList()))
+                }
+                assertEquals(HttpStatusCode.BadRequest, response.status)
+            }
+        }
+
+        @Test
+        fun `should return status Forbidden if denied access to dialogmøte person`() {
+            val createdDialogmoterUuids = mutableListOf<String>()
+
+            val newDialogmoteNoVeilederAccess =
+                generateNewDialogmote(UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS)
+            database.connection.use { connection ->
+                val (dialogmoteIdPair) = connection.createNewDialogmoteWithReferences(
+                    newDialogmote = newDialogmoteNoVeilederAccess
+                )
+                val dialogmoteNoAccessUuid = (dialogmoteIdPair.second).toString()
+                createdDialogmoterUuids.add(dialogmoteNoAccessUuid)
+            }
+
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock
+                )
+                client.post(urlOvertaMoter) {
+                    bearerAuth(validTokenV2)
+                    contentType(ContentType.Application.Json)
+                    setBody(OvertaDialogmoterDTO(createdDialogmoterUuids))
+                }.apply {
+                    assertEquals(HttpStatusCode.Forbidden, status)
                 }
             }
         }
 
-        @Nested
-        @DisplayName("Unhappy paths")
-        inner class UnhappyPaths {
-            @Test
-            fun `should return status Unauthorized if no token is supplied`() {
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock
-                    )
-                    val response = client.post(urlOvertaMoter)
-                    assertEquals(HttpStatusCode.Unauthorized, response.status)
-                }
-            }
-
-            @Test
-            fun `should return status Bad Request if no dialogmoteUuids supplied`() {
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock
-                    )
-                    val response = client.post(urlOvertaMoter) {
-                        bearerAuth(validTokenV2)
-                        contentType(ContentType.Application.Json)
-                        setBody(OvertaDialogmoterDTO(emptyList()))
-                    }
-                    assertEquals(HttpStatusCode.BadRequest, response.status)
-                }
-            }
-
-            @Test
-            fun `should return status Forbidden if denied access to dialogmøte person`() {
+        @Test
+        fun `should return status Forbidden if contains dialogmøte with denied access to person`() {
+            testApplication {
                 val createdDialogmoterUuids = mutableListOf<String>()
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock
+                )
+                client.postMote(validTokenV2AnnenVeileder, newDialogmoteDTO)
+
+                client.get(urlMoterEnhet) {
+                    bearerAuth(validTokenV2)
+                }.apply {
+                    assertEquals(HttpStatusCode.OK, status)
+                    val dialogmoteList = body<List<DialogmoteDTO>>()
+                    assertEquals(1, dialogmoteList.size)
+                    createdDialogmoterUuids.addAll(dialogmoteList.map { it.uuid })
+                }
 
                 val newDialogmoteNoVeilederAccess =
                     generateNewDialogmote(UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS)
@@ -160,58 +201,13 @@ class OvertaDialogmoteApiV2Test {
                     val dialogmoteNoAccessUuid = (dialogmoteIdPair.second).toString()
                     createdDialogmoterUuids.add(dialogmoteNoAccessUuid)
                 }
-
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock
-                    )
-                    client.post(urlOvertaMoter) {
-                        bearerAuth(validTokenV2)
-                        contentType(ContentType.Application.Json)
-                        setBody(OvertaDialogmoterDTO(createdDialogmoterUuids))
-                    }.apply {
-                        assertEquals(HttpStatusCode.Forbidden, status)
-                    }
+                val response = client.post(urlOvertaMoter) {
+                    bearerAuth(validTokenV2)
+                    contentType(ContentType.Application.Json)
+                    setBody(OvertaDialogmoterDTO(createdDialogmoterUuids))
                 }
-            }
 
-            @Test
-            fun `should return status Forbidden if contains dialogmøte with denied access to person`() {
-                testApplication {
-                    val createdDialogmoterUuids = mutableListOf<String>()
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock
-                    )
-                    client.postMote(validTokenV2AnnenVeileder, newDialogmoteDTO)
-
-                    client.get(urlMoterEnhet) {
-                        bearerAuth(validTokenV2)
-                    }.apply {
-                        assertEquals(HttpStatusCode.OK, status)
-                        val dialogmoteList = body<List<DialogmoteDTO>>()
-                        assertEquals(1, dialogmoteList.size)
-                        createdDialogmoterUuids.addAll(dialogmoteList.map { it.uuid })
-                    }
-
-                    val newDialogmoteNoVeilederAccess =
-                        generateNewDialogmote(UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS)
-                    database.connection.use { connection ->
-                        val (dialogmoteIdPair) = connection.createNewDialogmoteWithReferences(
-                            newDialogmote = newDialogmoteNoVeilederAccess
-                        )
-                        val dialogmoteNoAccessUuid = (dialogmoteIdPair.second).toString()
-                        createdDialogmoterUuids.add(dialogmoteNoAccessUuid)
-                    }
-                    val response = client.post(urlOvertaMoter) {
-                        bearerAuth(validTokenV2)
-                        contentType(ContentType.Application.Json)
-                        setBody(OvertaDialogmoterDTO(createdDialogmoterUuids))
-                    }
-
-                    assertEquals(HttpStatusCode.Forbidden, response.status)
-                }
+                assertEquals(HttpStatusCode.Forbidden, response.status)
             }
         }
     }

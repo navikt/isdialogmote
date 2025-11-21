@@ -40,254 +40,256 @@ class GetDialogmoteApiV2Test {
 
     private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
+    private val urlMote = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
+    private val urlMoteVeilederIdent = "$dialogmoteApiV2Basepath$dialogmoteApiVeilederIdentUrlPath"
+    private val validToken = generateJWTNavIdent(
+        externalMockEnvironment.environment.aadAppClient,
+        externalMockEnvironment.wellKnownVeilederV2.issuer,
+        VEILEDER_IDENT,
+    )
+
     @Nested
-    @DisplayName("Get Dialogmoter for PersonIdent")
-    inner class GetDialogmoterForPersonIdent {
-        private val urlMote = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
-        private val urlMoteVeilederIdent = "$dialogmoteApiV2Basepath$dialogmoteApiVeilederIdentUrlPath"
-        private val validToken = generateJWTNavIdent(
-            externalMockEnvironment.environment.aadAppClient,
-            externalMockEnvironment.wellKnownVeilederV2.issuer,
-            VEILEDER_IDENT,
-        )
+    @DisplayName("Happy path")
+    inner class HappyPath {
+        @BeforeEach
+        fun setup() {
+            justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
-        @Nested
-        @DisplayName("Happy path")
-        inner class HappyPath {
-            @BeforeEach
-            fun setup() {
-                justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+            val altinnResponse = ReceiptExternal()
+            altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-                val altinnResponse = ReceiptExternal()
-                altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
+            clearMocks(altinnMock)
+            every {
+                altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
+            } returns altinnResponse
+        }
 
-                clearMocks(altinnMock)
-                every {
-                    altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-                } returns altinnResponse
-            }
+        @AfterEach
+        fun teardown() {
+            database.dropData()
+        }
 
-            @AfterEach
-            fun teardown() {
-                database.dropData()
-            }
+        @Test
+        fun `should return DialogmoteList if request is successful`() {
+            val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
 
-            @Test
-            fun `should return DialogmoteList if request is successful`() {
-                val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                client.postMote(validToken, newDialogmoteDTO)
 
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    client.postMote(validToken, newDialogmoteDTO)
+                verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                clearMocks(esyfovarselProducerMock)
 
-                    verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-                    clearMocks(esyfovarselProducerMock)
+                val response = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR)
 
-                    val response = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR)
+                assertEquals(HttpStatusCode.OK, response.status)
+                verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
-                    assertEquals(HttpStatusCode.OK, response.status)
-                    verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
-                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+                assertEquals(1, dialogmoteList.size)
 
-                    assertEquals(1, dialogmoteList.size)
+                val dialogmoteDTO = dialogmoteList.first()
+                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
+                assertEquals(
+                    newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
+                    dialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                )
 
-                    val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
-                    assertEquals(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer, dialogmoteDTO.arbeidsgiver.virksomhetsnummer)
-
-                    assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO.sted)
-                    assertEquals("https://meet.google.com/xyz", dialogmoteDTO.videoLink)
-                }
-            }
-
-            @Test
-            fun `should return DialogmoteList based on VeilederIdent`() {
-                val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
-
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    client.postMote(validToken, newDialogmoteDTO)
-
-                    verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-                }
-
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    client.postMote(validToken, generateNewDialogmoteDTO(ARBEIDSTAKER_ANNEN_FNR))
-
-                    verify(exactly = 2) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-                    clearMocks(esyfovarselProducerMock)
-
-                    val response = client.get(urlMoteVeilederIdent) {
-                        bearerAuth(validToken)
-                    }
-
-                    assertEquals(HttpStatusCode.OK, response.status)
-                    verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-
-                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
-
-                    assertEquals(2, dialogmoteList.size)
-                }
-            }
-
-            @Test
-            fun `should return DialogmoteList if request is successful optional values missing`() {
-                val newDialogmoteDTO = generateNewDialogmoteDTOWithMissingValues(ARBEIDSTAKER_FNR)
-
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    client.postMote(validToken, newDialogmoteDTO)
-
-                    verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-                    clearMocks(esyfovarselProducerMock)
-
-                    val response = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR)
-
-                    assertEquals(HttpStatusCode.OK, response.status)
-                    verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-
-                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
-
-                    assertEquals(1, dialogmoteList.size)
-
-                    val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
-                    assertEquals(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer, dialogmoteDTO.arbeidsgiver.virksomhetsnummer)
-
-                    assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO.sted)
-                    assertEquals("", dialogmoteDTO.videoLink)
-                }
+                assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO.sted)
+                assertEquals("https://meet.google.com/xyz", dialogmoteDTO.videoLink)
             }
         }
 
-        @Nested
-        @DisplayName("Unhappy paths")
-        inner class UnhappyPaths {
-            @BeforeEach
-            fun setup() {
+        @Test
+        fun `should return DialogmoteList based on VeilederIdent`() {
+            val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                client.postMote(validToken, newDialogmoteDTO)
+
+                verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+            }
+
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                client.postMote(validToken, generateNewDialogmoteDTO(ARBEIDSTAKER_ANNEN_FNR))
+
+                verify(exactly = 2) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
                 clearMocks(esyfovarselProducerMock)
-            }
 
-            @Test
-            fun `should return status Unauthorized if no token is supplied`() {
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    val response = client.get(urlMote)
-
-                    assertEquals(HttpStatusCode.Unauthorized, response.status)
-                    verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                val response = client.get(urlMoteVeilederIdent) {
+                    bearerAuth(validToken)
                 }
+
+                assertEquals(HttpStatusCode.OK, response.status)
+                verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+
+                val dialogmoteList = response.body<List<DialogmoteDTO>>()
+
+                assertEquals(2, dialogmoteList.size)
             }
+        }
 
-            @Test
-            fun `veilederident should return status Unauthorized if no token is supplied`() {
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    val response = client.get(urlMoteVeilederIdent)
+        @Test
+        fun `should return DialogmoteList if request is successful optional values missing`() {
+            val newDialogmoteDTO = generateNewDialogmoteDTOWithMissingValues(ARBEIDSTAKER_FNR)
 
-                    assertEquals(HttpStatusCode.Unauthorized, response.status)
-                    verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-                }
-            }
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                client.postMote(validToken, newDialogmoteDTO)
 
-            @Test
-            fun `should return empty dialogmoteList if no access`() {
-                val newDialogmoteVeilederNoAccess = generateNewDialogmote(ARBEIDSTAKER_VEILEDER_NO_ACCESS).copy(
-                    opprettetAv = VEILEDER_IDENT,
-                    tildeltVeilederIdent = VEILEDER_IDENT
+                verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+                clearMocks(esyfovarselProducerMock)
+
+                val response = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR)
+
+                assertEquals(HttpStatusCode.OK, response.status)
+                verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+
+                val dialogmoteList = response.body<List<DialogmoteDTO>>()
+
+                assertEquals(1, dialogmoteList.size)
+
+                val dialogmoteDTO = dialogmoteList.first()
+                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
+                assertEquals(
+                    newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
+                    dialogmoteDTO.arbeidsgiver.virksomhetsnummer
                 )
 
-                database.connection.use { connection ->
-                    connection.createNewDialogmoteWithReferences(
-                        newDialogmote = newDialogmoteVeilederNoAccess
-                    )
-                }
+                assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO.sted)
+                assertEquals("", dialogmoteDTO.videoLink)
+            }
+        }
+    }
 
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    val response = client.get(urlMoteVeilederIdent) {
-                        bearerAuth(validToken)
-                    }
+    @Nested
+    @DisplayName("Unhappy path")
+    inner class UnhappyPath {
+        @BeforeEach
+        fun setup() {
+            clearMocks(esyfovarselProducerMock)
+        }
 
-                    assertEquals(HttpStatusCode.OK, response.status)
-                    verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+        @Test
+        fun `should return status Unauthorized if no token is supplied`() {
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                val response = client.get(urlMote)
 
-                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
-                    assertEquals(0, dialogmoteList.size)
-                }
+                assertEquals(HttpStatusCode.Unauthorized, response.status)
+                verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+            }
+        }
+
+        @Test
+        fun `veilederident should return status Unauthorized if no token is supplied`() {
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                val response = client.get(urlMoteVeilederIdent)
+
+                assertEquals(HttpStatusCode.Unauthorized, response.status)
+                verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+            }
+        }
+
+        @Test
+        fun `should return empty dialogmoteList if no access`() {
+            val newDialogmoteVeilederNoAccess = generateNewDialogmote(ARBEIDSTAKER_VEILEDER_NO_ACCESS).copy(
+                opprettetAv = VEILEDER_IDENT,
+                tildeltVeilederIdent = VEILEDER_IDENT
+            )
+
+            database.connection.use { connection ->
+                connection.createNewDialogmoteWithReferences(
+                    newDialogmote = newDialogmoteVeilederNoAccess
+                )
             }
 
-            @Test
-            fun `should return status BadRequest if no NAV_PERSONIDENT_HEADER is supplied`() {
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    val response = client.get(urlMote) {
-                        bearerAuth(validToken)
-                    }
-
-                    assertEquals(HttpStatusCode.BadRequest, response.status)
-                    verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                val response = client.get(urlMoteVeilederIdent) {
+                    bearerAuth(validToken)
                 }
+
+                assertEquals(HttpStatusCode.OK, response.status)
+                verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+
+                val dialogmoteList = response.body<List<DialogmoteDTO>>()
+                assertEquals(0, dialogmoteList.size)
             }
+        }
 
-            @Test
-            fun `should return status BadRequest if NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied`() {
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    val response = client.get(urlMote) {
-                        bearerAuth(validToken)
-                        header(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value.drop(1))
-                    }
-
-                    assertEquals(HttpStatusCode.BadRequest, response.status)
-                    verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+        @Test
+        fun `should return status BadRequest if no NAV_PERSONIDENT_HEADER is supplied`() {
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                val response = client.get(urlMote) {
+                    bearerAuth(validToken)
                 }
+
+                assertEquals(HttpStatusCode.BadRequest, response.status)
+                verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
             }
+        }
 
-            @Test
-            fun `should return status Forbidden if denied access to person`() {
-                testApplication {
-                    val client = setupApiAndClient(
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    val response = client.get(urlMote) {
-                        bearerAuth(validToken)
-                        header(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_VEILEDER_NO_ACCESS.value)
-                    }
-
-                    assertEquals(HttpStatusCode.Forbidden, response.status)
-                    verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+        @Test
+        fun `should return status BadRequest if NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied`() {
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                val response = client.get(urlMote) {
+                    bearerAuth(validToken)
+                    header(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value.drop(1))
                 }
+
+                assertEquals(HttpStatusCode.BadRequest, response.status)
+                verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
+            }
+        }
+
+        @Test
+        fun `should return status Forbidden if denied access to person`() {
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                val response = client.get(urlMote) {
+                    bearerAuth(validToken)
+                    header(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_VEILEDER_NO_ACCESS.value)
+                }
+
+                assertEquals(HttpStatusCode.Forbidden, response.status)
+                verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
             }
         }
     }

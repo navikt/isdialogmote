@@ -75,306 +75,48 @@ class AvlysDialogmoteApiV2Test {
         database.dropData()
     }
 
+    private val validToken = generateJWTNavIdent(
+        externalMockEnvironment.environment.aadAppClient,
+        externalMockEnvironment.wellKnownVeilederV2.issuer,
+        VEILEDER_IDENT,
+    )
+
     @Nested
-    @DisplayName("Avlys Dialogmote")
-    inner class AvlysDialogmote {
-        private val validToken = generateJWTNavIdent(
-            externalMockEnvironment.environment.aadAppClient,
-            externalMockEnvironment.wellKnownVeilederV2.issuer,
-            VEILEDER_IDENT,
-        )
+    @DisplayName("Happy path")
+    inner class HappyPath {
+        private val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
 
-        @Nested
-        @DisplayName("Happy path")
-        inner class HappyPath {
-            private val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+        @Test
+        fun `should return OK if request is successful`() {
+            testApplication {
+                val client = setupApiAndClient(
+                    behandlerVarselService = behandlerVarselService,
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                val createdDialogmoteUUID = client.postAndGetDialogmote(validToken, newDialogmoteDTO).uuid
+                verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(generateInkallingHendelse()) }
 
-            @Test
-            fun `should return OK if request is successful`() {
-                testApplication {
-                    val client = setupApiAndClient(
-                        behandlerVarselService = behandlerVarselService,
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    val createdDialogmoteUUID = client.postAndGetDialogmote(validToken, newDialogmoteDTO).uuid
-                    verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(generateInkallingHendelse()) }
+                val urlMoteUUIDAvlys =
+                    "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
 
-                    val urlMoteUUIDAvlys =
-                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
-                    val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
-
-                    client.post(urlMoteUUIDAvlys) {
-                        bearerAuth(validToken)
-                        contentType(ContentType.Application.Json)
-                        setBody(avlysDialogMoteDto)
-                    }.apply {
-                        assertEquals(HttpStatusCode.OK, status)
-                        verify(exactly = 1) {
-                            esyfovarselProducerMock.sendVarselToEsyfovarsel(
-                                generateAvlysningHendelse()
-                            )
-                        }
-                    }
-
-                    client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).apply {
-                        assertEquals(HttpStatusCode.OK, status)
-                        val dialogmoteList = body<List<DialogmoteDTO>>()
-
-                        assertEquals(1, dialogmoteList.size)
-
-                        val dialogmoteDTO = dialogmoteList.first()
-                        assertEquals(DialogmoteStatus.AVLYST.name, dialogmoteDTO.status)
-
-                        assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
-                        val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
-                            it.varselType == MotedeltakerVarselType.AVLYST.name
-                        }
-                        assertNotNull(arbeidstakerVarselDTO)
-                        assertTrue(arbeidstakerVarselDTO.digitalt)
-                        assertNull(arbeidstakerVarselDTO.lestDato)
-                        assertEquals(avlysDialogMoteDto.arbeidstaker.begrunnelse, arbeidstakerVarselDTO.fritekst)
-
-                        assertEquals(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer, dialogmoteDTO.arbeidsgiver.virksomhetsnummer)
-                        val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.find {
-                            it.varselType == MotedeltakerVarselType.AVLYST.name
-                        }
-                        assertNotNull(arbeidsgiverVarselDTO)
-                        assertEquals(avlysDialogMoteDto.arbeidsgiver.begrunnelse, arbeidsgiverVarselDTO.fritekst)
-
-                        assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO.sted)
-                        val isTodayBeforeDialogmotetid =
-                            LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
-                        assertTrue(isTodayBeforeDialogmotetid)
-
-                        verify(exactly = 0) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-
-                        val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
-                        assertEquals(2, moteStatusEndretList.size)
-
-                        moteStatusEndretList.forEach { moteStatusEndret ->
-                            assertEquals(VEILEDER_IDENT, moteStatusEndret.opprettetAv)
-                            assertEquals(oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start, moteStatusEndret.tilfelleStart)
-                        }
-                    }
-
-                    client.post(urlMoteUUIDAvlys) {
-                        bearerAuth(validToken)
-                        contentType(ContentType.Application.Json)
-                        setBody(avlysDialogMoteDto)
-                    }.apply {
-                        assertEquals(HttpStatusCode.Conflict, status)
-                        assertTrue(bodyAsText().contains("Failed to Avlys Dialogmote: already Avlyst"))
-                    }
-
-                    val urlMoteUUIDFerdigstill =
-                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
-                    val newReferatDTO = generateNewReferatDTO()
-
-                    client.post(urlMoteUUIDFerdigstill) {
-                        bearerAuth(validToken)
-                        contentType(ContentType.Application.Json)
-                        setBody(newReferatDTO)
-                    }.apply {
-                        assertEquals(HttpStatusCode.Conflict, status)
-                        assertTrue(bodyAsText().contains("Failed to Ferdigstille Dialogmote, already Avlyst"))
-                    }
-
-                    val urlMoteUUIDPostTidSted =
-                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
-                    val endreTidStedDialogMoteDto = generateEndreDialogmoteTidStedDTO()
-
-                    client.post(urlMoteUUIDPostTidSted) {
-                        bearerAuth(validToken)
-                        contentType(ContentType.Application.Json)
-                        setBody(endreTidStedDialogMoteDto)
-                    }.apply {
-                        assertEquals(HttpStatusCode.Conflict, status)
-                        assertTrue(bodyAsText().contains("Failed to change tid/sted, already Avlyst"))
-                    }
-                }
-            }
-        }
-
-        @Nested
-        @DisplayName("With behandler")
-        inner class WithBehandler {
-            private val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
-
-            @Test
-            fun `should return OK if request is successful`() {
-                testApplication {
-                    val createdDialogmoteUUID: String
-                    val client = setupApiAndClient(
-                        behandlerVarselService = behandlerVarselService,
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    client.postMote(validToken, newDialogmoteDTO)
-                    verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(generateInkallingHendelse()) }
-                    verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-                    clearMocks(behandlerDialogmeldingProducer)
-                    justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-
-                    client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).apply {
-                        assertEquals(HttpStatusCode.OK, status)
-
-                        val dialogmoteList = body<List<DialogmoteDTO>>()
-
-                        assertEquals(1, dialogmoteList.size)
-
-                        val dialogmoteDTO = dialogmoteList.first()
-                        assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
-
-                        createdDialogmoteUUID = dialogmoteDTO.uuid
-                    }
-
-                    val urlMoteUUIDAvlys =
-                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
-                    val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
-
-                    client.post(urlMoteUUIDAvlys) {
-                        bearerAuth(validToken)
-                        contentType(ContentType.Application.Json)
-                        setBody(avlysDialogMoteDto)
-                    }.apply {
-                        assertEquals(HttpStatusCode.OK, status)
-                        verify(exactly = 1) {
-                            esyfovarselProducerMock.sendVarselToEsyfovarsel(
-                                generateAvlysningHendelse()
-                            )
-                        }
-                    }
-
-                    val response = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR)
-
-                    assertEquals(HttpStatusCode.OK, response.status)
-
-                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
-
-                    assertEquals(1, dialogmoteList.size)
-
-                    val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(DialogmoteStatus.AVLYST.name, dialogmoteDTO.status)
-
-                    val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
+                client.post(urlMoteUUIDAvlys) {
+                    bearerAuth(validToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(avlysDialogMoteDto)
+                }.apply {
+                    assertEquals(HttpStatusCode.OK, status)
                     verify(exactly = 1) {
-                        behandlerDialogmeldingProducer.sendDialogmelding(
-                            capture(
-                                kafkaBehandlerDialogmeldingDTOSlot
-                            )
+                        esyfovarselProducerMock.sendVarselToEsyfovarsel(
+                            generateAvlysningHendelse()
                         )
                     }
-                    val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
-                    assertEquals(newDialogmoteDTO.behandler!!.behandlerRef, kafkaBehandlerDialogmeldingDTO.behandlerRef)
-                    assertEquals(avlysDialogMoteDto.behandler!!.avlysning.serialize(), kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst)
-                    assertEquals(DialogmeldingType.DIALOG_NOTAT.name, kafkaBehandlerDialogmeldingDTO.dialogmeldingType)
-                    assertEquals(DialogmeldingKodeverk.HENVENDELSE.name, kafkaBehandlerDialogmeldingDTO.dialogmeldingKodeverk)
-                    assertEquals(DialogmeldingKode.AVLYST.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
-                    assertNotNull(kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent)
-                    assertNotNull(kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg)
                 }
-            }
 
-            @Test
-            fun `should throw exception if mote with behandler and avlysning missing behandler`() {
-                testApplication {
-                    val createdDialogmoteUUID: String
-                    val client = setupApiAndClient(
-                        behandlerVarselService = behandlerVarselService,
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    client.postMote(validToken, newDialogmoteDTO)
-                    verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(generateInkallingHendelse()) }
-                    verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-                    clearMocks(behandlerDialogmeldingProducer)
-                    justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-
-                    client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).apply {
-                        assertEquals(HttpStatusCode.OK, status)
-
-                        val dialogmoteList = body<List<DialogmoteDTO>>()
-
-                        assertEquals(1, dialogmoteList.size)
-
-                        val dialogmoteDTO = dialogmoteList.first()
-                        assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
-
-                        createdDialogmoteUUID = dialogmoteDTO.uuid
-                    }
-
-                    val urlMoteUUIDAvlys =
-                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
-                    val avlysDialogMoteDto = generateAvlysDialogmoteDTONoBehandler()
-
-                    val response = client.post(urlMoteUUIDAvlys) {
-                        bearerAuth(validToken)
-                        contentType(ContentType.Application.Json)
-                        setBody(avlysDialogMoteDto)
-                    }
-
-                    assertEquals(HttpStatusCode.BadRequest, response.status)
-                    assertTrue(response.bodyAsText().contains("Failed to Avlys Dialogmote: missing behandler"))
-                }
-            }
-        }
-
-        @Nested
-        @DisplayName("Møtet tilbake i tid")
-        inner class MotetTilbakeITid {
-            private val newDialogmoteDTO = generateNewDialogmoteDTO(
-                personIdent = ARBEIDSTAKER_FNR,
-                dato = LocalDateTime.now().plusDays(-30)
-            )
-
-            @Test
-            fun `should return OK if request is successful`() {
-                testApplication {
-                    val createdDialogmoteUUID: String
-                    val client = setupApiAndClient(
-                        behandlerVarselService = behandlerVarselService,
-                        altinnMock = altinnMock,
-                        esyfovarselProducer = esyfovarselProducerMock,
-                    )
-                    client.postMote(validToken, newDialogmoteDTO)
-                    verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(generateInkallingHendelse()) } // INNKALT
-
-                    client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).apply {
-                        assertEquals(HttpStatusCode.OK, status)
-
-                        val dialogmoteList = body<List<DialogmoteDTO>>()
-
-                        assertEquals(1, dialogmoteList.size)
-
-                        val dialogmoteDTO = dialogmoteList.first()
-                        assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
-
-                        createdDialogmoteUUID = dialogmoteDTO.uuid
-                    }
-
-                    val urlMoteUUIDAvlys =
-                        "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
-                    val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
-
-                    client.post(urlMoteUUIDAvlys) {
-                        bearerAuth(validToken)
-                        contentType(ContentType.Application.Json)
-                        setBody(avlysDialogMoteDto)
-                    }.apply {
-                        assertEquals(HttpStatusCode.OK, status)
-                        verify(exactly = 0) {
-                            esyfovarselProducerMock.sendVarselToEsyfovarsel(
-                                generateAvlysningHendelse()
-                            )
-                        }
-                    }
-
-                    val response = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR)
-
-                    assertEquals(HttpStatusCode.OK, response.status)
-
-                    val dialogmoteList = response.body<List<DialogmoteDTO>>()
+                client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).apply {
+                    assertEquals(HttpStatusCode.OK, status)
+                    val dialogmoteList = body<List<DialogmoteDTO>>()
 
                     assertEquals(1, dialogmoteList.size)
 
@@ -390,7 +132,10 @@ class AvlysDialogmoteApiV2Test {
                     assertNull(arbeidstakerVarselDTO.lestDato)
                     assertEquals(avlysDialogMoteDto.arbeidstaker.begrunnelse, arbeidstakerVarselDTO.fritekst)
 
-                    assertEquals(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer, dialogmoteDTO.arbeidsgiver.virksomhetsnummer)
+                    assertEquals(
+                        newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
+                        dialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                    )
                     val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.find {
                         it.varselType == MotedeltakerVarselType.AVLYST.name
                     }
@@ -400,15 +145,284 @@ class AvlysDialogmoteApiV2Test {
                     assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO.sted)
                     val isTodayBeforeDialogmotetid =
                         LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
-                    assertEquals(false, isTodayBeforeDialogmotetid)
+                    assertTrue(isTodayBeforeDialogmotetid)
+
+                    verify(exactly = 0) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
 
                     val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
                     assertEquals(2, moteStatusEndretList.size)
 
                     moteStatusEndretList.forEach { moteStatusEndret ->
                         assertEquals(VEILEDER_IDENT, moteStatusEndret.opprettetAv)
-                        assertEquals(oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start, moteStatusEndret.tilfelleStart)
+                        assertEquals(
+                            oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start,
+                            moteStatusEndret.tilfelleStart
+                        )
                     }
+                }
+
+                client.post(urlMoteUUIDAvlys) {
+                    bearerAuth(validToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(avlysDialogMoteDto)
+                }.apply {
+                    assertEquals(HttpStatusCode.Conflict, status)
+                    assertTrue(bodyAsText().contains("Failed to Avlys Dialogmote: already Avlyst"))
+                }
+
+                val urlMoteUUIDFerdigstill =
+                    "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"
+                val newReferatDTO = generateNewReferatDTO()
+
+                client.post(urlMoteUUIDFerdigstill) {
+                    bearerAuth(validToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(newReferatDTO)
+                }.apply {
+                    assertEquals(HttpStatusCode.Conflict, status)
+                    assertTrue(bodyAsText().contains("Failed to Ferdigstille Dialogmote, already Avlyst"))
+                }
+
+                val urlMoteUUIDPostTidSted =
+                    "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
+                val endreTidStedDialogMoteDto = generateEndreDialogmoteTidStedDTO()
+
+                client.post(urlMoteUUIDPostTidSted) {
+                    bearerAuth(validToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(endreTidStedDialogMoteDto)
+                }.apply {
+                    assertEquals(HttpStatusCode.Conflict, status)
+                    assertTrue(bodyAsText().contains("Failed to change tid/sted, already Avlyst"))
+                }
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("With behandler")
+    inner class WithBehandler {
+        private val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+
+        @Test
+        fun `should return OK if request is successful`() {
+            testApplication {
+                val createdDialogmoteUUID: String
+                val client = setupApiAndClient(
+                    behandlerVarselService = behandlerVarselService,
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                client.postMote(validToken, newDialogmoteDTO)
+                verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(generateInkallingHendelse()) }
+                verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                clearMocks(behandlerDialogmeldingProducer)
+                justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+
+                client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).apply {
+                    assertEquals(HttpStatusCode.OK, status)
+
+                    val dialogmoteList = body<List<DialogmoteDTO>>()
+
+                    assertEquals(1, dialogmoteList.size)
+
+                    val dialogmoteDTO = dialogmoteList.first()
+                    assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+
+                    createdDialogmoteUUID = dialogmoteDTO.uuid
+                }
+
+                val urlMoteUUIDAvlys =
+                    "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
+
+                client.post(urlMoteUUIDAvlys) {
+                    bearerAuth(validToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(avlysDialogMoteDto)
+                }.apply {
+                    assertEquals(HttpStatusCode.OK, status)
+                    verify(exactly = 1) {
+                        esyfovarselProducerMock.sendVarselToEsyfovarsel(
+                            generateAvlysningHendelse()
+                        )
+                    }
+                }
+
+                val response = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR)
+
+                assertEquals(HttpStatusCode.OK, response.status)
+
+                val dialogmoteList = response.body<List<DialogmoteDTO>>()
+
+                assertEquals(1, dialogmoteList.size)
+
+                val dialogmoteDTO = dialogmoteList.first()
+                assertEquals(DialogmoteStatus.AVLYST.name, dialogmoteDTO.status)
+
+                val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
+                verify(exactly = 1) {
+                    behandlerDialogmeldingProducer.sendDialogmelding(
+                        capture(
+                            kafkaBehandlerDialogmeldingDTOSlot
+                        )
+                    )
+                }
+                val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
+                assertEquals(newDialogmoteDTO.behandler!!.behandlerRef, kafkaBehandlerDialogmeldingDTO.behandlerRef)
+                assertEquals(
+                    avlysDialogMoteDto.behandler!!.avlysning.serialize(),
+                    kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst
+                )
+                assertEquals(DialogmeldingType.DIALOG_NOTAT.name, kafkaBehandlerDialogmeldingDTO.dialogmeldingType)
+                assertEquals(
+                    DialogmeldingKodeverk.HENVENDELSE.name,
+                    kafkaBehandlerDialogmeldingDTO.dialogmeldingKodeverk
+                )
+                assertEquals(DialogmeldingKode.AVLYST.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
+                assertNotNull(kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent)
+                assertNotNull(kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg)
+            }
+        }
+
+        @Test
+        fun `should throw exception if mote with behandler and avlysning missing behandler`() {
+            testApplication {
+                val createdDialogmoteUUID: String
+                val client = setupApiAndClient(
+                    behandlerVarselService = behandlerVarselService,
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                client.postMote(validToken, newDialogmoteDTO)
+                verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(generateInkallingHendelse()) }
+                verify(exactly = 1) { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+                clearMocks(behandlerDialogmeldingProducer)
+                justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+
+                client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).apply {
+                    assertEquals(HttpStatusCode.OK, status)
+
+                    val dialogmoteList = body<List<DialogmoteDTO>>()
+
+                    assertEquals(1, dialogmoteList.size)
+
+                    val dialogmoteDTO = dialogmoteList.first()
+                    assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+
+                    createdDialogmoteUUID = dialogmoteDTO.uuid
+                }
+
+                val urlMoteUUIDAvlys =
+                    "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                val avlysDialogMoteDto = generateAvlysDialogmoteDTONoBehandler()
+
+                val response = client.post(urlMoteUUIDAvlys) {
+                    bearerAuth(validToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(avlysDialogMoteDto)
+                }
+
+                assertEquals(HttpStatusCode.BadRequest, response.status)
+                assertTrue(response.bodyAsText().contains("Failed to Avlys Dialogmote: missing behandler"))
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Møtet tilbake i tid")
+    inner class MotetTilbakeITid {
+        private val newDialogmoteDTO = generateNewDialogmoteDTO(
+            personIdent = ARBEIDSTAKER_FNR,
+            dato = LocalDateTime.now().plusDays(-30)
+        )
+
+        @Test
+        fun `should return OK if request is successful`() {
+            testApplication {
+                val createdDialogmoteUUID: String
+                val client = setupApiAndClient(
+                    behandlerVarselService = behandlerVarselService,
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                client.postMote(validToken, newDialogmoteDTO)
+                verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(generateInkallingHendelse()) } // INNKALT
+
+                client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).apply {
+                    assertEquals(HttpStatusCode.OK, status)
+
+                    val dialogmoteList = body<List<DialogmoteDTO>>()
+
+                    assertEquals(1, dialogmoteList.size)
+
+                    val dialogmoteDTO = dialogmoteList.first()
+                    assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+
+                    createdDialogmoteUUID = dialogmoteDTO.uuid
+                }
+
+                val urlMoteUUIDAvlys =
+                    "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteAvlysPath"
+                val avlysDialogMoteDto = generateAvlysDialogmoteDTO()
+
+                client.post(urlMoteUUIDAvlys) {
+                    bearerAuth(validToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(avlysDialogMoteDto)
+                }.apply {
+                    assertEquals(HttpStatusCode.OK, status)
+                    verify(exactly = 0) {
+                        esyfovarselProducerMock.sendVarselToEsyfovarsel(
+                            generateAvlysningHendelse()
+                        )
+                    }
+                }
+
+                val response = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR)
+
+                assertEquals(HttpStatusCode.OK, response.status)
+
+                val dialogmoteList = response.body<List<DialogmoteDTO>>()
+
+                assertEquals(1, dialogmoteList.size)
+
+                val dialogmoteDTO = dialogmoteList.first()
+                assertEquals(DialogmoteStatus.AVLYST.name, dialogmoteDTO.status)
+
+                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
+                val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
+                    it.varselType == MotedeltakerVarselType.AVLYST.name
+                }
+                assertNotNull(arbeidstakerVarselDTO)
+                assertTrue(arbeidstakerVarselDTO.digitalt)
+                assertNull(arbeidstakerVarselDTO.lestDato)
+                assertEquals(avlysDialogMoteDto.arbeidstaker.begrunnelse, arbeidstakerVarselDTO.fritekst)
+
+                assertEquals(
+                    newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
+                    dialogmoteDTO.arbeidsgiver.virksomhetsnummer
+                )
+                val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.find {
+                    it.varselType == MotedeltakerVarselType.AVLYST.name
+                }
+                assertNotNull(arbeidsgiverVarselDTO)
+                assertEquals(avlysDialogMoteDto.arbeidsgiver.begrunnelse, arbeidsgiverVarselDTO.fritekst)
+
+                assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO.sted)
+                val isTodayBeforeDialogmotetid =
+                    LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
+                assertEquals(false, isTodayBeforeDialogmotetid)
+
+                val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
+                assertEquals(2, moteStatusEndretList.size)
+
+                moteStatusEndretList.forEach { moteStatusEndret ->
+                    assertEquals(VEILEDER_IDENT, moteStatusEndret.opprettetAv)
+                    assertEquals(
+                        oppfolgingstilfellePersonDTO().toLatestOppfolgingstilfelle()?.start,
+                        moteStatusEndret.tilfelleStart
+                    )
                 }
             }
         }
