@@ -292,7 +292,7 @@ class NarmesteLederBrevTest {
                     assertEquals(newDialogmoteDTO.tidSted.sted, arbeidsgiverBrevDTO.sted)
                     val isCorrectDialogmotetid =
                         LocalDateTime.now().plusDays(29).isBefore(arbeidsgiverBrevDTO.tid)
-                    assertEquals(true, isCorrectDialogmotetid)
+                    assertTrue(isCorrectDialogmotetid)
                     createdReferatArbeidsgiverBrevUUID = arbeidsgiverBrevDTO.uuid
                 }
 

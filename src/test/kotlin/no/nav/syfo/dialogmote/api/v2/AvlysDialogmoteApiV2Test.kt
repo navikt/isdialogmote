@@ -32,6 +32,7 @@ import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -412,7 +413,7 @@ class AvlysDialogmoteApiV2Test {
                 assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO.sted)
                 val isTodayBeforeDialogmotetid =
                     LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
-                assertEquals(false, isTodayBeforeDialogmotetid)
+                assertFalse(isTodayBeforeDialogmotetid)
 
                 val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
                 assertEquals(2, moteStatusEndretList.size)

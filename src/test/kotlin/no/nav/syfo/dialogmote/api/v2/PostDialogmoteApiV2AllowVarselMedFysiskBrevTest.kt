@@ -23,6 +23,7 @@ import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTOWithMissingValues
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -110,7 +111,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
                     val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
                     varselUuid = arbeidstakerVarselDTO.uuid
                     assertEquals(MotedeltakerVarselType.INNKALT.name, arbeidstakerVarselDTO.varselType)
-                    assertEquals(false, arbeidstakerVarselDTO.digitalt)
+                    assertFalse(arbeidstakerVarselDTO.digitalt)
                     assertNull(arbeidstakerVarselDTO.lestDato)
                     assertEquals("Ipsum lorum arbeidstaker", arbeidstakerVarselDTO.fritekst)
 
@@ -186,7 +187,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
 
                     val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
                     assertEquals(MotedeltakerVarselType.INNKALT.name, arbeidstakerVarselDTO.varselType)
-                    assertEquals(false, arbeidstakerVarselDTO.digitalt)
+                    assertFalse(arbeidstakerVarselDTO.digitalt)
                     assertNull(arbeidstakerVarselDTO.lestDato)
                     assertEquals("", arbeidstakerVarselDTO.fritekst)
 

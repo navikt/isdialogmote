@@ -73,7 +73,7 @@ class BehandlerVarselServiceTest {
                     msgId = "321",
                 )
 
-                assertEquals(false, isSvarSaved)
+                assertFalse(isSvarSaved)
                 verify(exactly = 1) {
                     database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
                         varselType = varseltypeInnkalt,
@@ -114,7 +114,7 @@ class BehandlerVarselServiceTest {
                     msgId = "321",
                 )
 
-                assertEquals(true, isSvarSaved)
+                assertTrue(isSvarSaved)
                 verify(exactly = 1) {
                     database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
                         varselType = varseltypeInnkalt,
@@ -161,7 +161,7 @@ class BehandlerVarselServiceTest {
                     msgId = "321",
                 )
 
-                assertEquals(true, isSvarSaved)
+                assertTrue(isSvarSaved)
                 verify(exactly = 1) {
                     database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
                         varselType = varseltypeInnkalt,
@@ -208,7 +208,7 @@ class BehandlerVarselServiceTest {
                     msgId = "321",
                 )
 
-                assertEquals(true, isSvarSaved)
+                assertTrue(isSvarSaved)
                 verify(exactly = 1) {
                     database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
                         varselType = varseltypeInnkalt,

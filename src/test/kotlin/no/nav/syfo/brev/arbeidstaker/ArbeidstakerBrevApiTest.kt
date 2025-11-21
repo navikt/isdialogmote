@@ -139,7 +139,7 @@ class ArbeidstakerBrevApiTest {
 
                         val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
                         assertNotNull(arbeidstakerBrevDTO)
-                        assertEquals(true, arbeidstakerBrevDTO.digitalt)
+                        assertTrue(arbeidstakerBrevDTO.digitalt)
                         assertNull(arbeidstakerBrevDTO.lestDato)
 
                         createdArbeidstakerBrevUUID = arbeidstakerBrevDTO.uuid
@@ -166,14 +166,14 @@ class ArbeidstakerBrevApiTest {
 
                         arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
                         assertNotNull(arbeidstakerBrevDTO)
-                        assertEquals(true, arbeidstakerBrevDTO.digitalt)
+                        assertTrue(arbeidstakerBrevDTO.digitalt)
                         assertNotNull(arbeidstakerBrevDTO.lestDato)
                         assertNull(arbeidstakerBrevDTO.svar)
                         assertEquals(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer, arbeidstakerBrevDTO.virksomhetsnummer)
                         assertEquals(newDialogmoteDTO.tidSted.sted, arbeidstakerBrevDTO.sted)
                         val isTodayBeforeDialogmotetid =
                             LocalDateTime.now().isBefore(newDialogmoteDTO.tidSted.tid)
-                        assertEquals(true, isTodayBeforeDialogmotetid)
+                        assertTrue(isTodayBeforeDialogmotetid)
 
                         clearMocks(esyfovarselProducer)
                     }
@@ -283,7 +283,7 @@ class ArbeidstakerBrevApiTest {
 
                         val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
                         assertNotNull(arbeidstakerBrevDTO)
-                        assertEquals(true, arbeidstakerBrevDTO.digitalt)
+                        assertTrue(arbeidstakerBrevDTO.digitalt)
                         assertNull(arbeidstakerBrevDTO.lestDato)
 
                         createdArbeidstakerBrevUUID = arbeidstakerBrevDTO.uuid
@@ -308,7 +308,7 @@ class ArbeidstakerBrevApiTest {
 
                         arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
                         assertNotNull(arbeidstakerBrevDTO)
-                        assertEquals(true, arbeidstakerBrevDTO.digitalt)
+                        assertTrue(arbeidstakerBrevDTO.digitalt)
                         assertNotNull(arbeidstakerBrevDTO.lestDato)
                         assertNull(arbeidstakerBrevDTO.svar)
                         assertEquals(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer, arbeidstakerBrevDTO.virksomhetsnummer)
@@ -458,7 +458,7 @@ class ArbeidstakerBrevApiTest {
                         val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
                         assertNotNull(arbeidstakerBrevDTO)
                         assertEquals(MotedeltakerVarselType.INNKALT.name, arbeidstakerBrevDTO.brevType)
-                        assertEquals(true, arbeidstakerBrevDTO.digitalt)
+                        assertTrue(arbeidstakerBrevDTO.digitalt)
                         assertNull(arbeidstakerBrevDTO.lestDato)
                         assertEquals(createdDialogmoteDeltakerArbeidstakerUUID, arbeidstakerBrevDTO.deltakerUuid)
 
@@ -483,7 +483,7 @@ class ArbeidstakerBrevApiTest {
                         val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
                         assertNotNull(arbeidstakerBrevDTO)
                         assertEquals(MotedeltakerVarselType.INNKALT.name, arbeidstakerBrevDTO.brevType)
-                        assertEquals(true, arbeidstakerBrevDTO.digitalt)
+                        assertTrue(arbeidstakerBrevDTO.digitalt)
                         assertNotNull(arbeidstakerBrevDTO.lestDato)
                         assertEquals(newDialogmoteInnkalt.arbeidsgiver.virksomhetsnummer, arbeidstakerBrevDTO.virksomhetsnummer)
                         assertEquals(createdDialogmoteDeltakerArbeidstakerUUID, arbeidstakerBrevDTO.deltakerUuid)
@@ -491,7 +491,7 @@ class ArbeidstakerBrevApiTest {
                         assertEquals(newDialogmoteInnkalt.tidSted.sted, arbeidstakerBrevDTO.sted)
                         val isCorrectDialogmotetid =
                             LocalDateTime.now().plusDays(29).isBefore(arbeidstakerBrevDTO.tid)
-                        assertEquals(true, isCorrectDialogmotetid)
+                        assertTrue(isCorrectDialogmotetid)
                     }
 
                     val urlMoteUUIDReferat =
@@ -515,14 +515,14 @@ class ArbeidstakerBrevApiTest {
                         val arbeidstakerBrevDTO = arbeidstakerBrevList.first()
                         assertNotNull(arbeidstakerBrevDTO)
                         assertEquals(MotedeltakerVarselType.REFERAT.name, arbeidstakerBrevDTO.brevType)
-                        assertEquals(true, arbeidstakerBrevDTO.digitalt)
+                        assertTrue(arbeidstakerBrevDTO.digitalt)
                         assertNull(arbeidstakerBrevDTO.lestDato)
                         assertEquals(newDialogmoteInnkalt.arbeidsgiver.virksomhetsnummer, arbeidstakerBrevDTO.virksomhetsnummer)
                         assertEquals(createdDialogmoteDeltakerArbeidstakerUUID, arbeidstakerBrevDTO.deltakerUuid)
                         assertEquals(newDialogmoteInnkalt.tidSted.sted, arbeidstakerBrevDTO.sted)
                         val isCorrectDialogmotetid =
                             LocalDateTime.now().plusDays(29).isBefore(arbeidstakerBrevDTO.tid)
-                        assertEquals(true, isCorrectDialogmotetid)
+                        assertTrue(isCorrectDialogmotetid)
                         createdReferatArbeidstakerBrevUUID = arbeidstakerBrevDTO.uuid
                     }
 

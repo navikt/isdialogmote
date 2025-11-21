@@ -221,7 +221,7 @@ class NarmesteLederAccessServiceTest {
                     )
                 }
 
-                assertEquals(false, isBrevExpired)
+                assertFalse(isBrevExpired)
             }
 
             @Test
@@ -245,7 +245,7 @@ class NarmesteLederAccessServiceTest {
                     )
                 }
 
-                assertEquals(false, isBrevExpired)
+                assertFalse(isBrevExpired)
             }
         }
 
@@ -274,7 +274,7 @@ class NarmesteLederAccessServiceTest {
                     )
                 }
 
-                assertEquals(true, isBrevExpired)
+                assertTrue(isBrevExpired)
             }
 
             @Test
@@ -303,7 +303,7 @@ class NarmesteLederAccessServiceTest {
                     )
                 }
 
-                assertEquals(true, isBrevExpired)
+                assertTrue(isBrevExpired)
             }
         }
     }

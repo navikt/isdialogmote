@@ -132,7 +132,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
 
                         val referat = dialogmoteDTO.referatList.first()
                         referatUuid = referat.uuid
-                        assertEquals(false, referat.digitalt)
+                        assertFalse(referat.digitalt)
                         assertEquals("Dette er en beskrivelse av situasjonen", referat.situasjon)
                         assertEquals("Grønn Bamse", referat.narmesteLederNavn)
                         assertEquals(DocumentComponentType.HEADER_H1, referat.document[0].type)

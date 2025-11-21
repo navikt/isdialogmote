@@ -135,7 +135,7 @@ class FerdigstillDialogmoteApiV2Test {
                     assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO.sted)
 
                     val referat = dialogmoteDTO.referatList.first()
-                    assertEquals(true, referat.digitalt)
+                    assertTrue(referat.digitalt)
                     assertEquals("Dette er en beskrivelse av situasjonen", referat.situasjon)
                     assertNull(referat.behandlerOppgave)
                     assertEquals("Grønn Bamse", referat.narmesteLederNavn)
@@ -152,7 +152,7 @@ class FerdigstillDialogmoteApiV2Test {
                     assertEquals("Verneombud", referat.andreDeltakere.first().funksjon)
                     assertEquals("Tøff Pyjamas", referat.andreDeltakere.first().navn)
 
-                    assertEquals(true, referat.ferdigstilt)
+                    assertTrue(referat.ferdigstilt)
 
                     val pdf =
                         pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId!!)
@@ -276,8 +276,8 @@ class FerdigstillDialogmoteApiV2Test {
                         assertEquals(DialogmoteStatus.FERDIGSTILT.name, dialogmoteDTO.status)
                         val behandlerDeltaker = dialogmoteDTO.behandler!!
                         assertEquals(newDialogmoteDTO.behandler!!.behandlerRef, behandlerDeltaker.behandlerRef)
-                        assertEquals(true, behandlerDeltaker.mottarReferat)
-                        assertEquals(true, behandlerDeltaker.deltatt)
+                        assertTrue(behandlerDeltaker.mottarReferat)
+                        assertTrue(behandlerDeltaker.deltatt)
                         assertEquals(behandlerOppgave, referat.behandlerOppgave)
 
                         val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
@@ -403,8 +403,8 @@ class FerdigstillDialogmoteApiV2Test {
 
                     val dialogmoteDTO = dialogmoteList.first()
                     val behandlerDeltaker = dialogmoteDTO.behandler!!
-                    assertEquals(false, behandlerDeltaker.mottarReferat)
-                    assertEquals(false, behandlerDeltaker.deltatt)
+                    assertFalse(behandlerDeltaker.mottarReferat)
+                    assertFalse(behandlerDeltaker.deltatt)
                 }
             }
         }
@@ -452,8 +452,8 @@ class FerdigstillDialogmoteApiV2Test {
 
                     val dialogmoteDTO = dialogmoteList.first()
                     val behandlerDeltaker = dialogmoteDTO.behandler!!
-                    assertEquals(true, behandlerDeltaker.mottarReferat)
-                    assertEquals(false, behandlerDeltaker.deltatt)
+                    assertTrue(behandlerDeltaker.mottarReferat)
+                    assertFalse(behandlerDeltaker.deltatt)
                 }
             }
         }
@@ -502,7 +502,7 @@ class FerdigstillDialogmoteApiV2Test {
 
                         val dialogmoteDTO = dialogmoteList.first()
                         val referat = dialogmoteDTO.referatList.first()
-                        assertEquals(false, referat.ferdigstilt)
+                        assertFalse(referat.ferdigstilt)
                         assertEquals("Dette er en beskrivelse av konklusjon", referat.konklusjon)
                         assertEquals("Tøff Pyjamas", referat.andreDeltakere[0].navn)
                         assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
@@ -535,10 +535,10 @@ class FerdigstillDialogmoteApiV2Test {
                     assertEquals(DialogmoteStatus.FERDIGSTILT.name, dialogmoteDTO.status)
                     val behandlerDeltaker = dialogmoteDTO.behandler!!
                     assertEquals(newDialogmoteDTO.behandler!!.behandlerRef, behandlerDeltaker.behandlerRef)
-                    assertEquals(true, behandlerDeltaker.mottarReferat)
-                    assertEquals(true, behandlerDeltaker.deltatt)
+                    assertTrue(behandlerDeltaker.mottarReferat)
+                    assertTrue(behandlerDeltaker.deltatt)
                     assertEquals(behandlerOppgave, referat.behandlerOppgave)
-                    assertEquals(true, referat.ferdigstilt)
+                    assertTrue(referat.ferdigstilt)
                     assertEquals(1, referat.andreDeltakere.size)
                     assertEquals("Tøffere Pyjamas", referat.andreDeltakere[0].navn)
                     assertEquals("Dette er en beskrivelse av konklusjon modifisert", referat.konklusjon)
@@ -606,8 +606,8 @@ class FerdigstillDialogmoteApiV2Test {
 
                     val dialogmoteDTO = dialogmoteList.first()
                     val behandlerDeltaker = dialogmoteDTO.behandler!!
-                    assertEquals(false, behandlerDeltaker.mottarReferat)
-                    assertEquals(false, behandlerDeltaker.deltatt)
+                    assertFalse(behandlerDeltaker.mottarReferat)
+                    assertFalse(behandlerDeltaker.deltatt)
                 }
             }
         }

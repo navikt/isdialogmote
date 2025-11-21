@@ -30,6 +30,7 @@ import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -134,7 +135,7 @@ class PostDialogmoteApiV2Test {
 
                     val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
                     assertEquals(MotedeltakerVarselType.INNKALT.name, arbeidstakerVarselDTO.varselType)
-                    assertEquals(true, arbeidstakerVarselDTO.digitalt)
+                    assertTrue(arbeidstakerVarselDTO.digitalt)
                     assertNull(arbeidstakerVarselDTO.lestDato)
                     assertEquals("Ipsum lorum arbeidstaker", arbeidstakerVarselDTO.fritekst)
 
@@ -213,7 +214,7 @@ class PostDialogmoteApiV2Test {
 
                     val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
                     assertEquals(MotedeltakerVarselType.INNKALT.name, arbeidstakerVarselDTO.varselType)
-                    assertEquals(true, arbeidstakerVarselDTO.digitalt)
+                    assertTrue(arbeidstakerVarselDTO.digitalt)
                     assertNull(arbeidstakerVarselDTO.lestDato)
                     assertEquals("", arbeidstakerVarselDTO.fritekst)
 

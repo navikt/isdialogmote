@@ -50,7 +50,7 @@ class KontaktinformasjonClientTest {
         } returns digitalKontaktInfo
 
         runBlocking {
-            assertEquals(true, client.isDigitalVarselEnabled(personIdent, anyToken, anyCallId))
+            assertTrue(client.isDigitalVarselEnabled(personIdent, anyToken, anyCallId))
         }
         verify(exactly = 1) {
             cacheMock.getObject<DigitalKontaktinfoBolk>(
@@ -69,7 +69,7 @@ class KontaktinformasjonClientTest {
         } returns null
 
         runBlocking {
-            assertEquals(true, client.isDigitalVarselEnabled(personIdent, anyToken, anyCallId))
+            assertTrue(client.isDigitalVarselEnabled(personIdent, anyToken, anyCallId))
         }
 
         verify(exactly = 1) {
@@ -89,7 +89,7 @@ class KontaktinformasjonClientTest {
         } returns null
 
         runBlocking {
-            assertEquals(false, client.isDigitalVarselEnabled(UserConstants.ARBEIDSTAKER_DKIF_FEIL, anyToken, anyCallId))
+            assertFalse(client.isDigitalVarselEnabled(UserConstants.ARBEIDSTAKER_DKIF_FEIL, anyToken, anyCallId))
         }
     }
 }
