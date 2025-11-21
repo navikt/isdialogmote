@@ -6,7 +6,7 @@ metadata:
   labels:
     team: teamsykefravr
 spec:
-  image: {{ image }}
+  image: { { image } }
   port: 8080
   replicas:
     min: 3
@@ -85,6 +85,8 @@ spec:
         - application: syfobehandlendeenhet
         - application: istilgangskontroll
         - application: isdialogmelding
+        - application: arkivporten
+          namespace: team-esyfo
   azure:
     application:
       allowAllUsers: true
@@ -148,3 +150,9 @@ spec:
       value: "2025-01-01"
     - name: ALTINN_SENDING_ENABLED
       value: "true"
+    - name: ARKIVPORTEN_URL
+      value: http://arkivporten
+    - name: ARKIVPORTEN_SCOPE
+      value: prod-gcp.team-esyfo.arkivporten
+    - name: ARKIVPORTEN_SENDING_ENABLED
+      value: "false"
