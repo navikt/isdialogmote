@@ -87,7 +87,6 @@ class VarselService(
                     varseltype = varselType,
                     arbeidstakerPersonIdent = arbeidstakerPersonIdent,
                     arbeidstakernavn = arbeidstakernavn,
-                    hasNarmesteLeder = narmesteLeder != null,
                 )
             )
         }
