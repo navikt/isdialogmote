@@ -20,6 +20,7 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.application.NarmesteLederAccessService
 import no.nav.syfo.application.NarmesteLederVarselService
 import no.nav.syfo.infrastructure.client.altinn.AltinnClient
+import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClient
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
@@ -52,6 +53,7 @@ fun Application.apiModule(
     pdfGenClient: PdfGenClient,
     kontaktinformasjonClient: KontaktinformasjonClient,
     narmesteLederClient: NarmesteLederClient,
+    arkivportenClient: ArkivportenClient,
 ) {
     installMetrics()
     installCallId()
@@ -95,8 +97,10 @@ fun Application.apiModule(
         narmesteLederVarselService = narmesteLederVarselService,
         behandlerVarselService = behandlerVarselService,
         altinnClient = altinnClient,
+        arkivportenClient = arkivportenClient,
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
         isAltinnSendingEnabled = environment.altinnSendingEnabled,
+        isArkivportenSendingEnabled = environment.arkivportenSendingEnabled
     )
 
     val dialogmoteService = DialogmoteService(
