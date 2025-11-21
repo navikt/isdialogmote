@@ -9,7 +9,7 @@ import no.nav.syfo.testhelper.UserConstants
 suspend fun MockRequestHandleScope.arkivportenMock(request: HttpRequestData): HttpResponseData {
     val arkivportenDocument = request.receiveBody<ArkivportenDocument>()
     return when {
-        arkivportenDocument.orgnumber == UserConstants.VIRKSOMHETSNUMMER_EREG_FAILS.value ->
+        arkivportenDocument.orgnumber == UserConstants.VIRKSOMHETSNUMMER_ARKIVPORTEN_FAILS.value ->
             respond("", HttpStatusCode.InternalServerError)
         else -> respond("", HttpStatusCode.OK)
     }

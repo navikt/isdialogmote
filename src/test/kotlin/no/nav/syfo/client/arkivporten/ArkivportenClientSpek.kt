@@ -18,6 +18,7 @@ import org.spekframework.spek2.style.specification.describe
 
 class ArkivportenClientSpek : Spek({
     describe("ArkivportenClient") {
+
         val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
         val externalMockEnvironment = ExternalMockEnvironment.getInstance()
         val arkivportenClient = ArkivportenClient(
@@ -26,6 +27,7 @@ class ArkivportenClientSpek : Spek({
             clientId = externalMockEnvironment.environment.arkivportenClientId,
             client = externalMockEnvironment.mockHttpClient,
         )
+        externalMockEnvironment.mockHttpClient.engine
         val pdf = byteArrayOf(23, 45, 67, 89)
 
         it("sends document successfully") {
@@ -50,7 +52,7 @@ class ArkivportenClientSpek : Spek({
                 type = ArkivportenDocument.DocumentType.DIALOGMOTE,
                 content = pdf,
                 contentType = ArkivportenDocument.ContentType.PDF,
-                orgnumber = UserConstants.VIRKSOMHETSNUMMER_EREG_FAILS.value,
+                orgnumber = UserConstants.VIRKSOMHETSNUMMER_ARKIVPORTEN_FAILS.value,
                 dialogTitle = "Test dialogmøte",
                 dialogSummary = "Dialogmøte opprettet den 01.01.2024"
             )
