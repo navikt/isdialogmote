@@ -152,7 +152,7 @@ spec:
       value: "false"
     - name: ARKIVPORTEN_URL
       value: http://arkivporten
-    - name: ARKIVPORTEN_SCOPE
+    - name: ARKIVPORTEN_CLIENT_ID
       value: dev-gcp.team-esyfo.arkivporten
     - name: ARKIVPORTEN_SENDING_ENABLED
       value: "false"
