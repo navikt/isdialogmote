@@ -155,4 +155,4 @@ spec:
     - name: ARKIVPORTEN_CLIENT_ID
       value: dev-gcp.team-esyfo.arkivporten
     - name: ARKIVPORTEN_SENDING_ENABLED
-      value: "false"
+      value: "true"
