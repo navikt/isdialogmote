@@ -79,16 +79,23 @@ class VarselService(
         }
 
         if (isArkivportenSendingEnabled) {
-            arkivportenClient.sendDocument(
-                createArkivportenDokument(
-                    reference = virksomhetsbrevId,
-                    virksomhetsnummer = virksomhetsnummer,
-                    file = virksomhetsPdf,
-                    varseltype = varselType,
-                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
-                    arbeidstakernavn = arbeidstakernavn,
+            log.info("Arkivporten utsending er aktiv. Starter utsending av $varselType")
+            try {
+                arkivportenClient.sendDocument(
+                    createArkivportenDokument(
+                        reference = virksomhetsbrevId,
+                        virksomhetsnummer = virksomhetsnummer,
+                        file = virksomhetsPdf,
+                        varseltype = varselType,
+                        arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                        arbeidstakernavn = arbeidstakernavn,
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                log.error("Feil ved utsending til Arkivporten for varselType $varselType", e)
+            }
+        } else {
+            log.info("Arkivporten utsending er deaktivert. Dropper utsending av $varselType")
         }
 
         if (narmesteLeder != null && hasActiveTilfelle) {
