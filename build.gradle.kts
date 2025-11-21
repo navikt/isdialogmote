@@ -1,3 +1,4 @@
+import com.adarshr.gradle.testlogger.theme.ThemeType
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
 
 group = "no.nav.syfo"
@@ -226,6 +227,7 @@ tasks {
     test {
         useJUnitPlatform()
         testlogger {
+            theme = ThemeType.STANDARD_PARALLEL
             showFullStackTraces = true
             showPassed = false
         }
