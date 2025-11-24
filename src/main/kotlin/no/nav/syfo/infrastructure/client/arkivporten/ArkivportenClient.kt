@@ -1,7 +1,7 @@
 package no.nav.syfo.infrastructure.client.arkivporten
 
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.ResponseException
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -38,7 +38,7 @@ class ArkivportenClient(
                 }
                 setBody(document)
             }
-        } catch (e: ClientRequestException) {
+        } catch (e: ResponseException) {
             log.error(GENERIC_ERROR_MESSAGE, e)
             throw ArkivportenClientException(GENERIC_ERROR_MESSAGE, e)
         }
