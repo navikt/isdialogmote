@@ -42,7 +42,6 @@ import java.util.*
 class PostDialogmoteTidStedApiV2Test {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
     private val database = externalMockEnvironment.database
-    private val esyfovarselEndringHendelse = generateEndringHendelse()
     private val moteStatusEndretRepository = MoteStatusEndretRepository(database)
 
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
@@ -69,7 +68,7 @@ class PostDialogmoteTidStedApiV2Test {
     @BeforeEach
     fun setup() {
         altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
-        justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
+        justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(any()) }
 
         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
         clearMocks(altinnMock)
@@ -93,6 +92,8 @@ class PostDialogmoteTidStedApiV2Test {
         fun `should return OK if request is successful`() {
             testApplication {
                 val createdDialogmoteUUID: String
+                val esyfovarselEndringHendelse = generateEndringHendelse()
+
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
                     altinnMock = altinnMock,
@@ -218,6 +219,7 @@ class PostDialogmoteTidStedApiV2Test {
         @Test
         fun `should return OK if request is successful`() {
             testApplication {
+                val esyfovarselEndringHendelse = generateEndringHendelse()
                 val createdDialogmoteUUID: String
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
@@ -437,6 +439,7 @@ class PostDialogmoteTidStedApiV2Test {
         @Test
         fun `should throw exception if mote with behandler and endring missing behandler`() {
             testApplication {
+                val esyfovarselEndringHendelse = generateEndringHendelse()
                 val createdDialogmoteUUID: String
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
