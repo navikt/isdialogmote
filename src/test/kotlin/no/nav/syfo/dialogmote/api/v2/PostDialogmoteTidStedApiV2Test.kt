@@ -226,6 +226,7 @@ class PostDialogmoteTidStedApiV2Test {
                 )
                 client.postMote(validToken, newDialogmoteDTO).apply {
                     assertEquals(HttpStatusCode.OK, status)
+                    esyfovarselEndringHendelse.type = HendelseType.NL_DIALOGMOTE_INNKALT
                     verify(exactly = 1) {
                         esyfovarselProducerMock.sendVarselToEsyfovarsel(
                             esyfovarselEndringHendelse
