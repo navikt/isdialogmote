@@ -23,9 +23,8 @@ the application that holds the most current information: [narmesteleder](https:/
 
 ##### Test Libraries:
 
-* Kluent
+* JUnit
 * Mockk
-* Spek
 
 #### Requirements
 

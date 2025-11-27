@@ -10,18 +10,19 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
-import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.api.authentication.configure
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.dto.NewDialogmoteDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.application.BehandlerVarselService
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
-import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.api.authentication.configure
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertTrue
 
 fun ApplicationTestBuilder.setupApiAndClient(
     behandlerVarselService: BehandlerVarselService = mockk(),
@@ -64,19 +65,19 @@ suspend fun HttpClient.postAndGetDialogmote(
     personIdent: PersonIdent = ARBEIDSTAKER_FNR,
 ): DialogmoteDTO {
     postMote(token, newDialogmoteDTO).apply {
-        status shouldBeEqualTo HttpStatusCode.OK
+        assertEquals(HttpStatusCode.OK, status)
     }
     val response = getDialogmoter(token, personIdent)
 
-    response.status shouldBeEqualTo HttpStatusCode.OK
+    assertEquals(HttpStatusCode.OK, response.status)
 
     val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
-    dialogmoteList.size shouldBeEqualTo 1
+    assertEquals(1, dialogmoteList.size)
 
     val dialogmoteDTO = dialogmoteList.first()
-    dialogmoteDTO.status shouldBeEqualTo DialogmoteStatus.INNKALT.name
-    dialogmoteDTO.referatList shouldBeEqualTo emptyList()
+    assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+    assertTrue(dialogmoteDTO.referatList.isEmpty())
 
     return dialogmoteDTO
 }
