@@ -5,12 +5,16 @@ updates:
     schedule:
       interval: daily
       time: "07:00"
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 10
 
   - package-ecosystem: gradle
     directory: "/"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 10
     groups:
       minor-and-patch:
