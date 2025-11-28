@@ -26,7 +26,7 @@ val mockkVersion = "1.14.5"
 val nimbusjosejwtVersion = "10.5"
 val postgresEmbeddedVersion = "2.1.0"
 val postgresVersion = "42.7.8"
-val postgresRuntimeVersion = "17.5.0"
+val postgresRuntimeVersion = "18.1.0"
 val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
 
 plugins {
