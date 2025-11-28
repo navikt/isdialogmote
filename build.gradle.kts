@@ -6,7 +6,7 @@ version = "1.0.0"
 
 val altinnCorrespondenceAgencyExternalVersion = "1.2021.02.22-10.45-4201aaea72fb"
 val cxfVersion = "3.6.5"
-val confluentVersion = "7.9.0"
+val confluentVersion = "8.1.0"
 val flywayVersion = "11.13.1"
 val hikariVersion = "6.3.0"
 val isdialogmoteSchemaVersion = "1.0.5"
