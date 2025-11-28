@@ -17,14 +17,18 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
+import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClient
+import no.nav.syfo.infrastructure.client.arkivporten.createArkivportenDokument
 
 class VarselService(
     private val arbeidstakerVarselService: ArbeidstakerVarselService,
     private val narmesteLederVarselService: NarmesteLederVarselService,
     private val behandlerVarselService: BehandlerVarselService,
     private val altinnClient: AltinnClient,
+    private val arkivportenClient: ArkivportenClient,
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     private val isAltinnSendingEnabled: Boolean,
+    private val isArkivportenSendingEnabled: Boolean,
 ) {
     private val log: Logger = LoggerFactory.getLogger(VarselService::class.java)
 
@@ -72,6 +76,26 @@ class VarselService(
             altinnClient.sendToVirksomhet(
                 altinnMelding = altinnMelding,
             )
+        }
+
+        if (isArkivportenSendingEnabled) {
+            log.info("Arkivporten utsending er aktiv. Starter utsending av $varselType")
+            try {
+                arkivportenClient.sendDocument(
+                    createArkivportenDokument(
+                        reference = virksomhetsbrevId,
+                        virksomhetsnummer = virksomhetsnummer,
+                        file = virksomhetsPdf,
+                        varseltype = varselType,
+                        arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                        arbeidstakernavn = arbeidstakernavn,
+                    )
+                )
+            } catch (e: Exception) {
+                log.error("Feil ved utsending til Arkivporten for varselType $varselType", e)
+            }
+        } else {
+            log.info("Arkivporten utsending er deaktivert. Dropper utsending av $varselType")
         }
 
         if (narmesteLeder != null && hasActiveTilfelle) {
