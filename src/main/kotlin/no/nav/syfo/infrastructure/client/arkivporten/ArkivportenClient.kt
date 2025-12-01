@@ -26,7 +26,7 @@ class ArkivportenClient(
     private val log = LoggerFactory.getLogger(javaClass)
 
     suspend fun sendDocument(
-        document: ArkivportenDocumentDTO,
+        document: ArkivportenDocumentRequestDTO,
         token: String,
         callId: String?,
     ) {

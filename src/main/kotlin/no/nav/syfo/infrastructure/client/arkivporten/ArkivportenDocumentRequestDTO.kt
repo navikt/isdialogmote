@@ -6,7 +6,7 @@ import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 
-data class ArkivportenDocumentDTO(
+data class ArkivportenDocumentRequestDTO(
     val documentId: UUID,
     val type: DocumentType,
     val content: ByteArray = byteArrayOf(),
@@ -22,7 +22,7 @@ data class ArkivportenDocumentDTO(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ArkivportenDocumentDTO
+        other as ArkivportenDocumentRequestDTO
 
         if (type != other.type) return false
         if (!content.contentEquals(other.content)) return false
@@ -65,8 +65,8 @@ data class ArkivportenDocumentDTO(
             varseltype: MotedeltakerVarselType,
             arbeidstakerPersonIdent: PersonIdent,
             arbeidstakernavn: String,
-        ): ArkivportenDocumentDTO {
-            return ArkivportenDocumentDTO(
+        ): ArkivportenDocumentRequestDTO {
+            return ArkivportenDocumentRequestDTO(
                 documentId = reference,
                 type = DocumentType.DIALOGMOTE,
                 content = file,

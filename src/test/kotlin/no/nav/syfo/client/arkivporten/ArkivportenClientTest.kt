@@ -5,24 +5,22 @@ import io.mockk.mockk
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClient
 import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClientException
-import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenDocumentDTO
+import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenDocumentRequestDTO
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertThrows
 
 class ArkivportenClientTest {
-    fun arkivportenDocument(orgNumber: String) = ArkivportenDocumentDTO(
+    fun arkivportenDocument(orgNumber: String) = ArkivportenDocumentRequestDTO(
         documentId = UUID.randomUUID(),
-        type = ArkivportenDocumentDTO.DocumentType.DIALOGMOTE,
+        type = ArkivportenDocumentRequestDTO.DocumentType.DIALOGMOTE,
         content = byteArrayOf(23, 45, 67, 89),
-        contentType = ArkivportenDocumentDTO.ContentType.PDF,
+        contentType = ArkivportenDocumentRequestDTO.ContentType.PDF,
         orgNumber = orgNumber,
         title = "Test dialogmøte",
         summary = "Dialogmøte opprettet den 01.01.2024",
