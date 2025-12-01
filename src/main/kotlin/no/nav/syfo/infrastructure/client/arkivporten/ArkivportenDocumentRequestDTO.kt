@@ -81,8 +81,6 @@ data class ArkivportenDocumentRequestDTO(
     }
 }
 
-
-
 fun MotedeltakerVarselType.toDescription(): String {
     return when (this) {
         MotedeltakerVarselType.INNKALT -> "innkalling til dialogmøte"

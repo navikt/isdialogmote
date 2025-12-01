@@ -43,18 +43,19 @@ class ArkivportenClientTest {
             arkivportenClient.sendDocument(
                 document = arkivportenDocument(UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value),
                 token = "token",
-                callId = "callId")
+                callId = "callId"
+            )
         }
     }
 
     @Test
     fun `throws ArkivportenClientException when API returns error`() = runTest {
         val exception = assertThrows<ArkivportenClientException> {
-                arkivportenClient.sendDocument(
-                    document = arkivportenDocument(UserConstants.VIRKSOMHETSNUMMER_ARKIVPORTEN_FAILS.value),
-                    token = "token",
-                    callId = "callId"
-                )
+            arkivportenClient.sendDocument(
+                document = arkivportenDocument(UserConstants.VIRKSOMHETSNUMMER_ARKIVPORTEN_FAILS.value),
+                token = "token",
+                callId = "callId"
+            )
         }
         assertEquals(
             "Error sending document to Arkivporten: Received status code 500 Internal Server Error",
