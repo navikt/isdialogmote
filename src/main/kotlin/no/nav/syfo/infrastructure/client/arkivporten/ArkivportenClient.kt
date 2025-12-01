@@ -15,8 +15,6 @@ import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.httpClientDefault
 import org.slf4j.LoggerFactory
 
-private const val GENERIC_ERROR_MESSAGE = "Error sending document to Arkivporten"
-
 class ArkivportenClient(
     private val baseUrl: String,
     private val azureAdV2Client: AzureAdV2Client,
@@ -28,7 +26,7 @@ class ArkivportenClient(
     suspend fun sendDocument(
         document: ArkivportenDocumentRequestDTO,
         token: String,
-        callId: String?,
+        callId: String,
     ) {
         val token = azureAdV2Client.getOnBehalfOfToken(
             scopeClientId = scopeClientId,
@@ -36,8 +34,8 @@ class ArkivportenClient(
         )?.accessToken ?: throw ArkivportenClientException("$GENERIC_ERROR_MESSAGE: No token was found")
         val requestUrl = "$baseUrl/$ARKIVPORTEN_DOCUMENT_PATH"
 
-        val response = try {
-            client.post(requestUrl) {
+        try {
+            val response =  client.post(requestUrl) {
                 headers {
                     contentType(ContentType.Application.Json)
                     bearerAuth(token)
@@ -45,25 +43,22 @@ class ArkivportenClient(
                 }
                 setBody(document)
             }
+            if (!response.status.isSuccess()) {
+                throw ArkivportenClientException(
+                    "Received status code ${response.status}"
+                )
+            }
         } catch (e: ResponseException) {
-            log.error(GENERIC_ERROR_MESSAGE, e)
-            throw ArkivportenClientException(GENERIC_ERROR_MESSAGE, e)
-        }
-
-        if (!response.status.isSuccess()) {
-            throw ArkivportenClientException(
-                "$GENERIC_ERROR_MESSAGE: Received status code ${response.status}"
-            )
+            log.error("$GENERIC_ERROR_MESSAGE: Error in response ${document.documentId}", e)
+        } catch (e: Exception) {
+            log.error("$GENERIC_ERROR_MESSAGE: ${document.documentId}.", e)
         }
     }
 
     companion object {
         const val ARKIVPORTEN_DOCUMENT_PATH = "/internal/api/v1/documents"
+        private const val GENERIC_ERROR_MESSAGE = "Error sending document to Arkivporten"
     }
 }
 
-class ArkivportenClientException(message: String) : RuntimeException(message) {
-    constructor(message: String, cause: Throwable) : this(message) {
-        initCause(cause)
-    }
-}
+class ArkivportenClientException(message: String) : RuntimeException(message)

@@ -78,26 +78,26 @@ data class ArkivportenDocumentRequestDTO(
                 fullName = arbeidstakernavn,
             )
         }
+
+        private fun summary(type: MotedeltakerVarselType, navn: String): String {
+            return "Nav har sendt ${type.toDescription()} til arbeidsgiver angående arbeidstaker $navn"
+        }
+
+        private fun title(type: MotedeltakerVarselType, navn: String): String {
+            return "${type.toDescription().capitalizeFirstLetter()} til arbeidsgiveren angående $navn. Hvis nærmeste leder er meldt inn til Nav, mottar lederen ${type.toDescription()} på \"Dine sykmeldte\" hos Nav."
+        }
+
+        private fun String.capitalizeFirstLetter(): String {
+            return this.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+        }
+
+        private fun MotedeltakerVarselType.toDescription(): String {
+            return when (this) {
+                MotedeltakerVarselType.INNKALT -> "innkalling til dialogmøte"
+                MotedeltakerVarselType.NYTT_TID_STED -> "endring av dialogmøte"
+                MotedeltakerVarselType.AVLYST -> "avlysning av dialogmøte"
+                MotedeltakerVarselType.REFERAT -> "referat fra dialogmøte"
+            }
+        }
     }
-}
-
-fun MotedeltakerVarselType.toDescription(): String {
-    return when (this) {
-        MotedeltakerVarselType.INNKALT -> "innkalling til dialogmøte"
-        MotedeltakerVarselType.NYTT_TID_STED -> "endring av dialogmøte"
-        MotedeltakerVarselType.AVLYST -> "avlysning av dialogmøte"
-        MotedeltakerVarselType.REFERAT -> "referat fra dialogmøte"
-    }
-}
-
-private fun summary(type: MotedeltakerVarselType, navn: String): String {
-    return "Nav har sendt ${type.toDescription()} til arbeidsgiver angående arbeidstaker $navn"
-}
-
-private fun title(type: MotedeltakerVarselType, navn: String): String {
-    return "${type.toDescription().capitalizeFirstLetter()} til arbeidsgiveren angående $navn. Hvis nærmeste leder er meldt inn til Nav, mottar lederen ${type.toDescription()} på \"Dine sykmeldte\" hos Nav."
-}
-
-private fun String.capitalizeFirstLetter(): String {
-    return this.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 }
