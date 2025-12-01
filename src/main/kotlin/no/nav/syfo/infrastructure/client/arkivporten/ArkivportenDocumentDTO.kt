@@ -6,10 +6,10 @@ import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 
-data class ArkivportenDocument(
+data class ArkivportenDocumentDTO(
     val documentId: UUID,
     val type: DocumentType,
-    val content: ByteArray,
+    val content: ByteArray = byteArrayOf(),
     val contentType: ContentType,
     val orgNumber: String,
     val title: String,
@@ -22,7 +22,7 @@ data class ArkivportenDocument(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ArkivportenDocument
+        other as ArkivportenDocumentDTO
 
         if (type != other.type) return false
         if (!content.contentEquals(other.content)) return false
@@ -56,28 +56,32 @@ data class ArkivportenDocument(
         @JsonValue
         override fun toString() = value
     }
+
+    companion object {
+        fun createArkivportenDokument(
+            reference: UUID,
+            virksomhetsnummer: Virksomhetsnummer,
+            file: ByteArray,
+            varseltype: MotedeltakerVarselType,
+            arbeidstakerPersonIdent: PersonIdent,
+            arbeidstakernavn: String,
+        ): ArkivportenDocumentDTO {
+            return ArkivportenDocumentDTO(
+                documentId = reference,
+                type = DocumentType.DIALOGMOTE,
+                content = file,
+                contentType = ContentType.PDF,
+                orgNumber = virksomhetsnummer.value,
+                title = title(varseltype, arbeidstakernavn),
+                summary = summary(varseltype, arbeidstakernavn),
+                fnr = arbeidstakerPersonIdent.value,
+                fullName = arbeidstakernavn,
+            )
+        }
+    }
 }
 
-fun createArkivportenDokument(
-    reference: UUID,
-    virksomhetsnummer: Virksomhetsnummer,
-    file: ByteArray,
-    varseltype: MotedeltakerVarselType,
-    arbeidstakerPersonIdent: PersonIdent,
-    arbeidstakernavn: String,
-): ArkivportenDocument {
-    return ArkivportenDocument(
-        documentId = reference,
-        type = ArkivportenDocument.DocumentType.DIALOGMOTE,
-        content = file,
-        contentType = ArkivportenDocument.ContentType.PDF,
-        orgNumber = virksomhetsnummer.value,
-        title = title(varseltype, arbeidstakernavn),
-        summary = summary(varseltype, arbeidstakernavn),
-        fnr = arbeidstakerPersonIdent.value,
-        fullName = arbeidstakernavn,
-    )
-}
+
 
 fun MotedeltakerVarselType.toDescription(): String {
     return when (this) {
@@ -96,6 +100,6 @@ private fun title(type: MotedeltakerVarselType, navn: String): String {
     return "${type.toDescription().capitalizeFirstLetter()} til arbeidsgiveren angående $navn. Hvis nærmeste leder er meldt inn til Nav, mottar lederen ${type.toDescription()} på \"Dine sykmeldte\" hos Nav."
 }
 
-fun String.capitalizeFirstLetter(): String {
+private fun String.capitalizeFirstLetter(): String {
     return this.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 }

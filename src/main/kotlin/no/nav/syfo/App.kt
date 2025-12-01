@@ -141,7 +141,7 @@ fun main() {
     val arkivportenClient = ArkivportenClient(
         baseUrl = environment.arkivportenUrl,
         azureAdV2Client = azureAdV2Client,
-        clientId = environment.arkivportenClientId,
+        scopeClientId = environment.arkivportenClientId,
     )
 
     lateinit var behandlerVarselService: BehandlerVarselService

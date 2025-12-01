@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
 import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClient
-import no.nav.syfo.infrastructure.client.arkivporten.createArkivportenDokument
+import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenDocumentDTO
 
 class VarselService(
     private val arbeidstakerVarselService: ArbeidstakerVarselService,
@@ -82,14 +82,16 @@ class VarselService(
             log.info("Arkivporten utsending er aktiv. Starter utsending av $varselType")
             try {
                 arkivportenClient.sendDocument(
-                    createArkivportenDokument(
+                    ArkivportenDocumentDTO.createArkivportenDokument(
                         reference = virksomhetsbrevId,
                         virksomhetsnummer = virksomhetsnummer,
                         file = virksomhetsPdf,
                         varseltype = varselType,
                         arbeidstakerPersonIdent = arbeidstakerPersonIdent,
                         arbeidstakernavn = arbeidstakernavn,
-                    )
+                    ),
+                    token = token,
+                    callId = callId,
                 )
             } catch (e: Exception) {
                 log.error("Feil ved utsending til Arkivporten for varselType $varselType", e)
