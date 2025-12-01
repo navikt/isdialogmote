@@ -58,7 +58,7 @@ data class ArkivportenDocumentRequestDTO(
     }
 
     companion object {
-        fun createArkivportenDokument(
+        fun create(
             reference: UUID,
             virksomhetsnummer: Virksomhetsnummer,
             file: ByteArray,
