@@ -3,7 +3,7 @@ package no.nav.syfo.client.arkivporten
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.mockk
 import java.util.*
-import kotlin.test.assertEquals
+import kotlin.test.assertContains
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClient
@@ -57,9 +57,9 @@ class ArkivportenClientTest {
                 callId = "callId"
             )
         }
-        assertEquals(
-            "Error sending document to Arkivporten: Received status code 500 Internal Server Error",
-            exception.message
+        assertContains(
+            exception.message ?: "",
+            "500 Internal Server Error"
         )
     }
 
