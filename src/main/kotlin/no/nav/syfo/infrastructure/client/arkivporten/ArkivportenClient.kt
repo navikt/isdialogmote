@@ -136,14 +136,14 @@ class ArkivportenClient(
         const val ARKIVPORTEN_DOCUMENT_PATH = "/internal/api/v1/documents"
         private val logger = LoggerFactory.getLogger(ArkivportenClient::class.java)
     }
-}
 
-class ArkivportenClientException(message: String, val documentId: String) :
-    RuntimeException("Error sending document to Arkivporten: $message, documentId: $documentId") {
-    constructor(message: String, documentId: String, cause: Throwable) : this(message, documentId) {
-        initCause(cause)
-    }
-    companion object {
-        private const val GENERIC_ERROR_MESSAGE = "Error sending document to Arkivporten"
+    class ArkivportenClientException(message: String, val documentId: String) :
+        RuntimeException("Error sending document to Arkivporten: $message, documentId: $documentId") {
+        constructor(message: String, documentId: String, cause: Throwable) : this(message, documentId) {
+            initCause(cause)
+        }
+        companion object {
+            private const val GENERIC_ERROR_MESSAGE = "Error sending document to Arkivporten"
+        }
     }
 }
