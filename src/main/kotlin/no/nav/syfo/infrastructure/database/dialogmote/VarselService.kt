@@ -80,22 +80,19 @@ class VarselService(
 
         if (isArkivportenSendingEnabled) {
             log.info("Arkivporten utsending er aktiv. Starter utsending av $varselType")
-            try {
-                arkivportenClient.sendDocument(
-                    ArkivportenDocumentRequestDTO.createArkivportenDokument(
-                        reference = virksomhetsbrevId,
-                        virksomhetsnummer = virksomhetsnummer,
-                        file = virksomhetsPdf,
-                        varseltype = varselType,
-                        arbeidstakerPersonIdent = arbeidstakerPersonIdent,
-                        arbeidstakernavn = arbeidstakernavn,
-                    ),
-                    token = token,
-                    callId = callId,
-                )
-            } catch (e: Exception) {
-                log.error("Feil ved utsending til Arkivporten for varselType $varselType", e)
-            }
+
+            arkivportenClient.sendDocument(
+                ArkivportenDocumentRequestDTO.create(
+                    reference = virksomhetsbrevId,
+                    virksomhetsnummer = virksomhetsnummer,
+                    file = virksomhetsPdf,
+                    varseltype = varselType,
+                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                    arbeidstakernavn = arbeidstakernavn,
+                ),
+                token = token,
+                callId = callId,
+            )
         } else {
             log.info("Arkivporten utsending er deaktivert. Dropper utsending av $varselType")
         }
