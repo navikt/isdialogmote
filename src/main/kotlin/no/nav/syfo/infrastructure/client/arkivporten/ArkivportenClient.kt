@@ -1,6 +1,7 @@
 package no.nav.syfo.infrastructure.client.arkivporten
 
 import io.ktor.client.HttpClient
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.RedirectResponseException
 import io.ktor.client.plugins.ResponseException
@@ -73,8 +74,8 @@ class ArkivportenClient(
     private suspend fun tryDoRequest(
         document: ArkivportenDocumentRequestDTO,
         callId: String,
-        block: suspend () ->  io.ktor.client.statement.HttpResponse
-    ): io.ktor.client.statement.HttpResponse = runCatching {
+        block: suspend () ->  HttpResponse
+    ): HttpResponse = runCatching {
         block().also {
             // Double check since toggling req/res exceptions for
             // 3xx, 4xx, 5xx errors is configurable in Ktor client
@@ -90,21 +91,21 @@ class ArkivportenClient(
             is ArkivportenClientException -> e
             is RedirectResponseException -> {
                  ArkivportenClientException(
-                    "Redirect response error for documentId",
+                    "Redirect response error",
                     document.documentId.toString(),
                     e
                 )
             }
             is ServerResponseException -> {
                  ArkivportenClientException(
-                    "Server response error for documentId",
+                    "Server response error",
                     document.documentId.toString(),
                     e
                 )
             }
             is ClientRequestException -> {
                  ArkivportenClientException(
-                    "Client request error for documentId",
+                    "Client request error",
                     document.documentId.toString(),
                     e
                 )
