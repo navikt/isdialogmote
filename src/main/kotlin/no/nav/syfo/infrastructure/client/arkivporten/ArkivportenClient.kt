@@ -74,7 +74,7 @@ class ArkivportenClient(
     private suspend fun tryDoRequest(
         document: ArkivportenDocumentRequestDTO,
         callId: String,
-        block: suspend () ->  HttpResponse
+        block: suspend () -> HttpResponse
     ): HttpResponse = runCatching {
         block().also {
             // Double check since toggling req/res exceptions for
@@ -90,35 +90,35 @@ class ArkivportenClient(
         val arkivportenException = when (e) {
             is ArkivportenClientException -> e
             is RedirectResponseException -> {
-                 ArkivportenClientException(
+                ArkivportenClientException(
                     "Redirect response error",
                     document.documentId.toString(),
                     e
                 )
             }
             is ServerResponseException -> {
-                 ArkivportenClientException(
+                ArkivportenClientException(
                     "Server response error",
                     document.documentId.toString(),
                     e
                 )
             }
             is ClientRequestException -> {
-                 ArkivportenClientException(
+                ArkivportenClientException(
                     "Client request error",
                     document.documentId.toString(),
                     e
                 )
             }
             is ResponseException -> {
-                 ArkivportenClientException(
+                ArkivportenClientException(
                     "Error in response",
                     document.documentId.toString(),
                     e
                 )
             }
             else -> {
-                 ArkivportenClientException(
+                ArkivportenClientException(
                     "Unexpected error",
                     document.documentId.toString(),
                     e
@@ -131,7 +131,6 @@ class ArkivportenClient(
         )
         throw arkivportenException
     }
-
 
     companion object {
         const val ARKIVPORTEN_DOCUMENT_PATH = "/internal/api/v1/documents"
