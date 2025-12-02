@@ -13,7 +13,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.headers
 import io.ktor.http.isSuccess
-import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.api.NAV_CALL_ID_HEADER
 import no.nav.syfo.api.callIdArgument
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
@@ -59,7 +58,7 @@ class ArkivportenClient(
         )
         val requestUrl = "$baseUrl/$ARKIVPORTEN_DOCUMENT_PATH"
 
-        val res = try {
+        tryDoRequest(document, callId) {
             client.post(requestUrl) {
                 headers {
                     contentType(ContentType.Application.Json)
@@ -68,72 +67,70 @@ class ArkivportenClient(
                 }
                 setBody(document)
             }
-        } catch (e: ClientRequestException) {
-            logger.error(
-                "Client error, Received status code ${e.response.status.value}",
-                StructuredArguments.keyValue("statusCode", e.response.status.value),
-                callIdArgument(callId),
-            )
-            throw ArkivportenClientException(
-                "Client request error for documentId",
-                document.documentId.toString(),
-                e
-            )
-        } catch (e: RedirectResponseException) {
-            logger.error(
-                "Redirect error, Received status code ${e.response.status.value}",
-                StructuredArguments.keyValue("statusCode", e.response.status.value),
-                callIdArgument(callId),
-            )
-            throw ArkivportenClientException(
-                "Redirect response error for documentId",
-                document.documentId.toString(),
-                e
-            )
-        } catch (e: ServerResponseException) {
-            logger.error(
-                "Server error, received status code ${e.response.status.value}",
-                StructuredArguments.keyValue("statusCode", e.response.status.value),
-                callIdArgument(callId),
-            )
-            throw ArkivportenClientException(
-                "Server response error for documentId",
-                document.documentId.toString(),
-                e
-            )
-        } catch (e: ResponseException) {
-            logger.error(
-                "Received status code ${e.response.status.value}",
-                StructuredArguments.keyValue("statusCode", e.response.status.value),
-                callIdArgument(callId),
-            )
-            throw ArkivportenClientException(
-                "Error in response",
-                document.documentId.toString(),
-                e
-            )
-        } catch (e: Exception) {
-            logger.error(
-                "Error sending document to Arkivporten: ${e.message}",
-                callIdArgument(callId),
-            )
-            throw ArkivportenClientException(
-                "Unexpected error",
-                document.documentId.toString(),
-                e
-            )
-        }
-
-        // Double check since toggling req/res exceptions for
-        // 3xx, 4xx, 5xx errors is configurable in Ktor client
-        if (!res.status.isSuccess()) {
-            logger.error("Received status code ${res.status.value}", callIdArgument(callId))
-            throw ArkivportenClientException(
-                "Received status code ${res.status}",
-                document.documentId.toString(),
-            )
         }
     }
+
+    private suspend fun tryDoRequest(
+        document: ArkivportenDocumentRequestDTO,
+        callId: String,
+        block: suspend () ->  io.ktor.client.statement.HttpResponse
+    ): io.ktor.client.statement.HttpResponse = runCatching {
+        block().also {
+            // Double check since toggling req/res exceptions for
+            // 3xx, 4xx, 5xx errors is configurable in Ktor client
+            if (!it.status.isSuccess()) {
+                throw ArkivportenClientException(
+                    "Received status code ${it.status}",
+                    document.documentId.toString(),
+                )
+            }
+        }
+    }.getOrElse { e ->
+        val arkivportenException = when (e) {
+            is ArkivportenClientException -> e
+            is RedirectResponseException -> {
+                 ArkivportenClientException(
+                    "Redirect response error for documentId",
+                    document.documentId.toString(),
+                    e
+                )
+            }
+            is ServerResponseException -> {
+                 ArkivportenClientException(
+                    "Server response error for documentId",
+                    document.documentId.toString(),
+                    e
+                )
+            }
+            is ClientRequestException -> {
+                 ArkivportenClientException(
+                    "Client request error for documentId",
+                    document.documentId.toString(),
+                    e
+                )
+            }
+            is ResponseException -> {
+                 ArkivportenClientException(
+                    "Error in response",
+                    document.documentId.toString(),
+                    e
+                )
+            }
+            else -> {
+                 ArkivportenClientException(
+                    "Unexpected error",
+                    document.documentId.toString(),
+                    e
+                )
+            }
+        }
+        logger.error(
+            arkivportenException.message,
+            callIdArgument(callId),
+        )
+        throw arkivportenException
+    }
+
 
     companion object {
         const val ARKIVPORTEN_DOCUMENT_PATH = "/internal/api/v1/documents"
@@ -141,8 +138,8 @@ class ArkivportenClient(
     }
 }
 
-class ArkivportenClientException(message: String, documentId: String) :
-    RuntimeException("$GENERIC_ERROR_MESSAGE: $message documentId: $documentId") {
+class ArkivportenClientException(message: String, val documentId: String) :
+    RuntimeException("$GENERIC_ERROR_MESSAGE: $message, documentId: $documentId") {
     constructor(message: String, documentId: String, cause: Throwable) : this(message, documentId) {
         initCause(cause)
     }
