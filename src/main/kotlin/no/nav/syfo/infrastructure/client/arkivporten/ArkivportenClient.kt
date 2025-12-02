@@ -139,7 +139,7 @@ class ArkivportenClient(
 }
 
 class ArkivportenClientException(message: String, val documentId: String) :
-    RuntimeException("$GENERIC_ERROR_MESSAGE: $message, documentId: $documentId") {
+    RuntimeException("Error sending document to Arkivporten: $message, documentId: $documentId") {
     constructor(message: String, documentId: String, cause: Throwable) : this(message, documentId) {
         initCause(cause)
     }
