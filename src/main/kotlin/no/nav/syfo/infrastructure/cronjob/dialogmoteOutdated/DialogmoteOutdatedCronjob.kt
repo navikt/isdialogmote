@@ -75,7 +75,7 @@ class DialogmoteOutdatedCronjob(
     }
 
     companion object {
-        private val uuids = listOf("1a323dc4-6dd7-4fef-b959-20decbcd098f", "bfb728d1-cfe5-4c71-a525-d703f5290922")
+        private val uuids = listOf<UUID>()
         private val log = LoggerFactory.getLogger(DialogmoteOutdatedCronjob::class.java)
     }
 }
