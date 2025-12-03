@@ -7,7 +7,6 @@ import kotlin.test.assertContains
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClient
-import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClientException
 import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenDocumentRequestDTO
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.testhelper.ExternalMockEnvironment
@@ -50,7 +49,7 @@ class ArkivportenClientTest {
 
     @Test
     fun `throws ArkivportenClientException when API returns error`() = runTest {
-        val exception = assertThrows<ArkivportenClientException> {
+        val exception = assertThrows<ArkivportenClient.ArkivportenClientException> {
             arkivportenClient.sendDocument(
                 document = arkivportenDocument(UserConstants.VIRKSOMHETSNUMMER_ARKIVPORTEN_FAILS.value),
                 token = "token",

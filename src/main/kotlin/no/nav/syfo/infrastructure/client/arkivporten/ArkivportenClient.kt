@@ -66,7 +66,7 @@ class ArkivportenClient(
             }
             if (!res.status.isSuccess()) {
                 throw ArkivportenClientException(
-                    "Received status code ${res.status.value}",
+                    "Received status code ${res.status.value} ${res.status.description}",
                     document.documentId.toString(),
                 )
             }
@@ -76,14 +76,14 @@ class ArkivportenClient(
                 callIdArgument(callId),
                 e
             )
-            when(e) {
+            when (e) {
                 is ArkivportenClientException -> throw e
                 is ResponseException -> throw ArkivportenClientException(
-                    "Received status code ${e.response.status.value}",
+                    "Received status code ${e.response.status.value} ${e.response.status.description}",
                     document.documentId.toString(),
                     e
                 )
-                else ->  throw ArkivportenClientException(
+                else -> throw ArkivportenClientException(
                     "Failed to send document to Arkivporten: ${e.message}",
                     document.documentId.toString(),
                     e
