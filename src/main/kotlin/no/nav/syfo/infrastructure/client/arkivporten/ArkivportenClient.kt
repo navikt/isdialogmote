@@ -1,11 +1,7 @@
 package no.nav.syfo.infrastructure.client.arkivporten
 
 import io.ktor.client.HttpClient
-import io.ktor.client.statement.HttpResponse
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.plugins.RedirectResponseException
 import io.ktor.client.plugins.ResponseException
-import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -59,8 +55,8 @@ class ArkivportenClient(
         )
         val requestUrl = "$baseUrl/$ARKIVPORTEN_DOCUMENT_PATH"
 
-        tryDoRequest(document, callId) {
-            client.post(requestUrl) {
+        runCatching {
+            val res = client.post(requestUrl) {
                 headers {
                     contentType(ContentType.Application.Json)
                     bearerAuth(token)
@@ -68,68 +64,32 @@ class ArkivportenClient(
                 }
                 setBody(document)
             }
-        }
-    }
-
-    private suspend fun tryDoRequest(
-        document: ArkivportenDocumentRequestDTO,
-        callId: String,
-        block: suspend () -> HttpResponse
-    ): HttpResponse = runCatching {
-        block().also {
-            // Double check since toggling req/res exceptions for
-            // 3xx, 4xx, 5xx errors is configurable in Ktor client
-            if (!it.status.isSuccess()) {
+            if (!res.status.isSuccess()) {
                 throw ArkivportenClientException(
-                    "Received status code ${it.status}",
+                    "Received status code ${res.status.value}",
                     document.documentId.toString(),
                 )
             }
-        }
-    }.getOrElse { e ->
-        val arkivportenException = when (e) {
-            is ArkivportenClientException -> e
-            is RedirectResponseException -> {
-                ArkivportenClientException(
-                    "Redirect response error",
-                    document.documentId.toString(),
-                    e
-                )
-            }
-            is ServerResponseException -> {
-                ArkivportenClientException(
-                    "Server response error",
+        }.getOrElse { e ->
+            logger.error(
+                e.message,
+                callIdArgument(callId),
+                e
+            )
+            when(e) {
+                is ArkivportenClientException -> throw e
+                is ResponseException -> throw ArkivportenClientException(
+                    "Received status code ${e.response.status.value}",
                     document.documentId.toString(),
                     e
                 )
-            }
-            is ClientRequestException -> {
-                ArkivportenClientException(
-                    "Client request error",
-                    document.documentId.toString(),
-                    e
-                )
-            }
-            is ResponseException -> {
-                ArkivportenClientException(
-                    "Error in response",
-                    document.documentId.toString(),
-                    e
-                )
-            }
-            else -> {
-                ArkivportenClientException(
-                    "Unexpected error",
+                else ->  throw ArkivportenClientException(
+                    "Failed to send document to Arkivporten: ${e.message}",
                     document.documentId.toString(),
                     e
                 )
             }
         }
-        logger.error(
-            arkivportenException.message,
-            callIdArgument(callId),
-        )
-        throw arkivportenException
     }
 
     companion object {
@@ -141,9 +101,6 @@ class ArkivportenClient(
         RuntimeException("Error sending document to Arkivporten: $message, documentId: $documentId") {
         constructor(message: String, documentId: String, cause: Throwable) : this(message, documentId) {
             initCause(cause)
-        }
-        companion object {
-            private const val GENERIC_ERROR_MESSAGE = "Error sending document to Arkivporten"
         }
     }
 }
