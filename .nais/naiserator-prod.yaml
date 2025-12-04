@@ -151,7 +151,7 @@ spec:
     - name: ALTINN_SENDING_ENABLED
       value: "true"
     - name: ARKIVPORTEN_URL
-      value: http://arkivporten
+      value: http://arkivporten.team-esyfo
     - name: ARKIVPORTEN_CLIENT_ID
       value: prod-gcp.team-esyfo.arkivporten
     - name: ARKIVPORTEN_SENDING_ENABLED
