@@ -69,6 +69,12 @@ fun Application.testApiModule(
         cache = externalMockEnvironment.redisCache,
         httpClient = externalMockEnvironment.mockHttpClient,
     )
+    val arkivportenClient = no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClient(
+        baseUrl = externalMockEnvironment.environment.arkivportenUrl,
+        azureAdV2Client = externalMockEnvironment.azureAdV2Client,
+        scopeClientId = externalMockEnvironment.environment.arkivportenClientId,
+        client = externalMockEnvironment.mockHttpClient,
+    )
 
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,
@@ -90,5 +96,6 @@ fun Application.testApiModule(
         pdfGenClient = pdfGenClient,
         kontaktinformasjonClient = kontaktinformasjonClient,
         narmesteLederClient = narmesteLederClient,
+        arkivportenClient = arkivportenClient,
     )
 }

@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClient
 
 class VarselServiceTest {
 
@@ -42,6 +43,8 @@ class VarselServiceTest {
         altinnClient = altinnClient,
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
         isAltinnSendingEnabled = true,
+        arkivportenClient = mockk<ArkivportenClient>(relaxed = true),
+        isArkivportenSendingEnabled = true,
     )
 
     @BeforeEach

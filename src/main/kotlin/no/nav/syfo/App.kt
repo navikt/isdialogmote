@@ -32,6 +32,7 @@ import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumerServi
 import no.nav.syfo.infrastructure.kafka.identhendelse.kafkaIdenthendelseConsumerConfig
 import no.nav.syfo.application.JanitorService
 import no.nav.syfo.infrastructure.client.altinn.createPort
+import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClient
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
@@ -137,6 +138,11 @@ fun main() {
         tokendingsClient = tokendingsClient,
         cache = cache,
     )
+    val arkivportenClient = ArkivportenClient(
+        baseUrl = environment.arkivportenUrl,
+        azureAdV2Client = azureAdV2Client,
+        scopeClientId = environment.arkivportenClientId,
+    )
 
     lateinit var behandlerVarselService: BehandlerVarselService
     lateinit var dialogmoterelasjonService: DialogmoterelasjonService
@@ -204,6 +210,7 @@ fun main() {
                 kontaktinformasjonClient = kontaktinformasjonClient,
                 pdfGenClient = pdfGenClient,
                 narmesteLederClient = narmesteLederClient,
+                arkivportenClient = arkivportenClient,
             )
             cronjobModule(
                 applicationState = applicationState,
