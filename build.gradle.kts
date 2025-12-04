@@ -5,7 +5,7 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val altinnCorrespondenceAgencyExternalVersion = "1.2021.02.22-10.45-4201aaea72fb"
-val cxfVersion = "3.6.5"
+val cxfVersion = "3.6.9"
 val confluentVersion = "8.1.0"
 val flywayVersion = "11.17.1"
 val hikariVersion = "7.0.2"
@@ -93,12 +93,6 @@ dependencies {
     }
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", excludeLog4j)
     constraints {
-        implementation("org.apache.zookeeper:zookeeper") {
-            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
-            version {
-                require("3.9.4")
-            }
-        }
         implementation("commons-beanutils:commons-beanutils") {
             because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
             version {
@@ -112,12 +106,6 @@ dependencies {
             because("io.confluent:kafka-avro-serializer:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
             version {
                 require("1.12.0")
-            }
-        }
-        implementation("org.apache.commons:commons-compress") {
-            because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
-            version {
-                require("1.27.1")
             }
         }
         implementation("org.apache.commons:commons-lang3") {
@@ -135,34 +123,21 @@ dependencies {
     }
     implementation("io.confluent:kafka-schema-registry:$confluentVersion", excludeLog4j)
     constraints {
-        implementation("org.yaml:snakeyaml") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-25857/")
-            version {
-                require("2.3")
-            }
-        }
-        implementation("org.glassfish:jakarta.el") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2021-28170/")
-            version {
-                require("3.0.4")
-            }
-        }
-        implementation("com.google.protobuf:protobuf-java") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2022-3510")
-            version {
-                require("3.25.6")
-            }
-        }
-        implementation("org.apache.mina:mina-core") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2024-52046")
-            version {
-                require("2.2.4")
-            }
-        }
         implementation("io.github.classgraph:classgraph") {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
             version {
                 require("4.8.179")
+            }
+        }
+        implementation("org.glassfish.jersey.core:jersey-client") {
+            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2025-12383")
+            version {
+                require("3.1.11")
+            }
+        }
+        implementation("com.nimbusds:nimbus-jose-jwt") {
+            version {
+                require(nimbusjosejwtVersion)
             }
         }
     }
@@ -189,14 +164,6 @@ dependencies {
     implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
-    constraints {
-        implementation("org.apache.santuario:xmlsec") {
-            because("org.apache.cxf:cxf-rt-ws-security:$cxfVersion -> https://nvd.nist.gov/vuln/detail/CVE-2023-44483")
-            version {
-                require("2.3.4")
-            }
-        }
-    }
     implementation("javax.xml.ws:jaxws-api:$jaxsWsApiVersion")
     implementation("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
         exclude(group = "com.sun.xml.ws", module = "policy")
