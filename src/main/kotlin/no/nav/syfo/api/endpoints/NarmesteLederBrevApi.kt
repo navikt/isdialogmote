@@ -17,7 +17,7 @@ import no.nav.syfo.infrastructure.database.dialogmote.DialogmoteService
 import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.infrastructure.database.dialogmote.PdfService
 import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.toNarmesteLederBrevDTOList
 import org.slf4j.Logger
@@ -52,7 +52,7 @@ fun Route.registerNarmestelederBrevApi(
 
                 val moteList = dialogmoteService.getDialogmoteList(personIdent = arbeidstakerPersonIdent)
                     .filter { dialogmote ->
-                        dialogmote.status != DialogmoteStatus.LUKKET
+                        dialogmote.status != Dialogmote.Status.LUKKET
                     }
 
                 val narmesteLederMoter = narmesteLederAccessService.filterMoterByNarmesteLederAccess(

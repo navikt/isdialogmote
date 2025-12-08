@@ -3,7 +3,7 @@ package no.nav.syfo.api.dto
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.NewDialogmote
 import no.nav.syfo.domain.dialogmote.NewDialogmoteTidSted
@@ -51,7 +51,7 @@ fun NewDialogmoteDTO.toNewDialogmote(
     navEnhet: EnhetNr,
 ): NewDialogmote {
     return NewDialogmote(
-        status = DialogmoteStatus.INNKALT,
+        status = Dialogmote.Status.INNKALT,
         tildeltVeilederIdent = requestByNAVIdent,
         tildeltEnhet = navEnhet.value,
         opprettetAv = requestByNAVIdent,

@@ -18,7 +18,7 @@ import no.nav.syfo.api.endpoints.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
 import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -76,7 +76,7 @@ suspend fun HttpClient.postAndGetDialogmote(
     assertEquals(1, dialogmoteList.size)
 
     val dialogmoteDTO = dialogmoteList.first()
-    assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+    assertEquals(Dialogmote.Status.INNKALT.name, dialogmoteDTO.status)
     assertTrue(dialogmoteDTO.referatList.isEmpty())
 
     return dialogmoteDTO

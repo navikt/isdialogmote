@@ -4,7 +4,7 @@ import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.TidStedDTO
 import java.time.LocalDateTime
 
-data class EndreTidStedDialogmoteDTO(
+data class EndretTidStedDTO(
     override val sted: String,
     override val tid: LocalDateTime,
     override val videoLink: String?,

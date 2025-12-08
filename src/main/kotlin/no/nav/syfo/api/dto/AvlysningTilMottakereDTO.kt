@@ -2,7 +2,7 @@ package no.nav.syfo.api.dto
 
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 
-data class AvlysDialogmoteDTO(
+data class AvlysningTilMottakereDTO(
     val arbeidstaker: AvlysningDTO,
     val arbeidsgiver: AvlysningDTO,
     val behandler: AvlysningDTO?,

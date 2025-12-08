@@ -11,7 +11,7 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DocumentComponentType
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.infrastructure.database.dialogmote.PdfService
@@ -96,7 +96,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
                     assertEquals(1, dialogmoteList.size)
 
                     val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.INNKALT.name, dialogmoteDTO.status)
                     assertTrue(dialogmoteDTO.referatList.isEmpty())
 
                     createdDialogmoteUUID = dialogmoteDTO.uuid
@@ -121,7 +121,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
                     assertEquals(1, dialogmoteList.size)
 
                     val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(DialogmoteStatus.FERDIGSTILT.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.FERDIGSTILT.name, dialogmoteDTO.status)
                     assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                     assertEquals(
                         newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,

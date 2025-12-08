@@ -4,8 +4,8 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.nav.syfo.api.dto.AvlysDialogmoteDTO
-import no.nav.syfo.api.dto.EndreTidStedDialogmoteDTO
+import no.nav.syfo.api.dto.AvlysningTilMottakereDTO
+import no.nav.syfo.api.dto.EndretTidStedDTO
 import no.nav.syfo.api.dto.NewReferatDTO
 import no.nav.syfo.api.dto.OvertaDialogmoterDTO
 import no.nav.syfo.api.dto.TildelDialogmoterDTO
@@ -43,7 +43,7 @@ fun Route.registerDialogmoteActionsApiV2(
                 ?: throw IllegalArgumentException("No Authorization header supplied")
 
             val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
-            val avlysDialogmoteDto = call.receive<AvlysDialogmoteDTO>()
+            val avlysningTilMottakereDto = call.receive<AvlysningTilMottakereDTO>()
 
             val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
@@ -55,7 +55,7 @@ fun Route.registerDialogmoteActionsApiV2(
                 dialogmoteService.avlysMoteinnkalling(
                     callId = callId,
                     dialogmote = dialogmote,
-                    avlysDialogmote = avlysDialogmoteDto,
+                    avlysningTilMottakere = avlysningTilMottakereDto,
                     token = token,
                 )
                 call.respond(HttpStatusCode.OK)
@@ -147,7 +147,7 @@ fun Route.registerDialogmoteActionsApiV2(
 
             val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
 
-            val endreDialogmoteTidSted = call.receive<EndreTidStedDialogmoteDTO>()
+            val endreDialogmoteTidSted = call.receive<EndretTidStedDTO>()
 
             val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
@@ -159,7 +159,7 @@ fun Route.registerDialogmoteActionsApiV2(
                 dialogmoteService.nyttMoteinnkallingTidSted(
                     callId = callId,
                     dialogmote = dialogmote,
-                    endreDialogmoteTidSted = endreDialogmoteTidSted,
+                    endretTidSted = endreDialogmoteTidSted,
                     token = token,
                 )
                 call.respond(HttpStatusCode.OK)

@@ -2,9 +2,9 @@ package no.nav.syfo.testhelper
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
 import no.nav.syfo.domain.EnhetNr
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
@@ -123,7 +123,7 @@ fun DatabaseInterface.addDummyDeltakere() {
 
 fun DatabaseInterface.updateMoteStatus(
     moteUUID: UUID,
-    newMoteStatus: DialogmoteStatus,
+    newMoteStatus: Dialogmote.Status,
 ) {
     val moteId = getDialogmote(moteUUID).first().id
     this.connection.use {

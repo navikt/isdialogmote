@@ -1,9 +1,9 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.api.dto.AvlysDialogmoteDTO
+import no.nav.syfo.api.dto.AvlysningTilMottakereDTO
 import no.nav.syfo.api.dto.AvlysningDTO
 import no.nav.syfo.api.dto.EndreTidStedBegrunnelseDTO
-import no.nav.syfo.api.dto.EndreTidStedDialogmoteDTO
+import no.nav.syfo.api.dto.EndretTidStedDTO
 import no.nav.syfo.api.dto.NewDialogmoteDTO
 import no.nav.syfo.api.dto.NewDialogmoteTidStedDTO
 import no.nav.syfo.api.dto.NewDialogmotedeltakerAnnenDTO
@@ -28,14 +28,14 @@ fun generateAvlysningDTO() =
     )
 
 fun generateAvlysDialogmoteDTO() =
-    AvlysDialogmoteDTO(
+    AvlysningTilMottakereDTO(
         arbeidstaker = generateAvlysningDTO(),
         arbeidsgiver = generateAvlysningDTO(),
         behandler = generateAvlysningDTO(),
     )
 
 fun generateAvlysDialogmoteDTONoBehandler() =
-    AvlysDialogmoteDTO(
+    AvlysningTilMottakereDTO(
         arbeidstaker = generateAvlysningDTO(),
         arbeidsgiver = generateAvlysningDTO(),
         behandler = null
@@ -58,7 +58,7 @@ fun generateNewDialogmoteTidStedDTONoVideoLink() = NewDialogmoteTidStedDTO(
 
 fun generateEndreDialogmoteTidStedDTO(
     tid: LocalDateTime = DIALOGMOTE_TIDSPUNKT_FIXTURE,
-) = EndreTidStedDialogmoteDTO(
+) = EndretTidStedDTO(
     sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
     tid = tid,
     videoLink = "https://meet.google.com/xyz",
@@ -73,7 +73,7 @@ fun generateEndreDialogmoteTidStedDTO(
     behandler = null,
 )
 
-fun generateEndreDialogmoteTidStedDTOWithBehandler() = EndreTidStedDialogmoteDTO(
+fun generateEndreDialogmoteTidStedDTOWithBehandler() = EndretTidStedDTO(
     sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
     tid = DIALOGMOTE_TIDSPUNKT_FIXTURE,
     videoLink = "https://meet.google.com/xyz",
@@ -174,7 +174,7 @@ fun generateNewDialogmoteDTO(
 }
 
 fun generateNewDialogmoteDTOWithMissingValues(
-    personIdent: PersonIdent
+    personIdent: PersonIdent,
 ): NewDialogmoteDTO {
     return NewDialogmoteDTO(
         arbeidstaker = generateMotedeltakerArbeidstakerDTOMissingValues(personIdent),
@@ -184,7 +184,7 @@ fun generateNewDialogmoteDTOWithMissingValues(
 }
 
 fun generateNewDialogmoteDTOWithBehandler(
-    personIdent: PersonIdent
+    personIdent: PersonIdent,
 ): NewDialogmoteDTO {
     return NewDialogmoteDTO(
         arbeidstaker = generateMotedeltakerArbeidstakerDTO(personIdent),

@@ -1,7 +1,7 @@
 package no.nav.syfo.infrastructure.database.dialogmote.database
 
 import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.NewDialogmote
 import no.nav.syfo.domain.dialogmote.TidStedDTO
 import no.nav.syfo.infrastructure.cronjob.statusendring.toInstantOslo
@@ -195,7 +195,7 @@ const val queryUpdateMoteStatus =
 fun Connection.updateMoteStatus(
     commit: Boolean = true,
     moteId: Int,
-    moteStatus: DialogmoteStatus,
+    moteStatus: Dialogmote.Status,
 ) {
     val now = Timestamp.from(Instant.now())
     this.prepareStatement(queryUpdateMoteStatus).use {

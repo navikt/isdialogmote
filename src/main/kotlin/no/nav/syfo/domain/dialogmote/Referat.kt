@@ -63,7 +63,7 @@ fun Referat.toReferatDTO(): ReferatDTO {
         arbeidsgiverOppgave = this.arbeidsgiverOppgave,
         veilederOppgave = this.veilederOppgave,
         behandlerOppgave = this.behandlerOppgave,
-        narmesteLederNavn = this.narmesteLederNavn, // Egentlig NL-representant fra virksomhet
+        narmesteLederNavn = this.narmesteLederNavn,
         document = this.document,
         lestDatoArbeidstaker = this.lestDatoArbeidstaker,
         lestDatoArbeidsgiver = this.lestDatoArbeidsgiver,
@@ -149,11 +149,10 @@ fun Referat.toJournalforingRequestBehandler(
     varselUuid = UUID.nameUUIDFromBytes((this.uuid.toString() + "behandler").toByteArray())
 )
 
-private val dateFormatterNorwegian = DateTimeFormatter.ofPattern("d. MMMM YYYY", Locale.forLanguageTag("no-NO"))
-
 fun Referat.toJournalpostTittel(
     moteTidspunkt: LocalDateTime?,
 ): String {
+    val dateFormatterNorwegian = DateTimeFormatter.ofPattern("d. MMMM YYYY", Locale.forLanguageTag("no-NO"))
     val moteDatoString = moteTidspunkt?.toLocalDate()?.format(dateFormatterNorwegian) ?: ""
     val updatedDatoString = updatedAt.toLocalDate().format(dateFormatterNorwegian)
     val endretString = if (this.begrunnelseEndring == null) "" else " - Endret $updatedDatoString"

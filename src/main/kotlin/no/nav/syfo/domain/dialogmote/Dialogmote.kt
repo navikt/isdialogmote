@@ -3,6 +3,7 @@ package no.nav.syfo.domain.dialogmote
 import no.nav.syfo.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.domain.NarmesteLederBrevDTO
 import no.nav.syfo.api.dto.DialogmoteDTO
+import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.util.isAfterOrEqual
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -13,7 +14,7 @@ data class Dialogmote(
     val uuid: UUID,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val status: DialogmoteStatus,
+    val status: Status,
     val opprettetAv: String,
     val tildeltVeilederIdent: String,
     val tildeltEnhet: String,
@@ -22,7 +23,70 @@ data class Dialogmote(
     val behandler: DialogmotedeltakerBehandler?,
     val tidStedList: List<DialogmoteTidSted>,
     val referatList: List<Referat>,
-)
+) {
+    enum class Status {
+        INNKALT,
+        AVLYST,
+        FERDIGSTILT,
+        NYTT_TID_STED,
+        LUKKET,
+    }
+
+    fun sistMoteTidSted(): DialogmoteTidSted? {
+        return tidStedList.maxBy { it.tid }
+    }
+
+    fun endreFerdigstiltReferat(): Dialogmote {
+        if (this.status != Status.FERDIGSTILT) {
+            throw ConflictException("Failed to Endre Ferdigstilt Dialogmote, not Ferdigstilt")
+        }
+        return this.copy(
+            updatedAt = LocalDateTime.now(),
+        )
+    }
+
+    fun avlysInnkalling(): Dialogmote {
+        if (this.status == Status.FERDIGSTILT) {
+            throw ConflictException("Failed to Avlys Dialogmote: already Ferdigstilt")
+        }
+        if (this.status == Status.AVLYST) {
+            throw ConflictException("Failed to Avlys Dialogmote: already Avlyst")
+        }
+        return this.copy(
+            status = Status.AVLYST,
+            updatedAt = LocalDateTime.now(),
+        )
+    }
+
+    fun nyttTidSted(): Dialogmote {
+        if (this.status == Status.FERDIGSTILT) {
+            throw ConflictException("Failed to change tid/sted, already Ferdigstilt")
+        }
+        if (this.status == Status.AVLYST) {
+            throw ConflictException("Failed to change tid/sted, already Avlyst")
+        }
+        return this.copy(
+            status = Status.NYTT_TID_STED,
+            updatedAt = LocalDateTime.now(),
+        )
+    }
+
+    fun ferdigstill(): Dialogmote {
+        if (this.status == Status.FERDIGSTILT) {
+            throw ConflictException("Failed to Ferdigstille Dialogmote, already Ferdigstilt")
+        }
+        if (this.status == Status.AVLYST) {
+            throw ConflictException("Failed to Ferdigstille Dialogmote, already Avlyst")
+        }
+        return this.copy(
+            status = Status.FERDIGSTILT,
+            updatedAt = LocalDateTime.now(),
+        )
+    }
+
+    fun isActive(): Boolean =
+        this.status == Status.INNKALT || this.status == Status.NYTT_TID_STED
+}
 
 fun Dialogmote.toDialogmoteDTO(): DialogmoteDTO {
     val dialogmoteTidSted = this.tidStedList.latest()!!
@@ -94,11 +158,7 @@ fun List<Dialogmote>.toNarmesteLederBrevDTOList(): List<NarmesteLederBrevDTO> {
     }.flatten()
 }
 
-fun List<Dialogmote>.anyUnfinished(): Boolean {
-    return this.any {
-        it.status.unfinished()
-    }
-}
+fun List<Dialogmote>.anyActive(): Boolean = this.any { it.isActive() }
 
 fun List<Dialogmote>.removeBrevBeforeDate(date: LocalDate): List<Dialogmote> {
     return this.map {

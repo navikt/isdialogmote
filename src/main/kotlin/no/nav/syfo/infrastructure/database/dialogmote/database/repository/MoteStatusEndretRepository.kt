@@ -4,8 +4,8 @@ import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.api.dto.DialogmoteStatusEndringDTO
 import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PMoteStatusEndret
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -61,7 +61,7 @@ class MoteStatusEndretRepository(private val database: DatabaseInterface) {
         commit: Boolean = true,
         moteId: Int,
         opprettetAv: String,
-        status: DialogmoteStatus,
+        status: Dialogmote.Status,
         tilfelleStart: LocalDate?,
         isBehandlerMotedeltaker: Boolean,
     ): Pair<Int, UUID> {
@@ -146,7 +146,7 @@ internal fun ResultSet.toPMoteStatusEndret(): PMoteStatusEndret =
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         moteId = getInt("mote_id"),
         motedeltakerBehandler = getBoolean("motedeltaker_behandler"),
-        status = DialogmoteStatus.valueOf(getString("status")),
+        status = Dialogmote.Status.valueOf(getString("status")),
         opprettetAv = getString("opprettet_av"),
         tilfelleStart = getTimestamp("tilfelle_start").toLocalDateTime().toLocalDate(),
         publishedAt = getTimestamp("published_at")?.toLocalDateTime(),

@@ -357,7 +357,7 @@ class PostDialogmoteApiV2Test {
             val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
             assertEquals(1, moteStatusEndretList.size)
 
-            assertEquals(DialogmoteStatus.INNKALT.name, moteStatusEndretList.first().status.name)
+            assertEquals(Dialogmote.Status.INNKALT.name, moteStatusEndretList.first().status.name)
             assertEquals(VEILEDER_IDENT, moteStatusEndretList.first().opprettetAv)
             assertEquals(LocalDate.EPOCH, moteStatusEndretList.first().tilfelleStart)
         }

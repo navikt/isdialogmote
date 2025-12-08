@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.database.dialogmote.database.domain
 
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteStatusEndret
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -13,7 +13,7 @@ data class PMoteStatusEndret(
     val updatedAt: LocalDateTime,
     val moteId: Int,
     val motedeltakerBehandler: Boolean,
-    val status: DialogmoteStatus,
+    val status: Dialogmote.Status,
     val opprettetAv: String,
     val tilfelleStart: LocalDate,
     val publishedAt: LocalDateTime?,

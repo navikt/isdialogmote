@@ -11,7 +11,7 @@ import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEn
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.dto.EndreTidStedBegrunnelseDTO
-import no.nav.syfo.api.dto.EndreTidStedDialogmoteDTO
+import no.nav.syfo.api.dto.EndretTidStedDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
@@ -114,14 +114,14 @@ class PostDialogmoteTidStedApiV2Test {
                     assertEquals(1, dialogmoteList.size)
 
                     val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.INNKALT.name, dialogmoteDTO.status)
 
                     createdDialogmoteUUID = dialogmoteDTO.uuid
                 }
 
                 val urlMoteUUIDPostTidSted =
                     "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
-                val newDialogmoteTidSted = EndreTidStedDialogmoteDTO(
+                val newDialogmoteTidSted = EndretTidStedDTO(
                     sted = "Et annet sted",
                     tid = newDialogmoteDTO.tidSted.tid.plusDays(1),
                     videoLink = "https://meet.google.com/zyx",
@@ -165,7 +165,7 @@ class PostDialogmoteTidStedApiV2Test {
                 assertEquals(1, dialogmoteList.size)
 
                 val dialogmoteDTO = dialogmoteList.first()
-                assertEquals(DialogmoteStatus.NYTT_TID_STED.name, dialogmoteDTO.status)
+                assertEquals(Dialogmote.Status.NYTT_TID_STED.name, dialogmoteDTO.status)
 
                 assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                 val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
@@ -247,7 +247,7 @@ class PostDialogmoteTidStedApiV2Test {
                     assertEquals(1, dialogmoteList.size)
 
                     val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.INNKALT.name, dialogmoteDTO.status)
 
                     createdDialogmoteUUID = dialogmoteDTO.uuid
                 }
@@ -255,7 +255,7 @@ class PostDialogmoteTidStedApiV2Test {
                 val urlMoteUUIDPostTidSted =
                     "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
                 val newDialogmoteTid = newDialogmoteDTO.tidSted.tid.plusDays(1).truncatedTo(ChronoUnit.SECONDS)
-                val newDialogmoteTidSted = EndreTidStedDialogmoteDTO(
+                val newDialogmoteTidSted = EndretTidStedDTO(
                     sted = "Et annet sted",
                     tid = newDialogmoteTid,
                     videoLink = "https://meet.google.com/zyx",
@@ -312,7 +312,7 @@ class PostDialogmoteTidStedApiV2Test {
                     assertEquals(1, dialogmoteList.size)
 
                     createdDialogmote = dialogmoteList.first()
-                    assertEquals(DialogmoteStatus.NYTT_TID_STED.name, createdDialogmote.status)
+                    assertEquals(Dialogmote.Status.NYTT_TID_STED.name, createdDialogmote.status)
 
                     val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
                     verify(exactly = 1) {
@@ -402,7 +402,7 @@ class PostDialogmoteTidStedApiV2Test {
                     assertEquals(1, dialogmoteList.size)
 
                     val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(DialogmoteStatus.NYTT_TID_STED.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.NYTT_TID_STED.name, dialogmoteDTO.status)
 
                     val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
                     verify(exactly = 1) {
@@ -463,14 +463,14 @@ class PostDialogmoteTidStedApiV2Test {
                     assertEquals(1, dialogmoteList.size)
 
                     val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.INNKALT.name, dialogmoteDTO.status)
 
                     createdDialogmoteUUID = dialogmoteDTO.uuid
                 }
 
                 val urlMoteUUIDPostTidSted =
                     "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteTidStedPath"
-                val newDialogmoteTidStedNoBehandler = EndreTidStedDialogmoteDTO(
+                val newDialogmoteTidStedNoBehandler = EndretTidStedDTO(
                     sted = "Et annet sted",
                     tid = newDialogmoteDTO.tidSted.tid.plusDays(1),
                     videoLink = "https://meet.google.com/zyx",

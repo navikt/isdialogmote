@@ -115,7 +115,7 @@ class FerdigstillDialogmoteApiV2Test {
                 assertEquals(1, dialogmoteList.size)
 
                 val dialogmoteDTO = dialogmoteList.first()
-                assertEquals(DialogmoteStatus.FERDIGSTILT.name, dialogmoteDTO.status)
+                assertEquals(Dialogmote.Status.FERDIGSTILT.name, dialogmoteDTO.status)
                 assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                 assertEquals(
                     newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
@@ -266,7 +266,7 @@ class FerdigstillDialogmoteApiV2Test {
                     val dialogmoteDTO = dialogmoteList.first()
                     val referat = dialogmoteDTO.referatList.first()
                     referatBehandlerVarselUUID = referat.uuid
-                    assertEquals(DialogmoteStatus.FERDIGSTILT.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.FERDIGSTILT.name, dialogmoteDTO.status)
                     val behandlerDeltaker = dialogmoteDTO.behandler!!
                     assertEquals(newDialogmoteDTO.behandler!!.behandlerRef, behandlerDeltaker.behandlerRef)
                     assertTrue(behandlerDeltaker.mottarReferat)
@@ -341,7 +341,7 @@ class FerdigstillDialogmoteApiV2Test {
                     assertEquals(endretReferatDTO.behandlerOppgave, referat.behandlerOppgave)
                     assertEquals(endretReferatDTO.begrunnelseEndring, referat.begrunnelseEndring)
                     val newReferatBehandlerVarselUUID = referat.uuid
-                    assertEquals(DialogmoteStatus.FERDIGSTILT.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.FERDIGSTILT.name, dialogmoteDTO.status)
 
                     val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
                     verify(exactly = 1) {
@@ -528,7 +528,7 @@ class FerdigstillDialogmoteApiV2Test {
                     assertFalse(referat.ferdigstilt)
                     assertEquals("Dette er en beskrivelse av konklusjon", referat.konklusjon)
                     assertEquals("Tøff Pyjamas", referat.andreDeltakere[0].navn)
-                    assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.INNKALT.name, dialogmoteDTO.status)
                 }
 
                 val modfisertReferat = generateModfisertReferatDTO(behandlerOppgave = behandlerOppgave)
@@ -555,7 +555,7 @@ class FerdigstillDialogmoteApiV2Test {
                 val dialogmoteDTO = dialogmoteList.first()
                 val referat = dialogmoteDTO.referatList.first()
                 val referatBehandlerVarselUUID = referat.uuid
-                assertEquals(DialogmoteStatus.FERDIGSTILT.name, dialogmoteDTO.status)
+                assertEquals(Dialogmote.Status.FERDIGSTILT.name, dialogmoteDTO.status)
                 val behandlerDeltaker = dialogmoteDTO.behandler!!
                 assertEquals(newDialogmoteDTO.behandler!!.behandlerRef, behandlerDeltaker.behandlerRef)
                 assertTrue(behandlerDeltaker.mottarReferat)
@@ -687,7 +687,7 @@ class FerdigstillDialogmoteApiV2Test {
                 assertEquals(1, dialogmoteList.size)
 
                 val dialogmoteDTO = dialogmoteList.first()
-                assertEquals(DialogmoteStatus.FERDIGSTILT.name, dialogmoteDTO.status)
+                assertEquals(Dialogmote.Status.FERDIGSTILT.name, dialogmoteDTO.status)
                 assertEquals(VEILEDER_IDENT_2, dialogmoteDTO.tildeltVeilederIdent)
             }
         }
