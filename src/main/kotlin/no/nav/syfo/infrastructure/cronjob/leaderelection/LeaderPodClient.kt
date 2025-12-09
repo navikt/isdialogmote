@@ -3,7 +3,7 @@ package no.nav.syfo.infrastructure.cronjob.leaderelection
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
-import io.ktor.client.engine.cio.*
+import io.ktor.client.engine.apache.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -16,7 +16,7 @@ import java.net.InetAddress
 class LeaderPodClient(
     private val environment: Environment,
 ) {
-    private val httpClient = HttpClient(CIO) {
+    private val httpClient = HttpClient(Apache) {
         expectSuccess = true
     }
 
