@@ -11,7 +11,7 @@ data class DialogmoteStatusEndret(
     val updatedAt: LocalDateTime,
     val moteId: Int,
     val motedeltakerBehandler: Boolean,
-    val status: DialogmoteStatus,
+    val status: Dialogmote.Status,
     val opprettetAv: String,
     val tilfelleStart: LocalDate,
     val publishedAt: LocalDateTime?,

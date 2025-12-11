@@ -13,7 +13,7 @@ import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.Referat
 import no.nav.syfo.domain.dialogmote.toJournalpostTittel
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
@@ -295,7 +295,7 @@ class DialogmoteVarselJournalforingCronjobTest {
                 assertEquals(0, result.failed)
                 assertEquals(1, result.updated)
             }
-            database.updateMoteStatus(UUID.fromString(createdDialogmoteUUID), DialogmoteStatus.NYTT_TID_STED)
+            database.updateMoteStatus(UUID.fromString(createdDialogmoteUUID), Dialogmote.Status.NYTT_TID_STED)
 
             val urlMoteUUIDFerdigstill =
                 "$dialogmoteApiV2Basepath/$createdDialogmoteUUID$dialogmoteApiMoteFerdigstillPath"

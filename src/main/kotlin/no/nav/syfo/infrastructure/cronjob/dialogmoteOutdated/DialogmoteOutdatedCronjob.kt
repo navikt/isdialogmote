@@ -1,12 +1,12 @@
 package no.nav.syfo.infrastructure.cronjob.dialogmoteOutdated
 
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmote.DialogmoterelasjonService
 import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
 import no.nav.syfo.infrastructure.database.dialogmote.database.findOutdatedMoter
 import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmote
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.latest
 import no.nav.syfo.infrastructure.cronjob.COUNT_CRONJOB_OUTDATED_DIALOGMOTE_FAIL
 import no.nav.syfo.infrastructure.cronjob.COUNT_CRONJOB_OUTDATED_DIALOGMOTE_UPDATE
@@ -49,7 +49,7 @@ class DialogmoteOutdatedCronjob(
         // moter som skal lukkes adhoc (basert på hardkodet liste med uuid'er)
         uuids.forEach { uuid -> moteListe.addAll(database.getDialogmote(UUID.fromString(uuid))) }
         moteListe.retainAll { pDialogmote ->
-            pDialogmote.status == DialogmoteStatus.INNKALT.name || pDialogmote.status == DialogmoteStatus.NYTT_TID_STED.name
+            pDialogmote.status == Dialogmote.Status.INNKALT.name || pDialogmote.status == Dialogmote.Status.NYTT_TID_STED.name
         }
         val dialogmoteList = moteListe.map { dialogmoterelasjonService.extendDialogmoteRelations(it) }
         log.info("Cronjob for outdated moter found count: ${dialogmoteList.size}")
@@ -61,7 +61,7 @@ class DialogmoteOutdatedCronjob(
                     dialogmotestatusService.updateMoteStatus(
                         connection = connection,
                         dialogmote = mote,
-                        newDialogmoteStatus = DialogmoteStatus.LUKKET,
+                        newDialogmoteStatus = Dialogmote.Status.LUKKET,
                         opprettetAv = "system",
                     )
                     connection.commit()

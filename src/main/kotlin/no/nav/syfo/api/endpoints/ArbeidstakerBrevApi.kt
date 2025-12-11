@@ -9,8 +9,8 @@ import no.nav.syfo.api.callIdArgument
 import no.nav.syfo.api.getCallId
 import no.nav.syfo.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.domain.PdfContent
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.toArbeidstakerBrevDTOList
 import no.nav.syfo.infrastructure.database.dialogmote.DialogmoteService
@@ -48,7 +48,7 @@ fun Route.registerArbeidstakerBrevApi(
                     dialogmoteService.getDialogmoteList(
                         personIdent = personIdent,
                     ).filter { dialogmote ->
-                        dialogmote.status != DialogmoteStatus.LUKKET
+                        dialogmote.status != Dialogmote.Status.LUKKET
                     }.toArbeidstakerBrevDTOList()
                 }
                 call.respond(arbeidstakerBrevDTOList)

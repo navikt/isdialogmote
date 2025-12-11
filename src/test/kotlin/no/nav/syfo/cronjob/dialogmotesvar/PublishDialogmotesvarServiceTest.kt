@@ -4,7 +4,7 @@ import io.mockk.clearMocks
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.*
@@ -87,7 +87,7 @@ class PublishDialogmotesvarServiceTest {
             val identifiers = database.connection.createNewDialogmoteWithReferences(
                 newDialogmote = generateNewDialogmoteWithBehandler(
                     UserConstants.ARBEIDSTAKER_FNR,
-                    DialogmoteStatus.INNKALT,
+                    Dialogmote.Status.INNKALT,
                 )
             )
             val varselId = database.connection.createBehandlerVarsel(
@@ -119,7 +119,7 @@ class PublishDialogmotesvarServiceTest {
             val identifiers = database.connection.createNewDialogmoteWithReferences(
                 newDialogmote = generateNewDialogmoteWithBehandler(
                     UserConstants.ARBEIDSTAKER_FNR,
-                    DialogmoteStatus.AVLYST,
+                    Dialogmote.Status.AVLYST,
                 )
             )
             val varselId = database.connection.createBehandlerVarsel(
@@ -144,7 +144,7 @@ class PublishDialogmotesvarServiceTest {
             val identifiers = database.connection.createNewDialogmoteWithReferences(
                 newDialogmote = generateNewDialogmoteWithBehandler(
                     UserConstants.ARBEIDSTAKER_FNR,
-                    DialogmoteStatus.INNKALT,
+                    Dialogmote.Status.INNKALT,
                 )
             )
             database.connection.createArbeidsgiverVarsel(

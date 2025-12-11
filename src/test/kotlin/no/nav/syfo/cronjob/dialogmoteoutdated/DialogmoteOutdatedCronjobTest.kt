@@ -19,7 +19,7 @@ import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.ArbeidstakerVarselService
 import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.cache.ValkeyStore
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
@@ -143,7 +143,7 @@ class DialogmoteOutdatedCronjobTest {
             assertEquals(1, dialogmoteList.size)
 
             val dialogmoteDTO = dialogmoteList.first()
-            assertEquals(DialogmoteStatus.LUKKET.name, dialogmoteDTO.status)
+            assertEquals(Dialogmote.Status.LUKKET.name, dialogmoteDTO.status)
         }
     }
 
@@ -191,7 +191,7 @@ class DialogmoteOutdatedCronjobTest {
             assertEquals(1, dialogmoteList.size)
 
             val dialogmoteDTO = dialogmoteList.first()
-            assertEquals(DialogmoteStatus.LUKKET.name, dialogmoteDTO.status)
+            assertEquals(Dialogmote.Status.LUKKET.name, dialogmoteDTO.status)
         }
     }
 
@@ -225,7 +225,7 @@ class DialogmoteOutdatedCronjobTest {
             assertEquals(1, dialogmoteList.size)
 
             val dialogmoteDTO = dialogmoteList.first()
-            assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+            assertEquals(Dialogmote.Status.INNKALT.name, dialogmoteDTO.status)
         }
     }
 
@@ -270,7 +270,7 @@ class DialogmoteOutdatedCronjobTest {
             assertEquals(1, dialogmoteList.size)
 
             val dialogmoteDTO = dialogmoteList.first()
-            assertEquals(DialogmoteStatus.FERDIGSTILT.name, dialogmoteDTO.status)
+            assertEquals(Dialogmote.Status.FERDIGSTILT.name, dialogmoteDTO.status)
         }
     }
 
@@ -314,7 +314,7 @@ class DialogmoteOutdatedCronjobTest {
             assertEquals(1, dialogmoteList.size)
 
             val dialogmoteDTO = dialogmoteList.first()
-            assertEquals(DialogmoteStatus.AVLYST.name, dialogmoteDTO.status)
+            assertEquals(Dialogmote.Status.AVLYST.name, dialogmoteDTO.status)
         }
     }
 }

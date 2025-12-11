@@ -5,7 +5,7 @@ import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.LocalDateTime
 
 data class NewDialogmote(
-    val status: DialogmoteStatus,
+    val status: Dialogmote.Status,
     val opprettetAv: String,
     val tildeltVeilederIdent: String,
     val tildeltEnhet: String,

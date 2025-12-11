@@ -2,7 +2,7 @@ package no.nav.syfo.brev.behandler
 
 import io.mockk.*
 import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.database.Database
@@ -140,7 +140,7 @@ class BehandlerVarselServiceTest {
             opprettetTidspunkt = twoDaysAgo,
         )
         val pDialogmote = generatePDialogmote().copy(
-            status = DialogmoteStatus.FERDIGSTILT.name,
+            status = Dialogmote.Status.FERDIGSTILT.name,
             updatedAt = LocalDateTime.now()
         )
         every {
@@ -190,7 +190,7 @@ class BehandlerVarselServiceTest {
             opprettetTidspunkt = LocalDateTime.now(),
         )
         val pDialogmote = generatePDialogmote().copy(
-            status = DialogmoteStatus.FERDIGSTILT.name,
+            status = Dialogmote.Status.FERDIGSTILT.name,
             updatedAt = twoDaysAgo,
         )
         every {

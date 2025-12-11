@@ -1,7 +1,6 @@
 package no.nav.syfo.infrastructure.database.dialogmote.database.domain
 
 import no.nav.syfo.domain.dialogmote.Dialogmote
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
@@ -33,7 +32,7 @@ fun PDialogmote.toDialogmote(
         uuid = this.uuid,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt,
-        status = DialogmoteStatus.valueOf(this.status),
+        status = Dialogmote.Status.valueOf(this.status),
         opprettetAv = this.opprettetAv,
         tildeltVeilederIdent = this.tildeltVeilederIdent,
         tildeltEnhet = this.tildeltEnhet,

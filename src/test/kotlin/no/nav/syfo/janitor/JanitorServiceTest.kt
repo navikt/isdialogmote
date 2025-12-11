@@ -6,7 +6,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.api.authentication.configuredJacksonMapper
 import no.nav.syfo.api.dto.toNewDialogmote
 import no.nav.syfo.application.JanitorService
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.infrastructure.database.dialogmote.DialogmoterelasjonService
 import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
@@ -84,7 +84,7 @@ class JanitorServiceTest {
             val motestatusList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()
             assertTrue(motestatusList.isNotEmpty())
             val motestatus = motestatusList.last()
-            assertEquals(DialogmoteStatus.LUKKET, motestatus.status)
+            assertEquals(Dialogmote.Status.LUKKET, motestatus.status)
             assertEquals(UserConstants.VEILEDER_IDENT, motestatus.opprettetAv)
             assertEquals(mote.id, motestatus.moteId)
 
@@ -120,7 +120,7 @@ class JanitorServiceTest {
         fun `produces event status FAILED if mote finished`() {
             val mote = database.createDialogmote()
             val moteUuid = mote.uuid
-            database.updateMoteStatus(moteUUID = moteUuid, newMoteStatus = DialogmoteStatus.FERDIGSTILT)
+            database.updateMoteStatus(moteUUID = moteUuid, newMoteStatus = Dialogmote.Status.FERDIGSTILT)
 
             val event = generateJanitorEventDTO(
                 action = JanitorAction.LUKK_DIALOGMOTE.name,

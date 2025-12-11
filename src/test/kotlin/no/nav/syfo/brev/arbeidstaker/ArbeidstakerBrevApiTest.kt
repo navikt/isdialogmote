@@ -16,7 +16,7 @@ import no.nav.syfo.api.endpoints.*
 import no.nav.syfo.application.ArbeidstakerVarselService
 import no.nav.syfo.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.domain.ArbeidstakerResponsDTO
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
@@ -413,7 +413,7 @@ class ArbeidstakerBrevApiTest {
                         assertEquals(HttpStatusCode.OK, status)
                         val dialogmoteList = body<List<DialogmoteDTO>>()
                         val dto = dialogmoteList.first()
-                        assertEquals(DialogmoteStatus.INNKALT.name, dto.status)
+                        assertEquals(Dialogmote.Status.INNKALT.name, dto.status)
                         createdDialogmoteUUID = dto.uuid
                         createdDialogmoteDeltakerArbeidstakerUUID = dto.arbeidstaker.uuid
                     }
@@ -438,7 +438,7 @@ class ArbeidstakerBrevApiTest {
                                 dialogmotestatusService.updateMoteStatus(
                                     connection = connection,
                                     dialogmote = mote,
-                                    newDialogmoteStatus = DialogmoteStatus.LUKKET,
+                                    newDialogmoteStatus = Dialogmote.Status.LUKKET,
                                     opprettetAv = "system",
                                 )
                                 connection.commit()

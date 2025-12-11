@@ -112,7 +112,7 @@ class AvlysDialogmoteApiV2Test {
                     assertEquals(1, dialogmoteList.size)
 
                     val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(DialogmoteStatus.AVLYST.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.AVLYST.name, dialogmoteDTO.status)
 
                     assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                     val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
@@ -218,7 +218,7 @@ class AvlysDialogmoteApiV2Test {
                     assertEquals(1, dialogmoteList.size)
 
                     val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.INNKALT.name, dialogmoteDTO.status)
 
                     createdDialogmoteUUID = dialogmoteDTO.uuid
                 }
@@ -249,7 +249,7 @@ class AvlysDialogmoteApiV2Test {
                 assertEquals(1, dialogmoteList.size)
 
                 val dialogmoteDTO = dialogmoteList.first()
-                assertEquals(DialogmoteStatus.AVLYST.name, dialogmoteDTO.status)
+                assertEquals(Dialogmote.Status.AVLYST.name, dialogmoteDTO.status)
 
                 val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
                 verify(exactly = 1) {
@@ -299,7 +299,7 @@ class AvlysDialogmoteApiV2Test {
                     assertEquals(1, dialogmoteList.size)
 
                     val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.INNKALT.name, dialogmoteDTO.status)
 
                     createdDialogmoteUUID = dialogmoteDTO.uuid
                 }
@@ -348,7 +348,7 @@ class AvlysDialogmoteApiV2Test {
                     assertEquals(1, dialogmoteList.size)
 
                     val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.INNKALT.name, dialogmoteDTO.status)
 
                     createdDialogmoteUUID = dialogmoteDTO.uuid
                 }
@@ -379,7 +379,7 @@ class AvlysDialogmoteApiV2Test {
                 assertEquals(1, dialogmoteList.size)
 
                 val dialogmoteDTO = dialogmoteList.first()
-                assertEquals(DialogmoteStatus.AVLYST.name, dialogmoteDTO.status)
+                assertEquals(Dialogmote.Status.AVLYST.name, dialogmoteDTO.status)
 
                 assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                 val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {

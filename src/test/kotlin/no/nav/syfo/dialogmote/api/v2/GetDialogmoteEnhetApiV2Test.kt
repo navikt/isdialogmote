@@ -13,7 +13,7 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiEnhetUrlPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
@@ -77,14 +77,14 @@ class GetDialogmoteEnhetApiV2Test {
                     )
                 }
                 val newDialogmoteFerdigstilt =
-                    generateNewDialogmote(ARBEIDSTAKER_FNR, status = DialogmoteStatus.FERDIGSTILT)
+                    generateNewDialogmote(ARBEIDSTAKER_FNR, status = Dialogmote.Status.FERDIGSTILT)
                 database.connection.use { connection ->
                     connection.createNewDialogmoteWithReferences(
                         newDialogmote = newDialogmoteFerdigstilt
                     )
                 }
                 val newDialogmoteAvlyst =
-                    generateNewDialogmote(ARBEIDSTAKER_FNR, status = DialogmoteStatus.AVLYST)
+                    generateNewDialogmote(ARBEIDSTAKER_FNR, status = Dialogmote.Status.AVLYST)
                 database.connection.use { connection ->
                     connection.createNewDialogmoteWithReferences(
                         newDialogmote = newDialogmoteAvlyst
@@ -109,7 +109,7 @@ class GetDialogmoteEnhetApiV2Test {
                     dialogmoteDTO_0.arbeidsgiver.virksomhetsnummer
                 )
                 assertEquals(newDialogmote.tidSted.sted, dialogmoteDTO_0.sted)
-                assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO_0.status)
+                assertEquals(Dialogmote.Status.INNKALT.name, dialogmoteDTO_0.status)
 
                 val dialogmoteDTO_1 = dialogmoteList[1]
                 assertEquals(ENHET_NR.value, dialogmoteDTO_1.tildeltEnhet)
@@ -119,7 +119,7 @@ class GetDialogmoteEnhetApiV2Test {
                     dialogmoteDTO_1.arbeidsgiver.virksomhetsnummer
                 )
                 assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO_1.sted)
-                assertEquals(DialogmoteStatus.INNKALT.name, dialogmoteDTO_1.status)
+                assertEquals(Dialogmote.Status.INNKALT.name, dialogmoteDTO_1.status)
             }
         }
 
@@ -138,14 +138,14 @@ class GetDialogmoteEnhetApiV2Test {
                     )
                 }
                 val newDialogmoteFerdigstilt =
-                    generateNewDialogmote(ARBEIDSTAKER_FNR, status = DialogmoteStatus.FERDIGSTILT)
+                    generateNewDialogmote(ARBEIDSTAKER_FNR, status = Dialogmote.Status.FERDIGSTILT)
                 database.connection.use { connection ->
                     connection.createNewDialogmoteWithReferences(
                         newDialogmote = newDialogmoteFerdigstilt
                     )
                 }
                 val newDialogmoteAvlyst =
-                    generateNewDialogmote(ARBEIDSTAKER_FNR, status = DialogmoteStatus.AVLYST)
+                    generateNewDialogmote(ARBEIDSTAKER_FNR, status = Dialogmote.Status.AVLYST)
                 database.connection.use { connection ->
                     connection.createNewDialogmoteWithReferences(
                         newDialogmote = newDialogmoteAvlyst
@@ -159,9 +159,9 @@ class GetDialogmoteEnhetApiV2Test {
                 assertEquals(HttpStatusCode.OK, response.status)
                 val dialogmoteList = response.body<List<DialogmoteDTO>>()
                 assertEquals(4, dialogmoteList.size)
-                assertTrue(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.status == DialogmoteStatus.INNKALT.name })
-                assertTrue(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.status == DialogmoteStatus.AVLYST.name })
-                assertTrue(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.status == DialogmoteStatus.FERDIGSTILT.name })
+                assertTrue(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.status == Dialogmote.Status.INNKALT.name })
+                assertTrue(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.status == Dialogmote.Status.AVLYST.name })
+                assertTrue(dialogmoteList.any { dialogmoteDTO -> dialogmoteDTO.status == Dialogmote.Status.FERDIGSTILT.name })
             }
         }
     }

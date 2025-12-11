@@ -2,7 +2,6 @@ package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
@@ -51,7 +50,7 @@ fun generateMotedeltakerBehandler() = NewDialogmotedeltakerBehandler(
 
 fun generateNewDialogmote(
     personIdent: PersonIdent,
-    status: DialogmoteStatus = DialogmoteStatus.INNKALT,
+    status: Dialogmote.Status = Dialogmote.Status.INNKALT,
 ): NewDialogmote = NewDialogmote(
     status = status,
     opprettetAv = UserConstants.VEILEDER_IDENT,
@@ -64,7 +63,7 @@ fun generateNewDialogmote(
 
 fun generateNewDialogmoteWithBehandler(
     personIdent: PersonIdent,
-    status: DialogmoteStatus = DialogmoteStatus.INNKALT,
+    status: Dialogmote.Status = Dialogmote.Status.INNKALT,
 ): NewDialogmote = NewDialogmote(
     status = status,
     opprettetAv = UserConstants.VEILEDER_IDENT,
@@ -75,6 +74,7 @@ fun generateNewDialogmoteWithBehandler(
     tidSted = generateNewDialogmoteTidSted(),
     behandler = generateMotedeltakerBehandler()
 )
+
 fun generateDialogmotedeltakerArbeidsgiver() = DialogmotedeltakerArbeidsgiver(
     id = 1,
     uuid = UUID.randomUUID(),
@@ -163,7 +163,7 @@ fun generateDialogmote() = Dialogmote(
     uuid = UUID.randomUUID(),
     createdAt = LocalDateTime.now().minusMonths(6L),
     updatedAt = LocalDateTime.now().minusMonths(6L),
-    status = DialogmoteStatus.FERDIGSTILT,
+    status = Dialogmote.Status.FERDIGSTILT,
     opprettetAv = "Z123456",
     tildeltVeilederIdent = "Z123456",
     tildeltEnhet = "3040",

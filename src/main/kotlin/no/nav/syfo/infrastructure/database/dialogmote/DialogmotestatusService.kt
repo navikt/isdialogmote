@@ -6,7 +6,6 @@ import no.nav.syfo.api.dto.DialogmoteStatusEndringDTO
 import no.nav.syfo.infrastructure.database.dialogmote.database.updateMoteStatus
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.domain.dialogmote.NewDialogmote
 import java.sql.Connection
 
@@ -18,7 +17,7 @@ class DialogmotestatusService(
     suspend fun updateMoteStatus(
         connection: Connection,
         dialogmote: Dialogmote,
-        newDialogmoteStatus: DialogmoteStatus,
+        newDialogmoteStatus: Dialogmote.Status,
         opprettetAv: String,
         callId: String? = null,
         token: String? = null,
@@ -42,7 +41,7 @@ class DialogmotestatusService(
         connection: Connection,
         newDialogmote: NewDialogmote,
         dialogmoteId: Int,
-        dialogmoteStatus: DialogmoteStatus,
+        dialogmoteStatus: Dialogmote.Status,
         opprettetAv: String,
         callId: String? = null,
         token: String? = null,
@@ -60,7 +59,7 @@ class DialogmotestatusService(
     suspend fun createMoteStatusEndring(
         connection: Connection,
         dialogmote: Dialogmote,
-        dialogmoteStatus: DialogmoteStatus,
+        dialogmoteStatus: Dialogmote.Status,
         opprettetAv: String,
         callId: String? = null,
         token: String? = null,
@@ -83,7 +82,7 @@ class DialogmotestatusService(
         dialogmoteId: Int,
         arbeidstakerPersonIdent: PersonIdent,
         isBehandlerMotedeltaker: Boolean,
-        dialogmoteStatus: DialogmoteStatus,
+        dialogmoteStatus: Dialogmote.Status,
         opprettetAv: String,
         callId: String? = null,
         token: String? = null,

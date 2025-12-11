@@ -13,7 +13,6 @@ import no.nav.syfo.api.dto.DialogmoteStatusEndringDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -24,6 +23,7 @@ import no.nav.syfo.testhelper.generateJWTNavIdent
 import no.nav.syfo.testhelper.generator.generateNewDialogmote
 import no.nav.syfo.testhelper.setupApiAndClient
 import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -39,7 +39,7 @@ class GetDialogmoteStatusEndringApiV2Test {
     private val newDialogmote = generateNewDialogmote(ARBEIDSTAKER_FNR)
     private val newDialogmoteFerdigstilt = generateNewDialogmote(
         personIdent = ARBEIDSTAKER_FNR,
-        status = DialogmoteStatus.FERDIGSTILT,
+        status = Dialogmote.Status.FERDIGSTILT,
     )
 
     private val validToken = generateJWTNavIdent(
@@ -123,7 +123,7 @@ class GetDialogmoteStatusEndringApiV2Test {
             assertEquals(1, statusendringer.size)
 
             assertEquals(VEILEDER_IDENT, statusendringer[0].statusEndringOpprettetAv)
-            assertEquals(DialogmoteStatus.INNKALT, statusendringer[0].status)
+            assertEquals(Dialogmote.Status.INNKALT, statusendringer[0].status)
             assertEquals(VEILEDER_IDENT, statusendringer[0].dialogmoteOpprettetAv)
         }
     }
@@ -144,7 +144,7 @@ class GetDialogmoteStatusEndringApiV2Test {
                     connection = connection,
                     newDialogmote = newDialogmote,
                     dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
-                    dialogmoteStatus = DialogmoteStatus.NYTT_TID_STED,
+                    dialogmoteStatus = Dialogmote.Status.NYTT_TID_STED,
                     opprettetAv = VEILEDER_IDENT_2,
                 )
                 connection.commit()
@@ -164,11 +164,11 @@ class GetDialogmoteStatusEndringApiV2Test {
             assertEquals(2, statusendringer.size)
 
             assertEquals(VEILEDER_IDENT_2, statusendringer[0].statusEndringOpprettetAv)
-            assertEquals(DialogmoteStatus.NYTT_TID_STED, statusendringer[0].status)
+            assertEquals(Dialogmote.Status.NYTT_TID_STED, statusendringer[0].status)
             assertEquals(VEILEDER_IDENT, statusendringer[0].dialogmoteOpprettetAv)
 
             assertEquals(VEILEDER_IDENT, statusendringer[1].statusEndringOpprettetAv)
-            assertEquals(DialogmoteStatus.INNKALT, statusendringer[1].status)
+            assertEquals(Dialogmote.Status.INNKALT, statusendringer[1].status)
             assertEquals(VEILEDER_IDENT, statusendringer[1].dialogmoteOpprettetAv)
         }
     }
@@ -197,7 +197,7 @@ class GetDialogmoteStatusEndringApiV2Test {
                     connection = connection,
                     newDialogmote = newDialogmote,
                     dialogmoteId = moteId1.dialogmoteIdPair.first,
-                    dialogmoteStatus = DialogmoteStatus.AVLYST,
+                    dialogmoteStatus = Dialogmote.Status.AVLYST,
                     opprettetAv = VEILEDER_IDENT_2,
                 )
 
@@ -218,16 +218,16 @@ class GetDialogmoteStatusEndringApiV2Test {
             assertEquals(3, statusendringer.size)
 
             assertEquals(VEILEDER_IDENT_2, statusendringer[0].statusEndringOpprettetAv)
-            assertEquals(DialogmoteStatus.AVLYST, statusendringer[0].status)
+            assertEquals(Dialogmote.Status.AVLYST, statusendringer[0].status)
             assertEquals(VEILEDER_IDENT, statusendringer[0].dialogmoteOpprettetAv)
             assertEquals(statusendringer[2].dialogmoteId, statusendringer[0].dialogmoteId)
 
             assertEquals(VEILEDER_IDENT, statusendringer[1].statusEndringOpprettetAv)
-            assertEquals(DialogmoteStatus.FERDIGSTILT, statusendringer[1].status)
+            assertEquals(Dialogmote.Status.FERDIGSTILT, statusendringer[1].status)
             assertEquals(VEILEDER_IDENT, statusendringer[1].dialogmoteOpprettetAv)
 
             assertEquals(VEILEDER_IDENT, statusendringer[2].statusEndringOpprettetAv)
-            assertEquals(DialogmoteStatus.INNKALT, statusendringer[2].status)
+            assertEquals(Dialogmote.Status.INNKALT, statusendringer[2].status)
             assertEquals(VEILEDER_IDENT, statusendringer[2].dialogmoteOpprettetAv)
         }
     }

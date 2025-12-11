@@ -1,6 +1,6 @@
 package no.nav.syfo.api.dto
 
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import java.time.LocalDateTime
 
 data class DialogmoteStatusEndringDTO(
@@ -8,6 +8,6 @@ data class DialogmoteStatusEndringDTO(
     val createdAt: LocalDateTime,
     val dialogmoteId: Int,
     val dialogmoteOpprettetAv: String,
-    val status: DialogmoteStatus,
+    val status: Dialogmote.Status,
     val statusEndringOpprettetAv: String,
 )

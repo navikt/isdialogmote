@@ -4,9 +4,8 @@ import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmote.DialogmoterelasjonService
 import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
 import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmote
-import no.nav.syfo.domain.dialogmote.DialogmoteStatus
-import no.nav.syfo.domain.dialogmote.unfinished
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorAction
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventDTO
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventStatus
@@ -40,7 +39,7 @@ class JanitorService(
             "Fant ikke dialogmøte"
         )
         val dialogmote =
-            dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote).takeIf { it.status.unfinished() }
+            dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote).takeIf { it.isActive() }
                 ?: throw RuntimeException("Dialogmøte ikke aktivt")
         if (dialogmote.arbeidstaker.personIdent != personIdent) {
             throw RuntimeException("Dialogmote gjelder ikke person")
@@ -51,7 +50,7 @@ class JanitorService(
             dialogmotestatusService.updateMoteStatus(
                 connection = connection,
                 dialogmote = dialogmote,
-                newDialogmoteStatus = DialogmoteStatus.LUKKET,
+                newDialogmoteStatus = Dialogmote.Status.LUKKET,
                 opprettetAv = event.navident,
             )
             connection.commit()
