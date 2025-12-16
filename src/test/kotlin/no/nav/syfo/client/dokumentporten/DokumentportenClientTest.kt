@@ -1,4 +1,4 @@
-package no.nav.syfo.client.arkivporten
+package no.nav.syfo.client.dokumentporten
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.mockk
@@ -6,20 +6,20 @@ import java.util.*
 import kotlin.test.assertContains
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
-import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenClient
-import no.nav.syfo.infrastructure.client.arkivporten.ArkivportenDocumentRequestDTO
+import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenClient
+import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenDocumentRequestDTO
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class ArkivportenClientTest {
-    fun arkivportenDocument(orgNumber: String) = ArkivportenDocumentRequestDTO(
+class DokumentportenClientTest {
+    fun dokumentportenDocument(orgNumber: String) = DokumentportenDocumentRequestDTO(
         documentId = UUID.randomUUID(),
-        type = ArkivportenDocumentRequestDTO.DocumentType.DIALOGMOTE,
+        type = DokumentportenDocumentRequestDTO.DocumentType.DIALOGMOTE,
         content = byteArrayOf(23, 45, 67, 89),
-        contentType = ArkivportenDocumentRequestDTO.ContentType.PDF,
+        contentType = DokumentportenDocumentRequestDTO.ContentType.PDF,
         orgNumber = orgNumber,
         title = "Test dialogmøte",
         summary = "Dialogmøte opprettet den 01.01.2024",
@@ -29,18 +29,18 @@ class ArkivportenClientTest {
 
     val azureAdV2ClientMock = mockk<AzureAdV2Client>(relaxed = true)
     val externalMockEnvironment = ExternalMockEnvironment.getInstance()
-    val arkivportenClient = ArkivportenClient(
+    val dokumentportenClient = DokumentportenClient(
         azureAdV2Client = azureAdV2ClientMock,
-        baseUrl = externalMockEnvironment.environment.arkivportenUrl,
-        scopeClientId = externalMockEnvironment.environment.arkivportenClientId,
+        baseUrl = externalMockEnvironment.environment.dokumentportenUrl,
+        scopeClientId = externalMockEnvironment.environment.dokumentportenClientId,
         client = externalMockEnvironment.mockHttpClient,
     )
 
     @Test
     fun `sends document successfully`() {
         runTest {
-            arkivportenClient.sendDocument(
-                document = arkivportenDocument(UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value),
+            dokumentportenClient.sendDocument(
+                document = dokumentportenDocument(UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value),
                 token = "token",
                 callId = "callId"
             )
@@ -48,10 +48,10 @@ class ArkivportenClientTest {
     }
 
     @Test
-    fun `throws ArkivportenClientException when API returns error`() = runTest {
-        val exception = assertThrows<ArkivportenClient.ArkivportenClientException> {
-            arkivportenClient.sendDocument(
-                document = arkivportenDocument(UserConstants.VIRKSOMHETSNUMMER_ARKIVPORTEN_FAILS.value),
+    fun `throws DokumentportenClientException when API returns error`() = runTest {
+        val exception = assertThrows<DokumentportenClient.DokumentportenClientException> {
+            dokumentportenClient.sendDocument(
+                document = dokumentportenDocument(UserConstants.VIRKSOMHETSNUMMER_DOKUMENTPORTEN_FAILS.value),
                 token = "token",
                 callId = "callId"
             )
@@ -67,7 +67,7 @@ class ArkivportenClientTest {
         val json =
             jacksonObjectMapper()
                 .writeValueAsString(
-                    arkivportenDocument(UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value)
+                    dokumentportenDocument(UserConstants.VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value)
                 )
 
         assertTrue(json.contains("\"contentType\":\"application/pdf\""))

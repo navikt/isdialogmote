@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.client.arkivporten
+package no.nav.syfo.infrastructure.client.dokumentporten
 
 import com.fasterxml.jackson.annotation.JsonValue
 import java.util.UUID
@@ -6,7 +6,7 @@ import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 
-data class ArkivportenDocumentRequestDTO(
+data class DokumentportenDocumentRequestDTO(
     val documentId: UUID,
     val type: DocumentType,
     val content: ByteArray = byteArrayOf(),
@@ -22,7 +22,7 @@ data class ArkivportenDocumentRequestDTO(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ArkivportenDocumentRequestDTO
+        other as DokumentportenDocumentRequestDTO
 
         if (type != other.type) return false
         if (!content.contentEquals(other.content)) return false
@@ -65,8 +65,8 @@ data class ArkivportenDocumentRequestDTO(
             varseltype: MotedeltakerVarselType,
             arbeidstakerPersonIdent: PersonIdent,
             arbeidstakernavn: String,
-        ): ArkivportenDocumentRequestDTO {
-            return ArkivportenDocumentRequestDTO(
+        ): DokumentportenDocumentRequestDTO {
+            return DokumentportenDocumentRequestDTO(
                 documentId = reference,
                 type = DocumentType.DIALOGMOTE,
                 content = file,
