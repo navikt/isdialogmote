@@ -155,4 +155,4 @@ spec:
     - name: DOKUMENTPORTEN_CLIENT_ID
       value: prod-gcp.team-esyfo.syfo-dokumentporten
     - name: DOKUMENTPORTEN_SENDING_ENABLED
-      value: "false"
+      value: "true"
