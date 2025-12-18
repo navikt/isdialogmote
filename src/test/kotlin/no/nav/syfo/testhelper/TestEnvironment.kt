@@ -62,9 +62,9 @@ fun testEnvironment() = Environment(
     altinnUsername = "username",
     altinnPassword = "password",
     altinnSendingEnabled = true,
-    arkivportenUrl = "arkivportenUrl",
-    arkivportenClientId = "api://arkivporten/.default",
-    arkivportenSendingEnabled = true,
+    dokumentportenUrl = "dokumentportenUrl",
+    dokumentportenClientId = "api://dokumentporten/.default",
+    dokumentportenSendingEnabled = true,
     outdatedDialogmoteCutoff = LocalDate.parse("2022-07-01"),
     isJournalforingRetryEnabled = true,
 )

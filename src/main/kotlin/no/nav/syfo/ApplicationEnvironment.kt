@@ -64,9 +64,9 @@ data class Environment(
     val altinnUsername: String = getEnvVar("ALTINN_USERNAME"),
     val altinnPassword: String = getEnvVar("ALTINN_PASSWORD"),
     val altinnSendingEnabled: Boolean = getEnvVar("ALTINN_SENDING_ENABLED").toBoolean(),
-    val arkivportenUrl: String = getEnvVar("ARKIVPORTEN_URL"),
-    val arkivportenClientId: String = getEnvVar("ARKIVPORTEN_CLIENT_ID"),
-    val arkivportenSendingEnabled: Boolean = getEnvVar("ARKIVPORTEN_SENDING_ENABLED").toBoolean(),
+    val dokumentportenUrl: String = getEnvVar("DOKUMENTPORTEN_URL"),
+    val dokumentportenClientId: String = getEnvVar("DOKUMENTPORTEN_CLIENT_ID"),
+    val dokumentportenSendingEnabled: Boolean = getEnvVar("DOKUMENTPORTEN_SENDING_ENABLED").toBoolean(),
     val outdatedDialogmoteCutoff: LocalDate = LocalDate.parse(getEnvVar("OUTDATED_DIALOGMOTE_CUTOFF")),
     val isJournalforingRetryEnabled: Boolean = getEnvVar("JOURNALFORING_RETRY_ENABLED").toBoolean(),
 ) {

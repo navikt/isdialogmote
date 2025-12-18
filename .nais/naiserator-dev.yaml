@@ -85,7 +85,7 @@ spec:
         - application: syfobehandlendeenhet
         - application: istilgangskontroll
         - application: isdialogmelding
-        - application: arkivporten
+        - application: syfo-dokumentporten
           namespace: team-esyfo
   azure:
     application:
@@ -150,9 +150,9 @@ spec:
       value: "2024-05-01"
     - name: ALTINN_SENDING_ENABLED
       value: "false"
-    - name: ARKIVPORTEN_URL
-      value: http://arkivporten.team-esyfo
-    - name: ARKIVPORTEN_CLIENT_ID
-      value: dev-gcp.team-esyfo.arkivporten
-    - name: ARKIVPORTEN_SENDING_ENABLED
+    - name: DOKUMENTPORTEN_URL
+      value: http://syfo-dokumentporten.team-esyfo
+    - name: DOKUMENTPORTEN_CLIENT_ID
+      value: dev-gcp.team-esyfo.syfo-dokumentporten
+    - name: DOKUMENTPORTEN_SENDING_ENABLED
       value: "true"
