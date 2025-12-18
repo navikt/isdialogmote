@@ -1,11 +1,14 @@
 package no.nav.syfo.infrastructure.cronjob.journalforing
 
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
+import no.nav.syfo.application.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.application.IPdfRepository
+import no.nav.syfo.application.ReferatJournalpostService
 import no.nav.syfo.domain.dialogmote.toJournalforingRequestArbeidsgiver
 import no.nav.syfo.domain.dialogmote.toJournalforingRequestArbeidstaker
 import no.nav.syfo.domain.dialogmote.toJournalforingRequestBehandler
 import no.nav.syfo.domain.dialogmote.toJournalpostRequest
+import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.infrastructure.client.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.JournalpostRequest
 import no.nav.syfo.infrastructure.client.ereg.EregClient
@@ -14,21 +17,18 @@ import no.nav.syfo.infrastructure.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_FAI
 import no.nav.syfo.infrastructure.cronjob.COUNT_CRONJOB_JOURNALFORING_VARSEL_UPDATE
 import no.nav.syfo.infrastructure.cronjob.DialogmoteCronjob
 import no.nav.syfo.infrastructure.cronjob.DialogmoteCronjobResult
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerVarselJournalpostService
-import no.nav.syfo.infrastructure.database.dialogmote.PdfService
-import no.nav.syfo.infrastructure.database.dialogmote.ReferatJournalpostService
 import org.slf4j.LoggerFactory
-import java.util.UUID
+import java.util.*
 
 class DialogmoteVarselJournalforingCronjob(
     private val dialogmotedeltakerVarselJournalpostService: DialogmotedeltakerVarselJournalpostService,
     private val referatJournalpostService: ReferatJournalpostService,
-    private val pdfService: PdfService,
     private val dokarkivClient: DokarkivClient,
     private val pdlClient: PdlClient,
     private val eregClient: EregClient,
     private val dialogmeldingClient: DialogmeldingClient,
     private val isJournalforingRetryEnabled: Boolean,
+    private val pdfRepository: IPdfRepository,
 ) : DialogmoteCronjob {
 
     override val initialDelayMinutes: Long = 2
@@ -62,7 +62,7 @@ class DialogmoteVarselJournalforingCronjob(
         arbeidstakerVarselForJournalforingList.forEach { (personIdent, arbeidstakerVarsel) ->
             try {
                 val navn = pdlClient.navn(personIdent)
-                val pdf = pdfService.getPdf(arbeidstakerVarsel.pdfId)
+                val pdf = pdfRepository.getPdf(arbeidstakerVarsel.pdfId).pdf
                 val journalpostRequest = arbeidstakerVarsel.toJournalpostRequest(
                     personIdent = personIdent,
                     navn = navn,
@@ -89,7 +89,7 @@ class DialogmoteVarselJournalforingCronjob(
         arbeidsgiverVarselForJournalforingList.forEach { (virksomhetsnummer, personIdent, arbeidsgiverVarsel) ->
             try {
                 val virksomhetsnavn = eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer)
-                val pdf = pdfService.getPdf(arbeidsgiverVarsel.pdfId)
+                val pdf = pdfRepository.getPdf(arbeidsgiverVarsel.pdfId).pdf
                 val journalpostRequest = arbeidsgiverVarsel.toJournalpostRequest(
                     brukerPersonIdent = personIdent,
                     virksomhetsnummer = virksomhetsnummer,
@@ -116,7 +116,7 @@ class DialogmoteVarselJournalforingCronjob(
             dialogmotedeltakerVarselJournalpostService.getDialogmotedeltakerBehandlerVarselForJournalforingList()
         behandlerVarselForJournalforingList.forEach { (personIdent, behandler, behandlerVarsel) ->
             try {
-                val pdf = pdfService.getPdf(behandlerVarsel.pdfId)
+                val pdf = pdfRepository.getPdf(behandlerVarsel.pdfId).pdf
                 val behandlerDTO = dialogmeldingClient.getBehandler(UUID.fromString(behandler.behandlerRef))
                 val journalpostRequest = behandlerVarsel.toJournalpostRequest(
                     brukerPersonIdent = personIdent,
@@ -145,7 +145,7 @@ class DialogmoteVarselJournalforingCronjob(
         referatList.forEach { (personIdent, referat) ->
             try {
                 val navn = pdlClient.navn(personIdent)
-                val pdf = pdfService.getPdf(referat.pdfId!!)
+                val pdf = pdfRepository.getPdf(referat.pdfId!!).pdf
                 val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
                 val journalpostRequest = referat.toJournalforingRequestArbeidstaker(
                     personIdent = personIdent,
@@ -174,7 +174,7 @@ class DialogmoteVarselJournalforingCronjob(
         referatList.forEach { (virksomhetsnummer, personIdent, referat) ->
             try {
                 val virksomhetsnavn = eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer)
-                val pdf = pdfService.getPdf(referat.pdfId!!)
+                val pdf = pdfRepository.getPdf(referat.pdfId!!).pdf
                 val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
                 val journalpostRequest = referat.toJournalforingRequestArbeidsgiver(
                     brukerPersonIdent = personIdent,
@@ -203,7 +203,7 @@ class DialogmoteVarselJournalforingCronjob(
         val referatList = referatJournalpostService.getDialogmoteReferatJournalforingListBehandler()
         referatList.forEach { (personIdent, behandler, referat) ->
             try {
-                val pdf = pdfService.getPdf(referat.pdfId!!)
+                val pdf = pdfRepository.getPdf(referat.pdfId!!).pdf
                 val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
                 val behandlerDTO = dialogmeldingClient.getBehandler(UUID.fromString(behandler.behandlerRef))
                 val journalpostRequest = referat.toJournalforingRequestBehandler(

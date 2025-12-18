@@ -13,9 +13,9 @@ import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.toArbeidstakerBrevDTOList
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmoteService
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.infrastructure.database.dialogmote.PdfService
+import no.nav.syfo.application.DialogmoteService
+import no.nav.syfo.application.DialogmotedeltakerService
+import no.nav.syfo.application.IPdfRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -31,8 +31,8 @@ const val arbeidstakerBrevApiPdfPath = "/pdf"
 fun Route.registerArbeidstakerBrevApi(
     dialogmoteService: DialogmoteService,
     dialogmotedeltakerService: DialogmotedeltakerService,
-    pdfService: PdfService,
     pdlClient: PdlClient,
+    pdfRepository: IPdfRepository,
 ) {
     route(arbeidstakerBrevApiPath) {
         get {
@@ -79,7 +79,7 @@ fun Route.registerArbeidstakerBrevApi(
 
                 val hasAccessToBrev = allPersonIdents.contains(motedeltakerArbeidstaker.personIdent)
                 if (hasAccessToBrev && brev.pdfId != null) {
-                    val pdf = pdfService.getPdf(brev.pdfId!!)
+                    val pdf = pdfRepository.getPdf(brev.pdfId!!).pdf
                     call.respond(PdfContent(pdf))
                 } else {
                     val accessDeniedMessage = "Denied access to pdf for brev with uuid $brevUuid"

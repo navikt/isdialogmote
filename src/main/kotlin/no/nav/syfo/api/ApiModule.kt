@@ -7,21 +7,11 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.Environment
 import no.nav.syfo.api.authentication.*
-import no.nav.syfo.api.endpoints.registerArbeidstakerBrevApi
-import no.nav.syfo.api.endpoints.registerDialogmoteActionsApiV2
-import no.nav.syfo.api.endpoints.registerDialogmoteApiV2
-import no.nav.syfo.api.endpoints.registerDialogmoteEnhetApiV2
-import no.nav.syfo.api.endpoints.registerNarmestelederBrevApi
-import no.nav.syfo.api.endpoints.registerPodApi
-import no.nav.syfo.api.endpoints.registerPrometheusApi
-import no.nav.syfo.application.ArbeidstakerVarselService
-import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.application.NarmesteLederAccessService
-import no.nav.syfo.application.NarmesteLederVarselService
+import no.nav.syfo.api.endpoints.*
+import no.nav.syfo.application.*
 import no.nav.syfo.infrastructure.client.altinn.AltinnClient
-import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenClient
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
@@ -29,9 +19,8 @@ import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmote.*
 import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteRepository
-import no.nav.syfo.infrastructure.database.dialogmote.tilgang.DialogmoteTilgangService
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -54,6 +43,7 @@ fun Application.apiModule(
     kontaktinformasjonClient: KontaktinformasjonClient,
     narmesteLederClient: NarmesteLederClient,
     dokumentportenClient: DokumentportenClient,
+    pdfRepository: IPdfRepository,
 ) {
     installMetrics()
     installCallId()
@@ -80,10 +70,6 @@ fun Application.apiModule(
 
     val narmesteLederVarselService = NarmesteLederVarselService(
         esyfovarselProducer = esyfovarselProducer,
-    )
-
-    val pdfService = PdfService(
-        database = database,
     )
 
     val altinnClient = AltinnClient(
@@ -115,6 +101,7 @@ fun Application.apiModule(
         kontaktinformasjonClient = kontaktinformasjonClient,
         varselService = varselService,
         pdlClient = pdlClient,
+        pdfRepository = pdfRepository,
     )
 
     val narmesteLederTilgangService = NarmesteLederAccessService(
@@ -146,14 +133,14 @@ fun Application.apiModule(
             registerArbeidstakerBrevApi(
                 dialogmoteService = dialogmoteService,
                 dialogmotedeltakerService = dialogmotedeltakerService,
-                pdfService = pdfService,
                 pdlClient = pdlClient,
+                pdfRepository = pdfRepository
             )
             registerNarmestelederBrevApi(
                 dialogmoteService = dialogmoteService,
                 dialogmotedeltakerService = dialogmotedeltakerService,
                 narmesteLederAccessService = narmesteLederTilgangService,
-                pdfService = pdfService,
+                pdfRepository = pdfRepository,
             )
         }
     }

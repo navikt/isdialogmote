@@ -4,18 +4,14 @@ import io.ktor.server.application.*
 import io.mockk.mockk
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.apiModule
-import no.nav.syfo.application.ArbeidstakerVarselService
-import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.application.*
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmoterelasjonService
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
 import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
@@ -97,5 +93,6 @@ fun Application.testApiModule(
         kontaktinformasjonClient = kontaktinformasjonClient,
         narmesteLederClient = narmesteLederClient,
         dokumentportenClient = dokumentportenClient,
+        pdfRepository = externalMockEnvironment.pdfRepository,
     )
 }

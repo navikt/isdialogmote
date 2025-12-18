@@ -1,8 +1,6 @@
 package no.nav.syfo.application
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmoterelasjonService
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
 import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmote
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote

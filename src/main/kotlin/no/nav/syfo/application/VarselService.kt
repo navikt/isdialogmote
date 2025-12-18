@@ -1,8 +1,5 @@
-package no.nav.syfo.infrastructure.database.dialogmote
+package no.nav.syfo.application
 
-import no.nav.syfo.application.ArbeidstakerVarselService
-import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.application.NarmesteLederVarselService
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType

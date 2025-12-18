@@ -8,7 +8,7 @@ import io.mockk.clearAllMocks
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
+import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.api.dto.DialogmoteStatusEndringDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences

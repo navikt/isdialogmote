@@ -2,7 +2,7 @@ package no.nav.syfo.api
 
 import io.ktor.server.routing.*
 import no.nav.syfo.api.authentication.ForbiddenAccessVeilederException
-import no.nav.syfo.infrastructure.database.dialogmote.tilgang.DialogmoteTilgangService
+import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.domain.PersonIdent
 
 suspend fun RoutingContext.validateVeilederAccess(

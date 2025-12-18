@@ -21,14 +21,14 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.kafkaEsyfovarselConfig
 import no.nav.syfo.infrastructure.cronjob.cronjobModule
 import no.nav.syfo.application.DialogmeldingService
-import no.nav.syfo.infrastructure.kafka.dialogmelding.DialogmeldingConsumerService
+import no.nav.syfo.infrastructure.kafka.dialogmelding.DialogmeldingConsumer
 import no.nav.syfo.infrastructure.kafka.dialogmelding.kafkaDialogmeldingConsumerConfig
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmoterelasjonService
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
+import no.nav.syfo.application.DialogmotedeltakerService
+import no.nav.syfo.application.DialogmoterelasjonService
+import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.application.IdenthendelseService
-import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumerService
+import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumer
 import no.nav.syfo.infrastructure.kafka.identhendelse.kafkaIdenthendelseConsumerConfig
 import no.nav.syfo.application.JanitorService
 import no.nav.syfo.infrastructure.client.altinn.createPort
@@ -42,6 +42,7 @@ import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.database.dialogmote.database.repository.PdfRepository
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventConsumer
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventStatusProducer
 import no.nav.syfo.infrastructure.kafka.janitor.kafkaJanitorEventConsumerConfig
@@ -182,6 +183,7 @@ fun main() {
                 database = applicationDatabase,
                 dialogmotedeltakerService = dialogmotedeltakerService
             )
+            val pdfRepository = PdfRepository(database = applicationDatabase)
             val moteStatusEndretRepository = MoteStatusEndretRepository(
                 database = applicationDatabase,
             )
@@ -211,6 +213,7 @@ fun main() {
                 pdfGenClient = pdfGenClient,
                 narmesteLederClient = narmesteLederClient,
                 dokumentportenClient = dokumentportenClient,
+                pdfRepository = pdfRepository,
             )
             cronjobModule(
                 applicationState = applicationState,
@@ -221,6 +224,7 @@ fun main() {
                 dialogmoterelasjonService = dialogmoterelasjonService,
                 arbeidstakerVarselService = arbeidstakerVarselService,
                 moteStatusEndretRepository = moteStatusEndretRepository,
+                pdfRepository = pdfRepository,
             )
             monitor.subscribe(ApplicationStarted) {
                 applicationState.ready = true
@@ -232,26 +236,26 @@ fun main() {
                 val dialogmeldingService = DialogmeldingService(
                     behandlerVarselService = behandlerVarselService,
                 )
-                val dialogmeldingConsumerService = DialogmeldingConsumerService(
+                val dialogmeldingConsumer = DialogmeldingConsumer(
                     kafkaConsumer = KafkaConsumer(kafkaDialogmeldingConsumerConfig(environment.kafka)),
                     applicationState = applicationState,
                     dialogmeldingService = dialogmeldingService
                 )
                 launchBackgroundTask(applicationState = applicationState) {
                     logger.info("Starting dialogmelding kafka consumer")
-                    dialogmeldingConsumerService.startConsumer()
+                    dialogmeldingConsumer.startConsumer()
                 }
                 val identhendelseService = IdenthendelseService(
                     database = applicationDatabase,
                     pdlClient = pdlClient,
                 )
-                val identhendelseConsumerService = IdenthendelseConsumerService(
+                val identhendelseConsumer = IdenthendelseConsumer(
                     kafkaConsumer = KafkaConsumer(kafkaIdenthendelseConsumerConfig(environment.kafka)),
                     applicationState = applicationState,
                     identhendelseService = identhendelseService,
                 )
                 launchBackgroundTask(applicationState = applicationState) {
-                    identhendelseConsumerService.startConsumer()
+                    identhendelseConsumer.startConsumer()
                 }
 
                 val janitorService = JanitorService(

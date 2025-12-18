@@ -7,9 +7,9 @@ import no.nav.syfo.api.authentication.configuredJacksonMapper
 import no.nav.syfo.api.dto.toNewDialogmote
 import no.nav.syfo.application.JanitorService
 import no.nav.syfo.domain.dialogmote.Dialogmote
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmoterelasjonService
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
+import no.nav.syfo.application.DialogmotedeltakerService
+import no.nav.syfo.application.DialogmoterelasjonService
+import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
 import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmoteList

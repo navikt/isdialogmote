@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.database.dialogmote
+package no.nav.syfo.application
 
 import java.time.LocalDateTime
 import no.nav.syfo.infrastructure.database.DatabaseInterface
@@ -25,7 +25,7 @@ import no.nav.syfo.infrastructure.database.dialogmote.database.updateReferatJour
 import no.nav.syfo.infrastructure.database.dialogmote.database.updateReferatJournalpostIdBehandler
 
 class ReferatJournalpostService(
-    private val database: DatabaseInterface
+    private val database: DatabaseInterface,
 ) {
     fun getDialogmoteReferatJournalforingListArbeidstaker(): List<Pair<PersonIdent, Referat>> {
         return database.getFerdigstilteReferatWithoutJournalpostArbeidstakerList().map { (personIdent, pReferat) ->
