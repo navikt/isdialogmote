@@ -13,6 +13,8 @@ import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
+import no.nav.syfo.application.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.application.ReferatJournalpostService
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.Referat
 import no.nav.syfo.domain.dialogmote.toJournalpostTittel
@@ -25,16 +27,13 @@ import no.nav.syfo.infrastructure.client.ereg.EregClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.cronjob.DialogmoteCronjobResult
 import no.nav.syfo.infrastructure.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerVarselJournalpostService
-import no.nav.syfo.infrastructure.database.dialogmote.PdfService
-import no.nav.syfo.infrastructure.database.dialogmote.ReferatJournalpostService
 import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
@@ -84,9 +83,6 @@ class DialogmoteVarselJournalforingCronjobTest {
         url = externalMockEnvironment.environment.dialogmeldingUrl,
         client = externalMockEnvironment.mockHttpClient,
     )
-    private val pdfService = PdfService(
-        database = database,
-    )
 
     private val validToken = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
@@ -116,12 +112,12 @@ class DialogmoteVarselJournalforingCronjobTest {
         dialogmoteVarselJournalforingCronjob = DialogmoteVarselJournalforingCronjob(
             dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
             referatJournalpostService = referatJournalpostService,
-            pdfService = pdfService,
             dokarkivClient = dokarkivClient,
             pdlClient = pdlClient,
             eregClient = eregClient,
             dialogmeldingClient = dialogmeldingClient,
             isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
+            pdfRepository = externalMockEnvironment.pdfRepository,
         )
     }
 
@@ -221,12 +217,12 @@ class DialogmoteVarselJournalforingCronjobTest {
         dialogmoteVarselJournalforingCronjob = DialogmoteVarselJournalforingCronjob(
             dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
             referatJournalpostService = referatJournalpostService,
-            pdfService = pdfService,
             dokarkivClient = dokarkivClient,
             pdlClient = pdlClient,
             eregClient = eregClient,
             dialogmeldingClient = dialogmeldingClient,
             isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
+            pdfRepository = externalMockEnvironment.pdfRepository,
         )
 
         testApplication {

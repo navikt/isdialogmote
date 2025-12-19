@@ -4,18 +4,14 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.api.*
 import no.nav.syfo.api.authentication.personIdent
-import no.nav.syfo.api.callIdArgument
-import no.nav.syfo.api.getBearerHeader
-import no.nav.syfo.api.getCallId
-import no.nav.syfo.api.getPersonIdentHeader
+import no.nav.syfo.application.DialogmoteService
+import no.nav.syfo.application.DialogmotedeltakerService
+import no.nav.syfo.application.IPdfRepository
 import no.nav.syfo.application.NarmesteLederAccessService
-import no.nav.syfo.domain.PdfContent
 import no.nav.syfo.domain.NarmesteLederResponsDTO
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmoteService
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
-import no.nav.syfo.infrastructure.database.dialogmote.PdfService
+import no.nav.syfo.domain.PdfContent
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
@@ -36,7 +32,7 @@ fun Route.registerNarmestelederBrevApi(
     dialogmoteService: DialogmoteService,
     dialogmotedeltakerService: DialogmotedeltakerService,
     narmesteLederAccessService: NarmesteLederAccessService,
-    pdfService: PdfService,
+    pdfRepository: IPdfRepository,
 ) {
     route(narmesteLederBrevApiBasePath) {
         get {
@@ -106,7 +102,7 @@ fun Route.registerNarmestelederBrevApi(
                 )
 
                 if (hasAccessToBrev && brev.pdfId != null && !isBrevExpired) {
-                    val pdf = pdfService.getPdf(brev.pdfId!!)
+                    val pdf = pdfRepository.getPdf(brev.pdfId!!).pdf
                     call.respond(PdfContent(pdf))
                 } else {
                     val accessDeniedMessage = "Denied access to pdf for brev with uuid $brevUuid"

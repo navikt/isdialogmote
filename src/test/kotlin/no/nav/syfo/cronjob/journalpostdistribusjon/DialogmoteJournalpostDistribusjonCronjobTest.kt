@@ -16,8 +16,8 @@ import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.ArbeidstakerVarselService
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.cronjob.journalpostdistribusjon.DialogmoteJournalpostDistribusjonCronjob
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerVarselJournalpostService
-import no.nav.syfo.infrastructure.database.dialogmote.ReferatJournalpostService
+import no.nav.syfo.application.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.application.ReferatJournalpostService
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.testhelper.*

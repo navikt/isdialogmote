@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.database.dialogmote
+package no.nav.syfo.application
 
 import no.nav.syfo.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.api.dto.*
@@ -34,6 +34,7 @@ class DialogmoteService(
     private val kontaktinformasjonClient: KontaktinformasjonClient,
     private val varselService: VarselService,
     private val pdlClient: PdlClient,
+    private val pdfRepository: IPdfRepository,
 ) {
     fun getDialogmote(
         moteUUID: UUID,
@@ -390,11 +391,13 @@ class DialogmoteService(
         token: String,
         callId: String,
     ) {
-        val (pdfArbeidstakerId, _) = connection.createPdf(
+        val (pdfArbeidstakerId, _) = pdfRepository.createPdf(
+            connection = connection,
             commit = false,
             pdf = pdfArbeidstaker,
         )
-        val (pdfArbeidsgiverId, _) = connection.createPdf(
+        val (pdfArbeidsgiverId, _) = pdfRepository.createPdf(
+            connection = connection,
             commit = false,
             pdf = pdfArbeidsgiver,
         )
@@ -419,7 +422,8 @@ class DialogmoteService(
             document = documentArbeidsgiver,
         )
         val behandlerVarselIdPair = behandlerId?.let {
-            val (pdfBehandlerId, _) = connection.createPdf(
+            val (pdfBehandlerId, _) = pdfRepository.createPdf(
+                connection = connection,
                 commit = false,
                 pdf = pdfBehandler!!,
             )
@@ -574,7 +578,8 @@ class DialogmoteService(
                 opprettetAv = opprettetAv,
                 token = token,
             )
-            val (pdfId, _) = connection.createPdf(
+            val (pdfId, _) = pdfRepository.createPdf(
+                connection = connection,
                 commit = false,
                 pdf = pdfReferat,
             )
@@ -688,7 +693,8 @@ class DialogmoteService(
                     veilederId = opprettetAv,
                 )
             }
-            val (pdfId, _) = connection.createPdf(
+            val (pdfId, _) = pdfRepository.createPdf(
+                connection = connection,
                 commit = false,
                 pdf = pdfReferat,
             )

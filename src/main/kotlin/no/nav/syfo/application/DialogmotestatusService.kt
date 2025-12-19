@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.database.dialogmote
+package no.nav.syfo.application
 
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository

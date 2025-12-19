@@ -6,10 +6,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import java.time.Duration
 
-class DialogmeldingConsumerService(
+class DialogmeldingConsumer(
     private val kafkaConsumer: KafkaConsumer<String, KafkaDialogmeldingDTO>,
     private val dialogmeldingService: DialogmeldingService,
-    private val applicationState: ApplicationState
+    private val applicationState: ApplicationState,
 ) {
     fun startConsumer() {
         kafkaConsumer.subscribe(listOf(DIALOGMELDING_TOPIC))

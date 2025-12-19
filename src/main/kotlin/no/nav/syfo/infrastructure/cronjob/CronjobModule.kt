@@ -1,20 +1,18 @@
 package no.nav.syfo.infrastructure.cronjob
 
-import io.ktor.server.application.Application
+import io.ktor.server.application.*
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.Environment
-import no.nav.syfo.infrastructure.client.cache.ValkeyStore
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.launchBackgroundTask
-import no.nav.syfo.application.ArbeidstakerVarselService
-import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
+import no.nav.syfo.application.*
+import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
+import no.nav.syfo.infrastructure.client.cache.ValkeyStore
+import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
+import no.nav.syfo.infrastructure.client.dokarkiv.DokarkivClient
+import no.nav.syfo.infrastructure.client.ereg.EregClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.cronjob.dialogmoteOutdated.DialogmoteOutdatedCronjob
-import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.DialogmotesvarProducer
-import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.PublishDialogmotesvarCronjob
-import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.PublishDialogmotesvarService
-import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.KafkaDialogmotesvarProducerConfig
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.*
 import no.nav.syfo.infrastructure.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
 import no.nav.syfo.infrastructure.cronjob.journalpostdistribusjon.DialogmoteJournalpostDistribusjonCronjob
 import no.nav.syfo.infrastructure.cronjob.leaderelection.LeaderPodClient
@@ -22,16 +20,9 @@ import no.nav.syfo.infrastructure.cronjob.statusendring.DialogmoteStatusEndringP
 import no.nav.syfo.infrastructure.cronjob.statusendring.PublishDialogmoteStatusEndringCronjob
 import no.nav.syfo.infrastructure.cronjob.statusendring.PublishDialogmoteStatusEndringService
 import no.nav.syfo.infrastructure.cronjob.statusendring.kafkaDialogmoteStatusEndringProducerConfig
-import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.KDialogmotesvar
-import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
-import no.nav.syfo.infrastructure.client.dokarkiv.DokarkivClient
-import no.nav.syfo.infrastructure.client.ereg.EregClient
+import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerVarselJournalpostService
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmoterelasjonService
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotestatusService
-import no.nav.syfo.infrastructure.database.dialogmote.PdfService
-import no.nav.syfo.infrastructure.database.dialogmote.ReferatJournalpostService
+import no.nav.syfo.launchBackgroundTask
 import org.apache.kafka.clients.producer.KafkaProducer
 
 fun Application.cronjobModule(
@@ -43,6 +34,7 @@ fun Application.cronjobModule(
     dialogmoterelasjonService: DialogmoterelasjonService,
     arbeidstakerVarselService: ArbeidstakerVarselService,
     moteStatusEndretRepository: MoteStatusEndretRepository,
+    pdfRepository: IPdfRepository,
 ) {
     val azureAdV2Client = AzureAdV2Client(
         aadAppClient = environment.aadAppClient,
@@ -64,9 +56,6 @@ fun Application.cronjobModule(
     val eregClient = EregClient(
         baseUrl = environment.eregUrl,
     )
-    val pdfService = PdfService(
-        database = database,
-    )
     val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(
         database = database,
     )
@@ -84,12 +73,12 @@ fun Application.cronjobModule(
     val journalforDialogmoteVarslerCronjob = DialogmoteVarselJournalforingCronjob(
         dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
         referatJournalpostService = referatJournalpostService,
-        pdfService = pdfService,
         dokarkivClient = dokarkivClient,
         pdlClient = pdlClient,
         eregClient = eregClient,
         dialogmeldingClient = dialogmeldingClient,
         isJournalforingRetryEnabled = environment.isJournalforingRetryEnabled,
+        pdfRepository = pdfRepository,
     )
     val kafkaDialogmoteStatusEndringProducerProperties = kafkaDialogmoteStatusEndringProducerConfig(environment.kafka)
     val kafkaDialogmoteStatusEndringProducer = KafkaProducer<String, KDialogmoteStatusEndring>(

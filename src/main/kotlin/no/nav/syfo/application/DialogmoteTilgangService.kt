@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.database.dialogmote.tilgang
+package no.nav.syfo.application
 
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient

@@ -7,8 +7,8 @@ import no.nav.syfo.infrastructure.cronjob.COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON
 import no.nav.syfo.infrastructure.cronjob.COUNT_CRONJOB_JOURNALPOST_DISTRIBUSJON_UPDATE
 import no.nav.syfo.infrastructure.cronjob.DialogmoteCronjob
 import no.nav.syfo.infrastructure.cronjob.DialogmoteCronjobResult
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerVarselJournalpostService
-import no.nav.syfo.infrastructure.database.dialogmote.ReferatJournalpostService
+import no.nav.syfo.application.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.application.ReferatJournalpostService
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import org.slf4j.LoggerFactory
 
