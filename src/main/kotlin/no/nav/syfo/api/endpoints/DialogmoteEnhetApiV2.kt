@@ -6,9 +6,9 @@ import io.ktor.server.routing.*
 import no.nav.syfo.api.callIdArgument
 import no.nav.syfo.api.getBearerHeader
 import no.nav.syfo.api.getCallId
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmoteService
+import no.nav.syfo.application.DialogmoteService
 import no.nav.syfo.domain.dialogmote.toDialogmoteDTO
-import no.nav.syfo.infrastructure.database.dialogmote.tilgang.DialogmoteTilgangService
+import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.metric.HISTOGRAM_CALL_DIALOGMOTER_ENHET_TIMER

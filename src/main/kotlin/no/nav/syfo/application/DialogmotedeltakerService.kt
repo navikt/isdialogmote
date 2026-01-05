@@ -1,7 +1,6 @@
-package no.nav.syfo.infrastructure.database.dialogmote
+package no.nav.syfo.application
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.application.ArbeidstakerVarselService
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
@@ -167,7 +166,7 @@ class DialogmotedeltakerService(
     }
 
     fun slettBrukeroppgaverPaMote(
-        dialogmote: Dialogmote
+        dialogmote: Dialogmote,
     ) {
         val personIdent = dialogmote.arbeidstaker.personIdent
         dialogmote.arbeidstaker.varselList

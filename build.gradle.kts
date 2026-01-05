@@ -18,7 +18,6 @@ val ktorVersion = "3.3.3"
 val jaxbApiVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.3.6"
 val jaxsWsApiVersion = "2.3.1"
-val jaxwsToolsVersion = "4.0.3"
 val logbackVersion = "1.5.22"
 val logstashEncoderVersion = "9.0"
 val micrometerRegistryVersion = "1.12.13"
@@ -89,6 +88,7 @@ dependencies {
     // Kafka
     val excludeLog4j = fun ExternalModuleDependency.() {
         exclude(group = "log4j")
+        exclude(group = "org.apache.logging.log4j")
     }
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", excludeLog4j)
     constraints {
@@ -164,9 +164,6 @@ dependencies {
     implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
     implementation("javax.xml.ws:jaxws-api:$jaxsWsApiVersion")
-    implementation("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
-        exclude(group = "com.sun.xml.ws", module = "policy")
-    }
 }
 
 kotlin {

@@ -14,7 +14,6 @@ import no.nav.syfo.api.endpoints.*
 import no.nav.syfo.application.BehandlerVarselService
 import no.nav.syfo.domain.dialogmote.*
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
-import no.nav.syfo.infrastructure.database.dialogmote.PdfService
 import no.nav.syfo.infrastructure.database.dialogmote.database.getReferat
 import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
@@ -45,9 +44,7 @@ class FerdigstillDialogmoteApiV2Test {
         database = database,
         behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
     )
-    private val pdfService = PdfService(
-        database = database,
-    )
+    private val pdfRepository = externalMockEnvironment.pdfRepository
 
     private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
@@ -145,7 +142,7 @@ class FerdigstillDialogmoteApiV2Test {
                 assertTrue(referat.ferdigstilt)
 
                 val pdf =
-                    pdfService.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId!!)
+                    pdfRepository.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId!!).pdf
                 assertArrayEquals(pdfReferat, pdf)
 
                 val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()

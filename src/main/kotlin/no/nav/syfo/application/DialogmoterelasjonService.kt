@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.database.dialogmote
+package no.nav.syfo.application
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.domain.dialogmote.Dialogmote
@@ -39,7 +39,7 @@ class DialogmoterelasjonService(
     }
 
     private fun getDialogmoteTidStedList(
-        moteId: Int
+        moteId: Int,
     ): List<DialogmoteTidSted> {
         return database.getTidSted(moteId).map {
             it.toDialogmoteTidSted()
@@ -47,7 +47,7 @@ class DialogmoterelasjonService(
     }
 
     private fun getReferatForMote(
-        moteUUID: UUID
+        moteUUID: UUID,
     ): List<Referat> {
         return database.getReferatForMote(moteUUID).map { pReferat ->
             val andreDeltakere = getAndreDeltakere(pReferat.id)
@@ -63,7 +63,7 @@ class DialogmoterelasjonService(
     }
 
     fun getAndreDeltakere(
-        referatId: Int
+        referatId: Int,
     ): List<DialogmotedeltakerAnnen> {
         return database.getAndreDeltakereForReferatID(referatId).map { pMotedeltakerAnnen ->
             pMotedeltakerAnnen.toDialogmoteDeltakerAnnen()

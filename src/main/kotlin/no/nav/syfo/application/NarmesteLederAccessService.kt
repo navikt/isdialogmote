@@ -8,7 +8,6 @@ import no.nav.syfo.domain.dialogmote.removeBrevBeforeDate
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.findOppfolgingstilfelleByDate
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
 import no.nav.syfo.util.getGracePeriodStartDate
 import java.time.LocalDate
 

@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-class IdenthendelseConsumerService(
+class IdenthendelseConsumer(
     private val kafkaConsumer: KafkaConsumer<String, GenericRecord>,
     private val applicationState: ApplicationState,
     private val identhendelseService: IdenthendelseService,
@@ -38,7 +38,10 @@ class IdenthendelseConsumerService(
                     kafkaConsumer.commitSync()
                 }
             } catch (ex: Exception) {
-                log.warn("Error running kafka consumer for pdl-aktor, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry", ex)
+                log.warn(
+                    "Error running kafka consumer for pdl-aktor, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry",
+                    ex
+                )
                 kafkaConsumer.unsubscribe()
                 delay(DELAY_ON_ERROR_SECONDS.seconds)
             }

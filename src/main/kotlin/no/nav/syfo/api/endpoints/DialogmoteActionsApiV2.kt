@@ -14,8 +14,8 @@ import no.nav.syfo.api.callIdArgument
 import no.nav.syfo.api.getBearerHeader
 import no.nav.syfo.api.getCallId
 import no.nav.syfo.api.validateVeilederAccess
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmoteService
-import no.nav.syfo.infrastructure.database.dialogmote.tilgang.DialogmoteTilgangService
+import no.nav.syfo.application.DialogmoteService
+import no.nav.syfo.application.DialogmoteTilgangService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*

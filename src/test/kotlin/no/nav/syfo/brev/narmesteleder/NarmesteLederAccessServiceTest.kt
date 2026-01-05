@@ -9,7 +9,7 @@ import no.nav.syfo.domain.dialogmote.toNarmesteLederBrevDTOList
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.Oppfolgingstilfelle
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.infrastructure.database.dialogmote.DialogmotedeltakerService
+import no.nav.syfo.application.DialogmotedeltakerService
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.generator.generateDialogmote
 import no.nav.syfo.testhelper.generator.generateDialogmotedeltakerArbeidsgiver
