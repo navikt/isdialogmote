@@ -1,6 +1,5 @@
 package no.nav.syfo.domain.dialogmote
 
-import no.nav.syfo.api.dto.DialogmotedeltakerBehandlerVarselDTO
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.DialogmoteDeltakerType
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.JournalpostKanal
@@ -21,18 +20,6 @@ data class DialogmotedeltakerBehandlerVarsel(
     val document: List<DocumentComponentDTO>,
     val svar: List<DialogmotedeltakerBehandlerVarselSvar>,
 )
-
-fun DialogmotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandlerVarselDTO() =
-    DialogmotedeltakerBehandlerVarselDTO(
-        uuid = this.uuid.toString(),
-        createdAt = this.createdAt,
-        varselType = this.varselType.name,
-        document = this.document,
-        fritekst = this.fritekst,
-        svar = this.svar.map {
-            it.toDialogmotedeltakerBehandlerVarselSvarDTO()
-        }
-    )
 
 fun DialogmotedeltakerBehandlerVarsel.toJournalpostRequest(
     brukerPersonIdent: PersonIdent,

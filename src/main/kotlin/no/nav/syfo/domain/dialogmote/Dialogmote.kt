@@ -1,9 +1,8 @@
 package no.nav.syfo.domain.dialogmote
 
+import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.domain.NarmesteLederBrevDTO
-import no.nav.syfo.api.dto.DialogmoteDTO
-import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.util.isAfterOrEqual
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -86,26 +85,6 @@ data class Dialogmote(
 
     fun isActive(): Boolean =
         this.status == Status.INNKALT || this.status == Status.NYTT_TID_STED
-}
-
-fun Dialogmote.toDialogmoteDTO(): DialogmoteDTO {
-    val dialogmoteTidSted = this.tidStedList.latest()!!
-    return DialogmoteDTO(
-        uuid = this.uuid.toString(),
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt,
-        status = this.status.name,
-        opprettetAv = this.opprettetAv,
-        tildeltVeilederIdent = this.tildeltVeilederIdent,
-        tildeltEnhet = this.tildeltEnhet,
-        arbeidstaker = this.arbeidstaker.toDialogmotedeltakerArbeidstakerDTO(),
-        arbeidsgiver = this.arbeidsgiver.toDialogmotedeltakerArbeidsgiverDTO(),
-        behandler = this.behandler?.toDialogmotedeltakerBehandlerDTO(),
-        sted = dialogmoteTidSted.sted,
-        tid = dialogmoteTidSted.tid,
-        videoLink = dialogmoteTidSted.videoLink,
-        referatList = this.referatList.toReferatDTOList(),
-    )
 }
 
 fun List<Dialogmote>.toArbeidstakerBrevDTOList(): List<ArbeidstakerBrevDTO> {
