@@ -1,6 +1,5 @@
 package no.nav.syfo.domain.dialogmote
 
-import no.nav.syfo.api.dto.DialogmotedeltakerBehandlerDTO
 import no.nav.syfo.domain.PersonIdent
 import java.time.LocalDateTime
 import java.util.UUID
@@ -21,22 +20,6 @@ data class DialogmotedeltakerBehandler(
     val deltatt: Boolean,
     val mottarReferat: Boolean,
 )
-
-fun DialogmotedeltakerBehandler.toDialogmotedeltakerBehandlerDTO() =
-    DialogmotedeltakerBehandlerDTO(
-        uuid = this.uuid.toString(),
-        behandlerRef = this.behandlerRef,
-        behandlerNavn = this.behandlerNavn,
-        behandlerKontor = this.behandlerKontor,
-        behandlerType = this.behandlerType.name,
-        type = this.type.name,
-        personIdent = this.personIdent?.value,
-        varselList = this.varselList.map {
-            it.toDialogmotedeltakerBehandlerVarselDTO()
-        },
-        deltatt = this.deltatt,
-        mottarReferat = this.mottarReferat,
-    )
 
 fun DialogmotedeltakerBehandler.findInnkallingVarselUuid(): UUID {
     return varselList.last().uuid

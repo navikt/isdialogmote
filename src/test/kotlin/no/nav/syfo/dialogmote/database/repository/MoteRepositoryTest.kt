@@ -9,6 +9,7 @@ import no.nav.syfo.testhelper.generator.generateNewDialogmote
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.util.*
 
 class MoteRepositoryTest {
@@ -35,11 +36,10 @@ class MoteRepositoryTest {
 
         val retrievedMote = moteRepository.getMote(createdDialogmote.dialogmoteIdPair.second)
 
-        assertEquals(1, retrievedMote.size)
-        assertEquals(newDialogmote.opprettetAv, retrievedMote.first().opprettetAv)
-        assertEquals(newDialogmote.status.name, retrievedMote.first().status)
-        assertEquals(newDialogmote.tildeltEnhet, retrievedMote.first().tildeltEnhet)
-        assertEquals(newDialogmote.tildeltVeilederIdent, retrievedMote.first().tildeltVeilederIdent)
+        assertEquals(newDialogmote.opprettetAv, retrievedMote.opprettetAv)
+        assertEquals(newDialogmote.status.name, retrievedMote.status)
+        assertEquals(newDialogmote.tildeltEnhet, retrievedMote.tildeltEnhet)
+        assertEquals(newDialogmote.tildeltVeilederIdent, retrievedMote.tildeltVeilederIdent)
     }
 
     @Test
@@ -60,8 +60,9 @@ class MoteRepositoryTest {
 
     @Test
     fun `Returns empty list when no uuid exists`() {
-        val retrievedMote = moteRepository.getMote(UUID.randomUUID())
-        assertEquals(emptyList<Any>(), retrievedMote)
+        assertThrows<NoSuchElementException> {
+            moteRepository.getMote(UUID.randomUUID())
+        }
     }
 
     @Test
