@@ -43,7 +43,11 @@ class JanitorServiceTest {
         moteStatusEndretRepository = moteStatusEndretRepository,
     )
     private val dialogmotedeltakerService =
-        DialogmotedeltakerService(database = database, arbeidstakerVarselService = mockk())
+        DialogmotedeltakerService(
+            database = database,
+            arbeidstakerVarselService = mockk(),
+            moteRepository = externalMockEnvironment.moteRepository
+        )
     private val dialogmoterelasjonService = DialogmoterelasjonService(
         database = database,
         dialogmotedeltakerService = dialogmotedeltakerService,

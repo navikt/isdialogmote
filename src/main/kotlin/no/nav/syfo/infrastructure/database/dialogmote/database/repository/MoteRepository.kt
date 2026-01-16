@@ -2,8 +2,12 @@ package no.nav.syfo.infrastructure.database.dialogmote.database.repository
 
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
+import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmotedeltakerArbeidstakerWithVarsler
+import no.nav.syfo.infrastructure.database.dialogmote.database.toPMotedeltakerArbeidstaker
+import no.nav.syfo.infrastructure.database.dialogmote.database.toPMotedeltakerArbeidstakerVarsel
 import no.nav.syfo.infrastructure.database.toList
 import java.sql.ResultSet
 import java.util.*
@@ -50,6 +54,20 @@ class MoteRepository(private val database: DatabaseInterface) {
             }
         }
 
+    fun getMotedeltakerArbeidstaker(moteId: Int): DialogmotedeltakerArbeidstaker {
+        return database.connection.use { connection ->
+            val arbeidstaker = connection.prepareStatement(GET_MOTEDELTAKER_ARBEIDSTAKER).use {
+                it.setInt(1, moteId)
+                it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
+            }.first()
+            val varsler = connection.prepareStatement(GET_VARSLER_MOTEDELTAKER_ARBEIDSTAKER).use {
+                it.setInt(1, arbeidstaker.id)
+                it.executeQuery().toList { toPMotedeltakerArbeidstakerVarsel() }
+            }
+            arbeidstaker.toDialogmotedeltakerArbeidstakerWithVarsler(varsler)
+        }
+    }
+
     companion object {
         private const val GET_DIALOGMOTE_FOR_UUID_QUERY =
             """
@@ -89,6 +107,21 @@ class MoteRepository(private val database: DatabaseInterface) {
                 FROM MOTE
                 WHERE tildelt_veileder_ident = ? AND status IN ('INNKALT', 'NYTT_TID_STED')
                 ORDER BY MOTE.created_at DESC
+            """
+
+        private const val GET_MOTEDELTAKER_ARBEIDSTAKER =
+            """
+                SELECT *
+                FROM MOTEDELTAKER_ARBEIDSTAKER
+                WHERE mote_id = ?
+            """
+
+        private const val GET_VARSLER_MOTEDELTAKER_ARBEIDSTAKER =
+            """
+                SELECT *
+                FROM MOTEDELTAKER_ARBEIDSTAKER_VARSEL
+                WHERE motedeltaker_arbeidstaker_id = ?
+                ORDER BY created_at DESC
             """
     }
 }
