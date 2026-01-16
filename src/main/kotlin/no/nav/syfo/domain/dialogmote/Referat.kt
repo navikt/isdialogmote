@@ -3,8 +3,6 @@ package no.nav.syfo.domain.dialogmote
 import no.nav.syfo.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.domain.BrevType
 import no.nav.syfo.domain.NarmesteLederBrevDTO
-import no.nav.syfo.api.dto.DialogmotedeltakerAnnenDTO
-import no.nav.syfo.api.dto.ReferatDTO
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.BrevkodeType
@@ -51,47 +49,8 @@ data class DialogmotedeltakerAnnen(
     val navn: String,
 )
 
-fun Referat.toReferatDTO(): ReferatDTO {
-    return ReferatDTO(
-        uuid = this.uuid.toString(),
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt,
-        digitalt = this.digitalt,
-        situasjon = this.situasjon,
-        konklusjon = this.konklusjon,
-        arbeidstakerOppgave = this.arbeidstakerOppgave,
-        arbeidsgiverOppgave = this.arbeidsgiverOppgave,
-        veilederOppgave = this.veilederOppgave,
-        behandlerOppgave = this.behandlerOppgave,
-        narmesteLederNavn = this.narmesteLederNavn,
-        document = this.document,
-        lestDatoArbeidstaker = this.lestDatoArbeidstaker,
-        lestDatoArbeidsgiver = this.lestDatoArbeidsgiver,
-        andreDeltakere = this.andreDeltakere.map {
-            it.toDialogmotedeltakerAnnenDTO()
-        },
-        brevBestiltTidspunkt = this.brevBestiltTidspunkt,
-        ferdigstilt = this.ferdigstilt,
-        begrunnelseEndring = this.begrunnelseEndring,
-    )
-}
-
-fun List<Referat>.toReferatDTOList(): List<ReferatDTO> {
-    return this.map { it.toReferatDTO() }
-}
-
 fun List<Referat>.ferdigstilte(): List<Referat> {
     return this.filter { it.ferdigstilt }
-}
-
-fun DialogmotedeltakerAnnen.toDialogmotedeltakerAnnenDTO(): DialogmotedeltakerAnnenDTO {
-    return DialogmotedeltakerAnnenDTO(
-        uuid = this.uuid.toString(),
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt,
-        funksjon = this.funksjon,
-        navn = this.navn,
-    )
 }
 
 fun Referat.toJournalforingRequestArbeidstaker(

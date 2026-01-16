@@ -5,6 +5,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.api.authentication.getNAVIdentFromToken
+import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.application.DialogmoteService
 import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.api.dto.NewDialogmoteDTO
@@ -12,7 +13,6 @@ import no.nav.syfo.api.getBearerHeader
 import no.nav.syfo.api.getCallId
 import no.nav.syfo.api.getPersonIdentHeader
 import no.nav.syfo.api.validateVeilederAccess
-import no.nav.syfo.domain.dialogmote.toDialogmoteDTO
 import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.domain.PersonIdent
 
@@ -39,9 +39,9 @@ fun Route.registerDialogmoteApiV2(
                 action = "Read Dialogmoter for Person with PersonIdent"
             ) {
                 val dialogmoteDTOList = dialogmoteService.getDialogmoteList(
-                    personIdent = personIdent,
+                    personident = personIdent,
                 ).map { dialogmote ->
-                    dialogmote.toDialogmoteDTO()
+                    DialogmoteDTO.from(dialogmote)
                 }
                 call.respond(dialogmoteDTOList)
             }
@@ -62,7 +62,7 @@ fun Route.registerDialogmoteApiV2(
 
             val dialogmoteDTOList =
                 dialogmoteList.filter { dialogmote -> personListWithVeilederAccess.contains(dialogmote.arbeidstaker.personIdent) }
-                    .map { dialogmote -> dialogmote.toDialogmoteDTO() }
+                    .map { dialogmote -> DialogmoteDTO.from(dialogmote) }
 
             call.respond(dialogmoteDTOList)
         }

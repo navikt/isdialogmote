@@ -46,7 +46,7 @@ fun Route.registerNarmestelederBrevApi(
                 val arbeidstakerPersonIdent = getPersonIdentHeader()?.let { PersonIdent(it) }
                     ?: throw IllegalArgumentException("No $NAV_PERSONIDENT_HEADER provided in request header")
 
-                val moteList = dialogmoteService.getDialogmoteList(personIdent = arbeidstakerPersonIdent)
+                val moteList = dialogmoteService.getDialogmoteList(personident = arbeidstakerPersonIdent)
                     .filter { dialogmote ->
                         dialogmote.status != Dialogmote.Status.LUKKET
                     }

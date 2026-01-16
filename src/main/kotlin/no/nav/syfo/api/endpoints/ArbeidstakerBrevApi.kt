@@ -46,7 +46,7 @@ fun Route.registerArbeidstakerBrevApi(
                 )
                 val arbeidstakerBrevDTOList = allPersonIdents.flatMap { personIdent ->
                     dialogmoteService.getDialogmoteList(
-                        personIdent = personIdent,
+                        personident = personIdent,
                     ).filter { dialogmote ->
                         dialogmote.status != Dialogmote.Status.LUKKET
                     }.toArbeidstakerBrevDTOList()

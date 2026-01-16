@@ -1,7 +1,5 @@
 package no.nav.syfo.domain.dialogmote
 
-import no.nav.syfo.api.dto.DialogmotedeltakerArbeidstakerVarselDTO
-import no.nav.syfo.api.dto.DialogmotedeltakerArbeidstakerVarselSvarDTO
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.createJournalpostRequest
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
@@ -32,25 +30,6 @@ data class DialogmotedeltakerArbeidstakerVarsel(
     val svarTekst: String?,
     val svarTidspunkt: LocalDateTime?,
 ) : ArbeidstakerBrev
-
-fun DialogmotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarselDTO() =
-    DialogmotedeltakerArbeidstakerVarselDTO(
-        uuid = this.uuid.toString(),
-        createdAt = this.createdAt,
-        varselType = this.varselType.name,
-        digitalt = this.digitalt,
-        lestDato = this.lestDatoArbeidstaker,
-        document = this.document,
-        brevBestiltTidspunkt = this.brevBestiltTidspunkt,
-        fritekst = this.fritekst,
-        svar = this.svarType?.let {
-            DialogmotedeltakerArbeidstakerVarselSvarDTO(
-                svarTidspunkt = this.svarTidspunkt!!,
-                svarType = it.name,
-                svarTekst = this.svarTekst,
-            )
-        },
-    )
 
 fun DialogmotedeltakerArbeidstakerVarsel.toArbeidstakerBrevDTO(
     dialogmoteTidSted: DialogmoteTidSted,
