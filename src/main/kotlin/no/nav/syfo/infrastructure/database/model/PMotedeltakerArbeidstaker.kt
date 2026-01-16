@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database.domain
+package no.nav.syfo.infrastructure.database.model
 
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
@@ -17,7 +17,7 @@ data class PMotedeltakerArbeidstaker(
 )
 
 fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(
-    dialogmotedeltakerArbeidstakerVarsel: List<DialogmotedeltakerArbeidstakerVarsel>
+    dialogmotedeltakerArbeidstakerVarsel: List<DialogmotedeltakerArbeidstakerVarsel>,
 ) = DialogmotedeltakerArbeidstaker(
     id = this.id,
     uuid = this.uuid,
@@ -27,4 +27,17 @@ fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(
     personIdent = this.personIdent,
     type = DialogmotedeltakerType.ARBEIDSTAKER,
     varselList = dialogmotedeltakerArbeidstakerVarsel,
+)
+
+fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstakerWithVarsler(
+    dialogmotedeltakerArbeidstakerVarsel: List<PMotedeltakerArbeidstakerVarsel>,
+) = DialogmotedeltakerArbeidstaker(
+    id = this.id,
+    uuid = this.uuid,
+    createdAt = this.createdAt,
+    updatedAt = this.updatedAt,
+    moteId = this.moteId,
+    personIdent = this.personIdent,
+    type = DialogmotedeltakerType.ARBEIDSTAKER,
+    varselList = dialogmotedeltakerArbeidstakerVarsel.map { it.toDialogmotedeltakerArbeidstaker() },
 )

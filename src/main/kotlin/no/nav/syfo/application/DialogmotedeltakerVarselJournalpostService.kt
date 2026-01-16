@@ -1,10 +1,10 @@
 package no.nav.syfo.application
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmotedeltakerArbeidsgiver
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmotedeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmotedeltakerBehandler
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmotedeltakerBehandlerVarsel
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiver
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstaker
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandlerVarsel
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiverVarsel
@@ -12,19 +12,19 @@ import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstakerVarsel
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandlerVarsel
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMoteDeltakerArbeidsgiverById
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMoteDeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidsgiverVarselWithoutJournalpost
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerById
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerVarselForFysiskBrevUtsending
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerVarselWithoutJournalpost
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerBehandlerById
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerBehandlerVarselWithoutJournalpost
-import no.nav.syfo.infrastructure.database.dialogmote.database.getTidSted
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateMotedeltakerArbeidsgiverVarselJournalpostId
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateMotedeltakerArbeidstakerBrevBestilt
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateMotedeltakerArbeidstakerVarselJournalpostId
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateMotedeltakerBehandlerVarselJournalpostId
+import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiverById
+import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidstaker
+import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidsgiverVarselWithoutJournalpost
+import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerById
+import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerVarselForFysiskBrevUtsending
+import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerVarselWithoutJournalpost
+import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerById
+import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerVarselWithoutJournalpost
+import no.nav.syfo.infrastructure.database.getTidSted
+import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidsgiverVarselJournalpostId
+import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidstakerBrevBestilt
+import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidstakerVarselJournalpostId
+import no.nav.syfo.infrastructure.database.updateMotedeltakerBehandlerVarselJournalpostId
 import java.time.LocalDateTime
 
 class DialogmotedeltakerVarselJournalpostService(

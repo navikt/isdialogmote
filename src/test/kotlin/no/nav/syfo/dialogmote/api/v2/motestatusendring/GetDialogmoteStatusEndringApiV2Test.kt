@@ -11,8 +11,8 @@ import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.Oppfolgingstilfelle
 import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.api.dto.DialogmoteStatusEndringDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
-import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR

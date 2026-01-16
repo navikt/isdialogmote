@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database.domain
+package no.nav.syfo.infrastructure.database.model
 
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandlerVarsel
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandlerVarselSvar
@@ -21,7 +21,7 @@ data class PMotedeltakerBehandlerVarsel(
 )
 
 fun PMotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandlerVarsel(
-    dialogmotedeltakerBehandlerVarselSvar: List<DialogmotedeltakerBehandlerVarselSvar>
+    dialogmotedeltakerBehandlerVarselSvar: List<DialogmotedeltakerBehandlerVarselSvar>,
 ) =
     DialogmotedeltakerBehandlerVarsel(
         id = this.id,

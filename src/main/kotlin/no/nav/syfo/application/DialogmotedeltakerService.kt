@@ -12,42 +12,37 @@ import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandlerVarsel
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandlerVarselSvar
 import no.nav.syfo.domain.dialogmote.erBrukeroppgaveVarsel
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmoteDeltakerVarselSvar
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmotedeltakerArbeidsgiver
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmotedeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmotedeltakerBehandler
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmotedeltakerBehandlerVarsel
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMoteDeltakerArbeidsgiver
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMoteDeltakerArbeidsgiverById
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMoteDeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMoteDeltakerBehandler
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidsgiverVarsel
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerById
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerVarsel
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerBehandlerVarselForMotedeltaker
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerBehandlerVarselSvar
-import no.nav.syfo.infrastructure.database.dialogmote.database.getReferat
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateMotedeltakerArbeidsgiverVarselLestDato
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateMotedeltakerArbeidsgiverVarselRespons
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateMotedeltakerArbeidstakerVarselLestDato
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateMotedeltakerArbeidstakerVarselRespons
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateReferatLestDatoArbeidsgiver
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateReferatLestDatoArbeidstaker
+import no.nav.syfo.infrastructure.database.model.toDialogmoteDeltakerVarselSvar
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiver
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstaker
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandlerVarsel
+import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
+import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiverById
+import no.nav.syfo.infrastructure.database.getMoteDeltakerBehandler
+import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidsgiverVarsel
+import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerById
+import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerVarsel
+import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerVarselForMotedeltaker
+import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerVarselSvar
+import no.nav.syfo.infrastructure.database.getReferat
+import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidsgiverVarselLestDato
+import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidsgiverVarselRespons
+import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidstakerVarselLestDato
+import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidstakerVarselRespons
+import no.nav.syfo.infrastructure.database.updateReferatLestDatoArbeidsgiver
+import no.nav.syfo.infrastructure.database.updateReferatLestDatoArbeidstaker
 import java.util.*
 
 class DialogmotedeltakerService(
     private val arbeidstakerVarselService: ArbeidstakerVarselService,
     private val database: DatabaseInterface,
+    private val moteRepository: IMoteRepository,
 ) {
-
     fun getDialogmoteDeltakerArbeidstaker(
         moteId: Int,
     ): DialogmotedeltakerArbeidstaker {
-        val pMotedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(moteId)
-        val motedeltakerArbeidstakerVarselList = getDialogmoteDeltakerArbeidstakerVarselList(
-            pMotedeltakerArbeidstaker.id
-        )
-        return pMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(motedeltakerArbeidstakerVarselList)
+        return moteRepository.getMotedeltakerArbeidstaker(moteId)
     }
 
     private fun getDialogmoteDeltakerArbeidstakerVarselList(

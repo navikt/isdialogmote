@@ -2,14 +2,14 @@ package no.nav.syfo.infrastructure.cronjob.statusendring
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmoteStatusEndret
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmoteTidSted
-import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmote
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMoteDeltakerArbeidsgiver
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMoteDeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.dialogmote.database.getTidSted
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.model.PDialogmote
+import no.nav.syfo.infrastructure.database.model.toDialogmoteStatusEndret
+import no.nav.syfo.infrastructure.database.model.toDialogmoteTidSted
+import no.nav.syfo.infrastructure.database.getDialogmote
+import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
+import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidstaker
+import no.nav.syfo.infrastructure.database.getTidSted
+import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.domain.dialogmote.DialogmoteStatusEndret
 import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
 import no.nav.syfo.domain.dialogmote.latest

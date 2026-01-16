@@ -6,8 +6,8 @@ import no.nav.syfo.application.IdenthendelseService
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.infrastructure.client.cache.ValkeyStore
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
-import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerByIdent
+import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerByIdent
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.dropData

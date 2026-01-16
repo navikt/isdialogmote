@@ -14,16 +14,16 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.*
 import no.nav.syfo.application.ArbeidstakerVarselService
+import no.nav.syfo.application.DialogmotedeltakerService
+import no.nav.syfo.application.DialogmoterelasjonService
+import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
-import no.nav.syfo.application.DialogmotedeltakerService
-import no.nav.syfo.application.DialogmoterelasjonService
-import no.nav.syfo.application.DialogmotestatusService
-import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmote
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.getDialogmote
+import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerHendelse
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.testhelper.*
@@ -67,6 +67,7 @@ class ArbeidstakerBrevApiTest {
     private val dialogmotedeltakerService = DialogmotedeltakerService(
         arbeidstakerVarselService = arbeidstakerVarselService,
         database = database,
+        moteRepository = externalMockEnvironment.moteRepository,
     )
     private val dialogmoterelasjonService = DialogmoterelasjonService(
         dialogmotedeltakerService = dialogmotedeltakerService,

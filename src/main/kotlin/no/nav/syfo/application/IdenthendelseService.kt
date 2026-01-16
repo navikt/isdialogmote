@@ -2,8 +2,8 @@ package no.nav.syfo.application
 
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerByIdent
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateMotedeltakerArbeidstakerPersonident
+import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerByIdent
+import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidstakerPersonident
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.kafka.identhendelse.KafkaIdenthendelseDTO

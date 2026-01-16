@@ -6,7 +6,7 @@ import no.nav.syfo.infrastructure.kafka.behandler.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.domain.DialogmeldingSvar
 import no.nav.syfo.domain.getDialogmoteSvarType
 import no.nav.syfo.domain.getVarselType
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerBehandlerVarsel
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
@@ -14,11 +14,11 @@ import no.nav.syfo.domain.dialogmote.getDialogMeldingKode
 import no.nav.syfo.domain.dialogmote.getDialogMeldingKodeverk
 import no.nav.syfo.domain.dialogmote.getDialogMeldingType
 import no.nav.syfo.domain.dialogmote.serialize
-import no.nav.syfo.infrastructure.database.dialogmote.database.createMotedeltakerBehandlerVarselSvar
-import no.nav.syfo.infrastructure.database.dialogmote.database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler
-import no.nav.syfo.infrastructure.database.dialogmote.database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMote
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid
+import no.nav.syfo.infrastructure.database.createMotedeltakerBehandlerVarselSvar
+import no.nav.syfo.infrastructure.database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler
+import no.nav.syfo.infrastructure.database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId
+import no.nav.syfo.infrastructure.database.getMote
+import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.SQLException

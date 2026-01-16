@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database
+package no.nav.syfo.infrastructure.database
 
 import com.fasterxml.jackson.core.type.TypeReference
 import java.sql.Connection
@@ -8,9 +8,7 @@ import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.toList
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PMotedeltakerArbeidstakerVarsel
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerArbeidstakerVarsel
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType

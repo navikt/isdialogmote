@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database.domain
+package no.nav.syfo.infrastructure.database.model
 
 import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
 import java.time.LocalDateTime

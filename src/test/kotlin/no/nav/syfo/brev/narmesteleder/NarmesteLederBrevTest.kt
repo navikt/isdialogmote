@@ -24,8 +24,8 @@ import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.application.DialogmotedeltakerService
 import no.nav.syfo.application.DialogmoterelasjonService
 import no.nav.syfo.application.DialogmotestatusService
-import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmote
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.getDialogmote
+import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.testhelper.*
@@ -62,6 +62,7 @@ class NarmesteLederBrevTest {
     private val dialogmotedeltakerService = DialogmotedeltakerService(
         arbeidstakerVarselService = arbeidstakerVarselService,
         database = database,
+        moteRepository = externalMockEnvironment.moteRepository,
     )
     private val dialogmoterelasjonService = DialogmoterelasjonService(
         dialogmotedeltakerService = dialogmotedeltakerService,

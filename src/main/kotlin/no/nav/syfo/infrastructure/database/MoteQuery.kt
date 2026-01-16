@@ -1,15 +1,13 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database
+package no.nav.syfo.infrastructure.database
 
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.NewDialogmote
 import no.nav.syfo.domain.dialogmote.TidStedDTO
 import no.nav.syfo.infrastructure.cronjob.statusendring.toInstantOslo
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PMotedeltakerBehandlerVarsel
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.toPDialogmote
-import no.nav.syfo.infrastructure.database.toList
+import no.nav.syfo.infrastructure.database.model.PDialogmote
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerBehandlerVarsel
+import no.nav.syfo.infrastructure.database.repository.toPDialogmote
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.Timestamp

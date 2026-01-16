@@ -1,7 +1,5 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database
+package no.nav.syfo.infrastructure.database
 
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.Dialogmotesvar
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.SenderType
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType

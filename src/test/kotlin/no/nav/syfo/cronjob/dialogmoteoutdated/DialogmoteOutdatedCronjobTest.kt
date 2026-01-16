@@ -29,7 +29,7 @@ import no.nav.syfo.infrastructure.cronjob.dialogmoteOutdated.DialogmoteOutdatedC
 import no.nav.syfo.application.DialogmotedeltakerService
 import no.nav.syfo.application.DialogmoterelasjonService
 import no.nav.syfo.application.DialogmotestatusService
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
@@ -77,6 +77,7 @@ class DialogmoteOutdatedCronjobTest {
     private val dialogmotedeltakerService = DialogmotedeltakerService(
         arbeidstakerVarselService = arbeidstakerVarselService,
         database = database,
+        moteRepository = externalMockEnvironment.moteRepository
     )
     private val dialogmoterelasjonService = DialogmoterelasjonService(
         dialogmotedeltakerService = dialogmotedeltakerService,

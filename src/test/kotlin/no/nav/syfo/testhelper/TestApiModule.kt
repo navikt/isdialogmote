@@ -10,7 +10,7 @@ import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 
 fun Application.testApiModule(
@@ -28,7 +28,8 @@ fun Application.testApiModule(
     )
     val dialogmotedeltakerService = DialogmotedeltakerService(
         database = externalMockEnvironment.database,
-        arbeidstakerVarselService = arbeidstakerVarselService
+        arbeidstakerVarselService = arbeidstakerVarselService,
+        moteRepository = externalMockEnvironment.moteRepository,
     )
     val dialogmoterelasjonService = DialogmoterelasjonService(
         database = externalMockEnvironment.database,
@@ -94,5 +95,6 @@ fun Application.testApiModule(
         narmesteLederClient = narmesteLederClient,
         dokumentportenClient = dokumentportenClient,
         pdfRepository = externalMockEnvironment.pdfRepository,
+        moteRepository = externalMockEnvironment.moteRepository,
     )
 }

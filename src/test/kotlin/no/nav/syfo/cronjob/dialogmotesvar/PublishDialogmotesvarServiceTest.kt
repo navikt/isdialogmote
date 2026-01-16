@@ -8,10 +8,10 @@ import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.*
-import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidsgiverVarsel
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerArbeidstakerVarsel
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateBehandlersvarPublishedAt
+import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidsgiverVarsel
+import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerVarsel
+import no.nav.syfo.infrastructure.database.updateBehandlersvarPublishedAt
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteWithBehandler
 import org.junit.jupiter.api.*
