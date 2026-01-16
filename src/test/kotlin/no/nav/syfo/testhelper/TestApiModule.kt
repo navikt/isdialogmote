@@ -28,7 +28,8 @@ fun Application.testApiModule(
     )
     val dialogmotedeltakerService = DialogmotedeltakerService(
         database = externalMockEnvironment.database,
-        arbeidstakerVarselService = arbeidstakerVarselService
+        arbeidstakerVarselService = arbeidstakerVarselService,
+        moteRepository = externalMockEnvironment.moteRepository,
     )
     val dialogmoterelasjonService = DialogmoterelasjonService(
         database = externalMockEnvironment.database,
@@ -94,5 +95,6 @@ fun Application.testApiModule(
         narmesteLederClient = narmesteLederClient,
         dokumentportenClient = dokumentportenClient,
         pdfRepository = externalMockEnvironment.pdfRepository,
+        moteRepository = externalMockEnvironment.moteRepository,
     )
 }

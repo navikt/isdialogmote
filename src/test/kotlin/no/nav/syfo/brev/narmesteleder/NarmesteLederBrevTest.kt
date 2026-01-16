@@ -62,6 +62,7 @@ class NarmesteLederBrevTest {
     private val dialogmotedeltakerService = DialogmotedeltakerService(
         arbeidstakerVarselService = arbeidstakerVarselService,
         database = database,
+        moteRepository = externalMockEnvironment.moteRepository,
     )
     private val dialogmoterelasjonService = DialogmoterelasjonService(
         dialogmotedeltakerService = dialogmotedeltakerService,

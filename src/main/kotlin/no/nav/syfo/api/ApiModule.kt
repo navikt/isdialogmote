@@ -44,6 +44,7 @@ fun Application.apiModule(
     narmesteLederClient: NarmesteLederClient,
     dokumentportenClient: DokumentportenClient,
     pdfRepository: IPdfRepository,
+    moteRepository: MoteRepository,
 ) {
     installMetrics()
     installCallId()
@@ -91,7 +92,7 @@ fun Application.apiModule(
 
     val dialogmoteService = DialogmoteService(
         database = database,
-        moteRepository = MoteRepository(database),
+        moteRepository = moteRepository,
         dialogmotedeltakerService = dialogmotedeltakerService,
         dialogmotestatusService = dialogmotestatusService,
         dialogmoterelasjonService = dialogmoterelasjonService,

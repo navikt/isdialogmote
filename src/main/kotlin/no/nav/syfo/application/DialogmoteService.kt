@@ -827,7 +827,7 @@ class DialogmoteService(
         val dialogmoteDeltagerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(
             motedeltakerArbeidsgiverId = brev.motedeltakerArbeidsgiverId,
         )
-        val arbeidstakerPersonIdent = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(
+        val arbeidstakerPersonIdent = moteRepository.getMotedeltakerArbeidstaker(
             moteId = dialogmoteDeltagerArbeidsgiver.moteId,
         ).personIdent
 

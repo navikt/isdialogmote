@@ -42,6 +42,7 @@ import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteRepository
 import no.nav.syfo.infrastructure.database.dialogmote.database.repository.PdfRepository
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventConsumer
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventStatusProducer
@@ -148,6 +149,7 @@ fun main() {
     lateinit var behandlerVarselService: BehandlerVarselService
     lateinit var dialogmoterelasjonService: DialogmoterelasjonService
     lateinit var dialogmotestatusService: DialogmotestatusService
+    val moteRepository = MoteRepository(database = applicationDatabase)
 
     val applicationEngineEnvironment = applicationEnvironment {
         log = logger
@@ -177,7 +179,8 @@ fun main() {
             )
             val dialogmotedeltakerService = DialogmotedeltakerService(
                 database = applicationDatabase,
-                arbeidstakerVarselService = arbeidstakerVarselService
+                arbeidstakerVarselService = arbeidstakerVarselService,
+                moteRepository = moteRepository,
             )
             dialogmoterelasjonService = DialogmoterelasjonService(
                 database = applicationDatabase,
@@ -214,6 +217,7 @@ fun main() {
                 narmesteLederClient = narmesteLederClient,
                 dokumentportenClient = dokumentportenClient,
                 pdfRepository = pdfRepository,
+                moteRepository = moteRepository,
             )
             cronjobModule(
                 applicationState = applicationState,
@@ -229,9 +233,8 @@ fun main() {
             monitor.subscribe(ApplicationStarted) {
                 applicationState.ready = true
                 logger.info(
-                    "Application is ready, running Java VM ${Runtime.version()} on this number of processors: ${
-                    Runtime.getRuntime().availableProcessors()
-                    }"
+                    "Application is ready, running Java VM ${Runtime.version()} on this number of processors: " +
+                        "${Runtime.getRuntime().availableProcessors()}"
                 )
                 val dialogmeldingService = DialogmeldingService(
                     behandlerVarselService = behandlerVarselService,
