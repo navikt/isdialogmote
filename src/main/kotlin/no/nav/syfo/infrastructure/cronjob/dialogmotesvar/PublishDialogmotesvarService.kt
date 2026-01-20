@@ -1,12 +1,12 @@
 package no.nav.syfo.infrastructure.cronjob.dialogmotesvar
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmote.database.getUnpublishedArbeidsgiversvar
-import no.nav.syfo.infrastructure.database.dialogmote.database.getUnpublishedArbeidstakersvar
-import no.nav.syfo.infrastructure.database.dialogmote.database.getUnpublishedBehandlersvar
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateArbeidsgiverVarselPublishedAt
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateArbeidstakerVarselPublishedAt
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateBehandlersvarPublishedAt
+import no.nav.syfo.infrastructure.database.getUnpublishedArbeidsgiversvar
+import no.nav.syfo.infrastructure.database.getUnpublishedArbeidstakersvar
+import no.nav.syfo.infrastructure.database.getUnpublishedBehandlersvar
+import no.nav.syfo.infrastructure.database.updateArbeidsgiverVarselPublishedAt
+import no.nav.syfo.infrastructure.database.updateArbeidstakerVarselPublishedAt
+import no.nav.syfo.infrastructure.database.updateBehandlersvarPublishedAt
 
 class PublishDialogmotesvarService(
     private val database: DatabaseInterface,

@@ -1,7 +1,7 @@
 package no.nav.syfo.application
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmote
+import no.nav.syfo.infrastructure.database.getDialogmote
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorAction

@@ -1,9 +1,9 @@
 package no.nav.syfo.application
 
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.api.dto.DialogmoteStatusEndringDTO
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateMoteStatus
+import no.nav.syfo.infrastructure.database.updateMoteStatus
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.NewDialogmote

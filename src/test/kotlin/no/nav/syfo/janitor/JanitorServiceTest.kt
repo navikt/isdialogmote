@@ -10,10 +10,10 @@ import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.application.DialogmotedeltakerService
 import no.nav.syfo.application.DialogmoterelasjonService
 import no.nav.syfo.application.DialogmotestatusService
-import no.nav.syfo.infrastructure.database.dialogmote.database.createNewDialogmoteWithReferences
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
-import no.nav.syfo.infrastructure.database.dialogmote.database.getDialogmoteList
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.model.PDialogmote
+import no.nav.syfo.infrastructure.database.getDialogmoteList
+import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.janitor.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
@@ -43,7 +43,11 @@ class JanitorServiceTest {
         moteStatusEndretRepository = moteStatusEndretRepository,
     )
     private val dialogmotedeltakerService =
-        DialogmotedeltakerService(database = database, arbeidstakerVarselService = mockk())
+        DialogmotedeltakerService(
+            database = database,
+            arbeidstakerVarselService = mockk(),
+            moteRepository = externalMockEnvironment.moteRepository
+        )
     private val dialogmoterelasjonService = DialogmoterelasjonService(
         database = database,
         dialogmotedeltakerService = dialogmotedeltakerService,

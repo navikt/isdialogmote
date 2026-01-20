@@ -1,9 +1,9 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database.repository
+package no.nav.syfo.infrastructure.database.repository
 
 import no.nav.syfo.application.IPdfRepository
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmote.database.assertThatExactlyOneElement
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PPdf
+import no.nav.syfo.infrastructure.database.assertThatExactlyOneElement
+import no.nav.syfo.infrastructure.database.model.PPdf
 import no.nav.syfo.infrastructure.database.toList
 import java.sql.Connection
 import java.sql.ResultSet

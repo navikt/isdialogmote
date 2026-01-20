@@ -19,7 +19,7 @@ import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteRepository
+import no.nav.syfo.infrastructure.database.repository.MoteRepository
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 
 fun Application.apiModule(
@@ -44,6 +44,7 @@ fun Application.apiModule(
     narmesteLederClient: NarmesteLederClient,
     dokumentportenClient: DokumentportenClient,
     pdfRepository: IPdfRepository,
+    moteRepository: MoteRepository,
 ) {
     installMetrics()
     installCallId()
@@ -91,7 +92,7 @@ fun Application.apiModule(
 
     val dialogmoteService = DialogmoteService(
         database = database,
-        moteRepository = MoteRepository(database),
+        moteRepository = moteRepository,
         dialogmotedeltakerService = dialogmotedeltakerService,
         dialogmotestatusService = dialogmotestatusService,
         dialogmoterelasjonService = dialogmoterelasjonService,

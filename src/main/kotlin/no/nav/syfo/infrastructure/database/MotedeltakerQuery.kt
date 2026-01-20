@@ -1,15 +1,13 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database
+package no.nav.syfo.infrastructure.database
 
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.BehandlerType
 import no.nav.syfo.domain.dialogmote.NewDialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.dialogmote.NewDialogmotedeltakerBehandler
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PMotedeltakerArbeidsgiver
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PMotedeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PMotedeltakerBehandler
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerArbeidsgiver
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerArbeidstaker
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerBehandler
 import java.sql.*
 import java.time.Instant
 import java.util.*
@@ -286,7 +284,7 @@ const val queryCreateMotedeltakerArbeidsgiver =
 fun Connection.createMotedeltakerArbeidsgiver(
     commit: Boolean = true,
     moteId: Int,
-    newDialogmotedeltakerArbeidsgiver: NewDialogmotedeltakerArbeidsgiver
+    newDialogmotedeltakerArbeidsgiver: NewDialogmotedeltakerArbeidsgiver,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 

@@ -19,7 +19,7 @@ import no.nav.syfo.application.BehandlerVarselService
 import no.nav.syfo.infrastructure.cronjob.statusendring.DialogmoteStatusEndringProducer
 import no.nav.syfo.infrastructure.cronjob.statusendring.PublishDialogmoteStatusEndringCronjob
 import no.nav.syfo.infrastructure.cronjob.statusendring.PublishDialogmoteStatusEndringService
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse

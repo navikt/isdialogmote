@@ -26,7 +26,7 @@ import no.nav.syfo.infrastructure.kafka.dialogmelding.kafkaDialogmeldingConsumer
 import no.nav.syfo.application.DialogmotedeltakerService
 import no.nav.syfo.application.DialogmoterelasjonService
 import no.nav.syfo.application.DialogmotestatusService
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.application.IdenthendelseService
 import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumer
 import no.nav.syfo.infrastructure.kafka.identhendelse.kafkaIdenthendelseConsumerConfig
@@ -42,7 +42,8 @@ import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.PdfRepository
+import no.nav.syfo.infrastructure.database.repository.MoteRepository
+import no.nav.syfo.infrastructure.database.repository.PdfRepository
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventConsumer
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventStatusProducer
 import no.nav.syfo.infrastructure.kafka.janitor.kafkaJanitorEventConsumerConfig
@@ -165,9 +166,8 @@ fun main() {
             callGroupSize = 16
         },
         module = {
-            databaseModule(
-                environment = environment
-            )
+            databaseModule(environment = environment)
+            val moteRepository = MoteRepository(database = applicationDatabase)
             behandlerVarselService = BehandlerVarselService(
                 database = applicationDatabase,
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer
@@ -177,7 +177,8 @@ fun main() {
             )
             val dialogmotedeltakerService = DialogmotedeltakerService(
                 database = applicationDatabase,
-                arbeidstakerVarselService = arbeidstakerVarselService
+                arbeidstakerVarselService = arbeidstakerVarselService,
+                moteRepository = moteRepository,
             )
             dialogmoterelasjonService = DialogmoterelasjonService(
                 database = applicationDatabase,
@@ -214,6 +215,7 @@ fun main() {
                 narmesteLederClient = narmesteLederClient,
                 dokumentportenClient = dokumentportenClient,
                 pdfRepository = pdfRepository,
+                moteRepository = moteRepository,
             )
             cronjobModule(
                 applicationState = applicationState,
@@ -229,9 +231,8 @@ fun main() {
             monitor.subscribe(ApplicationStarted) {
                 applicationState.ready = true
                 logger.info(
-                    "Application is ready, running Java VM ${Runtime.version()} on this number of processors: ${
-                    Runtime.getRuntime().availableProcessors()
-                    }"
+                    "Application is ready, running Java VM ${Runtime.version()} on this number of processors: " +
+                        "${Runtime.getRuntime().availableProcessors()}"
                 )
                 val dialogmeldingService = DialogmeldingService(
                     behandlerVarselService = behandlerVarselService,

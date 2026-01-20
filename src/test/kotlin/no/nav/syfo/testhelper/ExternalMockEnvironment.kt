@@ -7,8 +7,8 @@ import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteRepository
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.PdfRepository
+import no.nav.syfo.infrastructure.database.repository.MoteRepository
+import no.nav.syfo.infrastructure.database.repository.PdfRepository
 import no.nav.syfo.testhelper.mock.*
 import redis.clients.jedis.DefaultJedisClientConfig
 import redis.clients.jedis.HostAndPort

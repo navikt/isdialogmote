@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PPdf
+import no.nav.syfo.infrastructure.database.model.PPdf
 import java.sql.Connection
 
 interface IPdfRepository {

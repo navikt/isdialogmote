@@ -1,44 +1,52 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database.domain
+package no.nav.syfo.infrastructure.database.model
 
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
-import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiverVarsel
+import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstakerVarsel
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
 
-data class PMotedeltakerArbeidsgiverVarsel(
+data class PMotedeltakerArbeidstakerVarsel(
     val id: Int,
     val uuid: UUID,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val motedeltakerArbeidsgiverId: Int,
+    val motedeltakerArbeidstakerId: Int,
     val varselType: MotedeltakerVarselType,
+    val digitalt: Boolean,
     val pdfId: Int,
     val status: String,
     val lestDato: LocalDateTime?,
     val fritekst: String,
     val document: List<DocumentComponentDTO>,
+    val journalpostId: String?,
+    val brevBestillingsId: String?,
+    val brevBestiltTidspunkt: LocalDateTime?,
     val svarType: String?,
     val svarTekst: String?,
     val svarTidspunkt: LocalDateTime?,
     val svarPublishedToKafkaAt: OffsetDateTime?,
 )
 
-fun PMotedeltakerArbeidsgiverVarsel.toDialogmotedeltakerArbeidsgiver() =
-    DialogmotedeltakerArbeidsgiverVarsel(
+fun PMotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstaker() =
+    DialogmotedeltakerArbeidstakerVarsel(
         id = this.id,
         uuid = this.uuid,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt,
-        motedeltakerArbeidsgiverId = this.motedeltakerArbeidsgiverId,
+        motedeltakerArbeidstakerId = this.motedeltakerArbeidstakerId,
         varselType = this.varselType,
+        digitalt = this.digitalt,
         pdfId = this.pdfId,
         status = this.status,
-        lestDatoArbeidsgiver = this.lestDato,
+        lestDatoArbeidstaker = this.lestDato,
         fritekst = this.fritekst,
         document = this.document,
+        journalpostId = this.journalpostId,
+        brevBestillingsId = this.brevBestillingsId,
+        brevBestiltTidspunkt = this.brevBestiltTidspunkt,
         svarType = this.svarType?.let {
             DialogmoteSvarType.valueOf(this.svarType)
         },

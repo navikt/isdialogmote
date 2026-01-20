@@ -1,9 +1,9 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database.repository
+package no.nav.syfo.infrastructure.database.repository
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.api.dto.DialogmoteStatusEndringDTO
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PMoteStatusEndret
+import no.nav.syfo.infrastructure.database.model.PMoteStatusEndret
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import java.sql.Connection

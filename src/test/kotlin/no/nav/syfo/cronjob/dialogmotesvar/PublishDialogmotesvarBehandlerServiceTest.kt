@@ -9,7 +9,7 @@ import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.Dialogmotesvar
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.DialogmotesvarProducer
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.PublishDialogmotesvarService
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.SenderType
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerBehandlerVarselSvar
+import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerVarselSvar
 import no.nav.syfo.testhelper.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals

@@ -14,17 +14,28 @@ import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
+import no.nav.syfo.infrastructure.database.CreatedDialogmoteIdentifiers
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmote.database.*
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toReferat
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteRepository
+import no.nav.syfo.infrastructure.database.createMotedeltakerVarselArbeidsgiver
+import no.nav.syfo.infrastructure.database.createMotedeltakerVarselArbeidstaker
+import no.nav.syfo.infrastructure.database.createMotedeltakerVarselBehandler
+import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.createNewReferat
+import no.nav.syfo.infrastructure.database.model.toReferat
+import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
+import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidstaker
+import no.nav.syfo.infrastructure.database.getReferat
+import no.nav.syfo.infrastructure.database.updateMoteTidSted
+import no.nav.syfo.infrastructure.database.updateMoteTildeltVeileder
+import no.nav.syfo.infrastructure.database.updateMotedeltakerBehandler
+import no.nav.syfo.infrastructure.database.updateReferat
 import java.sql.Connection
 import java.time.LocalDateTime
 import java.util.*
 
 class DialogmoteService(
     private val database: DatabaseInterface,
-    private val moteRepository: MoteRepository,
+    private val moteRepository: IMoteRepository,
     private val dialogmotedeltakerService: DialogmotedeltakerService,
     private val dialogmotestatusService: DialogmotestatusService,
     private val dialogmoterelasjonService: DialogmoterelasjonService,
@@ -827,7 +838,7 @@ class DialogmoteService(
         val dialogmoteDeltagerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(
             motedeltakerArbeidsgiverId = brev.motedeltakerArbeidsgiverId,
         )
-        val arbeidstakerPersonIdent = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(
+        val arbeidstakerPersonIdent = moteRepository.getMotedeltakerArbeidstaker(
             moteId = dialogmoteDeltagerArbeidsgiver.moteId,
         ).personIdent
 

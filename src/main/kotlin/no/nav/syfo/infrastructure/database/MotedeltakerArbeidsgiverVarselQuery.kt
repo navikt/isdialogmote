@@ -1,10 +1,8 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database
+package no.nav.syfo.infrastructure.database
 
 import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.api.authentication.configuredJacksonMapper
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.toList
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PMotedeltakerArbeidsgiverVarsel
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType

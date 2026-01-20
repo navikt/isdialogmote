@@ -6,9 +6,9 @@ import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.database.Database
-import no.nav.syfo.infrastructure.database.dialogmote.database.createMotedeltakerBehandlerVarselSvar
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMote
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid
+import no.nav.syfo.infrastructure.database.createMotedeltakerBehandlerVarselSvar
+import no.nav.syfo.infrastructure.database.getMote
+import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid
 import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.generator.generateDialogmoteSvar
@@ -32,18 +32,18 @@ class BehandlerVarselServiceTest {
 
     @BeforeEach
     fun beforeEach() {
-        mockkStatic("no.nav.syfo.infrastructure.database.dialogmote.database.MoteQueryKt")
-        mockkStatic("no.nav.syfo.infrastructure.database.dialogmote.database.MotedeltakerBehandlerVarselQueryKt")
-        mockkStatic("no.nav.syfo.infrastructure.database.dialogmote.database.MotedeltakerBehandlerVarselSvarQueryKt")
+        mockkStatic("no.nav.syfo.infrastructure.database.MoteQueryKt")
+        mockkStatic("no.nav.syfo.infrastructure.database.MotedeltakerBehandlerVarselQueryKt")
+        mockkStatic("no.nav.syfo.infrastructure.database.MotedeltakerBehandlerVarselSvarQueryKt")
     }
 
     @AfterEach
     fun afterEach() {
         clearMocks(database)
         clearMocks(behandlerDialogmeldingProducer)
-        unmockkStatic("no.nav.syfo.infrastructure.database.dialogmote.database.MoteQueryKt")
-        unmockkStatic("no.nav.syfo.infrastructure.database.dialogmote.database.MotedeltakerBehandlerVarselQueryKt")
-        unmockkStatic("no.nav.syfo.infrastructure.database.dialogmote.database.MotedeltakerBehandlerVarselSvarQueryKt")
+        unmockkStatic("no.nav.syfo.infrastructure.database.MoteQueryKt")
+        unmockkStatic("no.nav.syfo.infrastructure.database.MotedeltakerBehandlerVarselQueryKt")
+        unmockkStatic("no.nav.syfo.infrastructure.database.MotedeltakerBehandlerVarselSvarQueryKt")
     }
 
     @Test

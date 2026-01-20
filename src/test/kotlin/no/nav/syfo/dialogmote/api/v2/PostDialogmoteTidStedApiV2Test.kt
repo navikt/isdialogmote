@@ -20,7 +20,7 @@ import no.nav.syfo.domain.ForesporselType
 import no.nav.syfo.domain.SvarType
 import no.nav.syfo.domain.dialogmote.*
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
 import no.nav.syfo.infrastructure.kafka.behandler.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.*

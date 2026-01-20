@@ -1,9 +1,7 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database
+package no.nav.syfo.infrastructure.database
 
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.domain.dialogmote.TidStedDTO
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PTidSted
+import no.nav.syfo.infrastructure.database.model.PTidSted
 import java.sql.*
 import java.time.Instant
 import java.util.UUID

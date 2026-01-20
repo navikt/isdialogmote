@@ -2,27 +2,27 @@ package no.nav.syfo.application
 
 import java.time.LocalDateTime
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmoteDeltakerAnnen
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toDialogmotedeltakerBehandler
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.toReferat
+import no.nav.syfo.infrastructure.database.model.toDialogmoteDeltakerAnnen
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
+import no.nav.syfo.infrastructure.database.model.toReferat
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
 import no.nav.syfo.domain.dialogmote.Referat
 import no.nav.syfo.domain.dialogmote.ReferatForJournalpostDistribusjon
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
-import no.nav.syfo.infrastructure.database.dialogmote.database.getAndreDeltakereForReferatID
-import no.nav.syfo.infrastructure.database.dialogmote.database.getFerdigstilteReferatWithoutJournalpostArbeidsgiverList
-import no.nav.syfo.infrastructure.database.dialogmote.database.getFerdigstilteReferatWithoutJournalpostArbeidstakerList
-import no.nav.syfo.infrastructure.database.dialogmote.database.getFerdigstilteReferatWithoutJournalpostBehandlerList
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMoteDeltakerArbeidsgiver
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMoteDeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.dialogmote.database.getMoteDeltakerBehandler
-import no.nav.syfo.infrastructure.database.dialogmote.database.getReferatForFysiskBrevUtsending
-import no.nav.syfo.infrastructure.database.dialogmote.database.getTidSted
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateReferatBrevBestilt
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateReferatJournalpostIdArbeidsgiver
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateReferatJournalpostIdArbeidstaker
-import no.nav.syfo.infrastructure.database.dialogmote.database.updateReferatJournalpostIdBehandler
+import no.nav.syfo.infrastructure.database.getAndreDeltakereForReferatID
+import no.nav.syfo.infrastructure.database.getFerdigstilteReferatWithoutJournalpostArbeidsgiverList
+import no.nav.syfo.infrastructure.database.getFerdigstilteReferatWithoutJournalpostArbeidstakerList
+import no.nav.syfo.infrastructure.database.getFerdigstilteReferatWithoutJournalpostBehandlerList
+import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
+import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidstaker
+import no.nav.syfo.infrastructure.database.getMoteDeltakerBehandler
+import no.nav.syfo.infrastructure.database.getReferatForFysiskBrevUtsending
+import no.nav.syfo.infrastructure.database.getTidSted
+import no.nav.syfo.infrastructure.database.updateReferatBrevBestilt
+import no.nav.syfo.infrastructure.database.updateReferatJournalpostIdArbeidsgiver
+import no.nav.syfo.infrastructure.database.updateReferatJournalpostIdArbeidstaker
+import no.nav.syfo.infrastructure.database.updateReferatJournalpostIdBehandler
 
 class ReferatJournalpostService(
     private val database: DatabaseInterface,

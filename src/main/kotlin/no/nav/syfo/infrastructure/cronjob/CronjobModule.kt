@@ -21,7 +21,7 @@ import no.nav.syfo.infrastructure.cronjob.statusendring.PublishDialogmoteStatusE
 import no.nav.syfo.infrastructure.cronjob.statusendring.PublishDialogmoteStatusEndringService
 import no.nav.syfo.infrastructure.cronjob.statusendring.kafkaDialogmoteStatusEndringProducerConfig
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.launchBackgroundTask
 import org.apache.kafka.clients.producer.KafkaProducer
 

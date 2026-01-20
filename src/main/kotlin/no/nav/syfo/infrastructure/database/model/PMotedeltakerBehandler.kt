@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database.domain
+package no.nav.syfo.infrastructure.database.model
 
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.BehandlerType
@@ -24,7 +24,7 @@ data class PMotedeltakerBehandler(
 )
 
 fun PMotedeltakerBehandler.toDialogmotedeltakerBehandler(
-    dialogmotedeltakerBehandlerVarsel: List<DialogmotedeltakerBehandlerVarsel>
+    dialogmotedeltakerBehandlerVarsel: List<DialogmotedeltakerBehandlerVarsel>,
 ) = DialogmotedeltakerBehandler(
     id = this.id,
     uuid = this.uuid,

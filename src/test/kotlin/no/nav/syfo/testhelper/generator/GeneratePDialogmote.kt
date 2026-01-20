@@ -1,7 +1,7 @@
 package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.domain.dialogmote.Dialogmote
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
+import no.nav.syfo.infrastructure.database.model.PDialogmote
 import java.time.LocalDateTime
 import java.util.*
 

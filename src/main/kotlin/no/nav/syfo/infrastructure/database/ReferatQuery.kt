@@ -1,10 +1,8 @@
-package no.nav.syfo.infrastructure.database.dialogmote.database
+package no.nav.syfo.infrastructure.database
 
 import com.fasterxml.jackson.core.type.TypeReference
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.toList
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PMotedeltakerAnnen
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PReferat
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerAnnen
+import no.nav.syfo.infrastructure.database.model.PReferat
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO

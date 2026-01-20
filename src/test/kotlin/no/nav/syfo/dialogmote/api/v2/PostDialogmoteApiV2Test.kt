@@ -14,7 +14,7 @@ import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
 import no.nav.syfo.domain.dialogmote.*
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
-import no.nav.syfo.infrastructure.database.dialogmote.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
 import no.nav.syfo.infrastructure.kafka.behandler.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
