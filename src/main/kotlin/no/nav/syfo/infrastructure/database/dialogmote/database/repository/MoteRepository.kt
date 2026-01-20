@@ -1,21 +1,21 @@
 package no.nav.syfo.infrastructure.database.dialogmote.database.repository
 
 import no.nav.syfo.domain.EnhetNr
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.toList
-import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.dialogmote.database.domain.PDialogmote
+import no.nav.syfo.infrastructure.database.toList
 import java.sql.ResultSet
 import java.util.*
 
 class MoteRepository(private val database: DatabaseInterface) {
 
-    fun getMote(moteUUID: UUID): List<PDialogmote> =
+    fun getMote(moteUUID: UUID): PDialogmote =
         database.connection.use { connection ->
             connection.prepareStatement(GET_DIALOGMOTE_FOR_UUID_QUERY).use {
                 it.setString(1, moteUUID.toString())
                 it.executeQuery().toList { toPDialogmote() }
-            }
+            }.first()
         }
 
     fun getMoterFor(personIdent: PersonIdent): List<PDialogmote> =

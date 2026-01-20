@@ -39,15 +39,15 @@ class DialogmoteService(
     fun getDialogmote(
         moteUUID: UUID,
     ): Dialogmote {
-        return moteRepository.getMote(moteUUID).first().let { pDialogmote ->
+        return moteRepository.getMote(moteUUID).let { pDialogmote ->
             dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
         }
     }
 
     fun getDialogmoteList(
-        personIdent: PersonIdent,
+        personident: PersonIdent,
     ): List<Dialogmote> {
-        return moteRepository.getMoterFor(personIdent).map { pDialogmote ->
+        return moteRepository.getMoterFor(personident).map { pDialogmote ->
             dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
         }
     }
