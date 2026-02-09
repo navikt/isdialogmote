@@ -28,16 +28,3 @@ fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(
     type = DialogmotedeltakerType.ARBEIDSTAKER,
     varselList = dialogmotedeltakerArbeidstakerVarsel,
 )
-
-fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstakerWithVarsler(
-    dialogmotedeltakerArbeidstakerVarsel: List<PMotedeltakerArbeidstakerVarsel>,
-) = DialogmotedeltakerArbeidstaker(
-    id = this.id,
-    uuid = this.uuid,
-    createdAt = this.createdAt,
-    updatedAt = this.updatedAt,
-    moteId = this.moteId,
-    personIdent = this.personIdent,
-    type = DialogmotedeltakerType.ARBEIDSTAKER,
-    varselList = dialogmotedeltakerArbeidstakerVarsel.map { it.toDialogmotedeltakerArbeidstaker() },
-)

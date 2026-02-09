@@ -2,7 +2,9 @@ package no.nav.syfo.application
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiver
+import no.nav.syfo.infrastructure.database.model.toMoteArbeidsgiverVarsel
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstaker
+import no.nav.syfo.infrastructure.database.model.toMoteArbeidstakerVarsel
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandlerVarsel
 import no.nav.syfo.domain.PersonIdent
@@ -39,7 +41,7 @@ class DialogmotedeltakerVarselJournalpostService(
     private fun getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList(): List<Pair<PersonIdent, DialogmotedeltakerArbeidstakerVarsel>> {
         val motedeltakerArbeidtakerVarselList = database.getMotedeltakerArbeidstakerVarselWithoutJournalpost()
         return motedeltakerArbeidtakerVarselList.map {
-            it.toDialogmotedeltakerArbeidstaker()
+            it.toMoteArbeidstakerVarsel()
         }.map { motedeltakerArbeidstakerVarsel ->
             val motedeltakerArbeidstaker =
                 database.getMotedeltakerArbeidstakerById(motedeltakerArbeidstakerVarsel.motedeltakerArbeidstakerId)
@@ -60,7 +62,7 @@ class DialogmotedeltakerVarselJournalpostService(
     private fun getDialogmotedeltakerArbeidsgiverVarselWithoutJournalpostList(): List<Triple<Virksomhetsnummer, PersonIdent, DialogmotedeltakerArbeidsgiverVarsel>> {
         val motedeltakerArbeidsgiverVarselList = database.getMotedeltakerArbeidsgiverVarselWithoutJournalpost()
         return motedeltakerArbeidsgiverVarselList.map {
-            it.toDialogmotedeltakerArbeidsgiver()
+            it.toMoteArbeidsgiverVarsel()
         }.map { motedeltakerArbeidsgiverVarsel ->
             val motedeltakerArbeidsgiver =
                 database.getMoteDeltakerArbeidsgiverById(motedeltakerArbeidsgiverVarsel.motedeltakerArbeidsgiverId)
@@ -103,7 +105,7 @@ class DialogmotedeltakerVarselJournalpostService(
 
     fun getDialogmotedeltakerArbeidstakerVarselForJournalpostDistribusjonList(): List<Triple<PersonIdent, DialogmotedeltakerArbeidstakerVarsel, LocalDateTime>> {
         return database.getMotedeltakerArbeidstakerVarselForFysiskBrevUtsending()
-            .map { it.toDialogmotedeltakerArbeidstaker() }
+            .map { it.toMoteArbeidstakerVarsel() }
             .filter { journalforingVarselTypeList.contains(it.varselType) }
             .map { motedeltakerArbeidstakerVarsel ->
                 val motedeltakerArbeidstaker =

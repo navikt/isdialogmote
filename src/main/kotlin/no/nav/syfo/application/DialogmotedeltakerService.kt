@@ -14,10 +14,11 @@ import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandlerVarselSvar
 import no.nav.syfo.domain.dialogmote.erBrukeroppgaveVarsel
 import no.nav.syfo.infrastructure.database.model.toDialogmoteDeltakerVarselSvar
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiver
+import no.nav.syfo.infrastructure.database.model.toMoteArbeidsgiverVarsel
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstaker
+import no.nav.syfo.infrastructure.database.model.toMoteArbeidstakerVarsel
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandlerVarsel
-import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiverById
 import no.nav.syfo.infrastructure.database.getMoteDeltakerBehandler
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidsgiverVarsel
@@ -45,11 +46,21 @@ class DialogmotedeltakerService(
         return moteRepository.getMotedeltakerArbeidstaker(moteId)
     }
 
+    fun getDialogmoteDeltakerArbeidstakerById(
+        moteDeltakerArbeidstakerId: Int,
+    ): DialogmotedeltakerArbeidstaker {
+        val pMotedeltakerArbeidstaker = database.getMotedeltakerArbeidstakerById(moteDeltakerArbeidstakerId)
+        val motedeltakerArbeidstakerVarselList = getDialogmoteDeltakerArbeidstakerVarselList(
+            pMotedeltakerArbeidstaker.id
+        )
+        return pMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(motedeltakerArbeidstakerVarselList)
+    }
+
     private fun getDialogmoteDeltakerArbeidstakerVarselList(
         motedeltakerArbeidstakerId: Int,
     ): List<DialogmotedeltakerArbeidstakerVarsel> {
         return database.getMotedeltakerArbeidstakerVarsel(motedeltakerArbeidstakerId).map {
-            it.toDialogmotedeltakerArbeidstaker()
+            it.toMoteArbeidstakerVarsel()
         }
     }
 
@@ -57,15 +68,31 @@ class DialogmotedeltakerService(
         uuid: UUID,
     ): List<DialogmotedeltakerArbeidstakerVarsel> {
         return database.getMotedeltakerArbeidstakerVarsel(uuid).map {
-            it.toDialogmotedeltakerArbeidstaker()
+            it.toMoteArbeidstakerVarsel()
         }
+    }
+
+    fun getDialogmoteDeltakerArbeidsgiver(
+        moteId: Int,
+    ): DialogmotedeltakerArbeidsgiver {
+        return moteRepository.getMotedeltakerArbeidsgiver(moteId)
+    }
+
+    fun getDialogmoteDeltakerArbeidsgiverById(
+        motedeltakerArbeidsgiverId: Int,
+    ): DialogmotedeltakerArbeidsgiver {
+        val pMotedeltakerArbeidsgiver = database.getMoteDeltakerArbeidsgiverById(motedeltakerArbeidsgiverId)
+        val motedeltakerArbeidsgiverVarselList = getDialogmoteDeltakerArbeidsgiverVarselList(
+            pMotedeltakerArbeidsgiver.id
+        )
+        return pMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(motedeltakerArbeidsgiverVarselList)
     }
 
     private fun getDialogmoteDeltakerArbeidsgiverVarselList(
         motedeltakerArbeidsgiverId: Int,
     ): List<DialogmotedeltakerArbeidsgiverVarsel> {
         return database.getMotedeltakerArbeidsgiverVarsel(motedeltakerArbeidsgiverId).map {
-            it.toDialogmotedeltakerArbeidsgiver()
+            it.toMoteArbeidsgiverVarsel()
         }
     }
 
@@ -73,7 +100,18 @@ class DialogmotedeltakerService(
         uuid: UUID,
     ): List<DialogmotedeltakerArbeidsgiverVarsel> {
         return database.getMotedeltakerArbeidsgiverVarsel(uuid).map {
-            it.toDialogmotedeltakerArbeidsgiver()
+            it.toMoteArbeidsgiverVarsel()
+        }
+    }
+
+    fun getDialogmoteDeltakerBehandler(
+        moteId: Int,
+    ): DialogmotedeltakerBehandler? {
+        return database.getMoteDeltakerBehandler(moteId)?.let {
+            val motedeltakerBehandlerVarselList = getDialogmoteDeltakerBehandlerVarselList(
+                it.id
+            )
+            it.toDialogmotedeltakerBehandler(motedeltakerBehandlerVarselList)
         }
     }
 
@@ -92,47 +130,6 @@ class DialogmotedeltakerService(
         return database.getMotedeltakerBehandlerVarselSvar(motedeltakerBehandlerVarselId).map {
             it.toDialogmoteDeltakerVarselSvar()
         }
-    }
-
-    fun getDialogmoteDeltakerArbeidstakerById(
-        moteDeltakerArbeidstakerId: Int,
-    ): DialogmotedeltakerArbeidstaker {
-        val pMotedeltakerArbeidstaker = database.getMotedeltakerArbeidstakerById(moteDeltakerArbeidstakerId)
-        val motedeltakerArbeidstakerVarselList = getDialogmoteDeltakerArbeidstakerVarselList(
-            pMotedeltakerArbeidstaker.id
-        )
-        return pMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(motedeltakerArbeidstakerVarselList)
-    }
-
-    fun getDialogmoteDeltakerArbeidsgiver(
-        moteId: Int,
-    ): DialogmotedeltakerArbeidsgiver {
-        val pMotedeltakerArbeidsgiver = database.getMoteDeltakerArbeidsgiver(moteId)
-        val motedeltakerArbeidsgiverVarselList = getDialogmoteDeltakerArbeidsgiverVarselList(
-            pMotedeltakerArbeidsgiver.id
-        )
-        return pMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(motedeltakerArbeidsgiverVarselList)
-    }
-
-    fun getDialogmoteDeltakerBehandler(
-        moteId: Int,
-    ): DialogmotedeltakerBehandler? {
-        return database.getMoteDeltakerBehandler(moteId)?.let {
-            val motedeltakerBehandlerVarselList = getDialogmoteDeltakerBehandlerVarselList(
-                it.id
-            )
-            it.toDialogmotedeltakerBehandler(motedeltakerBehandlerVarselList)
-        }
-    }
-
-    fun getDialogmoteDeltakerArbeidsgiverById(
-        motedeltakerArbeidsgiverId: Int,
-    ): DialogmotedeltakerArbeidsgiver {
-        val pMotedeltakerArbeidsgiver = database.getMoteDeltakerArbeidsgiverById(motedeltakerArbeidsgiverId)
-        val motedeltakerArbeidsgiverVarselList = getDialogmoteDeltakerArbeidsgiverVarselList(
-            pMotedeltakerArbeidsgiver.id
-        )
-        return pMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(motedeltakerArbeidsgiverVarselList)
     }
 
     fun updateArbeidstakerBrevSettSomLest(
