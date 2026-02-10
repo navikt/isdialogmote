@@ -17,6 +17,21 @@ data class PMotedeltakerArbeidstaker(
 )
 
 fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(
+    dialogmotedeltakerArbeidstakerVarsel: List<PMotedeltakerArbeidstakerVarsel>,
+) = DialogmotedeltakerArbeidstaker(
+    id = this.id,
+    uuid = this.uuid,
+    createdAt = this.createdAt,
+    updatedAt = this.updatedAt,
+    moteId = this.moteId,
+    personIdent = this.personIdent,
+    type = DialogmotedeltakerType.ARBEIDSTAKER,
+    varselList = dialogmotedeltakerArbeidstakerVarsel.map {
+        it.toDialogmotedeltakerArbeidstakerVarsel()
+    },
+)
+
+fun PMotedeltakerArbeidstaker.toMotedeltakerArbeidstakerUsingDomainVarsler(
     dialogmotedeltakerArbeidstakerVarsel: List<DialogmotedeltakerArbeidstakerVarsel>,
 ) = DialogmotedeltakerArbeidstaker(
     id = this.id,

@@ -17,6 +17,22 @@ data class PMotedeltakerArbeidsgiver(
 )
 
 fun PMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(
+    dialogmotedeltakerArbeidsgiverVarsel: List<PMotedeltakerArbeidsgiverVarsel>,
+) =
+    DialogmotedeltakerArbeidsgiver(
+        id = this.id,
+        uuid = this.uuid,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt,
+        moteId = this.moteId,
+        virksomhetsnummer = this.virksomhetsnummer,
+        type = DialogmotedeltakerType.ARBEIDSGIVER,
+        varselList = dialogmotedeltakerArbeidsgiverVarsel.map {
+            it.toDialogmotedeltakerArbeidsgiverVarsel()
+        },
+    )
+
+fun PMotedeltakerArbeidsgiver.toMotedeltakerArbeidsgiverUsingDomainVarsler(
     dialogmotedeltakerArbeidsgiverVarsel: List<DialogmotedeltakerArbeidsgiverVarsel>,
 ) =
     DialogmotedeltakerArbeidsgiver(

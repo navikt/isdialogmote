@@ -13,10 +13,10 @@ import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandlerVarsel
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandlerVarselSvar
 import no.nav.syfo.domain.dialogmote.erBrukeroppgaveVarsel
 import no.nav.syfo.infrastructure.database.model.toDialogmoteDeltakerVarselSvar
-import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiver
-import no.nav.syfo.infrastructure.database.model.toMoteArbeidsgiverVarsel
-import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.model.toMoteArbeidstakerVarsel
+import no.nav.syfo.infrastructure.database.model.toMotedeltakerArbeidsgiverUsingDomainVarsler
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiverVarsel
+import no.nav.syfo.infrastructure.database.model.toMotedeltakerArbeidstakerUsingDomainVarsler
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstakerVarsel
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandlerVarsel
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiverById
@@ -53,14 +53,14 @@ class DialogmotedeltakerService(
         val motedeltakerArbeidstakerVarselList = getDialogmoteDeltakerArbeidstakerVarselList(
             pMotedeltakerArbeidstaker.id
         )
-        return pMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(motedeltakerArbeidstakerVarselList)
+        return pMotedeltakerArbeidstaker.toMotedeltakerArbeidstakerUsingDomainVarsler(motedeltakerArbeidstakerVarselList)
     }
 
     private fun getDialogmoteDeltakerArbeidstakerVarselList(
         motedeltakerArbeidstakerId: Int,
     ): List<DialogmotedeltakerArbeidstakerVarsel> {
         return database.getMotedeltakerArbeidstakerVarsel(motedeltakerArbeidstakerId).map {
-            it.toMoteArbeidstakerVarsel()
+            it.toDialogmotedeltakerArbeidstakerVarsel()
         }
     }
 
@@ -68,7 +68,7 @@ class DialogmotedeltakerService(
         uuid: UUID,
     ): List<DialogmotedeltakerArbeidstakerVarsel> {
         return database.getMotedeltakerArbeidstakerVarsel(uuid).map {
-            it.toMoteArbeidstakerVarsel()
+            it.toDialogmotedeltakerArbeidstakerVarsel()
         }
     }
 
@@ -85,14 +85,14 @@ class DialogmotedeltakerService(
         val motedeltakerArbeidsgiverVarselList = getDialogmoteDeltakerArbeidsgiverVarselList(
             pMotedeltakerArbeidsgiver.id
         )
-        return pMotedeltakerArbeidsgiver.toDialogmotedeltakerArbeidsgiver(motedeltakerArbeidsgiverVarselList)
+        return pMotedeltakerArbeidsgiver.toMotedeltakerArbeidsgiverUsingDomainVarsler(motedeltakerArbeidsgiverVarselList)
     }
 
     private fun getDialogmoteDeltakerArbeidsgiverVarselList(
         motedeltakerArbeidsgiverId: Int,
     ): List<DialogmotedeltakerArbeidsgiverVarsel> {
         return database.getMotedeltakerArbeidsgiverVarsel(motedeltakerArbeidsgiverId).map {
-            it.toMoteArbeidsgiverVarsel()
+            it.toDialogmotedeltakerArbeidsgiverVarsel()
         }
     }
 
@@ -100,7 +100,7 @@ class DialogmotedeltakerService(
         uuid: UUID,
     ): List<DialogmotedeltakerArbeidsgiverVarsel> {
         return database.getMotedeltakerArbeidsgiverVarsel(uuid).map {
-            it.toMoteArbeidsgiverVarsel()
+            it.toDialogmotedeltakerArbeidsgiverVarsel()
         }
     }
 
