@@ -55,8 +55,10 @@ interface DatabaseInterface {
     val connection: Connection
 }
 
-fun <T> ResultSet.toList(mapper: ResultSet.() -> T) = mutableListOf<T>().apply {
+fun <T> ResultSet.toList(mapper: ResultSet.() -> T): List<T> {
+    val results = mutableListOf<T>()
     while (next()) {
-        add(mapper())
+        results.add(mapper())
     }
+    return results.toList()
 }

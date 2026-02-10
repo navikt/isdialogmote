@@ -45,7 +45,7 @@ class DialogmoteOutdatedCronjob(
         outdatedResult: DialogmoteCronjobResult,
     ) {
         val cutoff = outdatedDialogmoterCutoff.atStartOfDay()
-        val moteListe = database.findOutdatedMoter(cutoff)
+        val moteListe = database.findOutdatedMoter(cutoff).toMutableList()
         // moter som skal lukkes adhoc (basert på hardkodet liste med uuid'er)
         uuids.forEach { uuid -> moteListe.addAll(database.getDialogmote(UUID.fromString(uuid))) }
         moteListe.retainAll { pDialogmote ->
