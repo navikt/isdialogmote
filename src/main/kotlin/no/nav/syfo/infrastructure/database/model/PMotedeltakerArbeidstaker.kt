@@ -31,6 +31,7 @@ fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(
     },
 )
 
+@Deprecated(message = "Use toDialogmotedeltakerArbeidstaker that takes List<PMotedeltakerArbeidstakerVarsel> instead")
 fun PMotedeltakerArbeidstaker.toMotedeltakerArbeidstakerUsingDomainVarsler(
     dialogmotedeltakerArbeidstakerVarsel: List<DialogmotedeltakerArbeidstakerVarsel>,
 ) = DialogmotedeltakerArbeidstaker(
