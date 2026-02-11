@@ -5,7 +5,6 @@ import no.nav.syfo.ApplicationState
 import no.nav.syfo.Environment
 import no.nav.syfo.infrastructure.client.cache.ValkeyConfig
 import java.net.URI
-import java.time.LocalDate
 
 fun testEnvironment() = Environment(
     cluster = "local",
@@ -65,7 +64,7 @@ fun testEnvironment() = Environment(
     dokumentportenUrl = "dokumentportenUrl",
     dokumentportenClientId = "api://dokumentporten/.default",
     dokumentportenSendingEnabled = true,
-    outdatedDialogmoteCutoff = LocalDate.parse("2022-07-01"),
+    outdatedDialogmoteCutoffMonths = 12,
     isJournalforingRetryEnabled = true,
 )
 

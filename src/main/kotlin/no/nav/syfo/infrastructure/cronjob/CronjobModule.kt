@@ -122,7 +122,7 @@ fun Application.cronjobModule(
     val dialogmoteOutdatedCronjob = DialogmoteOutdatedCronjob(
         dialogmotestatusService = dialogmotestatusService,
         dialogmoterelasjonService = dialogmoterelasjonService,
-        outdatedDialogmoterCutoff = environment.outdatedDialogmoteCutoff,
+        outdatedDialogmoterCutoffMonths = environment.outdatedDialogmoteCutoffMonths,
         database = database,
     )
 

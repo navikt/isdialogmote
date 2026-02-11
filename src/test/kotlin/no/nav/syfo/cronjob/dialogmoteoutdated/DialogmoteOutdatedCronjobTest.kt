@@ -87,7 +87,7 @@ class DialogmoteOutdatedCronjobTest {
         dialogmotestatusService = dialogmotestatusService,
         dialogmoterelasjonService = dialogmoterelasjonService,
         database = database,
-        outdatedDialogmoterCutoff = LocalDate.now().minusDays(30),
+        outdatedDialogmoterCutoffMonths = LocalDate.now().minusDays(30),
     )
     private val validToken = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
