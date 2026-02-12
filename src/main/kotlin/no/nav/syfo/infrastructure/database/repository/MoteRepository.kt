@@ -3,13 +3,17 @@ package no.nav.syfo.infrastructure.database.repository
 import no.nav.syfo.application.IMoteRepository
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.model.PDialogmote
-import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstakerWithVarsler
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiver
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstaker
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidstaker
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidstakerVarsel
 import no.nav.syfo.infrastructure.database.toList
+import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidsgiver
+import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidsgiverVarsel
 import java.sql.ResultSet
 import java.util.*
 
@@ -61,11 +65,29 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                 it.setInt(1, moteId)
                 it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
             }.single()
+
             val varsler = connection.prepareStatement(GET_VARSLER_MOTEDELTAKER_ARBEIDSTAKER).use {
                 it.setInt(1, arbeidstaker.id)
                 it.executeQuery().toList { toPMotedeltakerArbeidstakerVarsel() }
             }
-            arbeidstaker.toDialogmotedeltakerArbeidstakerWithVarsler(varsler)
+
+            arbeidstaker.toDialogmotedeltakerArbeidstaker(varsler)
+        }
+    }
+
+    override fun getMotedeltakerArbeidsgiver(moteId: Int): DialogmotedeltakerArbeidsgiver {
+        return database.connection.use { connection ->
+            val arbeidsgiver = connection.prepareStatement(GET_MOTEDELTAGER_ARBEIDSGIVER).use {
+                it.setInt(1, moteId)
+                it.executeQuery().toList { toPMotedeltakerArbeidsgiver() }
+            }.single()
+
+            val varsler = connection.prepareStatement(GET_VARSLER_MOTEDELTAKER_ARBEIDSGIVER).use {
+                it.setInt(1, arbeidsgiver.id)
+                it.executeQuery().toList { toPMotedeltakerArbeidsgiverVarsel() }
+            }
+
+            arbeidsgiver.toDialogmotedeltakerArbeidsgiver(varsler)
         }
     }
 
@@ -122,6 +144,21 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                 SELECT *
                 FROM MOTEDELTAKER_ARBEIDSTAKER_VARSEL
                 WHERE motedeltaker_arbeidstaker_id = ?
+                ORDER BY created_at DESC
+            """
+
+        private const val GET_MOTEDELTAGER_ARBEIDSGIVER =
+            """
+                SELECT *
+                FROM MOTEDELTAKER_ARBEIDSGIVER
+                WHERE mote_id = ?
+            """
+
+        private const val GET_VARSLER_MOTEDELTAKER_ARBEIDSGIVER =
+            """
+                SELECT *
+                FROM MOTEDELTAKER_ARBEIDSGIVER_VARSEL
+                WHERE motedeltaker_arbeidsgiver_id = ?
                 ORDER BY created_at DESC
             """
     }

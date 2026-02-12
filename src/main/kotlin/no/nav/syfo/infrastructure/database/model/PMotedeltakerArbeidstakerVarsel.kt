@@ -30,7 +30,7 @@ data class PMotedeltakerArbeidstakerVarsel(
     val svarPublishedToKafkaAt: OffsetDateTime?,
 )
 
-fun PMotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstaker() =
+fun PMotedeltakerArbeidstakerVarsel.toDialogmotedeltakerArbeidstakerVarsel() =
     DialogmotedeltakerArbeidstakerVarsel(
         id = this.id,
         uuid = this.uuid,
