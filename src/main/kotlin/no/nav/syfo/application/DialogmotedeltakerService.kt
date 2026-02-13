@@ -1,6 +1,5 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
@@ -9,24 +8,17 @@ import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstakerVarsel
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
-import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandlerVarsel
-import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandlerVarselSvar
 import no.nav.syfo.domain.dialogmote.erBrukeroppgaveVarsel
-import no.nav.syfo.infrastructure.database.model.toDialogmoteDeltakerVarselSvar
-import no.nav.syfo.infrastructure.database.model.toMotedeltakerArbeidsgiverUsingDomainVarsler
-import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiverVarsel
-import no.nav.syfo.infrastructure.database.model.toMotedeltakerArbeidstakerUsingDomainVarsler
-import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstakerVarsel
-import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
-import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandlerVarsel
+import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiverById
-import no.nav.syfo.infrastructure.database.getMoteDeltakerBehandler
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerById
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerVarsel
-import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerVarselForMotedeltaker
-import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerVarselSvar
 import no.nav.syfo.infrastructure.database.getReferat
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiverVarsel
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstakerVarsel
+import no.nav.syfo.infrastructure.database.model.toMotedeltakerArbeidsgiverUsingDomainVarsler
+import no.nav.syfo.infrastructure.database.model.toMotedeltakerArbeidstakerUsingDomainVarsler
 import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidsgiverVarselLestDato
 import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidsgiverVarselRespons
 import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidstakerVarselLestDato
@@ -107,29 +99,7 @@ class DialogmotedeltakerService(
     fun getDialogmoteDeltakerBehandler(
         moteId: Int,
     ): DialogmotedeltakerBehandler? {
-        return database.getMoteDeltakerBehandler(moteId)?.let {
-            val motedeltakerBehandlerVarselList = getDialogmoteDeltakerBehandlerVarselList(
-                it.id
-            )
-            it.toDialogmotedeltakerBehandler(motedeltakerBehandlerVarselList)
-        }
-    }
-
-    private fun getDialogmoteDeltakerBehandlerVarselList(
-        motedeltakerBehandlerId: Int,
-    ): List<DialogmotedeltakerBehandlerVarsel> {
-        return database.getMotedeltakerBehandlerVarselForMotedeltaker(motedeltakerBehandlerId).map {
-            val behandlerVarselSvar = getDialogmoteDeltakerBehandlerVarselSvar(it.id)
-            it.toDialogmotedeltakerBehandlerVarsel(behandlerVarselSvar)
-        }
-    }
-
-    private fun getDialogmoteDeltakerBehandlerVarselSvar(
-        motedeltakerBehandlerVarselId: Int,
-    ): List<DialogmotedeltakerBehandlerVarselSvar> {
-        return database.getMotedeltakerBehandlerVarselSvar(motedeltakerBehandlerVarselId).map {
-            it.toDialogmoteDeltakerVarselSvar()
-        }
+        return moteRepository.getMotedeltakerBehandler(moteId)
     }
 
     fun updateArbeidstakerBrevSettSomLest(

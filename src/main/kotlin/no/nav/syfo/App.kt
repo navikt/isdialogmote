@@ -227,6 +227,7 @@ fun main() {
                 arbeidstakerVarselService = arbeidstakerVarselService,
                 moteStatusEndretRepository = moteStatusEndretRepository,
                 pdfRepository = pdfRepository,
+                moteRepository = moteRepository,
             )
             monitor.subscribe(ApplicationStarted) {
                 applicationState.ready = true

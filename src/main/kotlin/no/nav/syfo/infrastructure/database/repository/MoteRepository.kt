@@ -5,15 +5,23 @@ import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
+import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.model.PDialogmote
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerBehandlerVarselSvar
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidstakerVarsel
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandlerVarsel
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidsgiverVarsel
+import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidstaker
+import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidstakerVarsel
+import no.nav.syfo.infrastructure.database.toPMotedeltakerBehandler
+import no.nav.syfo.infrastructure.database.toPMotedeltakerBehandlerVarsel
+import no.nav.syfo.util.toOffsetDateTimeUTC
+import java.sql.Connection
 import java.sql.ResultSet
 import java.util.*
 
@@ -91,6 +99,33 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
         }
     }
 
+    override fun getMotedeltakerBehandler(moteId: Int): DialogmotedeltakerBehandler? {
+        return database.connection.use { connection ->
+            val behandler = connection.prepareStatement(GET_MOTEDELTAKER_BEHANDLER).use {
+                it.setInt(1, moteId)
+                it.executeQuery().toList { toPMotedeltakerBehandler() }
+            }.firstOrNull() ?: return null
+
+            val pVarsler = connection.prepareStatement(GET_VARSLER_MOTEDELTAKER_BEHANDLER).use {
+                it.setInt(1, behandler.id)
+                it.executeQuery().toList { toPMotedeltakerBehandlerVarsel() }
+            }
+
+            val varsler = pVarsler.map { pVarsel ->
+                val varselSvar = connection.getMoteDeltakerBehandlerVarselSvar(pVarsel.id)
+                pVarsel.toDialogmotedeltakerBehandlerVarsel(varselSvar)
+            }
+
+            behandler.toDialogmotedeltakerBehandler(varsler)
+        }
+    }
+
+    internal fun Connection.getMoteDeltakerBehandlerVarselSvar(varselId: Int): List<PMotedeltakerBehandlerVarselSvar> =
+        this.prepareStatement(GET_VARSEL_SVAR_MOTEDELTAKER_BEHANDLER).use {
+            it.setInt(1, varselId)
+            it.executeQuery().toList { toPMotedeltakerBehandlerVarselSvar() }
+        }
+
     companion object {
         private const val GET_DIALOGMOTE_FOR_UUID_QUERY =
             """
@@ -161,6 +196,29 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                 WHERE motedeltaker_arbeidsgiver_id = ?
                 ORDER BY created_at DESC
             """
+
+        private const val GET_MOTEDELTAKER_BEHANDLER =
+            """
+                SELECT *
+                FROM MOTEDELTAKER_BEHANDLER
+                WHERE mote_id = ?
+            """
+
+        private const val GET_VARSLER_MOTEDELTAKER_BEHANDLER =
+            """
+                SELECT *
+                FROM MOTEDELTAKER_BEHANDLER_VARSEL
+                WHERE motedeltaker_behandler_id = ?
+                ORDER BY created_at DESC
+            """
+
+        private const val GET_VARSEL_SVAR_MOTEDELTAKER_BEHANDLER =
+            """
+                SELECT *
+                FROM MOTEDELTAKER_BEHANDLER_VARSEL_SVAR
+                WHERE motedeltaker_behandler_varsel_id = ?
+                ORDER BY created_at DESC
+            """
     }
 }
 
@@ -174,4 +232,16 @@ fun ResultSet.toPDialogmote(): PDialogmote =
         opprettetAv = getString("opprettet_av"),
         tildeltVeilederIdent = getString("tildelt_veileder_ident"),
         tildeltEnhet = getString("tildelt_enhet")
+    )
+
+private fun ResultSet.toPMotedeltakerBehandlerVarselSvar(): PMotedeltakerBehandlerVarselSvar =
+    PMotedeltakerBehandlerVarselSvar(
+        id = getInt("id"),
+        uuid = UUID.fromString(getString("uuid")),
+        createdAt = getTimestamp("created_at").toLocalDateTime(),
+        motedeltakerBehandlerVarselId = getInt("motedeltaker_behandler_varsel_id"),
+        svarType = getString("svar_type"),
+        svarTekst = getString("svar_tekst"),
+        msgId = getString("msg_id"),
+        svarPublishedToKafkaAt = getTimestamp("svar_published_to_kafka_at")?.toLocalDateTime()?.toOffsetDateTimeUTC(),
     )

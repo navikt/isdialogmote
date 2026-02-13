@@ -45,7 +45,10 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
 
     private val dialogmotedeltakerVarselJournalpostService =
         DialogmotedeltakerVarselJournalpostService(database = database)
-    private val referatJournalpostService = ReferatJournalpostService(database = database)
+    private val referatJournalpostService = ReferatJournalpostService(
+        database = database,
+        moteRepository = externalMockEnvironment.moteRepository,
+    )
 
     private val journalpostDistribusjonCronjob = DialogmoteJournalpostDistribusjonCronjob(
         dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
