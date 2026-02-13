@@ -27,7 +27,7 @@ class DialogmoteOutdatedCronjob(
     override val intervalDelayMinutes: Long = 1440 // 24 hours
 
     override suspend fun run() {
-        log.info("DialogmoteOutdatedCronjob started winth cutoff of $outdatedDialogmoterCutoffMonths months")
+        log.info("DialogmoteOutdatedCronjob started with cutoff of $outdatedDialogmoterCutoffMonths months")
 
         val outdatedResult = dialogmoteOutdatedJob()
 
