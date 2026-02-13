@@ -9,7 +9,6 @@ import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.Dialogmotesvar
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.DialogmotesvarProducer
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.PublishDialogmotesvarService
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.SenderType
-import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerVarselSvar
 import no.nav.syfo.testhelper.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -24,6 +23,7 @@ class PublishDialogmotesvarBehandlerServiceTest {
     private val database = externalMockEnvironment.database
     private val dialogmotesvarProducer = mockk<DialogmotesvarProducer>()
     private val publishDialogmotesvarService = PublishDialogmotesvarService(database, dialogmotesvarProducer)
+    private val moteRepository = externalMockEnvironment.moteRepository
 
     @BeforeEach
     fun beforeEach() {
@@ -65,9 +65,13 @@ class PublishDialogmotesvarBehandlerServiceTest {
 
         publishDialogmotesvarService.publishAndUpdateDialogmotesvar(dialogmotesvar)
 
-        val varsler = database.getMotedeltakerBehandlerVarselSvar(varselId)
-        assertEquals(1, varsler.size)
-        val varsel = varsler[0]
-        assertNotNull(varsel.svarPublishedToKafkaAt)
+        val behandlerVarselSvar = database.connection.use {
+            with(moteRepository) {
+                it.getMoteDeltakerBehandlerVarselSvar(varselId)
+            }
+        }
+        assertEquals(1, behandlerVarselSvar.size)
+        val varselSvar = behandlerVarselSvar[0]
+        assertNotNull(varselSvar.svarPublishedToKafkaAt)
     }
 }

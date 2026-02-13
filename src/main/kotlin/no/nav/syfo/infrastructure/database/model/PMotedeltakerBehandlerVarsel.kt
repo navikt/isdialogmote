@@ -1,7 +1,6 @@
 package no.nav.syfo.infrastructure.database.model
 
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandlerVarsel
-import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandlerVarselSvar
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import java.time.LocalDateTime
@@ -21,7 +20,7 @@ data class PMotedeltakerBehandlerVarsel(
 )
 
 fun PMotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandlerVarsel(
-    dialogmotedeltakerBehandlerVarselSvar: List<DialogmotedeltakerBehandlerVarselSvar>,
+    dialogmotedeltakerBehandlerVarselSvar: List<PMotedeltakerBehandlerVarselSvar>,
 ) =
     DialogmotedeltakerBehandlerVarsel(
         id = this.id,
@@ -34,5 +33,5 @@ fun PMotedeltakerBehandlerVarsel.toDialogmotedeltakerBehandlerVarsel(
         status = this.status,
         fritekst = this.fritekst,
         document = this.document,
-        svar = dialogmotedeltakerBehandlerVarselSvar,
+        svar = dialogmotedeltakerBehandlerVarselSvar.map { it.toDialogmotedeltakerBehandlerVarselSvar() },
     )

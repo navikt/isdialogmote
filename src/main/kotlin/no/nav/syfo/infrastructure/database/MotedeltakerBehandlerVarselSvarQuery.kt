@@ -1,9 +1,8 @@
 package no.nav.syfo.infrastructure.database
 
-import no.nav.syfo.infrastructure.database.model.PMotedeltakerBehandlerVarselSvar
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
-import no.nav.syfo.util.toOffsetDateTimeUTC
-import java.sql.*
+import java.sql.SQLException
+import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
 
@@ -49,34 +48,3 @@ fun DatabaseInterface.createMotedeltakerBehandlerVarselSvar(
         return Pair(svarIdList.first(), svarUUID)
     }
 }
-
-const val queryGetMotedeltakerBehandlerVarselSvarForVarsel =
-    """
-        SELECT *
-        FROM MOTEDELTAKER_BEHANDLER_VARSEL_SVAR
-        WHERE motedeltaker_behandler_varsel_id = ?
-        ORDER BY created_at DESC
-    """
-
-fun DatabaseInterface.getMotedeltakerBehandlerVarselSvar(
-    motedeltakerBehandlerVarselId: Int,
-): List<PMotedeltakerBehandlerVarselSvar> {
-    return this.connection.use { connection ->
-        connection.prepareStatement(queryGetMotedeltakerBehandlerVarselSvarForVarsel).use {
-            it.setInt(1, motedeltakerBehandlerVarselId)
-            it.executeQuery().toList { toPMotedeltakerBehandlerVarselSvar() }
-        }
-    }
-}
-
-fun ResultSet.toPMotedeltakerBehandlerVarselSvar(): PMotedeltakerBehandlerVarselSvar =
-    PMotedeltakerBehandlerVarselSvar(
-        id = getInt("id"),
-        uuid = UUID.fromString(getString("uuid")),
-        createdAt = getTimestamp("created_at").toLocalDateTime(),
-        motedeltakerBehandlerVarselId = getInt("motedeltaker_behandler_varsel_id"),
-        svarType = getString("svar_type"),
-        svarTekst = getString("svar_tekst"),
-        msgId = getString("msg_id"),
-        svarPublishedToKafkaAt = getTimestamp("svar_published_to_kafka_at")?.toLocalDateTime()?.toOffsetDateTimeUTC(),
-    )

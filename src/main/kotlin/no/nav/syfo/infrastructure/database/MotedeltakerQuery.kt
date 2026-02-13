@@ -215,23 +215,6 @@ fun Connection.updateMotedeltakerBehandler(
     }
 }
 
-const val queryGetMotedeltakerBehandlerForMote =
-    """
-        SELECT *
-        FROM MOTEDELTAKER_BEHANDLER
-        WHERE mote_id = ?
-    """
-
-fun DatabaseInterface.getMoteDeltakerBehandler(moteId: Int): PMotedeltakerBehandler? {
-    val pMotedeltakerBehandlerList = this.connection.use { connection ->
-        connection.prepareStatement(queryGetMotedeltakerBehandlerForMote).use {
-            it.setInt(1, moteId)
-            it.executeQuery().toList { toPMotedeltakerBehandler() }
-        }
-    }
-    return pMotedeltakerBehandlerList.firstOrNull()
-}
-
 const val queryGetMotedeltakerBehandlerById =
     """
         SELECT *
