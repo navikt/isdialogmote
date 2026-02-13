@@ -3,7 +3,6 @@ package no.nav.syfo
 import io.ktor.server.application.*
 import no.nav.syfo.infrastructure.client.cache.ValkeyConfig
 import java.net.URI
-import java.time.LocalDate
 
 data class Environment(
     val namespace: String = "teamsykefravr",
@@ -67,7 +66,7 @@ data class Environment(
     val dokumentportenUrl: String = getEnvVar("DOKUMENTPORTEN_URL"),
     val dokumentportenClientId: String = getEnvVar("DOKUMENTPORTEN_CLIENT_ID"),
     val dokumentportenSendingEnabled: Boolean = getEnvVar("DOKUMENTPORTEN_SENDING_ENABLED").toBoolean(),
-    val outdatedDialogmoteCutoff: LocalDate = LocalDate.parse(getEnvVar("OUTDATED_DIALOGMOTE_CUTOFF")),
+    val outdatedDialogmoteCutoffMonths: Int = getEnvVar("OUTDATED_DIALOGMOTE_CUTOFF_MONTHS").toInt(),
     val isJournalforingRetryEnabled: Boolean = getEnvVar("JOURNALFORING_RETRY_ENABLED").toBoolean(),
 ) {
 
