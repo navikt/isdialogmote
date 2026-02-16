@@ -17,11 +17,12 @@ data class PMotedeltakerBehandlerVarselSvar(
     val svarPublishedToKafkaAt: OffsetDateTime?,
 )
 
-fun PMotedeltakerBehandlerVarselSvar.toDialogmoteDeltakerVarselSvar() = DialogmotedeltakerBehandlerVarselSvar(
-    id = this.id,
-    uuid = this.uuid,
-    createdAt = this.createdAt,
-    type = DialogmoteSvarType.valueOf(this.svarType),
-    tekst = this.svarTekst,
-    msgId = this.msgId,
-)
+fun PMotedeltakerBehandlerVarselSvar.toDialogmotedeltakerBehandlerVarselSvar() =
+    DialogmotedeltakerBehandlerVarselSvar(
+        id = this.id,
+        uuid = this.uuid,
+        createdAt = this.createdAt,
+        type = DialogmoteSvarType.valueOf(this.svarType),
+        tekst = this.svarTekst,
+        msgId = this.msgId,
+    )
