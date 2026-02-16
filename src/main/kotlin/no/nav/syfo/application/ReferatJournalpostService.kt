@@ -13,7 +13,6 @@ import no.nav.syfo.infrastructure.database.getFerdigstilteReferatWithoutJournalp
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidstaker
 import no.nav.syfo.infrastructure.database.getReferatForFysiskBrevUtsending
-import no.nav.syfo.infrastructure.database.getTidSted
 import no.nav.syfo.infrastructure.database.model.toDialogmoteDeltakerAnnen
 import no.nav.syfo.infrastructure.database.model.toReferat
 import no.nav.syfo.infrastructure.database.updateReferatBrevBestilt
@@ -89,7 +88,7 @@ class ReferatJournalpostService(
     }
 
     fun getMotetidspunkt(moteId: Int): LocalDateTime? =
-        database.getTidSted(moteId).maxByOrNull { it.createdAt }?.tid
+        moteRepository.getTidSted(moteId).maxByOrNull { it.createdAt }?.tid
 
     fun getDialogmoteReferatForJournalpostDistribusjonList(): List<ReferatForJournalpostDistribusjon> {
         return database.getReferatForFysiskBrevUtsending()

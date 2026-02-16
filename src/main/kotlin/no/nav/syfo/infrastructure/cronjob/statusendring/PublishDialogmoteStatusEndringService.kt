@@ -1,5 +1,6 @@
 package no.nav.syfo.infrastructure.cronjob.statusendring
 
+import no.nav.syfo.application.IMoteRepository
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.infrastructure.database.model.PDialogmote
@@ -8,7 +9,6 @@ import no.nav.syfo.infrastructure.database.model.toDialogmoteTidSted
 import no.nav.syfo.infrastructure.database.getDialogmote
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.getTidSted
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.domain.dialogmote.DialogmoteStatusEndret
 import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
@@ -23,6 +23,7 @@ class PublishDialogmoteStatusEndringService(
     private val database: DatabaseInterface,
     private val dialogmoteStatusEndringProducer: DialogmoteStatusEndringProducer,
     private val moteStatusEndretRepository: MoteStatusEndretRepository,
+    private val moteRepository: IMoteRepository,
 ) {
     fun getDialogmoteStatuEndretToPublishList(): List<DialogmoteStatusEndret> {
         return moteStatusEndretRepository.getMoteStatusEndretNotPublished().map {
@@ -37,7 +38,7 @@ class PublishDialogmoteStatusEndringService(
 
         val kDialogmoteStatusEndring = createKDialogmoteStatusEndring(
             dialogmoteStatusEndret = dialogmoteStatusEndret,
-            dialogmoteTidStedList = database.getTidSted(moteId).map {
+            dialogmoteTidStedList = moteRepository.getTidSted(moteId).map {
                 it.toDialogmoteTidSted()
             },
             pDialogmote = database.getDialogmote(id = moteId).first(),

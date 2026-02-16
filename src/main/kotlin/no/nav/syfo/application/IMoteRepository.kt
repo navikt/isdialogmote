@@ -6,6 +6,7 @@ import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.model.PDialogmote
+import no.nav.syfo.infrastructure.database.model.PTidSted
 import java.util.UUID
 
 interface IMoteRepository {
@@ -24,4 +25,6 @@ interface IMoteRepository {
     fun getMotedeltakerArbeidsgiver(moteId: Int): DialogmotedeltakerArbeidsgiver
 
     fun getMotedeltakerBehandler(moteId: Int): DialogmotedeltakerBehandler?
+
+    fun getTidSted(moteId: Int): List<PTidSted>
 }

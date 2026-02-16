@@ -47,6 +47,7 @@ class PublishDialogmoteStatusEndringCronjobTest {
         database = database,
         dialogmoteStatusEndringProducer = dialogmoteStatusEndringProducer,
         moteStatusEndretRepository = moteStatusEndretRepository,
+        moteRepository = externalMockEnvironment.moteRepository,
     )
     private val publishDialogmoteStatusEndringCronjob = PublishDialogmoteStatusEndringCronjob(
         publishDialogmoteStatusEndringService = publishDialogmoteStatusEndringService,

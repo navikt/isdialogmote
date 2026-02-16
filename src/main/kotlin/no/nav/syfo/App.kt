@@ -182,7 +182,8 @@ fun main() {
             )
             dialogmoterelasjonService = DialogmoterelasjonService(
                 database = applicationDatabase,
-                dialogmotedeltakerService = dialogmotedeltakerService
+                dialogmotedeltakerService = dialogmotedeltakerService,
+                moteRepository = moteRepository,
             )
             val pdfRepository = PdfRepository(database = applicationDatabase)
             val moteStatusEndretRepository = MoteStatusEndretRepository(

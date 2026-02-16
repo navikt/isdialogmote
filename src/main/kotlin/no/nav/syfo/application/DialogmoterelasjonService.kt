@@ -14,12 +14,12 @@ import no.nav.syfo.infrastructure.database.getAndreDeltakereForReferatID
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidstaker
 import no.nav.syfo.infrastructure.database.getReferatForMote
-import no.nav.syfo.infrastructure.database.getTidSted
 import java.util.UUID
 
 class DialogmoterelasjonService(
     private val dialogmotedeltakerService: DialogmotedeltakerService,
     private val database: DatabaseInterface,
+    private val moteRepository: IMoteRepository,
 ) {
     fun extendDialogmoteRelations(
         pDialogmote: PDialogmote,
@@ -41,7 +41,7 @@ class DialogmoterelasjonService(
     private fun getDialogmoteTidStedList(
         moteId: Int,
     ): List<DialogmoteTidSted> {
-        return database.getTidSted(moteId).map {
+        return moteRepository.getTidSted(moteId).map {
             it.toDialogmoteTidSted()
         }
     }
