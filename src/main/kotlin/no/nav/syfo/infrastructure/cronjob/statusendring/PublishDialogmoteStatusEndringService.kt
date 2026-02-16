@@ -5,7 +5,6 @@ import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.infrastructure.database.model.PDialogmote
 import no.nav.syfo.infrastructure.database.model.toDialogmoteStatusEndret
-import no.nav.syfo.infrastructure.database.model.toDialogmoteTidSted
 import no.nav.syfo.infrastructure.database.getDialogmote
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidstaker
@@ -38,9 +37,7 @@ class PublishDialogmoteStatusEndringService(
 
         val kDialogmoteStatusEndring = createKDialogmoteStatusEndring(
             dialogmoteStatusEndret = dialogmoteStatusEndret,
-            dialogmoteTidStedList = moteRepository.getTidSted(moteId).map {
-                it.toDialogmoteTidSted()
-            },
+            dialogmoteTidStedList = moteRepository.getTidSted(moteId),
             pDialogmote = database.getDialogmote(id = moteId).first(),
             personIdent = database.getMoteDeltakerArbeidstaker(moteId).personIdent,
             virksomhetsnummer = database.getMoteDeltakerArbeidsgiver(moteId).virksomhetsnummer,
