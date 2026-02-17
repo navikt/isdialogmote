@@ -19,15 +19,14 @@ const val queryCreateTidSted =
         videolink) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
-fun Connection.createTidSted(
-    commit: Boolean = true,
+fun UnitOfWork.createTidSted(
     moteId: Int,
     newDialogmoteTidSted: TidStedDTO,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 
     val moteTidStedUuid = UUID.randomUUID()
-    val moteTidStedIdList = this.prepareStatement(queryCreateTidSted).use {
+    val moteTidStedIdList = connection.prepareStatement(queryCreateTidSted).use {
         it.setString(1, moteTidStedUuid.toString())
         it.setTimestamp(2, now)
         it.setTimestamp(3, now)
@@ -40,10 +39,6 @@ fun Connection.createTidSted(
 
     if (moteTidStedIdList.size != 1) {
         throw SQLException("Creating MoteStatusEndring failed, no rows affected.")
-    }
-
-    if (commit) {
-        this.commit()
     }
 
     return Pair(moteTidStedIdList.first(), moteTidStedUuid)

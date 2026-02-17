@@ -145,8 +145,7 @@ const val queryDeleteMotedeltakerAnnen =
     DELETE FROM MOTEDELTAKER_ANNEN WHERE mote_referat_id=?
     """
 
-fun Connection.createNewReferat(
-    commit: Boolean = true,
+fun UnitOfWork.createNewReferat(
     newReferat: NewReferat,
     pdfId: Int?,
     digitalt: Boolean,
@@ -156,7 +155,7 @@ fun Connection.createNewReferat(
     val now = Timestamp.from(Instant.now())
     val nowUTC = nowUTC()
 
-    val referatIdList = this.prepareStatement(queryCreateReferat).use {
+    val referatIdList = connection.prepareStatement(queryCreateReferat).use {
         it.setString(1, referatUuid.toString())
         it.setTimestamp(2, now)
         it.setTimestamp(3, now)
@@ -189,9 +188,6 @@ fun Connection.createNewReferat(
     }
     val referatId = referatIdList.first()
     updateAndreDeltakereForReferat(referatId, newReferat)
-    if (commit) {
-        this.commit()
-    }
     return Pair(referatId, referatUuid)
 }
 
@@ -215,8 +211,7 @@ const val queryUpdateReferat =
         WHERE id = ?
     """
 
-fun Connection.updateReferat(
-    commit: Boolean = true,
+fun UnitOfWork.updateReferat(
     referat: Referat,
     newReferat: NewReferat,
     pdfId: Int?,
@@ -226,7 +221,7 @@ fun Connection.updateReferat(
     val now = Timestamp.from(Instant.now())
     val nowUTC = nowUTC()
 
-    val rowCount = this.prepareStatement(queryUpdateReferat).use {
+    val rowCount = connection.prepareStatement(queryUpdateReferat).use {
         it.setTimestamp(1, now)
         it.setBoolean(2, digitalt)
         it.setString(3, newReferat.begrunnelseEndring)
@@ -258,23 +253,20 @@ fun Connection.updateReferat(
 
     updateAndreDeltakereForReferat(referat.id, newReferat)
 
-    if (commit) {
-        this.commit()
-    }
     return Pair(referat.id, referat.uuid)
 }
 
-private fun Connection.updateAndreDeltakereForReferat(
+private fun UnitOfWork.updateAndreDeltakereForReferat(
     referatId: Int,
     newReferat: NewReferat,
 ) {
-    this.prepareStatement(queryDeleteMotedeltakerAnnen).use {
+    connection.prepareStatement(queryDeleteMotedeltakerAnnen).use {
         it.setInt(1, referatId)
         it.executeUpdate()
     }
     val now = Timestamp.from(Instant.now())
     newReferat.andreDeltakere.forEach { deltaker ->
-        this.prepareStatement(queryCreateMotedeltakerAnnen).use {
+        connection.prepareStatement(queryCreateMotedeltakerAnnen).use {
             it.setString(1, UUID.randomUUID().toString())
             it.setTimestamp(2, now)
             it.setTimestamp(3, now)
@@ -453,11 +445,11 @@ const val queryUpdateReferatLestDatoArbeidstaker =
     WHERE uuid = ? AND lest_dato_arbeidstaker IS NULL
     """
 
-fun Connection.updateReferatLestDatoArbeidstaker(
+fun UnitOfWork.updateReferatLestDatoArbeidstaker(
     referatUUID: UUID,
 ) {
     val now = LocalDateTime.now()
-    this.prepareStatement(queryUpdateReferatLestDatoArbeidstaker).use {
+    connection.prepareStatement(queryUpdateReferatLestDatoArbeidstaker).use {
         it.setTimestamp(1, Timestamp.valueOf(now))
         it.setString(2, referatUUID.toString())
         it.execute()
@@ -471,11 +463,11 @@ const val queryUpdateReferatLestDatoArbeidsgiver =
     WHERE uuid = ? AND lest_dato_arbeidsgiver IS NULL
     """
 
-fun Connection.updateReferatLestDatoArbeidsgiver(
+fun UnitOfWork.updateReferatLestDatoArbeidsgiver(
     referatUUID: UUID,
 ) {
     val now = LocalDateTime.now()
-    this.prepareStatement(queryUpdateReferatLestDatoArbeidsgiver).use {
+    connection.prepareStatement(queryUpdateReferatLestDatoArbeidsgiver).use {
         it.setTimestamp(1, Timestamp.valueOf(now))
         it.setString(2, referatUUID.toString())
         it.execute()

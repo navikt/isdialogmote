@@ -2,6 +2,7 @@ package no.nav.syfo.application
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.getDialogmote
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorAction
@@ -43,15 +44,17 @@ class JanitorService(
             throw RuntimeException("Dialogmote gjelder ikke person")
         }
 
+        val tilfelleStart = dialogmotestatusService.fetchTilfelleStart(personIdent = personIdent)
+
         log.info("Lukker dialogmøte med uuid $dialogmoteUUID")
-        database.connection.use { connection ->
+        database.transaction {
             dialogmotestatusService.updateMoteStatus(
-                connection = connection,
+                uow = this,
                 dialogmote = dialogmote,
                 newDialogmoteStatus = Dialogmote.Status.LUKKET,
                 opprettetAv = event.navident,
+                tilfelleStart = tilfelleStart,
             )
-            connection.commit()
         }
     }
 

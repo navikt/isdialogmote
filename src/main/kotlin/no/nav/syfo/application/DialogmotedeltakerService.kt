@@ -19,6 +19,7 @@ import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgive
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstakerVarsel
 import no.nav.syfo.infrastructure.database.model.toMotedeltakerArbeidsgiverUsingDomainVarsler
 import no.nav.syfo.infrastructure.database.model.toMotedeltakerArbeidstakerUsingDomainVarsler
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidsgiverVarselLestDato
 import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidsgiverVarselRespons
 import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidstakerVarselLestDato
@@ -108,23 +109,21 @@ class DialogmotedeltakerService(
     ) {
         val brevIsReferat = database.getReferat(brevUuid).isNotEmpty()
 
-        database.connection.use { connection ->
+        database.transaction {
             if (brevIsReferat) {
-                connection.updateReferatLestDatoArbeidstaker(
+                updateReferatLestDatoArbeidstaker(
                     referatUUID = brevUuid
                 )
             } else {
-                connection.updateMotedeltakerArbeidstakerVarselLestDato(
+                updateMotedeltakerArbeidstakerVarselLestDato(
                     motedeltakerArbeidstakerVarselUuid = brevUuid
                 )
             }
-
-            arbeidstakerVarselService.lesVarsel(
-                personIdent = personIdent,
-                varselUuid = brevUuid,
-            )
-            connection.commit()
         }
+        arbeidstakerVarselService.lesVarsel(
+            personIdent = personIdent,
+            varselUuid = brevUuid,
+        )
     }
 
     fun slettBrukeroppgaverPaMote(
@@ -144,14 +143,12 @@ class DialogmotedeltakerService(
     fun updateArbeidsgiverBrevSettSomLest(brevUuid: UUID) {
         val brevIsReferat = database.getReferat(brevUuid).isNotEmpty()
 
-        database.connection.use { connection ->
+        database.transaction {
             if (brevIsReferat) {
-                connection.updateReferatLestDatoArbeidsgiver(referatUUID = brevUuid)
+                updateReferatLestDatoArbeidsgiver(referatUUID = brevUuid)
             } else {
-                connection.updateMotedeltakerArbeidsgiverVarselLestDato(brevUuid)
+                updateMotedeltakerArbeidsgiverVarselLestDato(brevUuid)
             }
-
-            connection.commit()
         }
     }
 
@@ -164,13 +161,12 @@ class DialogmotedeltakerService(
         if (brevIsReferat) {
             throw IllegalArgumentException("Cannot store response for referat")
         }
-        return database.connection.use { connection ->
-            val updateCount = connection.updateMotedeltakerArbeidstakerVarselRespons(
+        return database.transaction {
+            val updateCount = updateMotedeltakerArbeidstakerVarselRespons(
                 motedeltakerArbeidstakerVarselUuid = brevUuid,
                 svarType = svarType,
                 svarTekst = sanitizeTextInput(svarTekst, 300),
             )
-            connection.commit()
             updateCount > 0
         }
     }
@@ -194,13 +190,12 @@ class DialogmotedeltakerService(
             throw IllegalArgumentException("Cannot store response for referat")
         }
 
-        return database.connection.use { connection ->
-            val updateCount = connection.updateMotedeltakerArbeidsgiverVarselRespons(
+        return database.transaction {
+            val updateCount = updateMotedeltakerArbeidsgiverVarselRespons(
                 motedeltakerArbeidsgiverVarselUuid = brevUuid,
                 svarType = svarType,
                 svarTekst = sanitizeTextInput(svarTekst, 300),
             )
-            connection.commit()
             updateCount > 0
         }
     }

@@ -7,7 +7,6 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.ktor.utils.io.*
 import io.mockk.*
-import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
@@ -24,6 +23,7 @@ import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.database.getDialogmote
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerHendelse
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.testhelper.*
@@ -434,16 +434,14 @@ class ArbeidstakerBrevApiTest {
                     if (dialogmoteDTO == newDialogmoteLukket) {
                         val pMote = database.getDialogmote(UUID.fromString(createdDialogmoteUUID)).first()
                         val mote = dialogmoterelasjonService.extendDialogmoteRelations(pMote)
-                        runBlocking {
-                            database.connection.use { connection ->
-                                dialogmotestatusService.updateMoteStatus(
-                                    connection = connection,
-                                    dialogmote = mote,
-                                    newDialogmoteStatus = Dialogmote.Status.LUKKET,
-                                    opprettetAv = "system",
-                                )
-                                connection.commit()
-                            }
+                        database.transaction {
+                            dialogmotestatusService.updateMoteStatus(
+                                uow = this,
+                                dialogmote = mote,
+                                newDialogmoteStatus = Dialogmote.Status.LUKKET,
+                                opprettetAv = "system",
+                                tilfelleStart = null,
+                            )
                         }
                     }
                 }

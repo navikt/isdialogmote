@@ -5,6 +5,7 @@ import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.database.model.PDialogmote
@@ -94,11 +95,10 @@ fun DatabaseInterface.dropData() {
         DELETE FROM MOTEDELTAKER_BEHANDLER_VARSEL_SVAR
         """.trimIndent(),
     )
-    this.connection.use { connection ->
+    this.transaction {
         queryList.forEach { query ->
             connection.prepareStatement(query).execute()
         }
-        connection.commit()
     }
 }
 
@@ -113,11 +113,10 @@ fun DatabaseInterface.addDummyDeltakere() {
             VALUES('test-xxxyuzww',now(), now(), null, 'xyz');
         """.trimIndent(),
     )
-    this.connection.use { connection ->
+    this.transaction {
         queryList.forEach { query ->
             connection.prepareStatement(query).execute()
         }
-        connection.commit()
     }
 }
 
@@ -126,8 +125,8 @@ fun DatabaseInterface.updateMoteStatus(
     newMoteStatus: Dialogmote.Status,
 ) {
     val moteId = getDialogmote(moteUUID).first().id
-    this.connection.use {
-        it.updateMoteStatus(true, moteId, newMoteStatus)
+    this.transaction {
+        updateMoteStatus(moteId = moteId, moteStatus = newMoteStatus)
     }
 }
 

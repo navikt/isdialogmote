@@ -1,112 +1,78 @@
 package no.nav.syfo.application
 
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.infrastructure.database.UnitOfWork
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.api.dto.DialogmoteStatusEndringDTO
 import no.nav.syfo.infrastructure.database.updateMoteStatus
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.NewDialogmote
-import java.sql.Connection
+import java.time.LocalDate
 
 class DialogmotestatusService(
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     private val moteStatusEndretRepository: MoteStatusEndretRepository,
 ) {
 
-    suspend fun updateMoteStatus(
-        connection: Connection,
-        dialogmote: Dialogmote,
-        newDialogmoteStatus: Dialogmote.Status,
-        opprettetAv: String,
-        callId: String? = null,
+    suspend fun fetchTilfelleStart(
+        personIdent: PersonIdent,
         token: String? = null,
-    ) {
-        connection.updateMoteStatus(
-            commit = false,
-            moteId = dialogmote.id,
-            moteStatus = newDialogmoteStatus,
-        )
-        createMoteStatusEndring(
-            callId = callId,
-            connection = connection,
-            dialogmote = dialogmote,
-            dialogmoteStatus = newDialogmoteStatus,
-            opprettetAv = opprettetAv,
-            token = token,
-        )
-    }
-
-    suspend fun createMoteStatusEndring(
-        connection: Connection,
-        newDialogmote: NewDialogmote,
-        dialogmoteId: Int,
-        dialogmoteStatus: Dialogmote.Status,
-        opprettetAv: String,
         callId: String? = null,
-        token: String? = null,
-    ) = createMoteStatusEndring(
-        connection = connection,
-        dialogmoteId = dialogmoteId,
-        arbeidstakerPersonIdent = newDialogmote.arbeidstaker.personIdent,
-        isBehandlerMotedeltaker = newDialogmote.behandler != null,
-        dialogmoteStatus = dialogmoteStatus,
-        opprettetAv = opprettetAv,
-        callId = callId,
-        token = token,
-    )
-
-    suspend fun createMoteStatusEndring(
-        connection: Connection,
-        dialogmote: Dialogmote,
-        dialogmoteStatus: Dialogmote.Status,
-        opprettetAv: String,
-        callId: String? = null,
-        token: String? = null,
-    ) = createMoteStatusEndring(
-        connection = connection,
-        dialogmoteId = dialogmote.id,
-        arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
-        isBehandlerMotedeltaker = dialogmote.behandler != null,
-        dialogmoteStatus = dialogmoteStatus,
-        opprettetAv = opprettetAv,
-        callId = callId,
-        token = token,
-    )
-
-    fun getMoteStatusEndringer(personident: PersonIdent): List<DialogmoteStatusEndringDTO> =
-        moteStatusEndretRepository.getMoteStatusEndringer(personident)
-
-    private suspend fun createMoteStatusEndring(
-        connection: Connection,
-        dialogmoteId: Int,
-        arbeidstakerPersonIdent: PersonIdent,
-        isBehandlerMotedeltaker: Boolean,
-        dialogmoteStatus: Dialogmote.Status,
-        opprettetAv: String,
-        callId: String? = null,
-        token: String? = null,
-    ) {
+    ): LocalDate? {
         val tilfelle = if (token != null) {
             oppfolgingstilfelleClient.oppfolgingstilfellePerson(
-                personIdent = arbeidstakerPersonIdent,
+                personIdent = personIdent,
                 token = token,
                 callId = callId,
             )
         } else {
             oppfolgingstilfelleClient.oppfolgingstilfelleSystem(
-                personIdent = arbeidstakerPersonIdent,
+                personIdent = personIdent,
             )
         }
+        return tilfelle?.start
+    }
 
+    fun updateMoteStatus(
+        uow: UnitOfWork,
+        dialogmote: Dialogmote,
+        newDialogmoteStatus: Dialogmote.Status,
+        opprettetAv: String,
+        tilfelleStart: LocalDate?,
+    ) {
+        uow.updateMoteStatus(
+            moteId = dialogmote.id,
+            moteStatus = newDialogmoteStatus,
+        )
         moteStatusEndretRepository.createMoteStatusEndring(
-            connection = connection,
-            commit = false,
-            moteId = dialogmoteId,
+            uow = uow,
+            moteId = dialogmote.id,
             opprettetAv = opprettetAv,
-            isBehandlerMotedeltaker = isBehandlerMotedeltaker,
-            status = dialogmoteStatus,
-            tilfelleStart = tilfelle?.start,
+            isBehandlerMotedeltaker = dialogmote.behandler != null,
+            status = newDialogmoteStatus,
+            tilfelleStart = tilfelleStart,
         )
     }
+
+    fun createMoteStatusEndring(
+        uow: UnitOfWork,
+        newDialogmote: NewDialogmote,
+        dialogmoteId: Int,
+        dialogmoteStatus: Dialogmote.Status,
+        opprettetAv: String,
+        tilfelleStart: LocalDate?,
+    ) {
+        moteStatusEndretRepository.createMoteStatusEndring(
+            uow = uow,
+            moteId = dialogmoteId,
+            opprettetAv = opprettetAv,
+            isBehandlerMotedeltaker = newDialogmote.behandler != null,
+            status = dialogmoteStatus,
+            tilfelleStart = tilfelleStart,
+        )
+    }
+
+    fun getMoteStatusEndringer(personident: PersonIdent): List<DialogmoteStatusEndringDTO> =
+        moteStatusEndretRepository.getMoteStatusEndringer(personident)
 }

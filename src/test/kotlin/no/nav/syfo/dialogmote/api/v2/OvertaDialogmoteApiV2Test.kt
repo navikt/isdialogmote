@@ -17,6 +17,7 @@ import no.nav.syfo.api.endpoints.dialogmoteActionsApiOvertaPath
 import no.nav.syfo.api.endpoints.dialogmoteApiEnhetUrlPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
 import no.nav.syfo.testhelper.*
@@ -153,8 +154,8 @@ class OvertaDialogmoteApiV2Test {
 
             val newDialogmoteNoVeilederAccess =
                 generateNewDialogmote(UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS)
-            database.connection.use { connection ->
-                val (dialogmoteIdPair) = connection.createNewDialogmoteWithReferences(
+            database.transaction {
+                val (dialogmoteIdPair) = createNewDialogmoteWithReferences(
                     newDialogmote = newDialogmoteNoVeilederAccess
                 )
                 val dialogmoteNoAccessUuid = (dialogmoteIdPair.second).toString()
@@ -197,8 +198,8 @@ class OvertaDialogmoteApiV2Test {
 
                 val newDialogmoteNoVeilederAccess =
                     generateNewDialogmote(UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS)
-                database.connection.use { connection ->
-                    val (dialogmoteIdPair) = connection.createNewDialogmoteWithReferences(
+                database.transaction {
+                    val (dialogmoteIdPair) = createNewDialogmoteWithReferences(
                         newDialogmote = newDialogmoteNoVeilederAccess
                     )
                     val dialogmoteNoAccessUuid = (dialogmoteIdPair.second).toString()

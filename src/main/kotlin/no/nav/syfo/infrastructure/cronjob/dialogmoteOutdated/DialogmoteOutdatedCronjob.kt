@@ -7,6 +7,7 @@ import no.nav.syfo.application.DialogmoterelasjonService
 import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.infrastructure.database.findOutdatedMoter
 import no.nav.syfo.infrastructure.database.getDialogmote
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.domain.dialogmote.latest
 import no.nav.syfo.infrastructure.cronjob.COUNT_CRONJOB_OUTDATED_DIALOGMOTE_FAIL
 import no.nav.syfo.infrastructure.cronjob.COUNT_CRONJOB_OUTDATED_DIALOGMOTE_UPDATE
@@ -57,14 +58,15 @@ class DialogmoteOutdatedCronjob(
             try {
                 val motetidspunkt = mote.tidStedList.latest()?.tid
                 log.info("Found outdated mote: ${mote.uuid} with status ${mote.status} and moteTidspunkt: $motetidspunkt")
-                database.connection.use { connection ->
+                val tilfelleStart = dialogmotestatusService.fetchTilfelleStart(personIdent = mote.arbeidstaker.personIdent)
+                database.transaction {
                     dialogmotestatusService.updateMoteStatus(
-                        connection = connection,
+                        uow = this,
                         dialogmote = mote,
                         newDialogmoteStatus = Dialogmote.Status.LUKKET,
                         opprettetAv = "system",
+                        tilfelleStart = tilfelleStart,
                     )
-                    connection.commit()
                 }
                 outdatedResult.updated++
             } catch (exc: Exception) {

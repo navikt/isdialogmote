@@ -6,13 +6,13 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.clearAllMocks
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.api.dto.DialogmoteStatusEndringDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -69,18 +69,16 @@ class GetDialogmoteStatusEndringApiV2Test {
 
     @Test
     fun `returns no content when no mote for given person`() {
-        runBlocking {
-            database.connection.use { connection ->
-                val createdDialogmoteIdentifiers = connection.createNewDialogmoteWithReferences(newDialogmote)
-                dialogmotestatusService.createMoteStatusEndring(
-                    connection = connection,
-                    newDialogmote = newDialogmote,
-                    dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
-                    dialogmoteStatus = newDialogmote.status,
-                    opprettetAv = newDialogmote.opprettetAv,
-                )
-                connection.commit()
-            }
+        database.transaction {
+            val createdDialogmoteIdentifiers = createNewDialogmoteWithReferences(newDialogmote)
+            dialogmotestatusService.createMoteStatusEndring(
+                uow = this,
+                newDialogmote = newDialogmote,
+                dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
+                dialogmoteStatus = newDialogmote.status,
+                opprettetAv = newDialogmote.opprettetAv,
+                tilfelleStart = null,
+            )
         }
 
         testApplication {
@@ -96,18 +94,16 @@ class GetDialogmoteStatusEndringApiV2Test {
 
     @Test
     fun `returns motestatusendringer for person`() {
-        runBlocking {
-            database.connection.use { connection ->
-                val createdDialogmoteIdentifiers = connection.createNewDialogmoteWithReferences(newDialogmote)
-                dialogmotestatusService.createMoteStatusEndring(
-                    connection = connection,
-                    newDialogmote = newDialogmote,
-                    dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
-                    dialogmoteStatus = newDialogmote.status,
-                    opprettetAv = newDialogmote.opprettetAv,
-                )
-                connection.commit()
-            }
+        database.transaction {
+            val createdDialogmoteIdentifiers = createNewDialogmoteWithReferences(newDialogmote)
+            dialogmotestatusService.createMoteStatusEndring(
+                uow = this,
+                newDialogmote = newDialogmote,
+                dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
+                dialogmoteStatus = newDialogmote.status,
+                opprettetAv = newDialogmote.opprettetAv,
+                tilfelleStart = null,
+            )
         }
 
         testApplication {
@@ -130,25 +126,24 @@ class GetDialogmoteStatusEndringApiV2Test {
 
     @Test
     fun `returns several motestatusendringer for one mote`() {
-        runBlocking {
-            database.connection.use { connection ->
-                val createdDialogmoteIdentifiers = connection.createNewDialogmoteWithReferences(newDialogmote)
-                dialogmotestatusService.createMoteStatusEndring(
-                    connection = connection,
-                    newDialogmote = newDialogmote,
-                    dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
-                    dialogmoteStatus = newDialogmote.status,
-                    opprettetAv = newDialogmote.opprettetAv,
-                )
-                dialogmotestatusService.createMoteStatusEndring(
-                    connection = connection,
-                    newDialogmote = newDialogmote,
-                    dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
-                    dialogmoteStatus = Dialogmote.Status.NYTT_TID_STED,
-                    opprettetAv = VEILEDER_IDENT_2,
-                )
-                connection.commit()
-            }
+        database.transaction {
+            val createdDialogmoteIdentifiers = createNewDialogmoteWithReferences(newDialogmote)
+            dialogmotestatusService.createMoteStatusEndring(
+                uow = this,
+                newDialogmote = newDialogmote,
+                dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
+                dialogmoteStatus = newDialogmote.status,
+                opprettetAv = newDialogmote.opprettetAv,
+                tilfelleStart = null,
+            )
+            dialogmotestatusService.createMoteStatusEndring(
+                uow = this,
+                newDialogmote = newDialogmote,
+                dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
+                dialogmoteStatus = Dialogmote.Status.NYTT_TID_STED,
+                opprettetAv = VEILEDER_IDENT_2,
+                tilfelleStart = null,
+            )
         }
 
         testApplication {
@@ -175,34 +170,33 @@ class GetDialogmoteStatusEndringApiV2Test {
 
     @Test
     fun `returns motestatusendringer for several moter`() {
-        runBlocking {
-            database.connection.use { connection ->
-                val moteId1 = connection.createNewDialogmoteWithReferences(newDialogmote)
-                val moteId2 = connection.createNewDialogmoteWithReferences(newDialogmoteFerdigstilt)
-                dialogmotestatusService.createMoteStatusEndring(
-                    connection = connection,
-                    newDialogmote = newDialogmote,
-                    dialogmoteId = moteId1.dialogmoteIdPair.first,
-                    dialogmoteStatus = newDialogmote.status,
-                    opprettetAv = newDialogmote.opprettetAv,
-                )
-                dialogmotestatusService.createMoteStatusEndring(
-                    connection = connection,
-                    newDialogmote = newDialogmoteFerdigstilt,
-                    dialogmoteId = moteId2.dialogmoteIdPair.first,
-                    dialogmoteStatus = newDialogmoteFerdigstilt.status,
-                    opprettetAv = newDialogmoteFerdigstilt.opprettetAv,
-                )
-                dialogmotestatusService.createMoteStatusEndring(
-                    connection = connection,
-                    newDialogmote = newDialogmote,
-                    dialogmoteId = moteId1.dialogmoteIdPair.first,
-                    dialogmoteStatus = Dialogmote.Status.AVLYST,
-                    opprettetAv = VEILEDER_IDENT_2,
-                )
-
-                connection.commit()
-            }
+        database.transaction {
+            val moteId1 = createNewDialogmoteWithReferences(newDialogmote)
+            val moteId2 = createNewDialogmoteWithReferences(newDialogmoteFerdigstilt)
+            dialogmotestatusService.createMoteStatusEndring(
+                uow = this,
+                newDialogmote = newDialogmote,
+                dialogmoteId = moteId1.dialogmoteIdPair.first,
+                dialogmoteStatus = newDialogmote.status,
+                opprettetAv = newDialogmote.opprettetAv,
+                tilfelleStart = null,
+            )
+            dialogmotestatusService.createMoteStatusEndring(
+                uow = this,
+                newDialogmote = newDialogmoteFerdigstilt,
+                dialogmoteId = moteId2.dialogmoteIdPair.first,
+                dialogmoteStatus = newDialogmoteFerdigstilt.status,
+                opprettetAv = newDialogmoteFerdigstilt.opprettetAv,
+                tilfelleStart = null,
+            )
+            dialogmotestatusService.createMoteStatusEndring(
+                uow = this,
+                newDialogmote = newDialogmote,
+                dialogmoteId = moteId1.dialogmoteIdPair.first,
+                dialogmoteStatus = Dialogmote.Status.AVLYST,
+                opprettetAv = VEILEDER_IDENT_2,
+                tilfelleStart = null,
+            )
         }
 
         testApplication {

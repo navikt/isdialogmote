@@ -1,6 +1,6 @@
 package no.nav.syfo.testdata.reset.database
 
-import java.sql.Connection
+import no.nav.syfo.infrastructure.database.UnitOfWork
 
 const val queryDeleteMote =
     """
@@ -8,15 +8,11 @@ const val queryDeleteMote =
     WHERE id = ?
     """
 
-fun Connection.deleteMote(
-    commit: Boolean = true,
+fun UnitOfWork.deleteMote(
     moteId: Int,
 ) {
-    this.prepareStatement(queryDeleteMote).use {
+    this.connection.prepareStatement(queryDeleteMote).use {
         it.setInt(1, moteId)
         it.execute()
-    }
-    if (commit) {
-        this.commit()
     }
 }

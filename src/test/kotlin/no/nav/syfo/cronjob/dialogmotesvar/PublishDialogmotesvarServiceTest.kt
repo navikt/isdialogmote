@@ -11,6 +11,7 @@ import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.*
 import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerVarsel
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.infrastructure.database.updateBehandlersvarPublishedAt
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteWithBehandler
@@ -84,12 +85,14 @@ class PublishDialogmotesvarServiceTest {
 
         @Test
         fun `Behandler answers more than once to the same meeting`() {
-            val identifiers = database.connection.createNewDialogmoteWithReferences(
-                newDialogmote = generateNewDialogmoteWithBehandler(
-                    UserConstants.ARBEIDSTAKER_FNR,
-                    Dialogmote.Status.INNKALT,
+            val identifiers = database.transaction {
+                createNewDialogmoteWithReferences(
+                    newDialogmote = generateNewDialogmoteWithBehandler(
+                        UserConstants.ARBEIDSTAKER_FNR,
+                        Dialogmote.Status.INNKALT,
+                    )
                 )
-            )
+            }
             val varselId = database.connection.createBehandlerVarsel(
                 UUID.randomUUID(),
                 MotedeltakerVarselType.INNKALT,
@@ -116,12 +119,14 @@ class PublishDialogmotesvarServiceTest {
 
         @Test
         fun `Behandlers answer is too late, but the answer is still published`() {
-            val identifiers = database.connection.createNewDialogmoteWithReferences(
-                newDialogmote = generateNewDialogmoteWithBehandler(
-                    UserConstants.ARBEIDSTAKER_FNR,
-                    Dialogmote.Status.AVLYST,
+            val identifiers = database.transaction {
+                createNewDialogmoteWithReferences(
+                    newDialogmote = generateNewDialogmoteWithBehandler(
+                        UserConstants.ARBEIDSTAKER_FNR,
+                        Dialogmote.Status.AVLYST,
+                    )
                 )
-            )
+            }
             val varselId = database.connection.createBehandlerVarsel(
                 UUID.randomUUID(),
                 MotedeltakerVarselType.INNKALT,
@@ -141,12 +146,14 @@ class PublishDialogmotesvarServiceTest {
 
         @Test
         fun `Get unpublished møtesvar from both arbeidsgiver and arbeidstaker`() {
-            val identifiers = database.connection.createNewDialogmoteWithReferences(
-                newDialogmote = generateNewDialogmoteWithBehandler(
-                    UserConstants.ARBEIDSTAKER_FNR,
-                    Dialogmote.Status.INNKALT,
+            val identifiers = database.transaction {
+                createNewDialogmoteWithReferences(
+                    newDialogmote = generateNewDialogmoteWithBehandler(
+                        UserConstants.ARBEIDSTAKER_FNR,
+                        Dialogmote.Status.INNKALT,
+                    )
                 )
-            )
+            }
             database.connection.createArbeidsgiverVarsel(
                 varselUuid = UUID.randomUUID(),
                 varselType = MotedeltakerVarselType.INNKALT,

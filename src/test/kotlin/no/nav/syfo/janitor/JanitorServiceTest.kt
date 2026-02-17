@@ -14,6 +14,7 @@ import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.model.PDialogmote
 import no.nav.syfo.infrastructure.database.getDialogmoteList
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.infrastructure.kafka.janitor.*
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
@@ -190,8 +191,8 @@ private fun TestDatabase.createDialogmote(): PDialogmote {
     val newDialogmoteDTO = generateNewDialogmoteDTO(
         personIdent = UserConstants.ARBEIDSTAKER_FNR,
     )
-    this.connection.use { connection ->
-        connection.createNewDialogmoteWithReferences(
+    this.transaction {
+        createNewDialogmoteWithReferences(
             newDialogmote = newDialogmoteDTO.toNewDialogmote(
                 requestByNAVIdent = UserConstants.VEILEDER_IDENT,
                 navEnhet = UserConstants.ENHET_NR

@@ -1,12 +1,12 @@
 package no.nav.syfo.infrastructure.database.repository
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.UnitOfWork
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.api.dto.DialogmoteStatusEndringDTO
 import no.nav.syfo.infrastructure.database.model.PMoteStatusEndret
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
-import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Timestamp
@@ -57,8 +57,7 @@ class MoteStatusEndretRepository(private val database: DatabaseInterface) {
     }
 
     fun createMoteStatusEndring(
-        connection: Connection,
-        commit: Boolean = true,
+        uow: UnitOfWork,
         moteId: Int,
         opprettetAv: String,
         status: Dialogmote.Status,
@@ -70,7 +69,7 @@ class MoteStatusEndretRepository(private val database: DatabaseInterface) {
 
         val moteStatusEndringUuid = UUID.randomUUID()
 
-        val moteStatusEndringIdList = connection.prepareStatement(CREATE_MOTE_STATUS_ENDRING).use {
+        val moteStatusEndringIdList = uow.connection.prepareStatement(CREATE_MOTE_STATUS_ENDRING).use {
             it.setString(1, moteStatusEndringUuid.toString())
             it.setTimestamp(2, now)
             it.setTimestamp(3, now)
@@ -84,10 +83,6 @@ class MoteStatusEndretRepository(private val database: DatabaseInterface) {
 
         if (moteStatusEndringIdList.size != 1) {
             throw SQLException("Creating MoteStatusEndring failed, no rows affected.")
-        }
-
-        if (commit) {
-            connection.commit()
         }
 
         return Pair(moteStatusEndringIdList.first(), moteStatusEndringUuid)
