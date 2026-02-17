@@ -51,6 +51,7 @@ class JanitorServiceTest {
     private val dialogmoterelasjonService = DialogmoterelasjonService(
         database = database,
         dialogmotedeltakerService = dialogmotedeltakerService,
+        moteRepository = externalMockEnvironment.moteRepository,
     )
 
     private val janitorService = JanitorService(

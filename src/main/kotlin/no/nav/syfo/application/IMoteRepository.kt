@@ -2,6 +2,7 @@ package no.nav.syfo.application
 
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
@@ -24,4 +25,6 @@ interface IMoteRepository {
     fun getMotedeltakerArbeidsgiver(moteId: Int): DialogmotedeltakerArbeidsgiver
 
     fun getMotedeltakerBehandler(moteId: Int): DialogmotedeltakerBehandler?
+
+    fun getTidSted(moteId: Int): List<DialogmoteTidSted>
 }

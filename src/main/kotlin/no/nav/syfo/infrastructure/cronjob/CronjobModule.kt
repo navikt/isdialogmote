@@ -69,6 +69,7 @@ fun Application.cronjobModule(
     )
     val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(
         database = database,
+        moteRepository = moteRepository,
     )
     val referatJournalpostService = ReferatJournalpostService(
         database = database,
@@ -111,6 +112,7 @@ fun Application.cronjobModule(
         database = database,
         dialogmoteStatusEndringProducer = dialogmoteStatusEndringProducer,
         moteStatusEndretRepository = moteStatusEndretRepository,
+        moteRepository = moteRepository,
     )
     val publishDialogmotesvarService = PublishDialogmotesvarService(
         database = database,

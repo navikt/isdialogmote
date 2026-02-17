@@ -3,12 +3,14 @@ package no.nav.syfo.infrastructure.database.repository
 import no.nav.syfo.application.IMoteRepository
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.model.PDialogmote
 import no.nav.syfo.infrastructure.database.model.PMotedeltakerBehandlerVarselSvar
+import no.nav.syfo.infrastructure.database.model.toDialogmoteTidSted
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstaker
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
@@ -20,6 +22,7 @@ import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidstaker
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidstakerVarsel
 import no.nav.syfo.infrastructure.database.toPMotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.toPMotedeltakerBehandlerVarsel
+import no.nav.syfo.infrastructure.database.toPTidSted
 import no.nav.syfo.util.toOffsetDateTimeUTC
 import java.sql.Connection
 import java.sql.ResultSet
@@ -120,6 +123,14 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
         }
     }
 
+    override fun getTidSted(moteId: Int): List<DialogmoteTidSted> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_TID_STED_FOR_MOTE).use {
+                it.setInt(1, moteId)
+                it.executeQuery().toList { toPTidSted() }
+            }.map { it.toDialogmoteTidSted() }
+        }
+
     internal fun Connection.getMoteDeltakerBehandlerVarselSvar(varselId: Int): List<PMotedeltakerBehandlerVarselSvar> =
         this.prepareStatement(GET_VARSEL_SVAR_MOTEDELTAKER_BEHANDLER).use {
             it.setInt(1, varselId)
@@ -218,6 +229,13 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                 FROM MOTEDELTAKER_BEHANDLER_VARSEL_SVAR
                 WHERE motedeltaker_behandler_varsel_id = ?
                 ORDER BY created_at DESC
+            """
+
+        private const val GET_TID_STED_FOR_MOTE =
+            """
+                SELECT *
+                FROM TID_STED
+                WHERE mote_id = ?
             """
     }
 }

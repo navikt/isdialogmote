@@ -82,6 +82,7 @@ class DialogmoteOutdatedCronjobTest {
     private val dialogmoterelasjonService = DialogmoterelasjonService(
         dialogmotedeltakerService = dialogmotedeltakerService,
         database = database,
+        moteRepository = externalMockEnvironment.moteRepository,
     )
     private val dialogmoteOutdatedCronjob = DialogmoteOutdatedCronjob(
         dialogmotestatusService = dialogmotestatusService,
