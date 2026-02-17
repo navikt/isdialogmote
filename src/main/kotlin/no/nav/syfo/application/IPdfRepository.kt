@@ -8,7 +8,7 @@ interface IPdfRepository {
     fun getPdf(id: Int): PPdf
 
     fun createPdf(
-        uow: UnitOfWork,
+        unitOfWork: UnitOfWork,
         pdf: ByteArray,
     ): Pair<Int, java.util.UUID>
 }

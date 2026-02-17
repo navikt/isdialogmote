@@ -35,18 +35,18 @@ class DialogmotestatusService(
     }
 
     fun updateMoteStatus(
-        uow: UnitOfWork,
+        unitOfWork: UnitOfWork,
         dialogmote: Dialogmote,
         newDialogmoteStatus: Dialogmote.Status,
         opprettetAv: String,
         tilfelleStart: LocalDate?,
     ) {
-        uow.updateMoteStatus(
+        unitOfWork.updateMoteStatus(
             moteId = dialogmote.id,
             moteStatus = newDialogmoteStatus,
         )
         moteStatusEndretRepository.createMoteStatusEndring(
-            uow = uow,
+            unitOfWork = unitOfWork,
             moteId = dialogmote.id,
             opprettetAv = opprettetAv,
             isBehandlerMotedeltaker = dialogmote.behandler != null,
@@ -56,7 +56,7 @@ class DialogmotestatusService(
     }
 
     fun createMoteStatusEndring(
-        uow: UnitOfWork,
+        unitOfWork: UnitOfWork,
         newDialogmote: NewDialogmote,
         dialogmoteId: Int,
         dialogmoteStatus: Dialogmote.Status,
@@ -64,7 +64,7 @@ class DialogmotestatusService(
         tilfelleStart: LocalDate?,
     ) {
         moteStatusEndretRepository.createMoteStatusEndring(
-            uow = uow,
+            unitOfWork = unitOfWork,
             moteId = dialogmoteId,
             opprettetAv = opprettetAv,
             isBehandlerMotedeltaker = newDialogmote.behandler != null,

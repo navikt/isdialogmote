@@ -61,7 +61,7 @@ class DialogmoteOutdatedCronjob(
                 val tilfelleStart = dialogmotestatusService.fetchTilfelleStart(personIdent = mote.arbeidstaker.personIdent)
                 database.transaction {
                     dialogmotestatusService.updateMoteStatus(
-                        uow = this,
+                        unitOfWork = this,
                         dialogmote = mote,
                         newDialogmoteStatus = Dialogmote.Status.LUKKET,
                         opprettetAv = "system",

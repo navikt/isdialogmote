@@ -72,7 +72,7 @@ class GetDialogmoteStatusEndringApiV2Test {
         database.transaction {
             val createdDialogmoteIdentifiers = createNewDialogmoteWithReferences(newDialogmote)
             dialogmotestatusService.createMoteStatusEndring(
-                uow = this,
+                unitOfWork = this,
                 newDialogmote = newDialogmote,
                 dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
                 dialogmoteStatus = newDialogmote.status,
@@ -97,7 +97,7 @@ class GetDialogmoteStatusEndringApiV2Test {
         database.transaction {
             val createdDialogmoteIdentifiers = createNewDialogmoteWithReferences(newDialogmote)
             dialogmotestatusService.createMoteStatusEndring(
-                uow = this,
+                unitOfWork = this,
                 newDialogmote = newDialogmote,
                 dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
                 dialogmoteStatus = newDialogmote.status,
@@ -129,7 +129,7 @@ class GetDialogmoteStatusEndringApiV2Test {
         database.transaction {
             val createdDialogmoteIdentifiers = createNewDialogmoteWithReferences(newDialogmote)
             dialogmotestatusService.createMoteStatusEndring(
-                uow = this,
+                unitOfWork = this,
                 newDialogmote = newDialogmote,
                 dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
                 dialogmoteStatus = newDialogmote.status,
@@ -137,7 +137,7 @@ class GetDialogmoteStatusEndringApiV2Test {
                 tilfelleStart = null,
             )
             dialogmotestatusService.createMoteStatusEndring(
-                uow = this,
+                unitOfWork = this,
                 newDialogmote = newDialogmote,
                 dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
                 dialogmoteStatus = Dialogmote.Status.NYTT_TID_STED,
@@ -174,7 +174,7 @@ class GetDialogmoteStatusEndringApiV2Test {
             val moteId1 = createNewDialogmoteWithReferences(newDialogmote)
             val moteId2 = createNewDialogmoteWithReferences(newDialogmoteFerdigstilt)
             dialogmotestatusService.createMoteStatusEndring(
-                uow = this,
+                unitOfWork = this,
                 newDialogmote = newDialogmote,
                 dialogmoteId = moteId1.dialogmoteIdPair.first,
                 dialogmoteStatus = newDialogmote.status,
@@ -182,7 +182,7 @@ class GetDialogmoteStatusEndringApiV2Test {
                 tilfelleStart = null,
             )
             dialogmotestatusService.createMoteStatusEndring(
-                uow = this,
+                unitOfWork = this,
                 newDialogmote = newDialogmoteFerdigstilt,
                 dialogmoteId = moteId2.dialogmoteIdPair.first,
                 dialogmoteStatus = newDialogmoteFerdigstilt.status,
@@ -190,7 +190,7 @@ class GetDialogmoteStatusEndringApiV2Test {
                 tilfelleStart = null,
             )
             dialogmotestatusService.createMoteStatusEndring(
-                uow = this,
+                unitOfWork = this,
                 newDialogmote = newDialogmote,
                 dialogmoteId = moteId1.dialogmoteIdPair.first,
                 dialogmoteStatus = Dialogmote.Status.AVLYST,

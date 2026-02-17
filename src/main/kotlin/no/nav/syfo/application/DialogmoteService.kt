@@ -155,7 +155,7 @@ class DialogmoteService(
                 newDialogmote = newDialogmote,
             )
             dialogmotestatusService.createMoteStatusEndring(
-                uow = this,
+                unitOfWork = this,
                 newDialogmote = newDialogmote,
                 dialogmoteId = createdIds.dialogmoteIdPair.first,
                 dialogmoteStatus = newDialogmote.status,
@@ -163,7 +163,7 @@ class DialogmoteService(
                 tilfelleStart = tilfelleStart,
             )
             val varselIds = createVarsler(
-                uow = this,
+                unitOfWork = this,
                 arbeidstakerId = createdIds.motedeltakerArbeidstakerIdPair.first,
                 arbeidsgiverId = createdIds.motedeltakerArbeidsgiverIdPair.first,
                 behandlerId = createdIds.motedeltakerBehandlerIdPair?.first,
@@ -266,14 +266,14 @@ class DialogmoteService(
 
         val createdVarselIdentifiers = database.transaction {
             dialogmotestatusService.updateMoteStatus(
-                uow = this,
+                unitOfWork = this,
                 dialogmote = avlystDialogmote,
                 newDialogmoteStatus = Dialogmote.Status.AVLYST,
                 opprettetAv = getNAVIdentFromToken(token),
                 tilfelleStart = tilfelleStart,
             )
             createVarsler(
-                uow = this,
+                unitOfWork = this,
                 arbeidstakerId = avlystDialogmote.arbeidstaker.id,
                 arbeidsgiverId = avlystDialogmote.arbeidsgiver.id,
                 behandlerId = avlystDialogmote.behandler?.id,
@@ -381,14 +381,14 @@ class DialogmoteService(
                 newDialogmoteTidSted = endretTidSted,
             )
             dialogmotestatusService.updateMoteStatus(
-                uow = this,
+                unitOfWork = this,
                 dialogmote = endretDialogmote,
                 newDialogmoteStatus = Dialogmote.Status.NYTT_TID_STED,
                 opprettetAv = getNAVIdentFromToken(token),
                 tilfelleStart = tilfelleStart,
             )
             createVarsler(
-                uow = this,
+                unitOfWork = this,
                 arbeidstakerId = endretDialogmote.arbeidstaker.id,
                 arbeidsgiverId = endretDialogmote.arbeidsgiver.id,
                 behandlerId = endretDialogmote.behandler?.id,
@@ -445,7 +445,7 @@ class DialogmoteService(
     )
 
     private fun createVarsler(
-        uow: UnitOfWork,
+        unitOfWork: UnitOfWork,
         arbeidstakerId: Int,
         arbeidsgiverId: Int,
         behandlerId: Int?,
@@ -463,14 +463,14 @@ class DialogmoteService(
         digitalArbeidstakerVarsling: Boolean,
     ): CreatedVarselIdentifiers {
         val (pdfArbeidstakerId, _) = pdfRepository.createPdf(
-            uow = uow,
+            unitOfWork = unitOfWork,
             pdf = pdfArbeidstaker,
         )
         val (pdfArbeidsgiverId, _) = pdfRepository.createPdf(
-            uow = uow,
+            unitOfWork = unitOfWork,
             pdf = pdfArbeidsgiver,
         )
-        val (_, varselArbeidstakerId) = uow.createMotedeltakerVarselArbeidstaker(
+        val (_, varselArbeidstakerId) = unitOfWork.createMotedeltakerVarselArbeidstaker(
             motedeltakerArbeidstakerId = arbeidstakerId,
             status = "OK",
             varselType = varselType,
@@ -479,7 +479,7 @@ class DialogmoteService(
             fritekst = fritekstArbeidstaker,
             document = documentArbeidstaker,
         )
-        val (_, virksomhetsbrevId) = uow.createMotedeltakerVarselArbeidsgiver(
+        val (_, virksomhetsbrevId) = unitOfWork.createMotedeltakerVarselArbeidsgiver(
             motedeltakerArbeidsgiverId = arbeidsgiverId,
             status = "OK",
             varselType = varselType,
@@ -490,10 +490,10 @@ class DialogmoteService(
         )
         val behandlerVarselIdPair = behandlerId?.let {
             val (pdfBehandlerId, _) = pdfRepository.createPdf(
-                uow = uow,
+                unitOfWork = unitOfWork,
                 pdf = pdfBehandler!!,
             )
-            uow.createMotedeltakerVarselBehandler(
+            unitOfWork.createMotedeltakerVarselBehandler(
                 motedeltakerBehandlerId = it,
                 status = "OK",
                 varselType = varselType,
@@ -612,14 +612,14 @@ class DialogmoteService(
                 )
             }
             dialogmotestatusService.updateMoteStatus(
-                uow = this,
+                unitOfWork = this,
                 dialogmote = ferdigstiltDialogmote,
                 newDialogmoteStatus = Dialogmote.Status.FERDIGSTILT,
                 opprettetAv = opprettetAv,
                 tilfelleStart = tilfelleStart,
             )
             val (pdfId, _) = pdfRepository.createPdf(
-                uow = this,
+                unitOfWork = this,
                 pdf = pdfReferat,
             )
             val newReferat = referat.toNewReferat(
@@ -728,7 +728,7 @@ class DialogmoteService(
                 )
             }
             val (pdfId, _) = pdfRepository.createPdf(
-                uow = this,
+                unitOfWork = this,
                 pdf = pdfReferat,
             )
 

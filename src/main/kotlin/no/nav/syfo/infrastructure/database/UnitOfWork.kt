@@ -6,8 +6,8 @@ class UnitOfWork(val connection: Connection)
 
 fun <T> DatabaseInterface.transaction(block: UnitOfWork.() -> T): T {
     return connection.use { conn ->
-        val uow = UnitOfWork(conn)
-        val result = uow.block()
+        val unitOfWork = UnitOfWork(conn)
+        val result = unitOfWork.block()
         conn.commit()
         result
     }

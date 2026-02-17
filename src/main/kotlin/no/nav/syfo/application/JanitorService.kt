@@ -49,7 +49,7 @@ class JanitorService(
         log.info("Lukker dialogmøte med uuid $dialogmoteUUID")
         database.transaction {
             dialogmotestatusService.updateMoteStatus(
-                uow = this,
+                unitOfWork = this,
                 dialogmote = dialogmote,
                 newDialogmoteStatus = Dialogmote.Status.LUKKET,
                 opprettetAv = event.navident,

@@ -436,7 +436,7 @@ class ArbeidstakerBrevApiTest {
                         val mote = dialogmoterelasjonService.extendDialogmoteRelations(pMote)
                         database.transaction {
                             dialogmotestatusService.updateMoteStatus(
-                                uow = this,
+                                unitOfWork = this,
                                 dialogmote = mote,
                                 newDialogmoteStatus = Dialogmote.Status.LUKKET,
                                 opprettetAv = "system",

@@ -57,7 +57,7 @@ class MoteStatusEndretRepository(private val database: DatabaseInterface) {
     }
 
     fun createMoteStatusEndring(
-        uow: UnitOfWork,
+        unitOfWork: UnitOfWork,
         moteId: Int,
         opprettetAv: String,
         status: Dialogmote.Status,
@@ -69,7 +69,7 @@ class MoteStatusEndretRepository(private val database: DatabaseInterface) {
 
         val moteStatusEndringUuid = UUID.randomUUID()
 
-        val moteStatusEndringIdList = uow.connection.prepareStatement(CREATE_MOTE_STATUS_ENDRING).use {
+        val moteStatusEndringIdList = unitOfWork.connection.prepareStatement(CREATE_MOTE_STATUS_ENDRING).use {
             it.setString(1, moteStatusEndringUuid.toString())
             it.setTimestamp(2, now)
             it.setTimestamp(3, now)

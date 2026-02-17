@@ -28,12 +28,12 @@ class PdfRepository(private val database: DatabaseInterface) : IPdfRepository {
     }
 
     override fun createPdf(
-        uow: UnitOfWork,
+        unitOfWork: UnitOfWork,
         pdf: ByteArray,
     ): Pair<Int, UUID> {
         val now = Timestamp.from(Instant.now())
         val pdfUuid = UUID.randomUUID()
-        val pdfIdList = uow.connection.prepareStatement(CREATE_PDF_QUERY).use {
+        val pdfIdList = unitOfWork.connection.prepareStatement(CREATE_PDF_QUERY).use {
             it.setString(1, pdfUuid.toString())
             it.setTimestamp(2, now)
             it.setTimestamp(3, now)
