@@ -14,7 +14,6 @@ import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
-import no.nav.syfo.infrastructure.database.CreatedDialogmoteIdentifiers
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.UnitOfWork
 import no.nav.syfo.infrastructure.database.createMotedeltakerVarselArbeidsgiver
@@ -532,7 +531,6 @@ class DialogmoteService(
         }
 
         database.transaction {
-
             if (dialogmote.tildeltVeilederIdent != opprettetAv) {
                 updateMoteTildeltVeileder(
                     moteId = dialogmote.id,
@@ -607,7 +605,6 @@ class DialogmoteService(
         )
 
         val referatUuid = database.transaction {
-
             if (ferdigstiltDialogmote.tildeltVeilederIdent != opprettetAv) {
                 updateMoteTildeltVeileder(
                     moteId = ferdigstiltDialogmote.id,
@@ -724,7 +721,6 @@ class DialogmoteService(
             ?: throw RuntimeException("Ferdigstilt mote ${dialogmote.id} does not have referat")
 
         val referatUuid = database.transaction {
-
             if (dialogmote.tildeltVeilederIdent != opprettetAv) {
                 updateMoteTildeltVeileder(
                     moteId = dialogmote.id,
