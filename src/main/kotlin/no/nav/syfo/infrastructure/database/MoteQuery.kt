@@ -216,7 +216,7 @@ const val queryFindOutdatedMoter =
             AND t1.created_at = (SELECT max(t2.created_at) FROM TID_STED t2 WHERE t2.mote_id = m.id)
             AND s1.status in ('INNKALT','NYTT_TID_STED')
             AND t1.tid < ?
-        LIMIT 100
+        LIMIT 200
     """
 
 fun DatabaseInterface.findOutdatedMoter(
