@@ -18,7 +18,7 @@ val ktorVersion = "3.3.3"
 val jaxbApiVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.3.6"
 val jaxsWsApiVersion = "2.3.1"
-val logbackVersion = "1.5.22"
+val logbackVersion = "1.5.32"
 val logstashEncoderVersion = "9.0"
 val micrometerRegistryVersion = "1.12.13"
 val mockkVersion = "1.14.6"
@@ -104,7 +104,7 @@ dependencies {
         implementation("org.apache.avro:avro") {
             because("io.confluent:kafka-avro-serializer:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
             version {
-                require("1.12.0")
+                require("1.12.1")
             }
         }
         implementation("org.apache.commons:commons-lang3") {
@@ -145,7 +145,7 @@ dependencies {
         implementation("org.apache.avro:avro") {
             because("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion -> https://nvd.nist.gov/vuln/detail/CVE-2023-39410")
             version {
-                require("1.12.0")
+                require("1.12.1")
             }
         }
     }
