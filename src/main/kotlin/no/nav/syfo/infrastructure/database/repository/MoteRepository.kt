@@ -1,5 +1,7 @@
 package no.nav.syfo.infrastructure.database.repository
 
+import com.fasterxml.jackson.core.type.TypeReference
+import no.nav.syfo.api.authentication.configuredJacksonMapper
 import no.nav.syfo.application.IMoteRepository
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
@@ -7,15 +9,24 @@ import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
+import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
+import no.nav.syfo.domain.dialogmote.Referat
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.model.PDialogmote
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerAnnen
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerArbeidsgiver
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerArbeidstaker
 import no.nav.syfo.infrastructure.database.model.PMotedeltakerBehandlerVarselSvar
+import no.nav.syfo.infrastructure.database.model.PReferat
+import no.nav.syfo.infrastructure.database.model.toDialogmoteDeltakerAnnen
 import no.nav.syfo.infrastructure.database.model.toDialogmoteTidSted
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstaker
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandlerVarsel
+import no.nav.syfo.infrastructure.database.model.toReferat
 import no.nav.syfo.infrastructure.database.toList
+import no.nav.syfo.infrastructure.database.toPMotedeltakerAnnen
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidstaker
@@ -29,6 +40,8 @@ import java.sql.ResultSet
 import java.util.*
 
 class MoteRepository(private val database: DatabaseInterface) : IMoteRepository {
+
+    private val mapper = configuredJacksonMapper()
 
     override fun getMote(moteUUID: UUID): PDialogmote =
         database.connection.use { connection ->
@@ -72,11 +85,7 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
 
     override fun getMotedeltakerArbeidstaker(moteId: Int): DialogmotedeltakerArbeidstaker {
         return database.connection.use { connection ->
-            val arbeidstaker = connection.prepareStatement(GET_MOTEDELTAKER_ARBEIDSTAKER).use {
-                it.setInt(1, moteId)
-                it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
-            }.single()
-
+            val arbeidstaker = connection.getMoteDeltakerArbeidstaker(moteId)
             val varsler = connection.prepareStatement(GET_VARSLER_MOTEDELTAKER_ARBEIDSTAKER).use {
                 it.setInt(1, arbeidstaker.id)
                 it.executeQuery().toList { toPMotedeltakerArbeidstakerVarsel() }
@@ -86,13 +95,15 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
         }
     }
 
+    private fun Connection.getMoteDeltakerArbeidstaker(moteId: Int): PMotedeltakerArbeidstaker =
+        this.prepareStatement(GET_MOTEDELTAKER_ARBEIDSTAKER).use {
+            it.setInt(1, moteId)
+            it.executeQuery().toList { toPMotedeltakerArbeidstaker() }
+        }.single()
+
     override fun getMotedeltakerArbeidsgiver(moteId: Int): DialogmotedeltakerArbeidsgiver {
         return database.connection.use { connection ->
-            val arbeidsgiver = connection.prepareStatement(GET_MOTEDELTAGER_ARBEIDSGIVER).use {
-                it.setInt(1, moteId)
-                it.executeQuery().toList { toPMotedeltakerArbeidsgiver() }
-            }.single()
-
+            val arbeidsgiver = connection.getMoteDeltakerArbeidsgiver(moteId)
             val varsler = connection.prepareStatement(GET_VARSLER_MOTEDELTAKER_ARBEIDSGIVER).use {
                 it.setInt(1, arbeidsgiver.id)
                 it.executeQuery().toList { toPMotedeltakerArbeidsgiverVarsel() }
@@ -101,6 +112,12 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             arbeidsgiver.toDialogmotedeltakerArbeidsgiver(varsler)
         }
     }
+
+    private fun Connection.getMoteDeltakerArbeidsgiver(moteId: Int): PMotedeltakerArbeidsgiver =
+        this.prepareStatement(GET_MOTEDELTAGER_ARBEIDSGIVER).use {
+            it.setInt(1, moteId)
+            it.executeQuery().toList { toPMotedeltakerArbeidsgiver() }
+        }.single()
 
     override fun getMotedeltakerBehandler(moteId: Int): DialogmotedeltakerBehandler? {
         return database.connection.use { connection ->
@@ -131,11 +148,62 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             }.map { it.toDialogmoteTidSted() }
         }
 
+    override fun getReferat(referatUUID: UUID): Referat? =
+        database.connection.use { connection ->
+            val referat = connection.prepareStatement(GET_REFERAT_QUERY).use {
+                it.setString(1, referatUUID.toString())
+                it.executeQuery().toList { toPReferat() }.firstOrNull()
+            } ?: return null
+
+            val arbeidstaker = connection.getMoteDeltakerArbeidstaker(referat.moteId)
+            val arbeidsgiver = connection.getMoteDeltakerArbeidsgiver(referat.moteId)
+            val andreDeltakere = connection.getAndreDeltakereForReferatID(referat.id)
+                .map { it.toDialogmoteDeltakerAnnen() }
+
+            referat.toReferat(
+                andreDeltakere = andreDeltakere,
+                motedeltakerArbeidstakerId = arbeidstaker.id,
+                motedeltakerArbeidsgiverId = arbeidsgiver.id,
+            )
+        }
+
+    private fun Connection.getAndreDeltakereForReferatID(referatId: Int): List<PMotedeltakerAnnen> =
+        this.prepareStatement(GET_ANDRE_DELTAKERE_FOR_REFERAT_ID).use {
+            it.setInt(1, referatId)
+            it.executeQuery().toList { toPMotedeltakerAnnen() }
+        }
+
     internal fun Connection.getMoteDeltakerBehandlerVarselSvar(varselId: Int): List<PMotedeltakerBehandlerVarselSvar> =
         this.prepareStatement(GET_VARSEL_SVAR_MOTEDELTAKER_BEHANDLER).use {
             it.setInt(1, varselId)
             it.executeQuery().toList { toPMotedeltakerBehandlerVarselSvar() }
         }
+
+    private fun ResultSet.toPReferat(): PReferat =
+        PReferat(
+            id = getInt("id"),
+            uuid = UUID.fromString(getString("uuid")),
+            createdAt = getTimestamp("created_at").toLocalDateTime(),
+            updatedAt = getTimestamp("updated_at").toLocalDateTime(),
+            moteId = getInt("mote_id"),
+            digitalt = getBoolean("digitalt"),
+            begrunnelseEndring = getString("begrunnelse_endring"),
+            situasjon = getString("situasjon"),
+            konklusjon = getString("konklusjon"),
+            arbeidstakerOppgave = getString("arbeidstaker_oppgave"),
+            arbeidsgiverOppgave = getString("arbeidsgiver_oppgave"),
+            veilederOppgave = getString("veileder_oppgave"),
+            behandlerOppgave = getString("behandler_oppgave"),
+            narmesteLederNavn = getString("narmeste_leder_navn"),
+            document = mapper.readValue(getString("document"), object : TypeReference<List<DocumentComponentDTO>>() {}),
+            pdfId = getInt("pdf_id"),
+            journalpostIdArbeidstaker = getString("journalpost_id"),
+            lestDatoArbeidstaker = getTimestamp("lest_dato_arbeidstaker")?.toLocalDateTime(),
+            lestDatoArbeidsgiver = getTimestamp("lest_dato_arbeidsgiver")?.toLocalDateTime(),
+            brevBestillingsId = getString("brev_bestilling_id"),
+            brevBestiltTidspunkt = getTimestamp("brev_bestilt_tidspunkt")?.toLocalDateTime(),
+            ferdigstilt = getBoolean("ferdigstilt"),
+        )
 
     companion object {
         private const val GET_DIALOGMOTE_FOR_UUID_QUERY =
@@ -236,6 +304,20 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                 SELECT *
                 FROM TID_STED
                 WHERE mote_id = ?
+            """
+
+        private const val GET_REFERAT_QUERY =
+            """
+                SELECT *
+                FROM MOTE_REFERAT
+                WHERE uuid = ?
+            """
+
+        private const val GET_ANDRE_DELTAKERE_FOR_REFERAT_ID =
+            """
+                SELECT *
+                FROM MOTEDELTAKER_ANNEN
+                WHERE mote_referat_id = ?
             """
     }
 }
