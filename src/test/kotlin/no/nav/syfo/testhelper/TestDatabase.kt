@@ -10,7 +10,7 @@ import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.database.model.PDialogmote
 import no.nav.syfo.infrastructure.database.getDialogmote
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerVarsel
-import no.nav.syfo.infrastructure.database.getReferat
+import no.nav.syfo.infrastructure.database.repository.MoteRepository
 import no.nav.syfo.infrastructure.database.repository.toPDialogmote
 import no.nav.syfo.infrastructure.database.updateMoteStatus
 import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidstakerBrevBestilt
@@ -134,7 +134,8 @@ fun DatabaseInterface.updateMoteStatus(
 fun DatabaseInterface.setReferatBrevBestilt(
     referatUuid: String,
 ) {
-    val referatId = this.getReferat(UUID.fromString(referatUuid)).first().id
+    val moteRepository = MoteRepository(this)
+    val referatId = moteRepository.getPReferat(UUID.fromString(referatUuid)).first().id
     this.updateReferatBrevBestilt(
         referatId,
     )
@@ -153,7 +154,8 @@ fun DatabaseInterface.setReferatJournalfort(
     referatUuid: String,
     journalpostId: Int,
 ) {
-    val referatId = this.getReferat(UUID.fromString(referatUuid)).first().id
+    val moteRepository = MoteRepository(this)
+    val referatId = moteRepository.getPReferat(UUID.fromString(referatUuid)).first().id
     this.updateReferatJournalpostIdArbeidstaker(
         referatId,
         journalpostId

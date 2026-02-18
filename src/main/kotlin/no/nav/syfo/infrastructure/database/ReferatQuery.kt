@@ -34,22 +34,6 @@ fun DatabaseInterface.getReferatForMote(moteUUID: UUID): List<PReferat> {
     }
 }
 
-const val queryGetReferat =
-    """
-        SELECT *
-        FROM MOTE_REFERAT
-        WHERE uuid = ?
-    """
-
-fun DatabaseInterface.getReferat(referatUUID: UUID): List<PReferat> {
-    return connection.use { connection ->
-        connection.prepareStatement(queryGetReferat).use {
-            it.setString(1, referatUUID.toString())
-            it.executeQuery().toList { toPReferat() }
-        }
-    }
-}
-
 fun ResultSet.toPReferat(): PReferat =
     PReferat(
         id = getInt("id"),
