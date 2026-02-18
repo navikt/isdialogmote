@@ -32,13 +32,16 @@ import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidstaker
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidstakerVarsel
+import no.nav.syfo.infrastructure.database.toPMotedeltakerAnnen
 import no.nav.syfo.infrastructure.database.toPMotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.toPMotedeltakerBehandlerVarsel
+import no.nav.syfo.infrastructure.database.toPReferat
 import no.nav.syfo.infrastructure.database.toPTidSted
 import no.nav.syfo.util.toOffsetDateTimeUTC
 import java.sql.Connection
 import java.sql.ResultSet
 import java.util.*
+import kotlin.use
 
 class MoteRepository(private val database: DatabaseInterface) : IMoteRepository {
 
