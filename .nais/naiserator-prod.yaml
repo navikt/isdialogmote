@@ -147,7 +147,7 @@ spec:
     - name: ALTINN_WS_URL
       value: "https://www.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternalBasic.svc"
     - name: OUTDATED_DIALOGMOTE_CUTOFF_MONTHS
-      value: "12"
+      value: "9"
     - name: ALTINN_SENDING_ENABLED
       value: "true"
     - name: DOKUMENTPORTEN_URL
