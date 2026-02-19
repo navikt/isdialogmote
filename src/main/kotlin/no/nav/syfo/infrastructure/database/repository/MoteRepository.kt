@@ -171,25 +171,6 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             )
         }
 
-    override fun getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdent, Referat>> =
-        database.connection.use { connection ->
-            val referater = connection.prepareStatement(GET_FERDIGSTILTE_REFERAT_WITHOUT_JOURNALPOST_ARBEIDSTAKER).use {
-                it.executeQuery().toList { toPReferat() }
-            }
-            referater.map { referat ->
-                val arbeidstaker = connection.getMoteDeltakerArbeidstaker(referat.moteId)
-                val arbeidsgiver = connection.getMoteDeltakerArbeidsgiver(referat.moteId)
-                val andreDeltakere = connection.getAndreDeltakereForReferatID(referat.id)
-                    .map { it.toDialogmoteDeltakerAnnen() }
-
-                arbeidstaker.personIdent to referat.toReferat(
-                    andreDeltakere = andreDeltakere,
-                    motedeltakerArbeidstakerId = arbeidstaker.id,
-                    motedeltakerArbeidsgiverId = arbeidsgiver.id,
-                )
-            }
-        }
-
     override fun getFerdigstilteReferatWithoutJournalpostArbeidsgiverList(): List<Triple<Virksomhetsnummer, PersonIdent, Referat>> =
         database.connection.use { connection ->
             val referater = connection.prepareStatement(GET_FERDIGSTILTE_REFERAT_WITHOUT_JOURNALPOST_ARBEIDSGIVER).use {
@@ -211,6 +192,25 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                         motedeltakerArbeidstakerId = arbeidstaker.id,
                         motedeltakerArbeidsgiverId = arbeidsgiver.id,
                     )
+                )
+            }
+        }
+
+    override fun getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdent, Referat>> =
+        database.connection.use { connection ->
+            val referater = connection.prepareStatement(GET_FERDIGSTILTE_REFERAT_WITHOUT_JOURNALPOST_ARBEIDSTAKER).use {
+                it.executeQuery().toList { toPReferat() }
+            }
+            referater.map { referat ->
+                val arbeidstaker = connection.getMoteDeltakerArbeidstaker(referat.moteId)
+                val arbeidsgiver = connection.getMoteDeltakerArbeidsgiver(referat.moteId)
+                val andreDeltakere = connection.getAndreDeltakereForReferatID(referat.id)
+                    .map { it.toDialogmoteDeltakerAnnen() }
+
+                arbeidstaker.personIdent to referat.toReferat(
+                    andreDeltakere = andreDeltakere,
+                    motedeltakerArbeidstakerId = arbeidstaker.id,
+                    motedeltakerArbeidsgiverId = arbeidsgiver.id,
                 )
             }
         }
