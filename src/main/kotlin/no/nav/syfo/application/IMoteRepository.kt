@@ -21,4 +21,5 @@ interface IMoteRepository {
     fun getMotedeltakerBehandler(moteId: Int): DialogmotedeltakerBehandler?
     fun getTidSted(moteId: Int): List<DialogmoteTidSted>
     fun getReferat(referatUUID: UUID): Referat?
+    fun getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdent, Referat>>
 }

@@ -8,7 +8,6 @@ import no.nav.syfo.domain.dialogmote.ReferatForJournalpostDistribusjon
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.getAndreDeltakereForReferatID
 import no.nav.syfo.infrastructure.database.getFerdigstilteReferatWithoutJournalpostArbeidsgiverList
-import no.nav.syfo.infrastructure.database.getFerdigstilteReferatWithoutJournalpostArbeidstakerList
 import no.nav.syfo.infrastructure.database.getFerdigstilteReferatWithoutJournalpostBehandlerList
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidstaker
@@ -26,22 +25,7 @@ class ReferatJournalpostService(
     private val moteRepository: IMoteRepository,
 ) {
     fun getDialogmoteReferatJournalforingListArbeidstaker(): List<Pair<PersonIdent, Referat>> {
-        return database.getFerdigstilteReferatWithoutJournalpostArbeidstakerList().map { (personIdent, pReferat) ->
-            val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id).map {
-                it.toDialogmoteDeltakerAnnen()
-            }
-            val motedeltakerArbeidstakerId = database.getMoteDeltakerArbeidstaker(pReferat.moteId).id
-            val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
-
-            Pair(
-                first = personIdent,
-                second = pReferat.toReferat(
-                    andreDeltakere = andreDeltakere,
-                    motedeltakerArbeidstakerId = motedeltakerArbeidstakerId,
-                    motedeltakerArbeidsgiverId = motedeltakerArbeidsgiverId
-                )
-            )
-        }
+        return moteRepository.getFerdigstilteReferatWithoutJournalpostArbeidstakerList()
     }
 
     fun getDialogmoteReferatJournalforingListArbeidsgiver(): List<Triple<Virksomhetsnummer, PersonIdent, Referat>> {
