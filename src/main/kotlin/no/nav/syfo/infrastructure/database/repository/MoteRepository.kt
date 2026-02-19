@@ -32,16 +32,13 @@ import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidstaker
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidstakerVarsel
-import no.nav.syfo.infrastructure.database.toPMotedeltakerAnnen
 import no.nav.syfo.infrastructure.database.toPMotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.toPMotedeltakerBehandlerVarsel
-import no.nav.syfo.infrastructure.database.toPReferat
 import no.nav.syfo.infrastructure.database.toPTidSted
 import no.nav.syfo.util.toOffsetDateTimeUTC
 import java.sql.Connection
 import java.sql.ResultSet
 import java.util.*
-import kotlin.use
 
 class MoteRepository(private val database: DatabaseInterface) : IMoteRepository {
 
@@ -196,21 +193,27 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             }
         }
 
-    override fun getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdent, Referat>> =
+    override fun getFerdigstilteReferatWithoutJournalpostArbeidsgiverList(): List<Triple<Virksomhetsnummer, PersonIdent, Referat>> =
         database.connection.use { connection ->
-            val referater = connection.prepareStatement(GET_FERDIGSTILTE_REFERAT_WITHOUT_JOURNALPOST_ARBEIDSTAKER).use {
-                it.executeQuery().toList { toPReferat() }
+            val referater = connection.prepareStatement(GET_FERDIGSTILTE_REFERAT_WITHOUT_JOURNALPOST_ARBEIDSGIVER).use {
+                it.executeQuery().toList {
+                    Pair(Virksomhetsnummer(getString("virksomhetsnummer")), toPReferat())
+                }
             }
-            referater.map { referat ->
+            referater.map { (virksomhetsnummer, referat) ->
                 val arbeidstaker = connection.getMoteDeltakerArbeidstaker(referat.moteId)
                 val arbeidsgiver = connection.getMoteDeltakerArbeidsgiver(referat.moteId)
                 val andreDeltakere = connection.getAndreDeltakereForReferatID(referat.id)
                     .map { it.toDialogmoteDeltakerAnnen() }
 
-                arbeidstaker.personIdent to referat.toReferat(
-                    andreDeltakere = andreDeltakere,
-                    motedeltakerArbeidstakerId = arbeidstaker.id,
-                    motedeltakerArbeidsgiverId = arbeidsgiver.id,
+                Triple(
+                    virksomhetsnummer,
+                    arbeidstaker.personIdent,
+                    referat.toReferat(
+                        andreDeltakere = andreDeltakere,
+                        motedeltakerArbeidstakerId = arbeidstaker.id,
+                        motedeltakerArbeidsgiverId = arbeidsgiver.id,
+                    )
                 )
             }
         }
