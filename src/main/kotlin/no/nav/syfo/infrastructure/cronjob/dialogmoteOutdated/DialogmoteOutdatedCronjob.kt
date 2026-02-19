@@ -20,16 +20,16 @@ class DialogmoteOutdatedCronjob(
     val dialogmotestatusService: DialogmotestatusService,
     val dialogmoterelasjonService: DialogmoterelasjonService,
     val database: DatabaseInterface,
-    val outdatedDialogmoterCutoff: LocalDate,
+    val outdatedDialogmoterCutoffMonths: Int,
 ) : DialogmoteCronjob {
 
     override val initialDelayMinutes: Long = 4
-    override val intervalDelayMinutes: Long = 240
+    override val intervalDelayMinutes: Long = 30 // Change back to once every 24 hours after initial clean up
 
     override suspend fun run() {
-        val outdatedResult = DialogmoteCronjobResult()
+        log.info("DialogmoteOutdatedCronjob started with cutoff of $outdatedDialogmoterCutoffMonths months")
 
-        dialogmoteOutdatedJob(outdatedResult)
+        val outdatedResult = dialogmoteOutdatedJob()
 
         COUNT_CRONJOB_OUTDATED_DIALOGMOTE_UPDATE.increment(outdatedResult.updated.toDouble())
         COUNT_CRONJOB_OUTDATED_DIALOGMOTE_FAIL.increment(outdatedResult.failed.toDouble())
@@ -41,10 +41,12 @@ class DialogmoteOutdatedCronjob(
         )
     }
 
-    suspend fun dialogmoteOutdatedJob(
-        outdatedResult: DialogmoteCronjobResult,
-    ) {
-        val cutoff = outdatedDialogmoterCutoff.atStartOfDay()
+    suspend fun dialogmoteOutdatedJob(): DialogmoteCronjobResult {
+        val outdatedResult = DialogmoteCronjobResult()
+        val cutoff = LocalDate.now()
+            .minusMonths(outdatedDialogmoterCutoffMonths.toLong())
+            .atStartOfDay()
+
         val moteListe = database.findOutdatedMoter(cutoff).toMutableList()
         // moter som skal lukkes adhoc (basert på hardkodet liste med uuid'er)
         uuids.forEach { uuid -> moteListe.addAll(database.getDialogmote(UUID.fromString(uuid))) }
@@ -72,6 +74,7 @@ class DialogmoteOutdatedCronjob(
                 log.error("Got exception when setting outdated status from cronjob", exc)
             }
         }
+        return outdatedResult
     }
 
     companion object {
