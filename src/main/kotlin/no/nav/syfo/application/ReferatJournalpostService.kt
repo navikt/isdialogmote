@@ -1,31 +1,29 @@
 package no.nav.syfo.application
 
-import java.time.LocalDateTime
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.model.toDialogmoteDeltakerAnnen
-import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
-import no.nav.syfo.infrastructure.database.model.toReferat
+import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
 import no.nav.syfo.domain.dialogmote.Referat
 import no.nav.syfo.domain.dialogmote.ReferatForJournalpostDistribusjon
-import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.domain.Virksomhetsnummer
+import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.getAndreDeltakereForReferatID
 import no.nav.syfo.infrastructure.database.getFerdigstilteReferatWithoutJournalpostArbeidsgiverList
 import no.nav.syfo.infrastructure.database.getFerdigstilteReferatWithoutJournalpostArbeidstakerList
 import no.nav.syfo.infrastructure.database.getFerdigstilteReferatWithoutJournalpostBehandlerList
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.getMoteDeltakerBehandler
 import no.nav.syfo.infrastructure.database.getReferatForFysiskBrevUtsending
-import no.nav.syfo.infrastructure.database.getTidSted
+import no.nav.syfo.infrastructure.database.model.toDialogmoteDeltakerAnnen
+import no.nav.syfo.infrastructure.database.model.toReferat
 import no.nav.syfo.infrastructure.database.updateReferatBrevBestilt
 import no.nav.syfo.infrastructure.database.updateReferatJournalpostIdArbeidsgiver
 import no.nav.syfo.infrastructure.database.updateReferatJournalpostIdArbeidstaker
 import no.nav.syfo.infrastructure.database.updateReferatJournalpostIdBehandler
+import java.time.LocalDateTime
 
 class ReferatJournalpostService(
     private val database: DatabaseInterface,
+    private val moteRepository: IMoteRepository,
 ) {
     fun getDialogmoteReferatJournalforingListArbeidstaker(): List<Pair<PersonIdent, Referat>> {
         return database.getFerdigstilteReferatWithoutJournalpostArbeidstakerList().map { (personIdent, pReferat) ->
@@ -75,8 +73,7 @@ class ReferatJournalpostService(
             }
             val motedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(pReferat.moteId)
             val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
-            val motedeltakerBehandler = database.getMoteDeltakerBehandler(pReferat.moteId)!!
-                .toDialogmotedeltakerBehandler(emptyList())
+            val motedeltakerBehandler = moteRepository.getMotedeltakerBehandler(pReferat.moteId)!!
 
             Triple(
                 first = motedeltakerArbeidstaker.personIdent,
@@ -91,7 +88,7 @@ class ReferatJournalpostService(
     }
 
     fun getMotetidspunkt(moteId: Int): LocalDateTime? =
-        database.getTidSted(moteId).maxByOrNull { it.createdAt }?.tid
+        moteRepository.getTidSted(moteId).maxByOrNull { it.createdAt }?.tid
 
     fun getDialogmoteReferatForJournalpostDistribusjonList(): List<ReferatForJournalpostDistribusjon> {
         return database.getReferatForFysiskBrevUtsending()

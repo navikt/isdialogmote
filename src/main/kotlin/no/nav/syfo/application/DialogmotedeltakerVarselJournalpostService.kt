@@ -22,7 +22,6 @@ import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerVarselForF
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerVarselWithoutJournalpost
 import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerById
 import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerVarselWithoutJournalpost
-import no.nav.syfo.infrastructure.database.getTidSted
 import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidsgiverVarselJournalpostId
 import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidstakerBrevBestilt
 import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidstakerVarselJournalpostId
@@ -31,6 +30,7 @@ import java.time.LocalDateTime
 
 class DialogmotedeltakerVarselJournalpostService(
     private val database: DatabaseInterface,
+    private val moteRepository: IMoteRepository,
 ) {
     fun getDialogmotedeltakerArbeidstakerVarselForJournalforingList(): List<Pair<PersonIdent, DialogmotedeltakerArbeidstakerVarsel>> {
         return getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList().filter { (_, arbeidstakerVarsel) ->
@@ -111,7 +111,7 @@ class DialogmotedeltakerVarselJournalpostService(
                 val motedeltakerArbeidstaker =
                     database.getMotedeltakerArbeidstakerById(motedeltakerArbeidstakerVarsel.motedeltakerArbeidstakerId)
                 val tidspunkt =
-                    database.getTidSted(motedeltakerArbeidstaker.moteId)
+                    moteRepository.getTidSted(motedeltakerArbeidstaker.moteId)
                         .last()
                         .tid
                 Triple(

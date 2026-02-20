@@ -60,9 +60,11 @@ class DialogmoteVarselJournalforingCronjobTest {
 
     private val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(
         database = database,
+        moteRepository = externalMockEnvironment.moteRepository,
     )
     private val referatJournalpostService = ReferatJournalpostService(
         database = database,
+        moteRepository = externalMockEnvironment.moteRepository,
     )
     private val azureAdV2Client = mockk<AzureAdV2Client>(relaxed = true)
 
