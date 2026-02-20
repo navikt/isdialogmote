@@ -2,7 +2,6 @@ package no.nav.syfo.infrastructure.database
 
 import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.api.authentication.configuredJacksonMapper
-import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.NewReferat
@@ -270,26 +269,6 @@ private fun Connection.updateAndreDeltakereForReferat(
             it.setString(5, deltaker.funksjon)
             it.setString(6, deltaker.navn)
             it.executeQuery()
-        }
-    }
-}
-
-const val queryGetFerdigstilteReferatWithoutJournalpostArbeidstaker =
-    """
-        SELECT MOTEDELTAKER_ARBEIDSTAKER.PERSONIDENT, MOTE_REFERAT.*
-        FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
-                  INNER JOIN MOTEDELTAKER_ARBEIDSTAKER ON (MOTE.ID = MOTEDELTAKER_ARBEIDSTAKER.MOTE_ID) 
-        WHERE MOTE_REFERAT.journalpost_id IS NULL AND MOTE_REFERAT.ferdigstilt = true
-        ORDER BY MOTE_REFERAT.created_at ASC
-        LIMIT 20
-    """
-
-fun DatabaseInterface.getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdent, PReferat>> {
-    return this.connection.use { connection ->
-        connection.prepareStatement(queryGetFerdigstilteReferatWithoutJournalpostArbeidstaker).use {
-            it.executeQuery().toList {
-                Pair(PersonIdent(getString(1)), toPReferat())
-            }
         }
     }
 }
