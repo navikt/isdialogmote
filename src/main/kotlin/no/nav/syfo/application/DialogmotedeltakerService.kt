@@ -14,7 +14,6 @@ import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiverById
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerById
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerVarsel
-import no.nav.syfo.infrastructure.database.getReferat
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstakerVarsel
 import no.nav.syfo.infrastructure.database.model.toMotedeltakerArbeidsgiverUsingDomainVarsler
@@ -106,13 +105,10 @@ class DialogmotedeltakerService(
         personIdent: PersonIdent,
         brevUuid: UUID,
     ) {
-        val brevIsReferat = database.getReferat(brevUuid).isNotEmpty()
-
+        val isBrevReferat = moteRepository.getReferat(brevUuid) != null
         database.connection.use { connection ->
-            if (brevIsReferat) {
-                connection.updateReferatLestDatoArbeidstaker(
-                    referatUUID = brevUuid
-                )
+            if (isBrevReferat) {
+                connection.updateReferatLestDatoArbeidstaker(referatUUID = brevUuid)
             } else {
                 connection.updateMotedeltakerArbeidstakerVarselLestDato(
                     motedeltakerArbeidstakerVarselUuid = brevUuid
@@ -142,10 +138,9 @@ class DialogmotedeltakerService(
     }
 
     fun updateArbeidsgiverBrevSettSomLest(brevUuid: UUID) {
-        val brevIsReferat = database.getReferat(brevUuid).isNotEmpty()
-
+        val isBrevReferat = moteRepository.getReferat(brevUuid) != null
         database.connection.use { connection ->
-            if (brevIsReferat) {
+            if (isBrevReferat) {
                 connection.updateReferatLestDatoArbeidsgiver(referatUUID = brevUuid)
             } else {
                 connection.updateMotedeltakerArbeidsgiverVarselLestDato(brevUuid)
@@ -160,8 +155,8 @@ class DialogmotedeltakerService(
         svarType: DialogmoteSvarType,
         svarTekst: String?,
     ): Boolean {
-        val brevIsReferat = database.getReferat(brevUuid).isNotEmpty()
-        if (brevIsReferat) {
+        val isBrevReferat = moteRepository.getReferat(brevUuid) != null
+        if (isBrevReferat) {
             throw IllegalArgumentException("Cannot store response for referat")
         }
         return database.connection.use { connection ->
@@ -189,8 +184,8 @@ class DialogmotedeltakerService(
         svarType: DialogmoteSvarType,
         svarTekst: String?,
     ): Boolean {
-        val brevIsReferat = database.getReferat(brevUuid).isNotEmpty()
-        if (brevIsReferat) {
+        val isBrevReferat = moteRepository.getReferat(brevUuid) != null
+        if (isBrevReferat) {
             throw IllegalArgumentException("Cannot store response for referat")
         }
 

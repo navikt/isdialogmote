@@ -1,16 +1,20 @@
 package no.nav.syfo.infrastructure.database
 
 import com.fasterxml.jackson.core.type.TypeReference
-import no.nav.syfo.infrastructure.database.model.PMotedeltakerAnnen
-import no.nav.syfo.infrastructure.database.model.PReferat
+import no.nav.syfo.api.authentication.configuredJacksonMapper
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.NewReferat
 import no.nav.syfo.domain.dialogmote.Referat
-import no.nav.syfo.api.authentication.configuredJacksonMapper
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerAnnen
+import no.nav.syfo.infrastructure.database.model.PReferat
 import no.nav.syfo.util.nowUTC
-import java.sql.*
+import java.sql.Connection
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.sql.Timestamp
+import java.sql.Types
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
@@ -29,22 +33,6 @@ fun DatabaseInterface.getReferatForMote(moteUUID: UUID): List<PReferat> {
     return connection.use { connection ->
         connection.prepareStatement(queryGetReferatForMoteUUID).use {
             it.setString(1, moteUUID.toString())
-            it.executeQuery().toList { toPReferat() }
-        }
-    }
-}
-
-const val queryGetReferat =
-    """
-        SELECT *
-        FROM MOTE_REFERAT
-        WHERE uuid = ?
-    """
-
-fun DatabaseInterface.getReferat(referatUUID: UUID): List<PReferat> {
-    return connection.use { connection ->
-        connection.prepareStatement(queryGetReferat).use {
-            it.setString(1, referatUUID.toString())
             it.executeQuery().toList { toPReferat() }
         }
     }

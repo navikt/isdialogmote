@@ -1,12 +1,27 @@
 package no.nav.syfo.application
 
 import no.nav.syfo.api.authentication.getNAVIdentFromToken
-import no.nav.syfo.api.dto.*
+import no.nav.syfo.api.dto.AvlysningTilMottakereDTO
+import no.nav.syfo.api.dto.EndretTidStedDTO
+import no.nav.syfo.api.dto.NewDialogmoteDTO
+import no.nav.syfo.api.dto.NewReferatDTO
+import no.nav.syfo.api.dto.toNewDialogmote
+import no.nav.syfo.api.dto.toNewReferat
 import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
-import no.nav.syfo.domain.dialogmote.*
+import no.nav.syfo.domain.dialogmote.ArbeidstakerBrev
+import no.nav.syfo.domain.dialogmote.Dialogmote
+import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
+import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
+import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
+import no.nav.syfo.domain.dialogmote.NarmesteLederBrev
+import no.nav.syfo.domain.dialogmote.Referat
+import no.nav.syfo.domain.dialogmote.anyActive
+import no.nav.syfo.domain.dialogmote.findInnkallingVarselUuid
+import no.nav.syfo.domain.dialogmote.findParentVarselId
+import no.nav.syfo.domain.dialogmote.latest
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.client.behandlendeenhet.getEnhetId
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
@@ -21,10 +36,6 @@ import no.nav.syfo.infrastructure.database.createMotedeltakerVarselArbeidstaker
 import no.nav.syfo.infrastructure.database.createMotedeltakerVarselBehandler
 import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.createNewReferat
-import no.nav.syfo.infrastructure.database.model.toReferat
-import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
-import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.getReferat
 import no.nav.syfo.infrastructure.database.updateMoteTidSted
 import no.nav.syfo.infrastructure.database.updateMoteTildeltVeileder
 import no.nav.syfo.infrastructure.database.updateMotedeltakerBehandler
@@ -764,26 +775,9 @@ class DialogmoteService(
         }
     }
 
-    private fun getFerdigReferat(
-        referatUUID: UUID,
-    ): Referat? {
-        val referat = getReferat(referatUUID)
+    private fun getFerdigReferat(referatUUID: UUID): Referat? {
+        val referat = moteRepository.getReferat(referatUUID)
         return if (referat?.ferdigstilt == true) referat else null
-    }
-
-    private fun getReferat(
-        referatUUID: UUID,
-    ): Referat? {
-        return database.getReferat(referatUUID).firstOrNull()?.let { pReferat ->
-            val andreDeltakere = dialogmoterelasjonService.getAndreDeltakere(pReferat.id)
-            val motedeltakerArbeidstakerId = database.getMoteDeltakerArbeidstaker(pReferat.moteId).id
-            val motedeltakerArbeidsgiverId = database.getMoteDeltakerArbeidsgiver(pReferat.moteId).id
-            pReferat.toReferat(
-                andreDeltakere = andreDeltakere,
-                motedeltakerArbeidstakerId = motedeltakerArbeidstakerId,
-                motedeltakerArbeidsgiverId = motedeltakerArbeidsgiverId
-            )
-        }
     }
 
     fun getArbeidstakerBrevFromUuid(
