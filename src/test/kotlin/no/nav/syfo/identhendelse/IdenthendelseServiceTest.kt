@@ -8,6 +8,7 @@ import no.nav.syfo.infrastructure.client.cache.ValkeyStore
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerByIdent
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.dropData
@@ -52,10 +53,9 @@ class IdenthendelseServiceTest {
 
             // Populate database with new dialogmote using old ident for arbeidstaker
             val newDialogmote = generateNewDialogmote(personIdent = oldIdent)
-            database.connection.use { connection ->
-                connection.createNewDialogmoteWithReferences(
+            database.transaction {
+                createNewDialogmoteWithReferences(
                     newDialogmote = newDialogmote,
-                    commit = true,
                 )
             }
 
@@ -138,10 +138,9 @@ class IdenthendelseServiceTest {
 
             // Populate database with new dialogmote using old ident for arbeidstaker
             val newDialogmote = generateNewDialogmote(personIdent = oldIdent)
-            database.connection.use { connection ->
-                connection.createNewDialogmoteWithReferences(
+            database.transaction {
+                createNewDialogmoteWithReferences(
                     newDialogmote = newDialogmote,
-                    commit = true,
                 )
             }
 
@@ -165,10 +164,9 @@ class IdenthendelseServiceTest {
             val oldIdent = kafkaIdenthendelseDTO.getInactivePersonidenter().first()
 
             val newDialogmote = generateNewDialogmote(personIdent = oldIdent)
-            database.connection.use { connection ->
-                connection.createNewDialogmoteWithReferences(
+            database.transaction {
+                createNewDialogmoteWithReferences(
                     newDialogmote = newDialogmote,
-                    commit = true,
                 )
             }
 

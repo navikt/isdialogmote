@@ -31,8 +31,7 @@ const val queryCreateMotedeltakerVarselArbeidsgiver =
 private val mapper = configuredJacksonMapper()
 
 // TODO: Fjern sendAltinn boolean (altinn_sent_at skal alltid settes til now)
-fun Connection.createMotedeltakerVarselArbeidsgiver(
-    commit: Boolean = true,
+fun UnitOfWork.createMotedeltakerVarselArbeidsgiver(
     motedeltakerArbeidsgiverId: Int,
     status: String,
     varselType: MotedeltakerVarselType,
@@ -45,7 +44,7 @@ fun Connection.createMotedeltakerVarselArbeidsgiver(
     val nowUTC = nowUTC()
 
     val motedeltakerArbeidsgiverVarselUuid = UUID.randomUUID()
-    val motedeltakerArbeidsgiverVarselIdList = this.prepareStatement(queryCreateMotedeltakerVarselArbeidsgiver).use {
+    val motedeltakerArbeidsgiverVarselIdList = connection.prepareStatement(queryCreateMotedeltakerVarselArbeidsgiver).use {
         it.setString(1, motedeltakerArbeidsgiverVarselUuid.toString())
         it.setTimestamp(2, now)
         it.setTimestamp(3, now)
@@ -65,10 +64,6 @@ fun Connection.createMotedeltakerVarselArbeidsgiver(
 
     if (motedeltakerArbeidsgiverVarselIdList.size != 1) {
         throw SQLException("Creating MotedeltakerVarselArbeidsgiver failed, no rows affected.")
-    }
-
-    if (commit) {
-        this.commit()
     }
 
     return Pair(motedeltakerArbeidsgiverVarselIdList.first(), motedeltakerArbeidsgiverVarselUuid)
@@ -119,11 +114,11 @@ const val queryUpdateMotedeltakerArbeidsgiverVarselLestDato =
         WHERE uuid = ? AND lest_dato IS NULL
     """
 
-fun Connection.updateMotedeltakerArbeidsgiverVarselLestDato(
+fun UnitOfWork.updateMotedeltakerArbeidsgiverVarselLestDato(
     motedeltakerArbeidsgiverVarselUuid: UUID,
 ) {
     val now = LocalDateTime.now()
-    this.prepareStatement(queryUpdateMotedeltakerArbeidsgiverVarselLestDato).use {
+    connection.prepareStatement(queryUpdateMotedeltakerArbeidsgiverVarselLestDato).use {
         it.setTimestamp(1, Timestamp.valueOf(now))
         it.setString(2, motedeltakerArbeidsgiverVarselUuid.toString())
         it.execute()
@@ -175,12 +170,12 @@ const val queryUpdateMotedeltakerArbeidsgiverVarselRespons =
         WHERE uuid = ? AND svar_type IS NULL
     """
 
-fun Connection.updateMotedeltakerArbeidsgiverVarselRespons(
+fun UnitOfWork.updateMotedeltakerArbeidsgiverVarselRespons(
     motedeltakerArbeidsgiverVarselUuid: UUID,
     svarType: DialogmoteSvarType,
     svarTekst: String?,
 ): Int {
-    return this.prepareStatement(queryUpdateMotedeltakerArbeidsgiverVarselRespons).use {
+    return connection.prepareStatement(queryUpdateMotedeltakerArbeidsgiverVarselRespons).use {
         it.setString(1, svarType.name)
         it.setString(2, svarTekst)
         it.setTimestamp(3, Timestamp.from(Instant.now()))

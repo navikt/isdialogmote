@@ -8,7 +8,6 @@ import no.nav.syfo.infrastructure.cronjob.statusendring.toInstantOslo
 import no.nav.syfo.infrastructure.database.model.PDialogmote
 import no.nav.syfo.infrastructure.database.model.PMotedeltakerBehandlerVarsel
 import no.nav.syfo.infrastructure.database.repository.toPDialogmote
-import java.sql.Connection
 import java.sql.SQLException
 import java.sql.Timestamp
 import java.time.Instant
@@ -85,42 +84,32 @@ data class CreatedDialogmoteIdentifiers(
     val motedeltakerBehandlerIdPair: Pair<Int, UUID>?,
 )
 
-fun Connection.createNewDialogmoteWithReferences(
+fun UnitOfWork.createNewDialogmoteWithReferences(
     newDialogmote: NewDialogmote,
-    commit: Boolean = true,
 ): CreatedDialogmoteIdentifiers {
-    val moteIdList = this.createDialogmote(
+    val moteIdList = createDialogmote(
         newDialogmote = newDialogmote,
-        commit = false,
     )
 
     val moteId = moteIdList.first
 
-    this.createTidSted(
-        commit = false,
+    createTidSted(
         moteId = moteId,
         newDialogmoteTidSted = newDialogmote.tidSted
     )
-    val motedeltakerArbeidstakerIdPair = this.createMotedeltakerArbeidstaker(
-        commit = false,
+    val motedeltakerArbeidstakerIdPair = createMotedeltakerArbeidstaker(
         moteId = moteId,
         personIdent = newDialogmote.arbeidstaker.personIdent,
     )
-    val motedeltakerArbeidsgiverIdPair = this.createMotedeltakerArbeidsgiver(
-        commit = false,
+    val motedeltakerArbeidsgiverIdPair = createMotedeltakerArbeidsgiver(
         moteId = moteId,
         newDialogmotedeltakerArbeidsgiver = newDialogmote.arbeidsgiver,
     )
     val motedeltakerBehandlerIdPair = newDialogmote.behandler?.let {
-        this.createMotedeltakerBehandler(
-            commit = false,
+        createMotedeltakerBehandler(
             moteId = moteId,
             newDialogmotedeltakerBehandler = it,
         )
-    }
-
-    if (commit) {
-        this.commit()
     }
 
     return CreatedDialogmoteIdentifiers(
@@ -131,14 +120,13 @@ fun Connection.createNewDialogmoteWithReferences(
     )
 }
 
-fun Connection.createDialogmote(
+fun UnitOfWork.createDialogmote(
     newDialogmote: NewDialogmote,
-    commit: Boolean = true,
 ): Pair<Int, UUID> {
     val moteUuid = UUID.randomUUID()
     val now = Timestamp.from(Instant.now())
 
-    val moteIdList = this.prepareStatement(queryCreateDialogmote).use {
+    val moteIdList = connection.prepareStatement(queryCreateDialogmote).use {
         it.setString(1, moteUuid.toString())
         it.setTimestamp(2, now)
         it.setTimestamp(3, now)
@@ -152,10 +140,6 @@ fun Connection.createDialogmote(
         throw SQLException("Creating Dialogmote failed, no rows affected.")
     }
 
-    if (commit) {
-        this.commit()
-    }
-
     return Pair(moteIdList.first(), moteUuid)
 }
 
@@ -166,20 +150,16 @@ const val queryUpdateMoteTildeltVeileder =
     WHERE id = ?
     """
 
-fun Connection.updateMoteTildeltVeileder(
-    commit: Boolean = true,
+fun UnitOfWork.updateMoteTildeltVeileder(
     moteId: Int,
     veilederId: String,
 ) {
     val now = Timestamp.from(Instant.now())
-    this.prepareStatement(queryUpdateMoteTildeltVeileder).use {
+    connection.prepareStatement(queryUpdateMoteTildeltVeileder).use {
         it.setString(1, veilederId)
         it.setTimestamp(2, now)
         it.setInt(3, moteId)
         it.execute()
-    }
-    if (commit) {
-        this.commit()
     }
 }
 
@@ -190,20 +170,16 @@ const val queryUpdateMoteStatus =
     WHERE id = ?
     """
 
-fun Connection.updateMoteStatus(
-    commit: Boolean = true,
+fun UnitOfWork.updateMoteStatus(
     moteId: Int,
     moteStatus: Dialogmote.Status,
 ) {
     val now = Timestamp.from(Instant.now())
-    this.prepareStatement(queryUpdateMoteStatus).use {
+    connection.prepareStatement(queryUpdateMoteStatus).use {
         it.setString(1, moteStatus.name)
         it.setTimestamp(2, now)
         it.setInt(3, moteId)
         it.execute()
-    }
-    if (commit) {
-        this.commit()
     }
 }
 
@@ -246,17 +222,12 @@ fun DatabaseInterface.getMote(
     }
 }
 
-fun Connection.updateMoteTidSted(
-    commit: Boolean = true,
+fun UnitOfWork.updateMoteTidSted(
     moteId: Int,
     newDialogmoteTidSted: TidStedDTO,
 ) {
-    this.createTidSted(
-        commit = false,
+    createTidSted(
         moteId = moteId,
         newDialogmoteTidSted = newDialogmoteTidSted,
     )
-    if (commit) {
-        this.commit()
-    }
 }

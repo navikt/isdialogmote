@@ -3,6 +3,7 @@ package no.nav.syfo.testdata.reset
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerByIdent
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -30,10 +31,9 @@ class TestdataResetServiceTest {
     fun `Skal slette dialogmøte fra database for oppgitt arbeidstaker`() {
         // Populate database with new dialogmote for arbeidstaker
         val newDialogmote = generateNewDialogmote(personIdent = ARBEIDSTAKER_FNR)
-        database.connection.use { connection ->
-            connection.createNewDialogmoteWithReferences(
+        database.transaction {
+            createNewDialogmoteWithReferences(
                 newDialogmote = newDialogmote,
-                commit = true,
             )
         }
 
@@ -52,10 +52,9 @@ class TestdataResetServiceTest {
     fun `Skal ikke slette dialogmøte på annen arbeidstaker`() {
         // Populate database with new dialogmote for arbeidstaker
         val newDialogmote = generateNewDialogmote(personIdent = ARBEIDSTAKER_FNR)
-        database.connection.use { connection ->
-            connection.createNewDialogmoteWithReferences(
+        database.transaction {
+            createNewDialogmoteWithReferences(
                 newDialogmote = newDialogmote,
-                commit = true,
             )
         }
 

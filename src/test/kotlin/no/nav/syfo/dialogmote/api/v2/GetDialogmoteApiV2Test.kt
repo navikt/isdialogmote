@@ -14,6 +14,7 @@ import no.nav.syfo.api.endpoints.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.api.endpoints.dialogmoteApiVeilederIdentUrlPath
 import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
@@ -216,8 +217,8 @@ class GetDialogmoteApiV2Test {
                 tildeltVeilederIdent = VEILEDER_IDENT
             )
 
-            database.connection.use { connection ->
-                connection.createNewDialogmoteWithReferences(
+            database.transaction {
+                createNewDialogmoteWithReferences(
                     newDialogmote = newDialogmoteVeilederNoAccess
                 )
             }

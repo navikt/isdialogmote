@@ -15,6 +15,7 @@ import no.nav.syfo.api.endpoints.dialogmoteApiEnhetUrlPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -71,22 +72,22 @@ class GetDialogmoteEnhetApiV2Test {
                 client.postMote(validTokenV2, newDialogmoteDTO)
 
                 val newDialogmote = generateNewDialogmote(ARBEIDSTAKER_ANNEN_FNR)
-                database.connection.use { connection ->
-                    connection.createNewDialogmoteWithReferences(
+                database.transaction {
+                    createNewDialogmoteWithReferences(
                         newDialogmote = newDialogmote
                     )
                 }
                 val newDialogmoteFerdigstilt =
                     generateNewDialogmote(ARBEIDSTAKER_FNR, status = Dialogmote.Status.FERDIGSTILT)
-                database.connection.use { connection ->
-                    connection.createNewDialogmoteWithReferences(
+                database.transaction {
+                    createNewDialogmoteWithReferences(
                         newDialogmote = newDialogmoteFerdigstilt
                     )
                 }
                 val newDialogmoteAvlyst =
                     generateNewDialogmote(ARBEIDSTAKER_FNR, status = Dialogmote.Status.AVLYST)
-                database.connection.use { connection ->
-                    connection.createNewDialogmoteWithReferences(
+                database.transaction {
+                    createNewDialogmoteWithReferences(
                         newDialogmote = newDialogmoteAvlyst
                     )
                 }
@@ -132,22 +133,22 @@ class GetDialogmoteEnhetApiV2Test {
                 client.postMote(validTokenV2, newDialogmoteDTO)
 
                 val newDialogmote = generateNewDialogmote(ARBEIDSTAKER_ANNEN_FNR)
-                database.connection.use { connection ->
-                    connection.createNewDialogmoteWithReferences(
+                database.transaction {
+                    createNewDialogmoteWithReferences(
                         newDialogmote = newDialogmote
                     )
                 }
                 val newDialogmoteFerdigstilt =
                     generateNewDialogmote(ARBEIDSTAKER_FNR, status = Dialogmote.Status.FERDIGSTILT)
-                database.connection.use { connection ->
-                    connection.createNewDialogmoteWithReferences(
+                database.transaction {
+                    createNewDialogmoteWithReferences(
                         newDialogmote = newDialogmoteFerdigstilt
                     )
                 }
                 val newDialogmoteAvlyst =
                     generateNewDialogmote(ARBEIDSTAKER_FNR, status = Dialogmote.Status.AVLYST)
-                database.connection.use { connection ->
-                    connection.createNewDialogmoteWithReferences(
+                database.transaction {
+                    createNewDialogmoteWithReferences(
                         newDialogmote = newDialogmoteAvlyst
                     )
                 }

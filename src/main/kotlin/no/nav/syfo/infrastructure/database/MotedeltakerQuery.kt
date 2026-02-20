@@ -23,14 +23,13 @@ const val queryCreateMotedeltakerArbeidstaker =
         personident) VALUES (DEFAULT, ?, ?, ?, ?, ?) RETURNING id
     """
 
-fun Connection.createMotedeltakerArbeidstaker(
-    commit: Boolean = true,
+fun UnitOfWork.createMotedeltakerArbeidstaker(
     moteId: Int,
     personIdent: PersonIdent,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
     val motedeltakerUuid = UUID.randomUUID()
-    val motedeltakerArbeidstakerIdList = this.prepareStatement(queryCreateMotedeltakerArbeidstaker).use {
+    val motedeltakerArbeidstakerIdList = connection.prepareStatement(queryCreateMotedeltakerArbeidstaker).use {
         it.setString(1, motedeltakerUuid.toString())
         it.setTimestamp(2, now)
         it.setTimestamp(3, now)
@@ -43,10 +42,6 @@ fun Connection.createMotedeltakerArbeidstaker(
         errorMessageIfEmpty = "Creating MotedeltakerArbeidstaker failed, no rows affected.",
         errorMessageIfMoreThanOne = "Creating MotedeltakerArbeidstaker failed, more than one row affected.",
     )
-
-    if (commit) {
-        this.commit()
-    }
 
     return Pair(motedeltakerArbeidstakerIdList.first(), motedeltakerUuid)
 }
@@ -158,15 +153,14 @@ const val queryCreateMotedeltakerBehandler =
         ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
     """
 
-fun Connection.createMotedeltakerBehandler(
-    commit: Boolean = true,
+fun UnitOfWork.createMotedeltakerBehandler(
     moteId: Int,
     newDialogmotedeltakerBehandler: NewDialogmotedeltakerBehandler,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 
     val motedeltakerUuid = UUID.randomUUID()
-    val motedeltakerBehandlerIdList = this.prepareStatement(queryCreateMotedeltakerBehandler).use {
+    val motedeltakerBehandlerIdList = connection.prepareStatement(queryCreateMotedeltakerBehandler).use {
         it.setString(1, motedeltakerUuid.toString())
         it.setTimestamp(2, now)
         it.setTimestamp(3, now)
@@ -184,10 +178,6 @@ fun Connection.createMotedeltakerBehandler(
         errorMessageIfMoreThanOne = "Creating MotedeltakerBehandler failed, more than one row affected.",
     )
 
-    if (commit) {
-        this.commit()
-    }
-
     return Pair(motedeltakerBehandlerIdList.first(), motedeltakerUuid)
 }
 
@@ -198,12 +188,12 @@ const val queryUpdateMotedeltakerBehandler =
         WHERE id = ?
     """
 
-fun Connection.updateMotedeltakerBehandler(
+fun UnitOfWork.updateMotedeltakerBehandler(
     deltakerId: Int,
     deltatt: Boolean,
     mottarReferat: Boolean,
 ) {
-    val rowCount = this.prepareStatement(queryUpdateMotedeltakerBehandler).use {
+    val rowCount = connection.prepareStatement(queryUpdateMotedeltakerBehandler).use {
         it.setBoolean(1, deltatt)
         it.setBoolean(2, mottarReferat)
         it.setInt(3, deltakerId)
@@ -264,15 +254,14 @@ const val queryCreateMotedeltakerArbeidsgiver =
         ) VALUES (DEFAULT, ?, ?, ?, ?, ?) RETURNING id
     """
 
-fun Connection.createMotedeltakerArbeidsgiver(
-    commit: Boolean = true,
+fun UnitOfWork.createMotedeltakerArbeidsgiver(
     moteId: Int,
     newDialogmotedeltakerArbeidsgiver: NewDialogmotedeltakerArbeidsgiver,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
 
     val motedeltakerUuid = UUID.randomUUID()
-    val motedeltakerArbeidsgiverIdList = this.prepareStatement(queryCreateMotedeltakerArbeidsgiver).use {
+    val motedeltakerArbeidsgiverIdList = connection.prepareStatement(queryCreateMotedeltakerArbeidsgiver).use {
         it.setString(1, motedeltakerUuid.toString())
         it.setTimestamp(2, now)
         it.setTimestamp(3, now)
@@ -285,10 +274,6 @@ fun Connection.createMotedeltakerArbeidsgiver(
         errorMessageIfEmpty = "Creating MotedeltakerArbeidsgiver failed, no rows affected.",
         errorMessageIfMoreThanOne = "Creating MotedeltakerArbeidsgiver failed, more than one row affected.",
     )
-
-    if (commit) {
-        this.commit()
-    }
 
     return Pair(motedeltakerArbeidsgiverIdList.first(), motedeltakerUuid)
 }

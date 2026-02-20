@@ -2,6 +2,7 @@ package no.nav.syfo.dialogmote.database.repository
 
 import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.repository.MoteRepository
+import no.nav.syfo.infrastructure.database.transaction
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.dropData
@@ -29,9 +30,9 @@ class MoteRepositoryTest {
 
     @Test
     fun `Successfully get mote with uuid`() {
-        val createdDialogmote = database.connection.use { connection ->
-            connection.createNewDialogmoteWithReferences(newDialogmote = newDialogmote)
-            connection.createNewDialogmoteWithReferences(newDialogmoteNotBelongingToArbeidstaker)
+        val createdDialogmote = database.transaction {
+            createNewDialogmoteWithReferences(newDialogmote = newDialogmote)
+            createNewDialogmoteWithReferences(newDialogmoteNotBelongingToArbeidstaker)
         }
 
         val retrievedMote = moteRepository.getMote(createdDialogmote.dialogmoteIdPair.second)
@@ -44,9 +45,9 @@ class MoteRepositoryTest {
 
     @Test
     fun `Successfully get moter belonging to person with person ident`() {
-        database.connection.use { connection ->
-            connection.createNewDialogmoteWithReferences(newDialogmote = newDialogmote)
-            connection.createNewDialogmoteWithReferences(newDialogmoteNotBelongingToArbeidstaker)
+        database.transaction {
+            createNewDialogmoteWithReferences(newDialogmote = newDialogmote)
+            createNewDialogmoteWithReferences(newDialogmoteNotBelongingToArbeidstaker)
         }
 
         val retrievedMoter = moteRepository.getMoterFor(moteTilhorendeArbeidstaker)

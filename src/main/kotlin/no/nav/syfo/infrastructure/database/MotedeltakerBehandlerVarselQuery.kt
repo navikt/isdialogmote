@@ -27,8 +27,7 @@ const val queryCreateMotedeltakerVarselBehandler =
 
 private val mapper = configuredJacksonMapper()
 
-fun Connection.createMotedeltakerVarselBehandler(
-    commit: Boolean = true,
+fun UnitOfWork.createMotedeltakerVarselBehandler(
     motedeltakerBehandlerId: Int,
     status: String,
     varselType: MotedeltakerVarselType,
@@ -39,7 +38,7 @@ fun Connection.createMotedeltakerVarselBehandler(
     val now = Timestamp.from(Instant.now())
 
     val motedeltakerBehandlerVarselUuid = UUID.randomUUID()
-    val motedeltakerBehandlerVarselIdList = this.prepareStatement(queryCreateMotedeltakerVarselBehandler).use {
+    val motedeltakerBehandlerVarselIdList = connection.prepareStatement(queryCreateMotedeltakerVarselBehandler).use {
         it.setString(1, motedeltakerBehandlerVarselUuid.toString())
         it.setTimestamp(2, now)
         it.setTimestamp(3, now)
@@ -54,10 +53,6 @@ fun Connection.createMotedeltakerVarselBehandler(
 
     if (motedeltakerBehandlerVarselIdList.size != 1) {
         throw SQLException("Creating MotedeltakerVarselBehandler failed, no rows affected.")
-    }
-
-    if (commit) {
-        this.commit()
     }
 
     return Pair(motedeltakerBehandlerVarselIdList.first(), motedeltakerBehandlerVarselUuid)

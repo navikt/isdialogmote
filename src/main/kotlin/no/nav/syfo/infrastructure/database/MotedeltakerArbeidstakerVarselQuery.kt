@@ -1,7 +1,6 @@
 package no.nav.syfo.infrastructure.database
 
 import com.fasterxml.jackson.core.type.TypeReference
-import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Timestamp
@@ -33,8 +32,7 @@ const val queryCreateMotedeltakerVarselArbeidstaker =
 
 private val mapper = configuredJacksonMapper()
 
-fun Connection.createMotedeltakerVarselArbeidstaker(
-    commit: Boolean = true,
+fun UnitOfWork.createMotedeltakerVarselArbeidstaker(
     motedeltakerArbeidstakerId: Int,
     status: String,
     varselType: MotedeltakerVarselType,
@@ -46,7 +44,7 @@ fun Connection.createMotedeltakerVarselArbeidstaker(
     val now = Timestamp.from(Instant.now())
 
     val motedeltakerArbeidstakerVarselUuid = UUID.randomUUID()
-    val motedeltakerArbeidstakerVarselIdList = this.prepareStatement(queryCreateMotedeltakerVarselArbeidstaker).use {
+    val motedeltakerArbeidstakerVarselIdList = connection.prepareStatement(queryCreateMotedeltakerVarselArbeidstaker).use {
         it.setString(1, motedeltakerArbeidstakerVarselUuid.toString())
         it.setTimestamp(2, now)
         it.setTimestamp(3, now)
@@ -62,10 +60,6 @@ fun Connection.createMotedeltakerVarselArbeidstaker(
 
     if (motedeltakerArbeidstakerVarselIdList.size != 1) {
         throw SQLException("Creating MotedeltakerVarselArbeidstaker failed, no rows affected.")
-    }
-
-    if (commit) {
-        this.commit()
     }
 
     return Pair(motedeltakerArbeidstakerVarselIdList.first(), motedeltakerArbeidstakerVarselUuid)
@@ -190,11 +184,11 @@ const val queryUpdateMotedeltakerArbeidstakerVarselLestDato =
         WHERE uuid = ? AND lest_dato IS NULL
     """
 
-fun Connection.updateMotedeltakerArbeidstakerVarselLestDato(
+fun UnitOfWork.updateMotedeltakerArbeidstakerVarselLestDato(
     motedeltakerArbeidstakerVarselUuid: UUID,
 ) {
     val now = LocalDateTime.now()
-    this.prepareStatement(queryUpdateMotedeltakerArbeidstakerVarselLestDato).use {
+    connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerVarselLestDato).use {
         it.setTimestamp(1, Timestamp.valueOf(now))
         it.setString(2, motedeltakerArbeidstakerVarselUuid.toString())
         it.execute()
@@ -208,12 +202,12 @@ const val queryUpdateMotedeltakerArbeidstakerVarselRespons =
         WHERE uuid = ? AND svar_type IS NULL
     """
 
-fun Connection.updateMotedeltakerArbeidstakerVarselRespons(
+fun UnitOfWork.updateMotedeltakerArbeidstakerVarselRespons(
     motedeltakerArbeidstakerVarselUuid: UUID,
     svarType: DialogmoteSvarType,
     svarTekst: String?,
 ): Int {
-    return this.prepareStatement(queryUpdateMotedeltakerArbeidstakerVarselRespons).use {
+    return connection.prepareStatement(queryUpdateMotedeltakerArbeidstakerVarselRespons).use {
         it.setString(1, svarType.name)
         it.setString(2, svarTekst)
         it.setTimestamp(3, Timestamp.from(Instant.now()))
