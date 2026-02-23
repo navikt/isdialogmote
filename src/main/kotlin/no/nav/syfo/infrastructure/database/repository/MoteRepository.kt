@@ -149,6 +149,26 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             }.map { it.toDialogmoteTidSted() }
         }
 
+    override fun getReferatForMote(moteUUID: UUID): List<Referat> =
+        database.connection.use { connection ->
+            val referater = connection.prepareStatement(GET_REFERAT_FOR_MOTE_UUID).use {
+                it.setString(1, moteUUID.toString())
+                it.executeQuery().toList { toPReferat() }
+            }
+            referater.map { referat ->
+                val arbeidstaker = connection.getMoteDeltakerArbeidstaker(referat.moteId)
+                val arbeidsgiver = connection.getMoteDeltakerArbeidsgiver(referat.moteId)
+                val andreDeltakere = connection.getAndreDeltakereForReferatID(referat.id)
+                    .map { it.toDialogmoteDeltakerAnnen() }
+
+                referat.toReferat(
+                    andreDeltakere = andreDeltakere,
+                    motedeltakerArbeidstakerId = arbeidstaker.id,
+                    motedeltakerArbeidsgiverId = arbeidsgiver.id,
+                )
+            }
+        }
+
     override fun getReferat(referatUUID: UUID): Referat? =
         database.connection.use { connection ->
             val referat = connection.prepareStatement(GET_REFERAT_QUERY).use {
@@ -168,28 +188,23 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             )
         }
 
-    override fun getFerdigstilteReferatWithoutJournalpostArbeidsgiverList(): List<Triple<Virksomhetsnummer, PersonIdent, Referat>> =
+    override fun getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdent, Referat>> =
         database.connection.use { connection ->
-            val referater = connection.prepareStatement(GET_FERDIGSTILTE_REFERAT_WITHOUT_JOURNALPOST_ARBEIDSGIVER).use {
-                it.executeQuery().toList {
-                    Pair(Virksomhetsnummer(getString("virksomhetsnummer")), toPReferat())
-                }
+            val referater = connection.prepareStatement(GET_FERDIGSTILTE_REFERAT_WITHOUT_JOURNALPOST_ARBEIDSTAKER).use {
+                it.executeQuery().toList { toPReferat() }
             }
-            referater.map { (virksomhetsnummer, referat) ->
+            referater.map { referat ->
                 val arbeidstaker = connection.getMoteDeltakerArbeidstaker(referat.moteId)
                 val arbeidsgiver = connection.getMoteDeltakerArbeidsgiver(referat.moteId)
                 val andreDeltakere = connection.getAndreDeltakereForReferatID(referat.id)
                     .map { it.toDialogmoteDeltakerAnnen() }
 
-                Triple(
-                    virksomhetsnummer,
-                    arbeidstaker.personIdent,
+                arbeidstaker.personIdent to
                     referat.toReferat(
                         andreDeltakere = andreDeltakere,
                         motedeltakerArbeidstakerId = arbeidstaker.id,
                         motedeltakerArbeidsgiverId = arbeidsgiver.id,
                     )
-                )
             }
         }
 
@@ -362,6 +377,14 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                 SELECT *
                 FROM MOTE_REFERAT
                 WHERE uuid = ?
+            """
+
+        private const val GET_REFERAT_FOR_MOTE_UUID =
+            """
+                SELECT MOTE_REFERAT.*
+                FROM MOTE INNER JOIN MOTE_REFERAT on (MOTE.id = MOTE_REFERAT.mote_id)
+                WHERE MOTE.uuid = ?
+                ORDER BY MOTE_REFERAT.created_at DESC
             """
 
         private const val GET_ANDRE_DELTAKERE_FOR_REFERAT_ID =

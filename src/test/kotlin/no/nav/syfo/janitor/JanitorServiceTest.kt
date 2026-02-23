@@ -49,8 +49,6 @@ class JanitorServiceTest {
             moteRepository = externalMockEnvironment.moteRepository
         )
     private val dialogmoterelasjonService = DialogmoterelasjonService(
-        database = database,
-        dialogmotedeltakerService = dialogmotedeltakerService,
         moteRepository = externalMockEnvironment.moteRepository,
     )
 

@@ -7,7 +7,6 @@ import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstakerVarsel
-import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
 import no.nav.syfo.domain.dialogmote.erBrukeroppgaveVarsel
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiverById
@@ -63,12 +62,6 @@ class DialogmotedeltakerService(
         }
     }
 
-    fun getDialogmoteDeltakerArbeidsgiver(
-        moteId: Int,
-    ): DialogmotedeltakerArbeidsgiver {
-        return moteRepository.getMotedeltakerArbeidsgiver(moteId)
-    }
-
     fun getDialogmoteDeltakerArbeidsgiverById(
         motedeltakerArbeidsgiverId: Int,
     ): DialogmotedeltakerArbeidsgiver {
@@ -93,12 +86,6 @@ class DialogmotedeltakerService(
         return database.getMotedeltakerArbeidsgiverVarsel(uuid).map {
             it.toDialogmotedeltakerArbeidsgiverVarsel()
         }
-    }
-
-    fun getDialogmoteDeltakerBehandler(
-        moteId: Int,
-    ): DialogmotedeltakerBehandler? {
-        return moteRepository.getMotedeltakerBehandler(moteId)
     }
 
     fun updateArbeidstakerBrevSettSomLest(
