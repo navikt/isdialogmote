@@ -24,11 +24,9 @@ class DialogmoteOutdatedCronjob(
 ) : DialogmoteCronjob {
 
     override val initialDelayMinutes: Long = 4
-    override val intervalDelayMinutes: Long = 30 // Change back to once every 24 hours after initial clean up
+    override val intervalDelayMinutes: Long = 60 * 24
 
     override suspend fun run() {
-        log.info("DialogmoteOutdatedCronjob started with cutoff of $outdatedDialogmoterCutoffMonths months")
-
         val outdatedResult = dialogmoteOutdatedJob()
 
         COUNT_CRONJOB_OUTDATED_DIALOGMOTE_UPDATE.increment(outdatedResult.updated.toDouble())
@@ -46,6 +44,8 @@ class DialogmoteOutdatedCronjob(
         val cutoff = LocalDate.now()
             .minusMonths(outdatedDialogmoterCutoffMonths.toLong())
             .atStartOfDay()
+
+        log.info("DialogmoteOutdatedCronjob started with cutoff of $outdatedDialogmoterCutoffMonths months, $cutoff")
 
         val moteListe = database.findOutdatedMoter(cutoff).toMutableList()
         // moter som skal lukkes adhoc (basert på hardkodet liste med uuid'er)
