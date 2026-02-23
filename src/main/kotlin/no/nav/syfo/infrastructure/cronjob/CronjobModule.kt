@@ -3,7 +3,13 @@ package no.nav.syfo.infrastructure.cronjob
 import io.ktor.server.application.*
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.Environment
-import no.nav.syfo.application.*
+import no.nav.syfo.application.ArbeidstakerVarselService
+import no.nav.syfo.application.DialogmotedeltakerVarselJournalpostService
+import no.nav.syfo.application.DialogmoterelasjonService
+import no.nav.syfo.application.DialogmotestatusService
+import no.nav.syfo.application.IMoteRepository
+import no.nav.syfo.application.IPdfRepository
+import no.nav.syfo.application.ReferatJournalpostService
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.cache.ValkeyStore
@@ -12,7 +18,11 @@ import no.nav.syfo.infrastructure.client.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.client.ereg.EregClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.cronjob.dialogmoteOutdated.DialogmoteOutdatedCronjob
-import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.*
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.DialogmotesvarProducer
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.KDialogmotesvar
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.KafkaDialogmotesvarProducerConfig
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.PublishDialogmotesvarCronjob
+import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.PublishDialogmotesvarService
 import no.nav.syfo.infrastructure.cronjob.journalforing.DialogmoteVarselJournalforingCronjob
 import no.nav.syfo.infrastructure.cronjob.journalpostdistribusjon.DialogmoteJournalpostDistribusjonCronjob
 import no.nav.syfo.infrastructure.cronjob.leaderelection.LeaderPodClient
@@ -35,6 +45,7 @@ fun Application.cronjobModule(
     arbeidstakerVarselService: ArbeidstakerVarselService,
     moteStatusEndretRepository: MoteStatusEndretRepository,
     pdfRepository: IPdfRepository,
+    moteRepository: IMoteRepository,
 ) {
     val azureAdV2Client = AzureAdV2Client(
         aadAppClient = environment.aadAppClient,
@@ -58,9 +69,11 @@ fun Application.cronjobModule(
     )
     val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(
         database = database,
+        moteRepository = moteRepository,
     )
     val referatJournalpostService = ReferatJournalpostService(
         database = database,
+        moteRepository = moteRepository,
     )
     val leaderPodClient = LeaderPodClient(
         environment = environment,
@@ -99,6 +112,7 @@ fun Application.cronjobModule(
         database = database,
         dialogmoteStatusEndringProducer = dialogmoteStatusEndringProducer,
         moteStatusEndretRepository = moteStatusEndretRepository,
+        moteRepository = moteRepository,
     )
     val publishDialogmotesvarService = PublishDialogmotesvarService(
         database = database,

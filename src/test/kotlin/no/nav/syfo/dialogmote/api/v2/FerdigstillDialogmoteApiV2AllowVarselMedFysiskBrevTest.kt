@@ -14,7 +14,7 @@ import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DocumentComponentType
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
-import no.nav.syfo.infrastructure.database.getReferat
+import no.nav.syfo.infrastructure.database.repository.MoteRepository
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.HendelseType
@@ -39,6 +39,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
     private val database = externalMockEnvironment.database
     private val moteStatusEndretRepository = MoteStatusEndretRepository(database)
+    private val moteRepository = MoteRepository(database)
 
     private val esyfovarselHendelse = generateInkallingHendelse()
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
@@ -147,7 +148,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
                     assertEquals("Tøff Pyjamas", referat.andreDeltakere.first().navn)
 
                     val pdf =
-                        pdfRepository.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId!!).pdf
+                        pdfRepository.getPdf(moteRepository.getReferat(UUID.fromString(referat.uuid))?.pdfId!!).pdf
                     assertArrayEquals(pdfReferat, pdf)
 
                     val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()

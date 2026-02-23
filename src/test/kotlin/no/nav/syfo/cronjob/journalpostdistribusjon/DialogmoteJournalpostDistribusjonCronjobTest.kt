@@ -44,8 +44,14 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
     private val altinnResponse = ReceiptExternal()
 
     private val dialogmotedeltakerVarselJournalpostService =
-        DialogmotedeltakerVarselJournalpostService(database = database)
-    private val referatJournalpostService = ReferatJournalpostService(database = database)
+        DialogmotedeltakerVarselJournalpostService(
+            database = database,
+            moteRepository = externalMockEnvironment.moteRepository,
+        )
+    private val referatJournalpostService = ReferatJournalpostService(
+        database = database,
+        moteRepository = externalMockEnvironment.moteRepository,
+    )
 
     private val journalpostDistribusjonCronjob = DialogmoteJournalpostDistribusjonCronjob(
         dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,

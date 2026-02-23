@@ -182,7 +182,8 @@ fun main() {
             )
             dialogmoterelasjonService = DialogmoterelasjonService(
                 database = applicationDatabase,
-                dialogmotedeltakerService = dialogmotedeltakerService
+                dialogmotedeltakerService = dialogmotedeltakerService,
+                moteRepository = moteRepository,
             )
             val pdfRepository = PdfRepository(database = applicationDatabase)
             val moteStatusEndretRepository = MoteStatusEndretRepository(
@@ -227,6 +228,7 @@ fun main() {
                 arbeidstakerVarselService = arbeidstakerVarselService,
                 moteStatusEndretRepository = moteStatusEndretRepository,
                 pdfRepository = pdfRepository,
+                moteRepository = moteRepository,
             )
             monitor.subscribe(ApplicationStarted) {
                 applicationState.ready = true

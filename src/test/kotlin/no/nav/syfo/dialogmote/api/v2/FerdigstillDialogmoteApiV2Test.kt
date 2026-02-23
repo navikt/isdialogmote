@@ -14,7 +14,7 @@ import no.nav.syfo.api.endpoints.*
 import no.nav.syfo.application.BehandlerVarselService
 import no.nav.syfo.domain.dialogmote.*
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
-import no.nav.syfo.infrastructure.database.getReferat
+import no.nav.syfo.infrastructure.database.repository.MoteRepository
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
 import no.nav.syfo.infrastructure.kafka.behandler.KafkaBehandlerDialogmeldingDTO
@@ -37,6 +37,7 @@ class FerdigstillDialogmoteApiV2Test {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
     private val database = externalMockEnvironment.database
     private val moteStatusEndretRepository = MoteStatusEndretRepository(database)
+    private val moteRepository = MoteRepository(database)
 
     private val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
 
@@ -142,7 +143,7 @@ class FerdigstillDialogmoteApiV2Test {
                 assertTrue(referat.ferdigstilt)
 
                 val pdf =
-                    pdfRepository.getPdf(database.getReferat(UUID.fromString(referat.uuid)).first().pdfId!!).pdf
+                    pdfRepository.getPdf(moteRepository.getReferat(UUID.fromString(referat.uuid))?.pdfId!!).pdf
                 assertArrayEquals(pdfReferat, pdf)
 
                 val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()

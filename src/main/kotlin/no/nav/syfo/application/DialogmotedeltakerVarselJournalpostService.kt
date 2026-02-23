@@ -2,7 +2,9 @@ package no.nav.syfo.application
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiver
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstaker
+import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstakerVarsel
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandlerVarsel
 import no.nav.syfo.domain.PersonIdent
@@ -20,7 +22,6 @@ import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerVarselForF
 import no.nav.syfo.infrastructure.database.getMotedeltakerArbeidstakerVarselWithoutJournalpost
 import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerById
 import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerVarselWithoutJournalpost
-import no.nav.syfo.infrastructure.database.getTidSted
 import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidsgiverVarselJournalpostId
 import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidstakerBrevBestilt
 import no.nav.syfo.infrastructure.database.updateMotedeltakerArbeidstakerVarselJournalpostId
@@ -29,6 +30,7 @@ import java.time.LocalDateTime
 
 class DialogmotedeltakerVarselJournalpostService(
     private val database: DatabaseInterface,
+    private val moteRepository: IMoteRepository,
 ) {
     fun getDialogmotedeltakerArbeidstakerVarselForJournalforingList(): List<Pair<PersonIdent, DialogmotedeltakerArbeidstakerVarsel>> {
         return getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList().filter { (_, arbeidstakerVarsel) ->
@@ -39,7 +41,7 @@ class DialogmotedeltakerVarselJournalpostService(
     private fun getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList(): List<Pair<PersonIdent, DialogmotedeltakerArbeidstakerVarsel>> {
         val motedeltakerArbeidtakerVarselList = database.getMotedeltakerArbeidstakerVarselWithoutJournalpost()
         return motedeltakerArbeidtakerVarselList.map {
-            it.toDialogmotedeltakerArbeidstaker()
+            it.toDialogmotedeltakerArbeidstakerVarsel()
         }.map { motedeltakerArbeidstakerVarsel ->
             val motedeltakerArbeidstaker =
                 database.getMotedeltakerArbeidstakerById(motedeltakerArbeidstakerVarsel.motedeltakerArbeidstakerId)
@@ -60,7 +62,7 @@ class DialogmotedeltakerVarselJournalpostService(
     private fun getDialogmotedeltakerArbeidsgiverVarselWithoutJournalpostList(): List<Triple<Virksomhetsnummer, PersonIdent, DialogmotedeltakerArbeidsgiverVarsel>> {
         val motedeltakerArbeidsgiverVarselList = database.getMotedeltakerArbeidsgiverVarselWithoutJournalpost()
         return motedeltakerArbeidsgiverVarselList.map {
-            it.toDialogmotedeltakerArbeidsgiver()
+            it.toDialogmotedeltakerArbeidsgiverVarsel()
         }.map { motedeltakerArbeidsgiverVarsel ->
             val motedeltakerArbeidsgiver =
                 database.getMoteDeltakerArbeidsgiverById(motedeltakerArbeidsgiverVarsel.motedeltakerArbeidsgiverId)
@@ -103,13 +105,13 @@ class DialogmotedeltakerVarselJournalpostService(
 
     fun getDialogmotedeltakerArbeidstakerVarselForJournalpostDistribusjonList(): List<Triple<PersonIdent, DialogmotedeltakerArbeidstakerVarsel, LocalDateTime>> {
         return database.getMotedeltakerArbeidstakerVarselForFysiskBrevUtsending()
-            .map { it.toDialogmotedeltakerArbeidstaker() }
+            .map { it.toDialogmotedeltakerArbeidstakerVarsel() }
             .filter { journalforingVarselTypeList.contains(it.varselType) }
             .map { motedeltakerArbeidstakerVarsel ->
                 val motedeltakerArbeidstaker =
                     database.getMotedeltakerArbeidstakerById(motedeltakerArbeidstakerVarsel.motedeltakerArbeidstakerId)
                 val tidspunkt =
-                    database.getTidSted(motedeltakerArbeidstaker.moteId)
+                    moteRepository.getTidSted(motedeltakerArbeidstaker.moteId)
                         .last()
                         .tid
                 Triple(

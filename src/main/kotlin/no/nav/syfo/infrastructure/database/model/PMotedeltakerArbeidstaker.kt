@@ -17,6 +17,22 @@ data class PMotedeltakerArbeidstaker(
 )
 
 fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(
+    dialogmotedeltakerArbeidstakerVarsel: List<PMotedeltakerArbeidstakerVarsel>,
+) = DialogmotedeltakerArbeidstaker(
+    id = this.id,
+    uuid = this.uuid,
+    createdAt = this.createdAt,
+    updatedAt = this.updatedAt,
+    moteId = this.moteId,
+    personIdent = this.personIdent,
+    type = DialogmotedeltakerType.ARBEIDSTAKER,
+    varselList = dialogmotedeltakerArbeidstakerVarsel.map {
+        it.toDialogmotedeltakerArbeidstakerVarsel()
+    },
+)
+
+@Deprecated(message = "Use toDialogmotedeltakerArbeidstaker that takes List<PMotedeltakerArbeidstakerVarsel> instead")
+fun PMotedeltakerArbeidstaker.toMotedeltakerArbeidstakerUsingDomainVarsler(
     dialogmotedeltakerArbeidstakerVarsel: List<DialogmotedeltakerArbeidstakerVarsel>,
 ) = DialogmotedeltakerArbeidstaker(
     id = this.id,
@@ -27,17 +43,4 @@ fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(
     personIdent = this.personIdent,
     type = DialogmotedeltakerType.ARBEIDSTAKER,
     varselList = dialogmotedeltakerArbeidstakerVarsel,
-)
-
-fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstakerWithVarsler(
-    dialogmotedeltakerArbeidstakerVarsel: List<PMotedeltakerArbeidstakerVarsel>,
-) = DialogmotedeltakerArbeidstaker(
-    id = this.id,
-    uuid = this.uuid,
-    createdAt = this.createdAt,
-    updatedAt = this.updatedAt,
-    moteId = this.moteId,
-    personIdent = this.personIdent,
-    type = DialogmotedeltakerType.ARBEIDSTAKER,
-    varselList = dialogmotedeltakerArbeidstakerVarsel.map { it.toDialogmotedeltakerArbeidstaker() },
 )

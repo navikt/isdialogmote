@@ -1,16 +1,19 @@
 package no.nav.syfo.infrastructure.database
 
 import com.fasterxml.jackson.core.type.TypeReference
-import no.nav.syfo.infrastructure.database.model.PMotedeltakerAnnen
-import no.nav.syfo.infrastructure.database.model.PReferat
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.api.authentication.configuredJacksonMapper
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.NewReferat
 import no.nav.syfo.domain.dialogmote.Referat
-import no.nav.syfo.api.authentication.configuredJacksonMapper
+import no.nav.syfo.infrastructure.database.model.PMotedeltakerAnnen
+import no.nav.syfo.infrastructure.database.model.PReferat
 import no.nav.syfo.util.nowUTC
-import java.sql.*
+import java.sql.Connection
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.sql.Timestamp
+import java.sql.Types
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
@@ -29,22 +32,6 @@ fun DatabaseInterface.getReferatForMote(moteUUID: UUID): List<PReferat> {
     return connection.use { connection ->
         connection.prepareStatement(queryGetReferatForMoteUUID).use {
             it.setString(1, moteUUID.toString())
-            it.executeQuery().toList { toPReferat() }
-        }
-    }
-}
-
-const val queryGetReferat =
-    """
-        SELECT *
-        FROM MOTE_REFERAT
-        WHERE uuid = ?
-    """
-
-fun DatabaseInterface.getReferat(referatUUID: UUID): List<PReferat> {
-    return connection.use { connection ->
-        connection.prepareStatement(queryGetReferat).use {
-            it.setString(1, referatUUID.toString())
             it.executeQuery().toList { toPReferat() }
         }
     }
@@ -282,26 +269,6 @@ private fun Connection.updateAndreDeltakereForReferat(
             it.setString(5, deltaker.funksjon)
             it.setString(6, deltaker.navn)
             it.executeQuery()
-        }
-    }
-}
-
-const val queryGetFerdigstilteReferatWithoutJournalpostArbeidstaker =
-    """
-        SELECT MOTEDELTAKER_ARBEIDSTAKER.PERSONIDENT, MOTE_REFERAT.*
-        FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
-                  INNER JOIN MOTEDELTAKER_ARBEIDSTAKER ON (MOTE.ID = MOTEDELTAKER_ARBEIDSTAKER.MOTE_ID) 
-        WHERE MOTE_REFERAT.journalpost_id IS NULL AND MOTE_REFERAT.ferdigstilt = true
-        ORDER BY MOTE_REFERAT.created_at ASC
-        LIMIT 20
-    """
-
-fun DatabaseInterface.getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdent, PReferat>> {
-    return this.connection.use { connection ->
-        connection.prepareStatement(queryGetFerdigstilteReferatWithoutJournalpostArbeidstaker).use {
-            it.executeQuery().toList {
-                Pair(PersonIdent(getString(1)), toPReferat())
-            }
         }
     }
 }

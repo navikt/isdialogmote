@@ -63,25 +63,6 @@ fun Connection.createMotedeltakerVarselBehandler(
     return Pair(motedeltakerBehandlerVarselIdList.first(), motedeltakerBehandlerVarselUuid)
 }
 
-const val queryGetMotedeltakerBehandlerVarselForMotedeltaker =
-    """
-        SELECT *
-        FROM MOTEDELTAKER_BEHANDLER_VARSEL
-        WHERE motedeltaker_behandler_id = ?
-        ORDER BY created_at DESC
-    """
-
-fun DatabaseInterface.getMotedeltakerBehandlerVarselForMotedeltaker(
-    motedeltakerBehandlerId: Int,
-): List<PMotedeltakerBehandlerVarsel> {
-    return this.connection.use { connection ->
-        connection.prepareStatement(queryGetMotedeltakerBehandlerVarselForMotedeltaker).use {
-            it.setInt(1, motedeltakerBehandlerId)
-            it.executeQuery().toList { toPMotedeltakerBehandlerVarsel() }
-        }
-    }
-}
-
 const val queryGetMotedeltakerBehandlerVarselWithoutJournalpost =
     """
         SELECT *

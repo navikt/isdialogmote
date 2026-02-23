@@ -49,22 +49,6 @@ fun Connection.createTidSted(
     return Pair(moteTidStedIdList.first(), moteTidStedUuid)
 }
 
-const val queryGetTidStedForMote =
-    """
-        SELECT *
-        FROM TID_STED
-        WHERE mote_id = ?
-    """
-
-fun DatabaseInterface.getTidSted(moteId: Int): List<PTidSted> {
-    return this.connection.use { connection ->
-        connection.prepareStatement(queryGetTidStedForMote).use {
-            it.setInt(1, moteId)
-            it.executeQuery().toList { toPTidSted() }
-        }
-    }
-}
-
 fun ResultSet.toPTidSted(): PTidSted =
     PTidSted(
         id = getInt("id"),
