@@ -167,6 +167,25 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             )
         }
 
+    override fun getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdent, Referat>> =
+        database.connection.use { connection ->
+            val referater = connection.prepareStatement(GET_FERDIGSTILTE_REFERAT_WITHOUT_JOURNALPOST_ARBEIDSTAKER).use {
+                it.executeQuery().toList { toPReferat() }
+            }
+            referater.map { referat ->
+                val arbeidstaker = connection.getMoteDeltakerArbeidstaker(referat.moteId)
+                val arbeidsgiver = connection.getMoteDeltakerArbeidsgiver(referat.moteId)
+                val andreDeltakere = connection.getAndreDeltakereForReferatID(referat.id)
+                    .map { it.toDialogmoteDeltakerAnnen() }
+
+                arbeidstaker.personIdent to referat.toReferat(
+                    andreDeltakere = andreDeltakere,
+                    motedeltakerArbeidstakerId = arbeidstaker.id,
+                    motedeltakerArbeidsgiverId = arbeidsgiver.id,
+                )
+            }
+        }
+
     private fun Connection.getAndreDeltakereForReferatID(referatId: Int): List<PMotedeltakerAnnen> =
         this.prepareStatement(GET_ANDRE_DELTAKERE_FOR_REFERAT_ID).use {
             it.setInt(1, referatId)
@@ -318,6 +337,16 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                 SELECT *
                 FROM MOTEDELTAKER_ANNEN
                 WHERE mote_referat_id = ?
+            """
+
+        private const val GET_FERDIGSTILTE_REFERAT_WITHOUT_JOURNALPOST_ARBEIDSTAKER =
+            """
+                SELECT MOTE_REFERAT.*
+                FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
+                    INNER JOIN MOTEDELTAKER_ARBEIDSTAKER ON (MOTE.ID = MOTEDELTAKER_ARBEIDSTAKER.MOTE_ID) 
+                WHERE MOTE_REFERAT.journalpost_id IS NULL AND MOTE_REFERAT.ferdigstilt = true
+                ORDER BY MOTE_REFERAT.created_at ASC
+                LIMIT 20
             """
     }
 }
