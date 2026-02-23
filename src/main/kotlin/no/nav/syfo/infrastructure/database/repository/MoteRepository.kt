@@ -5,6 +5,7 @@ import no.nav.syfo.api.authentication.configuredJacksonMapper
 import no.nav.syfo.application.IMoteRepository
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
@@ -186,6 +187,31 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             }
         }
 
+    override fun getFerdigstilteReferatWithoutJournalpostArbeidsgiverList(): List<Triple<Virksomhetsnummer, PersonIdent, Referat>> =
+        database.connection.use { connection ->
+            val referater = connection.prepareStatement(GET_FERDIGSTILTE_REFERAT_WITHOUT_JOURNALPOST_ARBEIDSGIVER).use {
+                it.executeQuery().toList {
+                    Pair(Virksomhetsnummer(getString("virksomhetsnummer")), toPReferat())
+                }
+            }
+            referater.map { (virksomhetsnummer, referat) ->
+                val arbeidstaker = connection.getMoteDeltakerArbeidstaker(referat.moteId)
+                val arbeidsgiver = connection.getMoteDeltakerArbeidsgiver(referat.moteId)
+                val andreDeltakere = connection.getAndreDeltakereForReferatID(referat.id)
+                    .map { it.toDialogmoteDeltakerAnnen() }
+
+                Triple(
+                    virksomhetsnummer,
+                    arbeidstaker.personIdent,
+                    referat.toReferat(
+                        andreDeltakere = andreDeltakere,
+                        motedeltakerArbeidstakerId = arbeidstaker.id,
+                        motedeltakerArbeidsgiverId = arbeidsgiver.id,
+                    )
+                )
+            }
+        }
+
     private fun Connection.getAndreDeltakereForReferatID(referatId: Int): List<PMotedeltakerAnnen> =
         this.prepareStatement(GET_ANDRE_DELTAKERE_FOR_REFERAT_ID).use {
             it.setInt(1, referatId)
@@ -345,6 +371,16 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                 FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
                     INNER JOIN MOTEDELTAKER_ARBEIDSTAKER ON (MOTE.ID = MOTEDELTAKER_ARBEIDSTAKER.MOTE_ID) 
                 WHERE MOTE_REFERAT.journalpost_id IS NULL AND MOTE_REFERAT.ferdigstilt = true
+                ORDER BY MOTE_REFERAT.created_at ASC
+                LIMIT 20
+            """
+
+        private const val GET_FERDIGSTILTE_REFERAT_WITHOUT_JOURNALPOST_ARBEIDSGIVER =
+            """
+                SELECT MOTEDELTAKER_ARBEIDSGIVER.VIRKSOMHETSNUMMER, MOTE_REFERAT.*
+                FROM MOTE INNER JOIN MOTE_REFERAT ON (MOTE.ID = MOTE_REFERAT.MOTE_ID)
+                          INNER JOIN MOTEDELTAKER_ARBEIDSGIVER ON (MOTE.ID = MOTEDELTAKER_ARBEIDSGIVER.MOTE_ID) 
+                WHERE MOTE_REFERAT.journalpost_ag_id IS NULL AND MOTE_REFERAT.ferdigstilt = true
                 ORDER BY MOTE_REFERAT.created_at ASC
                 LIMIT 20
             """
