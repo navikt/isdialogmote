@@ -146,8 +146,8 @@ spec:
       value: "prod-gcp.teamsykefravr.isdialogmelding"
     - name: ALTINN_WS_URL
       value: "https://www.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternalBasic.svc"
-    - name: OUTDATED_DIALOGMOTE_CUTOFF
-      value: "2025-06-01"
+    - name: OUTDATED_DIALOGMOTE_CUTOFF_MONTHS
+      value: "9"
     - name: ALTINN_SENDING_ENABLED
       value: "true"
     - name: DOKUMENTPORTEN_URL

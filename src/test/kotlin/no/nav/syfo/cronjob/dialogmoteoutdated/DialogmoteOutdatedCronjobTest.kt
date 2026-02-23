@@ -24,7 +24,6 @@ import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.cache.ValkeyStore
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
-import no.nav.syfo.infrastructure.cronjob.DialogmoteCronjobResult
 import no.nav.syfo.infrastructure.cronjob.dialogmoteOutdated.DialogmoteOutdatedCronjob
 import no.nav.syfo.application.DialogmotedeltakerService
 import no.nav.syfo.application.DialogmoterelasjonService
@@ -42,7 +41,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 class DialogmoteOutdatedCronjobTest {
@@ -88,7 +86,7 @@ class DialogmoteOutdatedCronjobTest {
         dialogmotestatusService = dialogmotestatusService,
         dialogmoterelasjonService = dialogmoterelasjonService,
         database = database,
-        outdatedDialogmoterCutoff = LocalDate.now().minusDays(30),
+        outdatedDialogmoterCutoffMonths = 1,
     )
     private val validToken = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
@@ -130,8 +128,7 @@ class DialogmoteOutdatedCronjobTest {
             client.postMote(validToken, newDialogmoteDTO)
 
             runBlocking {
-                val result = DialogmoteCronjobResult()
-                dialogmoteOutdatedCronjob.dialogmoteOutdatedJob(result)
+                val result = dialogmoteOutdatedCronjob.dialogmoteOutdatedJob()
 
                 assertEquals(0, result.failed)
                 assertEquals(1, result.updated)
@@ -179,8 +176,7 @@ class DialogmoteOutdatedCronjobTest {
             }
 
             runBlocking {
-                val result = DialogmoteCronjobResult()
-                dialogmoteOutdatedCronjob.dialogmoteOutdatedJob(result)
+                val result = dialogmoteOutdatedCronjob.dialogmoteOutdatedJob()
 
                 assertEquals(0, result.failed)
                 assertEquals(1, result.updated)
@@ -213,8 +209,7 @@ class DialogmoteOutdatedCronjobTest {
             client.postMote(validToken, newDialogmoteDTO)
 
             runBlocking {
-                val result = DialogmoteCronjobResult()
-                dialogmoteOutdatedCronjob.dialogmoteOutdatedJob(result)
+                val result = dialogmoteOutdatedCronjob.dialogmoteOutdatedJob()
 
                 assertEquals(0, result.failed)
                 assertEquals(0, result.updated)
@@ -258,8 +253,7 @@ class DialogmoteOutdatedCronjobTest {
             }
 
             runBlocking {
-                val result = DialogmoteCronjobResult()
-                dialogmoteOutdatedCronjob.dialogmoteOutdatedJob(result)
+                val result = dialogmoteOutdatedCronjob.dialogmoteOutdatedJob()
 
                 assertEquals(0, result.failed)
                 assertEquals(0, result.updated)
@@ -302,8 +296,7 @@ class DialogmoteOutdatedCronjobTest {
             }
 
             runBlocking {
-                val result = DialogmoteCronjobResult()
-                dialogmoteOutdatedCronjob.dialogmoteOutdatedJob(result)
+                val result = dialogmoteOutdatedCronjob.dialogmoteOutdatedJob()
 
                 assertEquals(0, result.failed)
                 assertEquals(0, result.updated)
