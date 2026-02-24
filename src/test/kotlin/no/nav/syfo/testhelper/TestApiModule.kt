@@ -32,8 +32,6 @@ fun Application.testApiModule(
         moteRepository = externalMockEnvironment.moteRepository,
     )
     val dialogmoterelasjonService = DialogmoterelasjonService(
-        database = externalMockEnvironment.database,
-        dialogmotedeltakerService = dialogmotedeltakerService,
         moteRepository = externalMockEnvironment.moteRepository,
     )
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
