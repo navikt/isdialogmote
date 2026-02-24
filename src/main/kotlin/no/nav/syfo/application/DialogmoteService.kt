@@ -61,9 +61,7 @@ class DialogmoteService(
     fun getDialogmote(
         moteUUID: UUID,
     ): Dialogmote {
-        return moteRepository.getMote(moteUUID).let { pDialogmote ->
-            dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
-        }
+        return moteRepository.getMote(moteUUID)
     }
 
     fun getDialogmoteList(

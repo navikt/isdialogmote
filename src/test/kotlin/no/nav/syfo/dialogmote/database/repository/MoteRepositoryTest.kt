@@ -6,7 +6,11 @@ import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generator.generateNewDialogmote
+import no.nav.syfo.testhelper.generator.generateNewDialogmoteWithBehandler
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -18,6 +22,7 @@ class MoteRepositoryTest {
     private val database = externalMockEnvironment.database
     private val moteRepository = MoteRepository(database = database)
     private val newDialogmote = generateNewDialogmote(UserConstants.ARBEIDSTAKER_FNR)
+    private val newDialogmoteWithBehandler = generateNewDialogmoteWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
     private val newDialogmoteNotBelongingToArbeidstaker = generateNewDialogmote(UserConstants.ARBEIDSTAKER_ANNEN_FNR)
     private val moteTilhorendeArbeidstaker = newDialogmote.arbeidstaker.personIdent
     private val otherArbeidstakerNoMoter = UserConstants.ARBEIDSTAKER_ANNEN_FNR
@@ -37,7 +42,7 @@ class MoteRepositoryTest {
         val retrievedMote = moteRepository.getMote(createdDialogmote.dialogmoteIdPair.second)
 
         assertEquals(newDialogmote.opprettetAv, retrievedMote.opprettetAv)
-        assertEquals(newDialogmote.status.name, retrievedMote.status)
+        assertEquals(newDialogmote.status.name, retrievedMote.status.name)
         assertEquals(newDialogmote.tildeltEnhet, retrievedMote.tildeltEnhet)
         assertEquals(newDialogmote.tildeltVeilederIdent, retrievedMote.tildeltVeilederIdent)
     }
@@ -69,5 +74,35 @@ class MoteRepositoryTest {
     fun `Returns empty list when person ident does not exist`() {
         val retrievedMote = moteRepository.getMoterFor(otherArbeidstakerNoMoter)
         assertEquals(emptyList<Any>(), retrievedMote)
+    }
+
+    @Test
+    fun `getMote returns Dialogmote with all domain objects populated`() {
+        val createdDialogmote = database.connection.use { connection ->
+            connection.createNewDialogmoteWithReferences(newDialogmote = newDialogmote)
+        }
+
+        val retrievedMote = moteRepository.getMote(createdDialogmote.dialogmoteIdPair.second)
+
+        assertEquals(newDialogmote.arbeidstaker.personIdent, retrievedMote.arbeidstaker.personIdent)
+        assertEquals(newDialogmote.arbeidsgiver.virksomhetsnummer, retrievedMote.arbeidsgiver.virksomhetsnummer)
+        assertTrue(retrievedMote.tidStedList.isNotEmpty())
+        assertEquals(newDialogmote.tidSted.sted, retrievedMote.tidStedList.first().sted)
+        assertEquals(newDialogmote.tidSted.tid, retrievedMote.tidStedList.first().tid)
+        assertEquals(emptyList<Any>(), retrievedMote.referatList)
+        assertNull(retrievedMote.behandler)
+    }
+
+    @Test
+    fun `getMote returns Dialogmote with behandler populated when mote has behandler`() {
+        val createdDialogmote = database.connection.use { connection ->
+            connection.createNewDialogmoteWithReferences(newDialogmote = newDialogmoteWithBehandler)
+        }
+
+        val retrievedMote = moteRepository.getMote(createdDialogmote.dialogmoteIdPair.second)
+
+        assertNotNull(retrievedMote.behandler)
+        assertEquals(newDialogmoteWithBehandler.behandler?.personIdent, retrievedMote.behandler?.personIdent)
+        assertEquals(newDialogmoteWithBehandler.behandler?.behandlerNavn, retrievedMote.behandler?.behandlerNavn)
     }
 }
