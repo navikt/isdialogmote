@@ -42,6 +42,7 @@ import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.database.TransactionManager
 import no.nav.syfo.infrastructure.database.repository.MoteRepository
 import no.nav.syfo.infrastructure.database.repository.PdfRepository
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventConsumer
@@ -145,6 +146,7 @@ fun main() {
         azureAdV2Client = azureAdV2Client,
         scopeClientId = environment.dokumentportenClientId,
     )
+    val transactionManager = TransactionManager(database = applicationDatabase)
 
     lateinit var behandlerVarselService: BehandlerVarselService
     lateinit var dialogmoterelasjonService: DialogmoterelasjonService
@@ -215,6 +217,7 @@ fun main() {
                 dokumentportenClient = dokumentportenClient,
                 pdfRepository = pdfRepository,
                 moteRepository = moteRepository,
+                transactionManager = transactionManager,
             )
             cronjobModule(
                 applicationState = applicationState,

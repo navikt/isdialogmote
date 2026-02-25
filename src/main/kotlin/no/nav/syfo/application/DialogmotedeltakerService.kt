@@ -101,7 +101,6 @@ class DialogmotedeltakerService(
                     motedeltakerArbeidstakerVarselUuid = brevUuid
                 )
             }
-
             arbeidstakerVarselService.lesVarsel(
                 personIdent = personIdent,
                 varselUuid = brevUuid,
@@ -132,7 +131,6 @@ class DialogmotedeltakerService(
             } else {
                 connection.updateMotedeltakerArbeidsgiverVarselLestDato(brevUuid)
             }
-
             connection.commit()
         }
     }

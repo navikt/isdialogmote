@@ -7,6 +7,7 @@ import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
+import no.nav.syfo.infrastructure.database.TransactionManager
 import no.nav.syfo.infrastructure.database.repository.MoteRepository
 import no.nav.syfo.infrastructure.database.repository.PdfRepository
 import no.nav.syfo.testhelper.mock.*
@@ -62,7 +63,7 @@ class ExternalMockEnvironment private constructor() {
         httpClient = mockHttpClient,
         valkeyStore = redisCache,
     )
-
+    val transactionManager = TransactionManager(database)
     val moteRepository = MoteRepository(database)
     val pdfRepository = PdfRepository(database)
 
