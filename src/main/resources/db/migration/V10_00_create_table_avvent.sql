@@ -7,7 +7,8 @@ CREATE TABLE AVVENT
     personident VARCHAR(11) NOT NULL,
     beskrivelse TEXT,
     created_by  VARCHAR(7)  NOT NULL,
-    created_at  TIMESTAMPTZ NOT NULL
+    created_at  TIMESTAMPTZ NOT NULL,
+    is_lukket BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE INDEX IX_AVVENT_PERSONIDENT on AVVENT(personident);
