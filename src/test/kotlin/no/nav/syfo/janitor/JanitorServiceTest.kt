@@ -8,7 +8,6 @@ import no.nav.syfo.api.dto.toNewDialogmote
 import no.nav.syfo.application.JanitorService
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.application.DialogmotedeltakerService
-import no.nav.syfo.application.DialogmoterelasjonService
 import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.model.PDialogmote
@@ -48,14 +47,10 @@ class JanitorServiceTest {
             arbeidstakerVarselService = mockk(),
             moteRepository = externalMockEnvironment.moteRepository
         )
-    private val dialogmoterelasjonService = DialogmoterelasjonService(
-        moteRepository = externalMockEnvironment.moteRepository,
-    )
-
     private val janitorService = JanitorService(
         database = database,
         dialogmotestatusService = dialogmotestatusService,
-        dialogmoterelasjonService = dialogmoterelasjonService,
+        moteRepository = externalMockEnvironment.moteRepository,
         janitorEventStatusProducer = eventStatusProducerMock,
     )
 

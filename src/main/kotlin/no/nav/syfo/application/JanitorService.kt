@@ -1,7 +1,6 @@
 package no.nav.syfo.application
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.getDialogmote
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorAction
@@ -15,7 +14,7 @@ import java.util.UUID
 class JanitorService(
     private val database: DatabaseInterface,
     private val dialogmotestatusService: DialogmotestatusService,
-    private val dialogmoterelasjonService: DialogmoterelasjonService,
+    private val moteRepository: IMoteRepository,
     private val janitorEventStatusProducer: JanitorEventStatusProducer,
 ) {
     suspend fun handle(event: JanitorEventDTO) {
@@ -33,12 +32,8 @@ class JanitorService(
     private suspend fun handleLukk(event: JanitorEventDTO): Result<Unit> = runCatching {
         val personIdent = PersonIdent(event.personident)
         val dialogmoteUUID = UUID.fromString(event.referenceUUID)
-        val pDialogmote = database.getDialogmote(moteUUID = dialogmoteUUID).firstOrNull() ?: throw RuntimeException(
-            "Fant ikke dialogmøte"
-        )
-        val dialogmote =
-            dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote).takeIf { it.isActive() }
-                ?: throw RuntimeException("Dialogmøte ikke aktivt")
+        val dialogmote = moteRepository.getMote(moteUUID = dialogmoteUUID).takeIf { it.isActive() }
+            ?: throw RuntimeException("Dialogmøte ikke aktivt")
         if (dialogmote.arbeidstaker.personIdent != personIdent) {
             throw RuntimeException("Dialogmote gjelder ikke person")
         }

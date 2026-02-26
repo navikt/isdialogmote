@@ -9,7 +9,6 @@ import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
 import no.nav.syfo.domain.dialogmote.Referat
-import no.nav.syfo.infrastructure.database.model.PDialogmote
 import java.util.UUID
 
 interface IMoteRepository {
