@@ -22,7 +22,7 @@ fun Route.registerMotebehovApi() {
         // inkludert om det skal  avventes
         post("/batch-query") {
             // TODO: validateVeilederAccess
-            // for hver ident i requesten, hent motebehov fra syfo modia
+            // for hver ident i requesten, hent motebehov fra syfomotebehov
             // hent ut info om avvent via AvventService
             // Legg sammen infoen og returner i response
             call.respond(HttpStatusCode.OK)
