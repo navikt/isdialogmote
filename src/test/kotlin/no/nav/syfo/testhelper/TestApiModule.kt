@@ -95,5 +95,6 @@ fun Application.testApiModule(
         dokumentportenClient = dokumentportenClient,
         pdfRepository = externalMockEnvironment.pdfRepository,
         moteRepository = externalMockEnvironment.moteRepository,
+        transactionManager = externalMockEnvironment.transactionManager,
     )
 }

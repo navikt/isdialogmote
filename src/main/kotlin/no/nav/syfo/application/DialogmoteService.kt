@@ -29,8 +29,6 @@ import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
-import no.nav.syfo.infrastructure.database.CreatedDialogmoteIdentifiers
-import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.createMotedeltakerVarselArbeidsgiver
 import no.nav.syfo.infrastructure.database.createMotedeltakerVarselArbeidstaker
 import no.nav.syfo.infrastructure.database.createMotedeltakerVarselBehandler
@@ -45,7 +43,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 class DialogmoteService(
-    private val database: DatabaseInterface,
+    private val transactionManager: ITransactionManager,
     private val moteRepository: IMoteRepository,
     private val dialogmotedeltakerService: DialogmotedeltakerService,
     private val dialogmotestatusService: DialogmotestatusService,
@@ -147,22 +145,20 @@ class DialogmoteService(
             ) ?: throw RuntimeException("Failed to request PDF - Innkalling Behandler")
         }
 
-        val createdDialogmoteIdentifiers: CreatedDialogmoteIdentifiers
-
         val digitalVarsling = isDigitalVarselEnabled(
             personIdent = personIdent,
             token = token,
             callId = callId,
         )
 
-        database.connection.use { connection ->
-            createdDialogmoteIdentifiers = connection.createNewDialogmoteWithReferences(
+        transactionManager.run { transaction ->
+            val createdDialogmoteIdentifiers = transaction.connection.createNewDialogmoteWithReferences(
                 commit = false,
                 newDialogmote = newDialogmote,
             )
             dialogmotestatusService.createMoteStatusEndring(
                 callId = callId,
-                connection = connection,
+                connection = transaction.connection,
                 newDialogmote = newDialogmote,
                 dialogmoteId = createdDialogmoteIdentifiers.dialogmoteIdPair.first,
                 dialogmoteStatus = newDialogmote.status,
@@ -170,7 +166,7 @@ class DialogmoteService(
                 token = token,
             )
             createAndSendVarsel(
-                connection = connection,
+                connection = transaction.connection,
                 arbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdPair.first,
                 arbeidstakernavn = arbeidstakernavn,
                 arbeidsgiverId = createdDialogmoteIdentifiers.motedeltakerArbeidsgiverIdPair.first,
@@ -196,8 +192,6 @@ class DialogmoteService(
                 token = token,
                 callId = callId,
             )
-
-            connection.commit()
         }
     }
 
@@ -248,10 +242,10 @@ class DialogmoteService(
             callId = callId,
         )
 
-        database.connection.use { connection ->
+        transactionManager.run { transaction ->
             dialogmotestatusService.updateMoteStatus(
                 callId = callId,
-                connection = connection,
+                connection = transaction.connection,
                 dialogmote = avlystDialogmote,
                 newDialogmoteStatus = Dialogmote.Status.AVLYST,
                 opprettetAv = getNAVIdentFromToken(token),
@@ -261,7 +255,7 @@ class DialogmoteService(
                 dialogmote = avlystDialogmote
             )
             createAndSendVarsel(
-                connection = connection,
+                connection = transaction.connection,
                 arbeidstakerId = avlystDialogmote.arbeidstaker.id,
                 arbeidstakernavn = arbeidstakernavn,
                 arbeidsgiverId = avlystDialogmote.arbeidsgiver.id,
@@ -286,7 +280,6 @@ class DialogmoteService(
                 token = token,
                 callId = callId,
             )
-            connection.commit()
         }
     }
 
@@ -336,15 +329,15 @@ class DialogmoteService(
             callId = callId,
         )
 
-        database.connection.use { connection ->
-            connection.updateMoteTidSted(
+        transactionManager.run { transaction ->
+            transaction.connection.updateMoteTidSted(
                 commit = false,
                 moteId = endretDialogmote.id,
                 newDialogmoteTidSted = endretTidSted,
             )
             dialogmotestatusService.updateMoteStatus(
                 callId = callId,
-                connection = connection,
+                connection = transaction.connection,
                 dialogmote = endretDialogmote,
                 newDialogmoteStatus = Dialogmote.Status.NYTT_TID_STED,
                 opprettetAv = getNAVIdentFromToken(token),
@@ -354,7 +347,7 @@ class DialogmoteService(
                 dialogmote = endretDialogmote
             )
             createAndSendVarsel(
-                connection = connection,
+                connection = transaction.connection,
                 arbeidstakerId = endretDialogmote.arbeidstaker.id,
                 arbeidsgiverId = endretDialogmote.arbeidsgiver.id,
                 behandlerId = endretDialogmote.behandler?.id,
@@ -379,8 +372,6 @@ class DialogmoteService(
                 token = token,
                 callId = callId,
             )
-
-            connection.commit()
         }
     }
 
@@ -486,20 +477,19 @@ class DialogmoteService(
         }
     }
 
-    fun tildelMoter(veilederIdent: String, dialogmoter: List<Dialogmote>) {
-        database.connection.use { connection ->
+    suspend fun tildelMoter(veilederIdent: String, dialogmoter: List<Dialogmote>) {
+        transactionManager.run { transaction ->
             dialogmoter.forEach { dialogmote ->
-                connection.updateMoteTildeltVeileder(
+                transaction.connection.updateMoteTildeltVeileder(
                     commit = false,
                     moteId = dialogmote.id,
                     veilederId = veilederIdent
                 )
             }
-            connection.commit()
         }
     }
 
-    fun mellomlagreReferat(
+    suspend fun mellomlagreReferat(
         dialogmote: Dialogmote,
         opprettetAv: String,
         referat: NewReferatDTO,
@@ -508,10 +498,9 @@ class DialogmoteService(
             throw ConflictException("Failed to mellomlagre referat Dialogmote, already Avlyst")
         }
 
-        database.connection.use { connection ->
-
+        transactionManager.run { transaction ->
             if (dialogmote.tildeltVeilederIdent != opprettetAv) {
-                connection.updateMoteTildeltVeileder(
+                transaction.connection.updateMoteTildeltVeileder(
                     commit = false,
                     moteId = dialogmote.id,
                     veilederId = opprettetAv,
@@ -523,7 +512,7 @@ class DialogmoteService(
             )
             val existingReferat = dialogmote.referatList.firstOrNull()
             if (existingReferat == null || existingReferat.ferdigstilt) {
-                connection.createNewReferat(
+                transaction.connection.createNewReferat(
                     commit = false,
                     newReferat = newReferat,
                     pdfId = null,
@@ -531,7 +520,7 @@ class DialogmoteService(
                     sendAltinn = false,
                 )
             } else {
-                connection.updateReferat(
+                transaction.connection.updateReferat(
                     commit = false,
                     referat = existingReferat,
                     newReferat = newReferat,
@@ -542,13 +531,12 @@ class DialogmoteService(
             }
 
             if (dialogmote.behandler != null) {
-                connection.updateMotedeltakerBehandler(
+                transaction.connection.updateMotedeltakerBehandler(
                     deltakerId = dialogmote.behandler.id,
                     deltatt = referat.behandlerDeltatt ?: true,
                     mottarReferat = referat.behandlerMottarReferat ?: true,
                 )
             }
-            connection.commit()
         }
     }
 
@@ -581,10 +569,9 @@ class DialogmoteService(
             callId = callId,
         )
 
-        database.connection.use { connection ->
-
+        transactionManager.run { transaction ->
             if (ferdigstiltDialogmote.tildeltVeilederIdent != opprettetAv) {
-                connection.updateMoteTildeltVeileder(
+                transaction.connection.updateMoteTildeltVeileder(
                     commit = false,
                     moteId = ferdigstiltDialogmote.id,
                     veilederId = opprettetAv,
@@ -592,14 +579,14 @@ class DialogmoteService(
             }
             dialogmotestatusService.updateMoteStatus(
                 callId = callId,
-                connection = connection,
+                connection = transaction.connection,
                 dialogmote = ferdigstiltDialogmote,
                 newDialogmoteStatus = Dialogmote.Status.FERDIGSTILT,
                 opprettetAv = opprettetAv,
                 token = token,
             )
             val (pdfId, _) = pdfRepository.createPdf(
-                connection = connection,
+                connection = transaction.connection,
                 commit = false,
                 pdf = pdfReferat,
             )
@@ -608,7 +595,7 @@ class DialogmoteService(
                 ferdigstilt = true,
             )
             val (_, referatUuid) = if (ferdigstiltDialogmote.referatList.isEmpty()) {
-                connection.createNewReferat(
+                transaction.connection.createNewReferat(
                     commit = false,
                     newReferat = newReferat,
                     pdfId = pdfId,
@@ -620,7 +607,7 @@ class DialogmoteService(
                 if (existingReferat.ferdigstilt) {
                     throw ConflictException("Failed to Ferdigstille referat for Dialogmote, referat already Ferdigstilt")
                 }
-                connection.updateReferat(
+                transaction.connection.updateReferat(
                     commit = false,
                     referat = existingReferat,
                     newReferat = newReferat,
@@ -630,7 +617,7 @@ class DialogmoteService(
                 )
             }
             ferdigstiltDialogmote.behandler?.let { behandler ->
-                connection.updateMotedeltakerBehandler(
+                transaction.connection.updateMotedeltakerBehandler(
                     deltakerId = behandler.id,
                     deltatt = referat.behandlerDeltatt ?: true,
                     mottarReferat = referat.behandlerMottarReferat ?: true,
@@ -663,8 +650,6 @@ class DialogmoteService(
                 token = token,
                 callId = callId,
             )
-
-            connection.commit()
         }
     }
 
@@ -704,23 +689,22 @@ class DialogmoteService(
         val existingReferat = dialogmote.referatList.firstOrNull()
             ?: throw RuntimeException("Ferdigstilt mote ${dialogmote.id} does not have referat")
 
-        database.connection.use { connection ->
-
+        transactionManager.run { transaction ->
             if (dialogmote.tildeltVeilederIdent != opprettetAv) {
-                connection.updateMoteTildeltVeileder(
+                transaction.connection.updateMoteTildeltVeileder(
                     commit = false,
                     moteId = dialogmote.id,
                     veilederId = opprettetAv,
                 )
             }
             val (pdfId, _) = pdfRepository.createPdf(
-                connection = connection,
+                connection = transaction.connection,
                 commit = false,
                 pdf = pdfReferat,
             )
 
             val (_, referatUuid) = if (existingReferat.ferdigstilt) {
-                connection.createNewReferat(
+                transaction.connection.createNewReferat(
                     commit = false,
                     newReferat = newReferat,
                     pdfId = pdfId,
@@ -728,7 +712,7 @@ class DialogmoteService(
                     sendAltinn = narmesteLeder == null,
                 )
             } else {
-                connection.updateReferat(
+                transaction.connection.updateReferat(
                     commit = false,
                     referat = existingReferat,
                     newReferat = newReferat,
@@ -739,7 +723,7 @@ class DialogmoteService(
             }
             val behandler = dialogmote.behandler
             if (behandler != null) {
-                connection.updateMotedeltakerBehandler(
+                transaction.connection.updateMotedeltakerBehandler(
                     deltakerId = behandler.id,
                     deltatt = referat.behandlerDeltatt ?: true,
                     mottarReferat = referat.behandlerMottarReferat ?: true,
@@ -768,8 +752,6 @@ class DialogmoteService(
                 token = token,
                 callId = callId,
             )
-
-            connection.commit()
         }
     }
 
