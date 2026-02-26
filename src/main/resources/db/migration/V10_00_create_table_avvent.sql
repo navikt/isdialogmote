@@ -1,0 +1,13 @@
+CREATE TABLE AVVENT
+(
+    id          SERIAL      PRIMARY KEY,
+    uuid        UUID        NOT NULL UNIQUE,
+    motebehov_uuid  UUID     NOT NULL,
+    frist       DATE        NOT NULL,
+    personident VARCHAR(11) NOT NULL,
+    beskrivelse TEXT,
+    created_by  VARCHAR(7)  NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL
+);
+
+CREATE INDEX IX_AVVENT_PERSONIDENT on AVVENT(personident);
