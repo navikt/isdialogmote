@@ -135,7 +135,7 @@ fun DatabaseInterface.setReferatBrevBestilt(
     referatUuid: String,
 ) {
     val moteRepository = MoteRepository(this)
-    val referatId = moteRepository.getReferat(UUID.fromString(referatUuid))?.id
+    val referatId = moteRepository.getPReferat(UUID.fromString(referatUuid))?.id
     this.updateReferatBrevBestilt(referatId!!)
 }
 
@@ -153,7 +153,7 @@ fun DatabaseInterface.setReferatJournalfort(
     journalpostId: Int,
 ) {
     val moteRepository = MoteRepository(this)
-    val referatId = moteRepository.getReferat(UUID.fromString(referatUuid))?.id
+    val referatId = moteRepository.getPReferat(UUID.fromString(referatUuid))?.id
     this.updateReferatJournalpostIdArbeidstaker(
         referatId!!,
         journalpostId

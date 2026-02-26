@@ -148,7 +148,7 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
                     assertEquals("Tøff Pyjamas", referat.andreDeltakere.first().navn)
 
                     val pdf =
-                        pdfRepository.getPdf(moteRepository.getReferat(UUID.fromString(referat.uuid))?.pdfId!!).pdf
+                        pdfRepository.getPdf(moteRepository.getPReferat(UUID.fromString(referat.uuid))?.pdfId!!).pdf
                     assertArrayEquals(pdfReferat, pdf)
 
                     val moteStatusEndretList = moteStatusEndretRepository.getMoteStatusEndretNotPublished()

@@ -54,17 +54,7 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
     override fun getMote(moteUUID: UUID): Dialogmote =
         database.connection.use { connection ->
             val dialogmote = connection.getMoteForUUID(moteUUID)
-            val arbeidstaker = connection.getMotedeltakerArbeidstaker(dialogmote.id)
-            val arbeidsgiver = connection.getMotedeltakerArbeidsgiver(dialogmote.id)
-            val tidSted = connection.getTidSted(dialogmote.id)
-
-            dialogmote.toDialogmote(
-                dialogmotedeltakerArbeidstaker = arbeidstaker,
-                dialogmotedeltakerArbeidsgiver = arbeidsgiver,
-                dialogmotedeltakerBehandler = connection.getBehandler(dialogmote.id),
-                dialogmoteTidStedList = tidSted.map { it.toDialogmoteTidSted() },
-                referatList = connection.getReferater(dialogmote.id, arbeidstaker.id, arbeidsgiver.id)
-            )
+            connection.extendDialogmoteRelations(dialogmote)
         }
 
     override fun getMotedeltakerBehandler(moteId: Int): DialogmotedeltakerBehandler? =
@@ -72,35 +62,61 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             connection.getBehandler(moteId)
         }
 
-    override fun getMoterFor(personIdent: PersonIdent): List<PDialogmote> =
+    override fun getMoterFor(personIdent: PersonIdent): List<Dialogmote> =
         database.connection.use { connection ->
-            connection.prepareStatement(GET_DIALOGMOTER_FOR_PERSONIDENT_QUERY).use {
+            val dialogmoter = connection.prepareStatement(GET_DIALOGMOTER_FOR_PERSONIDENT_QUERY).use {
                 it.setString(1, personIdent.value)
                 it.executeQuery().toList { toPDialogmote() }
             }
-        }
-
-    override fun getDialogmoteList(enhetNr: EnhetNr): List<PDialogmote> =
-        database.connection.use { connection ->
-            connection.prepareStatement(GET_DIALOGMOTER_FOR_ENHET).use {
-                it.setString(1, enhetNr.value)
-                it.executeQuery().toList { toPDialogmote() }
+            return dialogmoter.map { dialogmote ->
+                connection.extendDialogmoteRelations(dialogmote)
             }
         }
 
-    override fun getUnfinishedMoterForEnhet(enhetNr: EnhetNr): List<PDialogmote> =
+    private fun Connection.extendDialogmoteRelations(dialogmote: PDialogmote): Dialogmote {
+        val arbeidstaker = this.getMotedeltakerArbeidstaker(dialogmote.id)
+        val arbeidsgiver = this.getMotedeltakerArbeidsgiver(dialogmote.id)
+        val tidSted = this.getTidSted(dialogmote.id)
+
+        return dialogmote.toDialogmote(
+            dialogmotedeltakerArbeidstaker = arbeidstaker,
+            dialogmotedeltakerArbeidsgiver = arbeidsgiver,
+            dialogmotedeltakerBehandler = this.getBehandler(dialogmote.id),
+            dialogmoteTidStedList = tidSted.map { it.toDialogmoteTidSted() },
+            referatList = this.getReferater(dialogmote.id, arbeidstaker.id, arbeidsgiver.id)
+        )
+    }
+
+    override fun getDialogmoteList(enhetNr: EnhetNr): List<Dialogmote> =
         database.connection.use { connection ->
-            connection.prepareStatement(GET_UNFINISHED_MOTER_FOR_ENHET).use {
+            val dialogmoter = connection.prepareStatement(GET_DIALOGMOTER_FOR_ENHET).use {
                 it.setString(1, enhetNr.value)
                 it.executeQuery().toList { toPDialogmote() }
             }
+            dialogmoter.map { dialogmote ->
+                connection.extendDialogmoteRelations(dialogmote)
+            }
         }
 
-    override fun getUnfinishedMoterForVeileder(veilederIdent: String): List<PDialogmote> =
+    override fun getUnfinishedMoterForEnhet(enhetNr: EnhetNr): List<Dialogmote> =
         database.connection.use { connection ->
-            connection.prepareStatement(GET_UNFINISHED_MOTER_FOR_VEILEDER).use {
+            val dialogmoter = connection.prepareStatement(GET_UNFINISHED_MOTER_FOR_ENHET).use {
+                it.setString(1, enhetNr.value)
+                it.executeQuery().toList { toPDialogmote() }
+            }
+            dialogmoter.map { dialogmote ->
+                connection.extendDialogmoteRelations(dialogmote)
+            }
+        }
+
+    override fun getUnfinishedMoterForVeileder(veilederIdent: String): List<Dialogmote> =
+        database.connection.use { connection ->
+            val dialogmoter = connection.prepareStatement(GET_UNFINISHED_MOTER_FOR_VEILEDER).use {
                 it.setString(1, veilederIdent)
                 it.executeQuery().toList { toPDialogmote() }
+            }
+            dialogmoter.map { dialogmote ->
+                connection.extendDialogmoteRelations(dialogmote)
             }
         }
 
