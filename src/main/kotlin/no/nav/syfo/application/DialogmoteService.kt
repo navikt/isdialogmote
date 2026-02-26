@@ -56,37 +56,20 @@ class DialogmoteService(
     private val pdlClient: PdlClient,
     private val pdfRepository: IPdfRepository,
 ) {
-    fun getDialogmote(
-        moteUUID: UUID,
-    ): Dialogmote {
-        return moteRepository.getMote(moteUUID)
-    }
+    fun getDialogmote(moteUUID: UUID): Dialogmote =
+        moteRepository.getMote(moteUUID)
 
-    fun getDialogmoteList(
-        personident: PersonIdent,
-    ): List<Dialogmote> {
-        return moteRepository.getMoterFor(personident).map { pDialogmote ->
-            dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
-        }
-    }
+    fun getDialogmoteList(personident: PersonIdent): List<Dialogmote> =
+        moteRepository.getMoterFor(personident)
 
-    fun getDialogmoteList(
-        enhetNr: EnhetNr,
-    ): List<Dialogmote> =
-        moteRepository.getDialogmoteList(enhetNr).map { pDialogmote ->
-            dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
-        }
+    fun getDialogmoteList(enhetNr: EnhetNr): List<Dialogmote> =
+        moteRepository.getDialogmoteList(enhetNr)
 
     fun getDialogmoteUnfinishedList(enhetNr: EnhetNr): List<Dialogmote> =
-        moteRepository.getUnfinishedMoterForEnhet(enhetNr).map { pDialogmote ->
-            dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
-        }
+        moteRepository.getUnfinishedMoterForEnhet(enhetNr)
 
-    fun getDialogmoteUnfinishedListForVeilederIdent(veilederIdent: String): List<Dialogmote> {
-        return moteRepository.getUnfinishedMoterForVeileder(veilederIdent).map { pDialogmote ->
-            dialogmoterelasjonService.extendDialogmoteRelations(pDialogmote)
-        }
-    }
+    fun getDialogmoteUnfinishedListForVeilederIdent(veilederIdent: String): List<Dialogmote> =
+        moteRepository.getUnfinishedMoterForVeileder(veilederIdent)
 
     suspend fun createMoteinnkalling(
         newDialogmoteDTO: NewDialogmoteDTO,
