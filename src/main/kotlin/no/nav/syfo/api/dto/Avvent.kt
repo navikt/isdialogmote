@@ -7,21 +7,19 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 data class CreateAvventDTO(
-    val motebehovUuid: UUID,
     val frist: LocalDate,
     val createdBy: String,
-    val personident: PersonIdent,
+    val personident: String,
     val beskrivelse: String,
 )
 
 fun CreateAvventDTO.toAvvent(): Avvent {
     return Avvent(
         uuid = UUID.randomUUID(),
-        motebehovUuid = this.motebehovUuid,
         createdAt = OffsetDateTime.now(),
         frist = this.frist,
         createdBy = this.createdBy,
-        personident = this.personident,
+        personident = PersonIdent(this.personident),
         beskrivelse = this.beskrivelse,
         isLukket = false
     )

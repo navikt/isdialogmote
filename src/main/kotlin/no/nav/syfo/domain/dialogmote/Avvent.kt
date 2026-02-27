@@ -7,7 +7,6 @@ import java.util.UUID
 
 data class Avvent (
     val uuid: UUID,
-    val motebehovUuid: UUID,
     val createdAt: OffsetDateTime,
     val frist: LocalDate,
     val createdBy: String,
