@@ -18,7 +18,7 @@ class AvventRepository(private val database: DatabaseInterface) : IAvventReposit
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """.trimIndent()
             ).use { preparedStatement ->
-                preparedStatement.setString(1, avvent.uuid.toString())
+                preparedStatement.setObject(1, avvent.uuid)
                 preparedStatement.setObject(2, avvent.createdAt)
                 preparedStatement.setObject(3, avvent.frist)
                 preparedStatement.setString(4, avvent.createdBy)
@@ -40,7 +40,7 @@ class AvventRepository(private val database: DatabaseInterface) : IAvventReposit
                 SELECT * FROM avvent WHERE uuid = ?
                 """.trimIndent()
             ).use { preparedStatement ->
-                preparedStatement.setString(1, uuid.toString())
+                preparedStatement.setObject(1, uuid)
                 preparedStatement.executeQuery().use { resultSet ->
                     return if (resultSet.next()) resultSet.toAvvent() else null
                 }
@@ -71,7 +71,7 @@ class AvventRepository(private val database: DatabaseInterface) : IAvventReposit
                 UPDATE avvent SET is_lukket = true WHERE uuid = ?
                 """.trimIndent()
             ).use { preparedStatement ->
-                preparedStatement.setString(1, uuid.toString())
+                preparedStatement.setObject(1, uuid)
                 preparedStatement.executeUpdate()
             }
             if (transaction == null) {
@@ -82,7 +82,7 @@ class AvventRepository(private val database: DatabaseInterface) : IAvventReposit
 }
 
 private fun ResultSet.toAvvent() = Avvent(
-    uuid = UUID.fromString(this.getString("uuid")),
+    uuid = this.getObject("uuid", UUID::class.java),
     createdAt = this.getObject("created_at", java.time.OffsetDateTime::class.java),
     frist = this.getObject("frist", java.time.LocalDate::class.java),
     createdBy = this.getString("created_by"),
