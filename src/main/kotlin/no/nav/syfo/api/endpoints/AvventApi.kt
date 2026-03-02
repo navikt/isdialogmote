@@ -6,9 +6,11 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import no.nav.syfo.api.dto.AvventQueryDTO
+import no.nav.syfo.api.authentication.getNAVIdentFromToken
+import no.nav.syfo.api.dto.QueryAvventDTO
 import no.nav.syfo.api.dto.CreateAvventDTO
 import no.nav.syfo.api.dto.toAvvent
+import no.nav.syfo.api.getBearerHeader
 import no.nav.syfo.api.validateVeilederAccess
 import no.nav.syfo.application.AvventService
 import no.nav.syfo.application.DialogmoteTilgangService
@@ -20,22 +22,25 @@ fun Route.registerAvventApi(
     dialogmoteTilgangService: DialogmoteTilgangService
 ) {
     route("/api/avvent") {
-        post() {
+        post {
             val avvent = call.receive<CreateAvventDTO>()
-                .toAvvent()
 
             validateVeilederAccess(
                 dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = avvent.personident,
+                personIdentToAccess = PersonIdent(avvent.personident),
                 action = "Create Avvent for Person with PersonIdent",
             ) {
-                avventService.persist(avvent)
+                val token = getBearerHeader()
+                    ?: throw IllegalArgumentException("No Authorization header supplied")
+
+                val navident = getNAVIdentFromToken(token)
+                avventService.persist(avvent.toAvvent(navident))
                 call.respond(HttpStatusCode.OK)
             }
         }
 
         post("/query") {
-            val query = call.receive<AvventQueryDTO>()
+            val query = call.receive<QueryAvventDTO>()
             val personidenter = query.personidenter.map { personIdent ->
                 PersonIdent(personIdent)
             }

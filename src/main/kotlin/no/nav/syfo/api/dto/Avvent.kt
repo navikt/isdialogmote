@@ -8,21 +8,20 @@ import java.util.UUID
 
 data class CreateAvventDTO(
     val frist: LocalDate,
-    val createdBy: String,
     val personident: String,
     val beskrivelse: String,
 )
 
-data class AvventQueryDTO(
+data class QueryAvventDTO(
     val personidenter: List<String>,
 )
 
-fun CreateAvventDTO.toAvvent(): Avvent {
+fun CreateAvventDTO.toAvvent(createdBy: String): Avvent {
     return Avvent(
         uuid = UUID.randomUUID(),
         createdAt = OffsetDateTime.now(),
         frist = this.frist,
-        createdBy = this.createdBy,
+        createdBy = createdBy,
         personident = PersonIdent(this.personident),
         beskrivelse = this.beskrivelse,
         isLukket = false

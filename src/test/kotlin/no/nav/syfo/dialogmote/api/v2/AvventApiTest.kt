@@ -4,7 +4,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import no.nav.syfo.api.dto.AvventQueryDTO
+import no.nav.syfo.api.dto.QueryAvventDTO
 import no.nav.syfo.api.dto.CreateAvventDTO
 import no.nav.syfo.domain.dialogmote.Avvent
 import no.nav.syfo.infrastructure.database.repository.AvventRepository
@@ -41,7 +41,6 @@ class AvventApiTest {
     private val createAvventDTO =
         CreateAvventDTO(
             frist = LocalDate.now().plusWeeks(2),
-            createdBy = VEILEDER_IDENT,
             personident = ARBEIDSTAKER_FNR.value,
             beskrivelse = "Avventer noe",
         )
@@ -116,7 +115,7 @@ class AvventApiTest {
                     client.post("$AVVENT_API_PATH/query") {
                         bearerAuth(validToken)
                         contentType(ContentType.Application.Json)
-                        setBody(AvventQueryDTO(personidenter = listOf(ARBEIDSTAKER_FNR.value)))
+                        setBody(QueryAvventDTO(personidenter = listOf(ARBEIDSTAKER_FNR.value)))
                     }
 
                 assertEquals(HttpStatusCode.OK, response.status)
@@ -134,7 +133,7 @@ class AvventApiTest {
                     client.post("$AVVENT_API_PATH/query") {
                         bearerAuth(validToken)
                         contentType(ContentType.Application.Json)
-                        setBody(AvventQueryDTO(personidenter = listOf(ARBEIDSTAKER_ANNEN_FNR.value)))
+                        setBody(QueryAvventDTO(personidenter = listOf(ARBEIDSTAKER_ANNEN_FNR.value)))
                     }
 
                 assertEquals(HttpStatusCode.OK, response.status)
@@ -151,7 +150,7 @@ class AvventApiTest {
                     client.post("$AVVENT_API_PATH/query") {
                         bearerAuth(validToken)
                         contentType(ContentType.Application.Json)
-                        setBody(AvventQueryDTO(personidenter = listOf(ARBEIDSTAKER_VEILEDER_NO_ACCESS.value)))
+                        setBody(QueryAvventDTO(personidenter = listOf(ARBEIDSTAKER_VEILEDER_NO_ACCESS.value)))
                     }
                 assertEquals(HttpStatusCode.Forbidden, response.status)
             }
@@ -174,7 +173,7 @@ class AvventApiTest {
                     client.post("$AVVENT_API_PATH/query") {
                         bearerAuth(validToken)
                         contentType(ContentType.Application.Json)
-                        setBody(AvventQueryDTO(personidenter = listOf(ARBEIDSTAKER_FNR.value)))
+                        setBody(QueryAvventDTO(personidenter = listOf(ARBEIDSTAKER_FNR.value)))
                     }
                 val uuid = queryResponse.body<List<Avvent>>().first().uuid
 
