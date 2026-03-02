@@ -22,9 +22,7 @@ import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.application.DialogmotedeltakerService
-import no.nav.syfo.application.DialogmoterelasjonService
 import no.nav.syfo.application.DialogmotestatusService
-import no.nav.syfo.infrastructure.database.getDialogmote
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.NarmesteLederHendelse
@@ -62,9 +60,6 @@ class NarmesteLederBrevTest {
     private val dialogmotedeltakerService = DialogmotedeltakerService(
         arbeidstakerVarselService = arbeidstakerVarselService,
         database = database,
-        moteRepository = externalMockEnvironment.moteRepository,
-    )
-    private val dialogmoterelasjonService = DialogmoterelasjonService(
         moteRepository = externalMockEnvironment.moteRepository,
     )
 
@@ -442,8 +437,7 @@ class NarmesteLederBrevTest {
                 val createdDialogmoteUUID: String =
                     client.postAndGetDialogmote(validTokenVeileder, newDialogmoteDTO).uuid
 
-                val pMote = database.getDialogmote(UUID.fromString(createdDialogmoteUUID)).first()
-                val mote = dialogmoterelasjonService.extendDialogmoteRelations(pMote)
+                val mote = externalMockEnvironment.moteRepository.getMote(UUID.fromString(createdDialogmoteUUID))
 
                 runBlocking {
                     database.connection.use { connection ->
