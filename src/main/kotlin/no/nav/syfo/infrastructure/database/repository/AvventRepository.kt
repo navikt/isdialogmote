@@ -59,7 +59,11 @@ class AvventRepository(
         val result = connection
             .prepareStatement(
                 """
-                SELECT * FROM avvent WHERE personident = ? AND is_lukket = false
+                SELECT * FROM avvent 
+                WHERE personident = ?
+                AND is_lukket = false
+                ORDER BY created_by desc
+                LIMIT 1
                 """.trimIndent(),
             ).use { preparedStatement ->
                 preparedStatement.setString(1, personident.value)
@@ -80,7 +84,10 @@ class AvventRepository(
             connection
                 .prepareStatement(
                     """
-                    SELECT * FROM avvent WHERE personident = ANY(?) AND is_lukket = false
+                    SELECT * FROM avvent 
+                    WHERE personident = ANY(?)
+                    AND is_lukket = false
+                    ORDER BY created_at desc 
                     """.trimIndent(),
                 ).use { preparedStatement ->
                     preparedStatement.setArray(1, personidentArray)
