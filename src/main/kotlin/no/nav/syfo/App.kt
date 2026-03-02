@@ -265,7 +265,7 @@ fun main() {
                 val janitorService = JanitorService(
                     database = applicationDatabase,
                     dialogmotestatusService = dialogmotestatusService,
-                    moteRepository = moteRepository,
+                    dialogmoterelasjonService = dialogmoterelasjonService,
                     janitorEventStatusProducer = JanitorEventStatusProducer(
                         kafkaProducer = KafkaProducer(kafkaJanitorEventProducerConfig(environment.kafka)),
                     ),

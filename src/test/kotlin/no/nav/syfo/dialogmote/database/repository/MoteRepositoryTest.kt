@@ -58,7 +58,7 @@ class MoteRepositoryTest {
 
         assertEquals(1, retrievedMoter.size)
         assertEquals(newDialogmote.opprettetAv, retrievedMoter.first().opprettetAv)
-        assertEquals(newDialogmote.status.name, retrievedMoter.first().status.name)
+        assertEquals(newDialogmote.status.name, retrievedMoter.first().status)
         assertEquals(newDialogmote.tildeltEnhet, retrievedMoter.first().tildeltEnhet)
         assertEquals(newDialogmote.tildeltVeilederIdent, retrievedMoter.first().tildeltVeilederIdent)
     }
