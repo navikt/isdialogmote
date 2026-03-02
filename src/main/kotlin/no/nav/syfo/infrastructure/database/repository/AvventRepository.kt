@@ -1,11 +1,13 @@
 package no.nav.syfo.infrastructure.database.repository
 
 import no.nav.syfo.application.IAvventRepository
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Avvent
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import java.sql.ResultSet
+import java.util.UUID
 
-class AvventRepository(private val database: DatabaseInterface): IAvventRepository {
+class AvventRepository(private val database: DatabaseInterface) : IAvventRepository {
     override fun persist(avvent: Avvent) {
         database.connection.use { connection ->
             connection.prepareStatement(
@@ -26,14 +28,43 @@ class AvventRepository(private val database: DatabaseInterface): IAvventReposito
             connection.commit()
         }
     }
+
+    override fun getActiveAvvent(personident: PersonIdent): Avvent? {
+        database.connection.use { connection ->
+            connection.prepareStatement(
+                """
+                SELECT * FROM avvent WHERE personident = ? AND is_lukket = false
+                """.trimIndent()
+            ).use { preparedStatement ->
+                preparedStatement.setString(1, personident.value)
+                preparedStatement.executeQuery().use { resultSet ->
+                    return if (resultSet.next()) resultSet.toAvvent() else null
+                }
+            }
+        }
+    }
+
+    override fun setLukket(uuid: UUID) {
+        database.connection.use { connection ->
+            connection.prepareStatement(
+                """
+                UPDATE avvent SET is_lukket = true WHERE uuid = ?
+                """.trimIndent()
+            ).use { preparedStatement ->
+                preparedStatement.setString(1, uuid.toString())
+                preparedStatement.executeUpdate()
+            }
+            connection.commit()
+        }
+    }
 }
 
 private fun ResultSet.toAvvent() = Avvent(
-    uuid = java.util.UUID.fromString(this.getString("uuid")),
+    uuid = UUID.fromString(this.getString("uuid")),
     createdAt = this.getObject("created_at", java.time.OffsetDateTime::class.java),
     frist = this.getObject("frist", java.time.LocalDate::class.java),
     createdBy = this.getString("created_by"),
-    personident = no.nav.syfo.domain.PersonIdent(this.getString("personident")),
+    personident = PersonIdent(this.getString("personident")),
     beskrivelse = this.getString("beskrivelse"),
     isLukket = this.getBoolean("is_lukket")
 )

@@ -19,6 +19,7 @@ import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.repository.AvventRepository
 import no.nav.syfo.infrastructure.database.repository.MoteRepository
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 
@@ -111,6 +112,10 @@ fun Application.apiModule(
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
     )
 
+    val avventService = AvventService(
+        avventRepository = AvventRepository(database),
+    )
+
     routing {
         registerPodApi(applicationState, database)
         registerPrometheusApi()
@@ -127,6 +132,10 @@ fun Application.apiModule(
             )
             registerDialogmoteActionsApiV2(
                 dialogmoteService = dialogmoteService,
+                dialogmoteTilgangService = dialogmoteTilgangService
+            )
+            registerAvventApi(
+                avventService = avventService,
                 dialogmoteTilgangService = dialogmoteTilgangService
             )
         }

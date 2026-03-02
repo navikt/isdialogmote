@@ -13,6 +13,10 @@ data class CreateAvventDTO(
     val beskrivelse: String,
 )
 
+data class AvventQueryDTO(
+    val personidenter: List<String>,
+)
+
 fun CreateAvventDTO.toAvvent(): Avvent {
     return Avvent(
         uuid = UUID.randomUUID(),

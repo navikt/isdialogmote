@@ -6,23 +6,47 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import no.nav.syfo.api.dto.AvventQueryDTO
 import no.nav.syfo.api.dto.CreateAvventDTO
 import no.nav.syfo.api.dto.toAvvent
+import no.nav.syfo.api.validateVeilederAccess
 import no.nav.syfo.application.AvventService
-
+import no.nav.syfo.application.DialogmoteTilgangService
+import no.nav.syfo.domain.PersonIdent
 
 fun Route.registerAvventApi(
     avventService: AvventService,
+    dialogmoteTilgangService: DialogmoteTilgangService
 ) {
     route("/api/avvent") {
         post() {
             val avvent = call.receive<CreateAvventDTO>()
                 .toAvvent()
 
-            // TODO: validateVeilederAccess
-            avventService.persist(avvent)
+            validateVeilederAccess(
+                dialogmoteTilgangService = dialogmoteTilgangService,
+                personIdentToAccess = avvent.personident,
+                action = "Create Avvent for Person with PersonIdent",
+            ) {
+                avventService.persist(avvent)
+                call.respond(HttpStatusCode.OK)
+            }
+        }
 
-            call.respond(HttpStatusCode.OK)
+        post("/query") {
+            val query = call.receive<AvventQueryDTO>()
+            val personidenter = query.personidenter.map { personIdent ->
+                PersonIdent(personIdent)
+            }
+
+            validateVeilederAccess(
+                dialogmoteTilgangService = dialogmoteTilgangService,
+                personIdenterToAccess = personidenter,
+                action = "Query Avvent for Person with PersonIdenter",
+            ) {
+                val avventList = avventService.getAvventForIdenter(personidenter)
+                call.respond(avventList)
+            }
         }
     }
 }

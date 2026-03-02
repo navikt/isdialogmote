@@ -5,7 +5,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
-data class Avvent (
+data class Avvent(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val frist: LocalDate,
