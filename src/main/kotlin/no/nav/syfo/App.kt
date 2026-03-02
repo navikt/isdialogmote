@@ -42,6 +42,7 @@ import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.database.TransactionManager
 import no.nav.syfo.infrastructure.database.repository.MoteRepository
 import no.nav.syfo.infrastructure.database.repository.PdfRepository
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventConsumer
@@ -167,6 +168,7 @@ fun main() {
         },
         module = {
             databaseModule(environment = environment)
+            val transactionManager = TransactionManager(database = applicationDatabase)
             val moteRepository = MoteRepository(database = applicationDatabase)
             behandlerVarselService = BehandlerVarselService(
                 database = applicationDatabase,
@@ -215,6 +217,7 @@ fun main() {
                 dokumentportenClient = dokumentportenClient,
                 pdfRepository = pdfRepository,
                 moteRepository = moteRepository,
+                transactionManager = transactionManager,
             )
             cronjobModule(
                 applicationState = applicationState,
@@ -262,7 +265,7 @@ fun main() {
                 val janitorService = JanitorService(
                     database = applicationDatabase,
                     dialogmotestatusService = dialogmotestatusService,
-                    dialogmoterelasjonService = dialogmoterelasjonService,
+                    moteRepository = moteRepository,
                     janitorEventStatusProducer = JanitorEventStatusProducer(
                         kafkaProducer = KafkaProducer(kafkaJanitorEventProducerConfig(environment.kafka)),
                     ),
