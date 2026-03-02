@@ -9,15 +9,14 @@ import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
 import no.nav.syfo.domain.dialogmote.Referat
-import no.nav.syfo.infrastructure.database.model.PDialogmote
 import java.util.UUID
 
 interface IMoteRepository {
     fun getMote(moteUUID: UUID): Dialogmote
-    fun getMoterFor(personIdent: PersonIdent): List<PDialogmote>
-    fun getDialogmoteList(enhetNr: EnhetNr): List<PDialogmote>
-    fun getUnfinishedMoterForEnhet(enhetNr: EnhetNr): List<PDialogmote>
-    fun getUnfinishedMoterForVeileder(veilederIdent: String): List<PDialogmote>
+    fun getMoterFor(personIdent: PersonIdent): List<Dialogmote>
+    fun getDialogmoteList(enhetNr: EnhetNr): List<Dialogmote>
+    fun getUnfinishedMoterForEnhet(enhetNr: EnhetNr): List<Dialogmote>
+    fun getUnfinishedMoterForVeileder(veilederIdent: String): List<Dialogmote>
     fun getMotedeltakerArbeidstaker(moteId: Int): DialogmotedeltakerArbeidstaker
     fun getMotedeltakerArbeidsgiver(moteId: Int): DialogmotedeltakerArbeidsgiver
     fun getMotedeltakerBehandler(moteId: Int): DialogmotedeltakerBehandler?
