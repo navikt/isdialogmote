@@ -29,6 +29,21 @@ class AvventRepository(private val database: DatabaseInterface) : IAvventReposit
         }
     }
 
+    override fun getAvvent(uuid: UUID): Avvent? {
+        database.connection.use { connection ->
+            connection.prepareStatement(
+                """
+                SELECT * FROM avvent WHERE uuid = ?
+                """.trimIndent()
+            ).use { preparedStatement ->
+                preparedStatement.setString(1, uuid.toString())
+                preparedStatement.executeQuery().use { resultSet ->
+                    return if (resultSet.next()) resultSet.toAvvent() else null
+                }
+            }
+        }
+    }
+
     override fun getActiveAvvent(personident: PersonIdent): Avvent? {
         database.connection.use { connection ->
             connection.prepareStatement(

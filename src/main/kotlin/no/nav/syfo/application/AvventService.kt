@@ -2,6 +2,7 @@ package no.nav.syfo.application
 
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Avvent
+import java.util.UUID
 
 class AvventService(
     private val avventRepository: IAvventRepository,
@@ -18,5 +19,11 @@ class AvventService(
         return personidenter.mapNotNull { personident ->
             avventRepository.getActiveAvvent(personident)
         }
+    }
+
+    fun getAvvent(uuid: UUID): Avvent? = avventRepository.getAvvent(uuid)
+
+    fun lukk(uuid: UUID) {
+        avventRepository.setLukket(uuid)
     }
 }

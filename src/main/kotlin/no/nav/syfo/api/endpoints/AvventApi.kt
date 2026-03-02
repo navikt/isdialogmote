@@ -13,6 +13,7 @@ import no.nav.syfo.api.validateVeilederAccess
 import no.nav.syfo.application.AvventService
 import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.domain.PersonIdent
+import java.util.UUID
 
 fun Route.registerAvventApi(
     avventService: AvventService,
@@ -46,6 +47,23 @@ fun Route.registerAvventApi(
             ) {
                 val avventList = avventService.getAvventForIdenter(personidenter)
                 call.respond(avventList)
+            }
+        }
+
+        post("/{uuid}/lukk") {
+            val uuid = UUID.fromString(call.parameters["uuid"])
+                ?: throw IllegalArgumentException("No valid UUID supplied")
+
+            val avvent = avventService.getAvvent(uuid)
+                ?: return@post call.respond(HttpStatusCode.NotFound)
+
+            validateVeilederAccess(
+                dialogmoteTilgangService = dialogmoteTilgangService,
+                personIdentToAccess = avvent.personident,
+                action = "Lukk Avvent with uuid $uuid",
+            ) {
+                avventService.lukk(uuid)
+                call.respond(HttpStatusCode.OK)
             }
         }
     }

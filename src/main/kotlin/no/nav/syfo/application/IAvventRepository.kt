@@ -6,6 +6,7 @@ import java.util.UUID
 
 interface IAvventRepository {
     fun persist(avvent: Avvent)
+    fun getAvvent(uuid: UUID): Avvent?
     fun getActiveAvvent(personident: PersonIdent): Avvent?
     fun setLukket(uuid: UUID)
 }
