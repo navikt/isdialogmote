@@ -1,9 +1,13 @@
 package no.nav.syfo.dialogmote.api.v2
 
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.server.testing.*
+import io.ktor.client.call.body
+import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.ktor.server.testing.testApplication
 import no.nav.syfo.api.dto.QueryAvventDTO
 import no.nav.syfo.api.dto.CreateAvventDTO
 import no.nav.syfo.domain.dialogmote.Avvent
