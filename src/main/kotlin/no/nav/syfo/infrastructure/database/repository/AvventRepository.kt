@@ -1,6 +1,7 @@
 package no.nav.syfo.infrastructure.database.repository
 
 import no.nav.syfo.application.IAvventRepository
+import no.nav.syfo.application.ITransaction
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Avvent
 import no.nav.syfo.infrastructure.database.DatabaseInterface
@@ -8,8 +9,9 @@ import java.sql.ResultSet
 import java.util.UUID
 
 class AvventRepository(private val database: DatabaseInterface) : IAvventRepository {
-    override fun persist(avvent: Avvent) {
-        database.connection.use { connection ->
+    override fun persist(avvent: Avvent, transaction: ITransaction?) {
+        val connection = transaction?.connection ?: database.connection
+        connection.use { connection ->
             connection.prepareStatement(
                 """
                 INSERT INTO avvent (uuid, created_at, frist, created_by, personident, beskrivelse, is_lukket)
@@ -25,7 +27,9 @@ class AvventRepository(private val database: DatabaseInterface) : IAvventReposit
                 preparedStatement.setBoolean(7, avvent.isLukket)
                 preparedStatement.executeUpdate()
             }
-            connection.commit()
+            if (transaction == null) {
+                connection.commit()
+            }
         }
     }
 
@@ -59,8 +63,9 @@ class AvventRepository(private val database: DatabaseInterface) : IAvventReposit
         }
     }
 
-    override fun setLukket(uuid: UUID) {
-        database.connection.use { connection ->
+    override fun setLukket(uuid: UUID, transaction: ITransaction?) {
+        val connection = transaction?.connection ?: database.connection
+        connection.use { connection ->
             connection.prepareStatement(
                 """
                 UPDATE avvent SET is_lukket = true WHERE uuid = ?
@@ -69,7 +74,9 @@ class AvventRepository(private val database: DatabaseInterface) : IAvventReposit
                 preparedStatement.setString(1, uuid.toString())
                 preparedStatement.executeUpdate()
             }
-            connection.commit()
+            if (transaction == null) {
+                connection.commit()
+            }
         }
     }
 }

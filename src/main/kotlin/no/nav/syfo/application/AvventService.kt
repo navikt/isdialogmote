@@ -6,13 +6,15 @@ import java.util.UUID
 
 class AvventService(
     private val avventRepository: IAvventRepository,
+    private val transactionManager: ITransactionManager,
 ) {
-    fun persist(avvent: Avvent) {
-        // TODO: wrap in transaction
-        avventRepository.getActiveAvvent(avvent.personident)?.let {
-            avventRepository.setLukket(it.uuid)
+    suspend fun persist(avvent: Avvent) {
+        transactionManager.run { transaction ->
+            avventRepository.getActiveAvvent(avvent.personident)?.let {
+                avventRepository.setLukket(it.uuid, transaction)
+            }
+            avventRepository.persist(avvent, transaction)
         }
-        avventRepository.persist(avvent)
     }
 
     fun getAvventForIdenter(personidenter: List<PersonIdent>): List<Avvent> {

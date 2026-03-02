@@ -15,6 +15,7 @@ import no.nav.syfo.api.authentication.installJwtAuthentication
 import no.nav.syfo.api.authentication.installMetrics
 import no.nav.syfo.api.authentication.installStatusPages
 import no.nav.syfo.api.endpoints.registerArbeidstakerBrevApi
+import no.nav.syfo.api.endpoints.registerAvventApi
 import no.nav.syfo.api.endpoints.registerDialogmoteActionsApiV2
 import no.nav.syfo.api.endpoints.registerDialogmoteApiV2
 import no.nav.syfo.api.endpoints.registerDialogmoteEnhetApiV2
@@ -22,6 +23,7 @@ import no.nav.syfo.api.endpoints.registerNarmestelederBrevApi
 import no.nav.syfo.api.endpoints.registerPodApi
 import no.nav.syfo.api.endpoints.registerPrometheusApi
 import no.nav.syfo.application.ArbeidstakerVarselService
+import no.nav.syfo.application.AvventService
 import no.nav.syfo.application.BehandlerVarselService
 import no.nav.syfo.application.DialogmoteService
 import no.nav.syfo.application.DialogmoteTilgangService
@@ -45,7 +47,6 @@ import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonCl
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.repository.AvventRepository
-import no.nav.syfo.infrastructure.database.repository.MoteRepository
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 
 fun Application.apiModule(
@@ -140,6 +141,7 @@ fun Application.apiModule(
 
     val avventService = AvventService(
         avventRepository = AvventRepository(database),
+        transactionManager = transactionManager,
     )
 
     routing {
