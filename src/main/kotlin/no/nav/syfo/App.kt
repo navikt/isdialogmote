@@ -146,7 +146,6 @@ fun main() {
         azureAdV2Client = azureAdV2Client,
         scopeClientId = environment.dokumentportenClientId,
     )
-    val transactionManager = TransactionManager(database = applicationDatabase)
 
     lateinit var behandlerVarselService: BehandlerVarselService
     lateinit var dialogmoterelasjonService: DialogmoterelasjonService
@@ -169,6 +168,7 @@ fun main() {
         },
         module = {
             databaseModule(environment = environment)
+            val transactionManager = TransactionManager(database = applicationDatabase)
             val moteRepository = MoteRepository(database = applicationDatabase)
             behandlerVarselService = BehandlerVarselService(
                 database = applicationDatabase,
