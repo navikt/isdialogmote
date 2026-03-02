@@ -83,6 +83,44 @@ class AvventRepositoryTest {
     }
 
     @Test
+    fun `getActiveAvventForPersonidenter returns active avvent for multiple personidenter`() {
+        val avvent1 = generateAvvent(personident = UserConstants.ARBEIDSTAKER_FNR)
+        val avvent2 = generateAvvent(personident = UserConstants.ARBEIDSTAKER_ANNEN_FNR)
+        avventRepository.persist(avvent1)
+        avventRepository.persist(avvent2)
+
+        val result = avventRepository.getActiveAvventForPersonidenter(
+            listOf(UserConstants.ARBEIDSTAKER_FNR, UserConstants.ARBEIDSTAKER_ANNEN_FNR)
+        )
+
+        assertEquals(2, result.size)
+        assertTrue(result.any { it.uuid == avvent1.uuid })
+        assertTrue(result.any { it.uuid == avvent2.uuid })
+    }
+
+    @Test
+    fun `getActiveAvventForPersonidenter returns empty list when no active avvent exists`() {
+        val result = avventRepository.getActiveAvventForPersonidenter(listOf(UserConstants.ARBEIDSTAKER_FNR))
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `getActiveAvventForPersonidenter excludes lukket avvent`() {
+        val avvent = generateAvvent(personident = UserConstants.ARBEIDSTAKER_FNR)
+        avventRepository.persist(avvent)
+        avventRepository.setLukket(avvent.uuid)
+
+        val result = avventRepository.getActiveAvventForPersonidenter(listOf(UserConstants.ARBEIDSTAKER_FNR))
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `getActiveAvventForPersonidenter returns empty list for empty input`() {
+        val result = avventRepository.getActiveAvventForPersonidenter(emptyList())
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
     fun `setLukket marks avvent as lukket`() {
         val avvent = generateAvvent()
         avventRepository.persist(avvent)

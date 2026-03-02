@@ -10,7 +10,7 @@ class AvventService(
 ) {
     suspend fun persist(avvent: Avvent) {
         transactionManager.run { transaction ->
-            avventRepository.getActiveAvvent(avvent.personident)?.let {
+            avventRepository.getActiveAvvent(avvent.personident, transaction)?.let {
                 avventRepository.setLukket(it.uuid, transaction)
             }
             avventRepository.persist(avvent, transaction)
@@ -18,9 +18,7 @@ class AvventService(
     }
 
     fun getAvventForIdenter(personidenter: List<PersonIdent>): List<Avvent> {
-        return personidenter.mapNotNull { personident ->
-            avventRepository.getActiveAvvent(personident)
-        }
+        return avventRepository.getActiveAvventForPersonidenter(personidenter)
     }
 
     fun getAvvent(uuid: UUID): Avvent? = avventRepository.getAvvent(uuid)

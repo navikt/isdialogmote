@@ -54,17 +54,40 @@ class AvventRepository(
         }
     }
 
-    override fun getActiveAvvent(personident: PersonIdent): Avvent? {
+    override fun getActiveAvvent(personident: PersonIdent, transaction: ITransaction?): Avvent? {
+        val connection = transaction?.connection ?: database.connection
+        val result = connection
+            .prepareStatement(
+                """
+                SELECT * FROM avvent WHERE personident = ? AND is_lukket = false
+                """.trimIndent(),
+            ).use { preparedStatement ->
+                preparedStatement.setString(1, personident.value)
+                preparedStatement.executeQuery().use { resultSet ->
+                    return@use if (resultSet.next()) resultSet.toAvvent() else null
+                }
+            }
+        if (transaction == null) {
+            connection.close()
+        }
+        return result
+    }
+
+    override fun getActiveAvventForPersonidenter(personidenter: List<PersonIdent>): List<Avvent> {
+        if (personidenter.isEmpty()) return emptyList()
         database.connection.use { connection ->
+            val personidentArray = connection.createArrayOf("varchar", personidenter.map { it.value }.toTypedArray())
             connection
                 .prepareStatement(
                     """
-                    SELECT * FROM avvent WHERE personident = ? AND is_lukket = false
+                    SELECT * FROM avvent WHERE personident = ANY(?) AND is_lukket = false
                     """.trimIndent(),
                 ).use { preparedStatement ->
-                    preparedStatement.setString(1, personident.value)
+                    preparedStatement.setArray(1, personidentArray)
                     preparedStatement.executeQuery().use { resultSet ->
-                        return if (resultSet.next()) resultSet.toAvvent() else null
+                        val result = mutableListOf<Avvent>()
+                        while (resultSet.next()) result.add(resultSet.toAvvent())
+                        return result
                     }
                 }
         }
