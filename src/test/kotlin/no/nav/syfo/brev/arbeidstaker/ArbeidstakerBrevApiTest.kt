@@ -57,17 +57,9 @@ class ArbeidstakerBrevApiTest {
 
     private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>(relaxed = true)
 
-    private val arbeidstakerVarselService = ArbeidstakerVarselService(
-        esyfovarselProducer = esyfovarselProducer,
-    )
     private val dialogmotestatusService = DialogmotestatusService(
         oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
         moteStatusEndretRepository = MoteStatusEndretRepository(database),
-    )
-    private val dialogmotedeltakerService = DialogmotedeltakerService(
-        arbeidstakerVarselService = arbeidstakerVarselService,
-        database = database,
-        moteRepository = externalMockEnvironment.moteRepository,
     )
     private val dialogmoterelasjonService = DialogmoterelasjonService(
         moteRepository = externalMockEnvironment.moteRepository,

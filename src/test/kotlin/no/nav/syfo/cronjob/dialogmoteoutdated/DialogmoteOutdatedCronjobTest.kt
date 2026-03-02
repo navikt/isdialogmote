@@ -69,21 +69,10 @@ class DialogmoteOutdatedCronjobTest {
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
         moteStatusEndretRepository = MoteStatusEndretRepository(database),
     )
-    private val arbeidstakerVarselService = ArbeidstakerVarselService(
-        esyfovarselProducer = esyfovarselProducerMock,
-    )
-    private val dialogmotedeltakerService = DialogmotedeltakerService(
-        arbeidstakerVarselService = arbeidstakerVarselService,
-        database = database,
-        moteRepository = externalMockEnvironment.moteRepository
-    )
-    private val dialogmoterelasjonService = DialogmoterelasjonService(
-        moteRepository = externalMockEnvironment.moteRepository,
-    )
     private val dialogmoteOutdatedCronjob = DialogmoteOutdatedCronjob(
         dialogmotestatusService = dialogmotestatusService,
-        dialogmoterelasjonService = dialogmoterelasjonService,
         database = database,
+        moteRepository = externalMockEnvironment.moteRepository,
         outdatedDialogmoterCutoffMonths = 1,
     )
     private val validToken = generateJWTNavIdent(

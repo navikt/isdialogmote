@@ -225,7 +225,6 @@ fun main() {
                 environment = environment,
                 cache = cache,
                 dialogmotestatusService = dialogmotestatusService,
-                dialogmoterelasjonService = dialogmoterelasjonService,
                 arbeidstakerVarselService = arbeidstakerVarselService,
                 moteStatusEndretRepository = moteStatusEndretRepository,
                 pdfRepository = pdfRepository,

@@ -34,6 +34,7 @@ import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandlerVarsel
 import no.nav.syfo.infrastructure.database.model.toReferat
 import no.nav.syfo.infrastructure.database.toList
+import no.nav.syfo.infrastructure.cronjob.statusendring.toInstantOslo
 import no.nav.syfo.infrastructure.database.toPMotedeltakerAnnen
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.toPMotedeltakerArbeidsgiverVarsel
@@ -45,6 +46,8 @@ import no.nav.syfo.infrastructure.database.toPTidSted
 import no.nav.syfo.util.toOffsetDateTimeUTC
 import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.Timestamp
+import java.time.LocalDateTime
 import java.util.*
 
 class MoteRepository(private val database: DatabaseInterface) : IMoteRepository {
@@ -217,6 +220,17 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                         motedeltakerArbeidsgiverId = arbeidsgiver.id,
                     )
                 )
+            }
+        }
+
+    override fun findOutdatedMoter(cutoff: LocalDateTime): List<Dialogmote> =
+        database.connection.use { connection ->
+            val dialogmoter = connection.prepareStatement(FIND_OUTDATED_MOTER).use {
+                it.setTimestamp(1, Timestamp.from(cutoff.toInstantOslo()))
+                it.executeQuery().toList { toPDialogmote() }
+            }
+            dialogmoter.map { dialogmote ->
+                connection.extendDialogmoteRelations(dialogmote)
             }
         }
 
@@ -497,6 +511,18 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                 WHERE MOTE_REFERAT.journalpost_ag_id IS NULL AND MOTE_REFERAT.ferdigstilt = true
                 ORDER BY MOTE_REFERAT.created_at ASC
                 LIMIT 20
+            """
+
+        private const val FIND_OUTDATED_MOTER =
+            """
+                SELECT m.* from MOTE m 
+                    INNER JOIN MOTE_STATUS_ENDRET s1 ON (m.id = s1.mote_id) 
+                    INNER JOIN TID_STED t1 ON (m.id = t1.mote_id)
+                WHERE s1.created_at = (SELECT max(s2.created_at) FROM MOTE_STATUS_ENDRET s2 WHERE s2.mote_id = m.id)
+                    AND t1.created_at = (SELECT max(t2.created_at) FROM TID_STED t2 WHERE t2.mote_id = m.id)
+                    AND s1.status in ('INNKALT','NYTT_TID_STED')
+                    AND t1.tid < ?
+                LIMIT 200
             """
     }
 }
