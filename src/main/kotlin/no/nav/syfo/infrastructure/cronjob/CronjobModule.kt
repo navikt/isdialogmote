@@ -5,7 +5,6 @@ import no.nav.syfo.ApplicationState
 import no.nav.syfo.Environment
 import no.nav.syfo.application.ArbeidstakerVarselService
 import no.nav.syfo.application.DialogmotedeltakerVarselJournalpostService
-import no.nav.syfo.application.DialogmoterelasjonService
 import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.application.IMoteRepository
 import no.nav.syfo.application.IPdfRepository
@@ -41,7 +40,6 @@ fun Application.cronjobModule(
     environment: Environment,
     cache: ValkeyStore,
     dialogmotestatusService: DialogmotestatusService,
-    dialogmoterelasjonService: DialogmoterelasjonService,
     arbeidstakerVarselService: ArbeidstakerVarselService,
     moteStatusEndretRepository: MoteStatusEndretRepository,
     pdfRepository: IPdfRepository,
@@ -135,9 +133,9 @@ fun Application.cronjobModule(
     )
     val dialogmoteOutdatedCronjob = DialogmoteOutdatedCronjob(
         dialogmotestatusService = dialogmotestatusService,
-        dialogmoterelasjonService = dialogmoterelasjonService,
         outdatedDialogmoterCutoffMonths = environment.outdatedDialogmoteCutoffMonths,
         database = database,
+        moteRepository = moteRepository,
     )
 
     launchBackgroundTask(

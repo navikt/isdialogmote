@@ -26,7 +26,6 @@ import no.nav.syfo.application.BehandlerVarselService
 import no.nav.syfo.application.DialogmoteService
 import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.application.DialogmotedeltakerService
-import no.nav.syfo.application.DialogmoterelasjonService
 import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.application.IMoteRepository
 import no.nav.syfo.application.IPdfRepository
@@ -56,7 +55,6 @@ fun Application.apiModule(
     wellKnownVeilederV2: WellKnown,
     altinnSoapClient: ICorrespondenceAgencyExternalBasic,
     dialogmotestatusService: DialogmotestatusService,
-    dialogmoterelasjonService: DialogmoterelasjonService,
     dialogmotedeltakerService: DialogmotedeltakerService,
     arbeidstakerVarselService: ArbeidstakerVarselService,
     pdlClient: PdlClient,
@@ -120,7 +118,6 @@ fun Application.apiModule(
         moteRepository = moteRepository,
         dialogmotedeltakerService = dialogmotedeltakerService,
         dialogmotestatusService = dialogmotestatusService,
-        dialogmoterelasjonService = dialogmoterelasjonService,
         behandlendeEnhetClient = behandlendeEnhetClient,
         narmesteLederClient = narmesteLederClient,
         pdfGenClient = pdfGenClient,

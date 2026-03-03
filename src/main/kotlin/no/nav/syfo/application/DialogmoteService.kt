@@ -47,7 +47,6 @@ class DialogmoteService(
     private val moteRepository: IMoteRepository,
     private val dialogmotedeltakerService: DialogmotedeltakerService,
     private val dialogmotestatusService: DialogmotestatusService,
-    private val dialogmoterelasjonService: DialogmoterelasjonService,
     private val behandlendeEnhetClient: BehandlendeEnhetClient,
     private val narmesteLederClient: NarmesteLederClient,
     private val pdfGenClient: PdfGenClient,

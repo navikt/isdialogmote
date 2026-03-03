@@ -6,39 +6,52 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.ktor.utils.io.*
-import io.mockk.*
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.justRun
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
-import no.nav.syfo.api.endpoints.*
-import no.nav.syfo.application.ArbeidstakerVarselService
-import no.nav.syfo.application.DialogmotedeltakerService
-import no.nav.syfo.application.DialogmoterelasjonService
+import no.nav.syfo.api.endpoints.arbeidstakerBrevApiLesPath
+import no.nav.syfo.api.endpoints.arbeidstakerBrevApiPath
+import no.nav.syfo.api.endpoints.arbeidstakerBrevApiPdfPath
+import no.nav.syfo.api.endpoints.arbeidstakerBrevApiResponsPath
+import no.nav.syfo.api.endpoints.dialogmoteApiMoteAvlysPath
+import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
+import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.domain.ArbeidstakerResponsDTO
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
-import no.nav.syfo.infrastructure.database.getDialogmote
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerHendelse
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
-import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.ExternalMockEnvironment
+import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FJERDE_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_TREDJE_FNR
+import no.nav.syfo.testhelper.addDummyDeltakere
+import no.nav.syfo.testhelper.dropData
+import no.nav.syfo.testhelper.generateJWTNavIdent
+import no.nav.syfo.testhelper.generateJWTTokenx
 import no.nav.syfo.testhelper.generator.generateAvlysDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
 import no.nav.syfo.testhelper.generator.generateNewReferatDTO
+import no.nav.syfo.testhelper.getDialogmoter
 import no.nav.syfo.testhelper.mock.pdfInnkalling
 import no.nav.syfo.testhelper.mock.pdfReferat
-import org.junit.jupiter.api.Assertions.assertArrayEquals
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import no.nav.syfo.testhelper.postAndGetDialogmote
+import no.nav.syfo.testhelper.postMote
+import no.nav.syfo.testhelper.setupApiAndClient
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -52,25 +65,15 @@ class ArbeidstakerBrevApiTest {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
     private val database = externalMockEnvironment.database
 
+    private val moteRepository = externalMockEnvironment.moteRepository
     private val esyfovarselProducer = mockk<EsyfovarselProducer>(relaxed = true)
     private val esyfovarselHendelse = mockk<ArbeidstakerHendelse>(relaxed = true)
 
     private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>(relaxed = true)
 
-    private val arbeidstakerVarselService = ArbeidstakerVarselService(
-        esyfovarselProducer = esyfovarselProducer,
-    )
     private val dialogmotestatusService = DialogmotestatusService(
         oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
         moteStatusEndretRepository = MoteStatusEndretRepository(database),
-    )
-    private val dialogmotedeltakerService = DialogmotedeltakerService(
-        arbeidstakerVarselService = arbeidstakerVarselService,
-        database = database,
-        moteRepository = externalMockEnvironment.moteRepository,
-    )
-    private val dialogmoterelasjonService = DialogmoterelasjonService(
-        moteRepository = externalMockEnvironment.moteRepository,
     )
 
     private val validTokenSelvbetjening = generateJWTTokenx(
@@ -431,8 +434,7 @@ class ArbeidstakerBrevApiTest {
                         }
                     }
                     if (dialogmoteDTO == newDialogmoteLukket) {
-                        val pMote = database.getDialogmote(UUID.fromString(createdDialogmoteUUID)).first()
-                        val mote = dialogmoterelasjonService.extendDialogmoteRelations(pMote)
+                        val mote = moteRepository.getMote(UUID.fromString(createdDialogmoteUUID))
                         runBlocking {
                             database.connection.use { connection ->
                                 dialogmotestatusService.updateMoteStatus(
