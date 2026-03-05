@@ -9,7 +9,6 @@ import no.nav.syfo.infrastructure.cronjob.COUNT_CRONJOB_OUTDATED_DIALOGMOTE_FAIL
 import no.nav.syfo.infrastructure.cronjob.COUNT_CRONJOB_OUTDATED_DIALOGMOTE_UPDATE
 import no.nav.syfo.infrastructure.cronjob.DialogmoteCronjob
 import no.nav.syfo.infrastructure.cronjob.DialogmoteCronjobResult
-import no.nav.syfo.infrastructure.cronjob.dialogmoteOutdated.DialogmoteOutdatedCronjob.Companion.uuids
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -73,13 +72,13 @@ class DialogmoteOutdatedCronjob(
     }
 
     /**
-     * Henter moter som skal lukkes adhoc fra listen [uuids]
+     * Henter moter som skal lukkes adhoc fra listen [moteUuids]
      * Lukker bare de som har status INNKALT eller NYTT_TID_STED, for å unngå å lukke moter som allerede er lukket eller avlyst
      *
      * @return List<Dialogmote> med moter som skal lukkes
      */
     private fun getAdhocLukkinger(): List<Dialogmote> =
-        uuids.mapNotNull {
+        moteUuids.mapNotNull {
             try {
                 val mote = moteRepository.getMote(UUID.fromString(it))
                 if (mote.status == Dialogmote.Status.INNKALT || mote.status == Dialogmote.Status.NYTT_TID_STED) {
@@ -97,6 +96,6 @@ class DialogmoteOutdatedCronjob(
     companion object {
         private val log = LoggerFactory.getLogger(DialogmoteOutdatedCronjob::class.java)
 
-        private val uuids = listOf<String>()
+        private val moteUuids = listOf<String>("866a3609-3133-450e-86fd-cbc3ca611131")
     }
 }
