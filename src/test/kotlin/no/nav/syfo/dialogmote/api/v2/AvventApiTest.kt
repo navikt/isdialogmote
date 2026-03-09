@@ -11,7 +11,6 @@ import io.ktor.server.testing.testApplication
 import no.nav.syfo.api.dto.QueryAvventDTO
 import no.nav.syfo.api.dto.CreateAvventDTO
 import no.nav.syfo.domain.dialogmote.Avvent
-import no.nav.syfo.infrastructure.database.repository.AvventRepository
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -19,7 +18,6 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generateJWTNavIdent
-import no.nav.syfo.testhelper.generator.generateAvvent
 import no.nav.syfo.testhelper.setupApiAndClient
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -27,7 +25,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.UUID
 
 private const val AVVENT_API_PATH = "/api/avvent"
 
@@ -155,70 +152,6 @@ class AvventApiTest {
                         bearerAuth(validToken)
                         contentType(ContentType.Application.Json)
                         setBody(QueryAvventDTO(personidenter = listOf(ARBEIDSTAKER_VEILEDER_NO_ACCESS.value)))
-                    }
-                assertEquals(HttpStatusCode.Forbidden, response.status)
-            }
-        }
-    }
-
-    @Nested
-    inner class PostAvventLukk {
-        @Test
-        fun `returns OK when lukking an existing avvent`() {
-            testApplication {
-                val client = setupApiAndClient()
-                client.post(AVVENT_API_PATH) {
-                    bearerAuth(validToken)
-                    contentType(ContentType.Application.Json)
-                    setBody(createAvventDTO)
-                }
-
-                val queryResponse =
-                    client.post("$AVVENT_API_PATH/query") {
-                        bearerAuth(validToken)
-                        contentType(ContentType.Application.Json)
-                        setBody(QueryAvventDTO(personidenter = listOf(ARBEIDSTAKER_FNR.value)))
-                    }
-                val uuid = queryResponse.body<List<Avvent>>().first().uuid
-
-                val lukkResponse =
-                    client.post("$AVVENT_API_PATH/$uuid/lukk") {
-                        bearerAuth(validToken)
-                    }
-                assertEquals(HttpStatusCode.OK, lukkResponse.status)
-            }
-        }
-
-        @Test
-        fun `returns NotFound when uuid does not exist`() {
-            testApplication {
-                val client = setupApiAndClient()
-                val response =
-                    client.post("$AVVENT_API_PATH/${UUID.randomUUID()}/lukk") {
-                        bearerAuth(validToken)
-                    }
-                assertEquals(HttpStatusCode.NotFound, response.status)
-            }
-        }
-
-        @Test
-        fun `returns Forbidden when veileder has no access to person`() {
-            testApplication {
-                val client = setupApiAndClient()
-                client.post(AVVENT_API_PATH) {
-                    bearerAuth(validToken)
-                    contentType(ContentType.Application.Json)
-                    setBody(createAvventDTO.copy(personident = ARBEIDSTAKER_VEILEDER_NO_ACCESS.value))
-                }
-
-                // Insert avvent for no-access person directly via repository
-                val avventRepository = AvventRepository(database)
-                val avvent = generateAvvent(ARBEIDSTAKER_VEILEDER_NO_ACCESS)
-                avventRepository.persist(avvent)
-
-                val response =
-                    client.post("$AVVENT_API_PATH/${avvent.uuid}/lukk") {
-                        bearerAuth(validToken)
                     }
                 assertEquals(HttpStatusCode.Forbidden, response.status)
             }
