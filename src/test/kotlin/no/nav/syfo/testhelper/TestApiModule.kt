@@ -31,9 +31,6 @@ fun Application.testApiModule(
         arbeidstakerVarselService = arbeidstakerVarselService,
         moteRepository = externalMockEnvironment.moteRepository,
     )
-    val dialogmoterelasjonService = DialogmoterelasjonService(
-        moteRepository = externalMockEnvironment.moteRepository,
-    )
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
         azureAdV2Client = externalMockEnvironment.azureAdV2Client,
         tilgangskontrollClientId = externalMockEnvironment.environment.istilgangskontrollClientId,
@@ -82,7 +79,6 @@ fun Application.testApiModule(
         wellKnownVeilederV2 = externalMockEnvironment.wellKnownVeilederV2,
         altinnSoapClient = altinnMock,
         dialogmotestatusService = dialogmotestatusService,
-        dialogmoterelasjonService = dialogmoterelasjonService,
         dialogmotedeltakerService = dialogmotedeltakerService,
         arbeidstakerVarselService = arbeidstakerVarselService,
         pdlClient = externalMockEnvironment.pdlClient,

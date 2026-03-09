@@ -24,7 +24,6 @@ import no.nav.syfo.application.DialogmeldingService
 import no.nav.syfo.infrastructure.kafka.dialogmelding.DialogmeldingConsumer
 import no.nav.syfo.infrastructure.kafka.dialogmelding.kafkaDialogmeldingConsumerConfig
 import no.nav.syfo.application.DialogmotedeltakerService
-import no.nav.syfo.application.DialogmoterelasjonService
 import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.application.IdenthendelseService
@@ -148,7 +147,6 @@ fun main() {
     )
 
     lateinit var behandlerVarselService: BehandlerVarselService
-    lateinit var dialogmoterelasjonService: DialogmoterelasjonService
     lateinit var dialogmotestatusService: DialogmotestatusService
 
     val applicationEngineEnvironment = applicationEnvironment {
@@ -182,9 +180,6 @@ fun main() {
                 arbeidstakerVarselService = arbeidstakerVarselService,
                 moteRepository = moteRepository,
             )
-            dialogmoterelasjonService = DialogmoterelasjonService(
-                moteRepository = moteRepository,
-            )
             val pdfRepository = PdfRepository(database = applicationDatabase)
             val moteStatusEndretRepository = MoteStatusEndretRepository(
                 database = applicationDatabase,
@@ -204,7 +199,6 @@ fun main() {
                 wellKnownVeilederV2 = getWellKnown(environment.azureAppWellKnownUrl),
                 altinnSoapClient = altinnSoapClient,
                 dialogmotestatusService = dialogmotestatusService,
-                dialogmoterelasjonService = dialogmoterelasjonService,
                 dialogmotedeltakerService = dialogmotedeltakerService,
                 arbeidstakerVarselService = arbeidstakerVarselService,
                 pdlClient = pdlClient,
@@ -225,7 +219,6 @@ fun main() {
                 environment = environment,
                 cache = cache,
                 dialogmotestatusService = dialogmotestatusService,
-                dialogmoterelasjonService = dialogmoterelasjonService,
                 arbeidstakerVarselService = arbeidstakerVarselService,
                 moteStatusEndretRepository = moteStatusEndretRepository,
                 pdfRepository = pdfRepository,

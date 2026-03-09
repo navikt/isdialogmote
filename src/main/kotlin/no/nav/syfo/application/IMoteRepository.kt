@@ -9,6 +9,7 @@ import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
 import no.nav.syfo.domain.dialogmote.Referat
+import java.time.LocalDateTime
 import java.util.UUID
 
 interface IMoteRepository {
@@ -25,4 +26,5 @@ interface IMoteRepository {
     fun getReferat(referatUUID: UUID): Referat?
     fun getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdent, Referat>>
     fun getFerdigstilteReferatWithoutJournalpostArbeidsgiverList(): List<Triple<Virksomhetsnummer, PersonIdent, Referat>>
+    fun findOutdatedMoter(cutoff: LocalDateTime): List<Dialogmote>
 }

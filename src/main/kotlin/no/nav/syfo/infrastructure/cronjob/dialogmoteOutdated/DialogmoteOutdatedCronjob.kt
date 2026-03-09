@@ -1,25 +1,24 @@
 package no.nav.syfo.infrastructure.cronjob.dialogmoteOutdated
 
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.domain.dialogmote.Dialogmote
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.application.DialogmoterelasjonService
 import no.nav.syfo.application.DialogmotestatusService
-import no.nav.syfo.infrastructure.database.findOutdatedMoter
-import no.nav.syfo.infrastructure.database.getDialogmote
+import no.nav.syfo.application.IMoteRepository
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.latest
 import no.nav.syfo.infrastructure.cronjob.COUNT_CRONJOB_OUTDATED_DIALOGMOTE_FAIL
 import no.nav.syfo.infrastructure.cronjob.COUNT_CRONJOB_OUTDATED_DIALOGMOTE_UPDATE
 import no.nav.syfo.infrastructure.cronjob.DialogmoteCronjob
 import no.nav.syfo.infrastructure.cronjob.DialogmoteCronjobResult
+import no.nav.syfo.infrastructure.cronjob.dialogmoteOutdated.DialogmoteOutdatedCronjob.Companion.uuids
+import no.nav.syfo.infrastructure.database.DatabaseInterface
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
 class DialogmoteOutdatedCronjob(
     val dialogmotestatusService: DialogmotestatusService,
-    val dialogmoterelasjonService: DialogmoterelasjonService,
     val database: DatabaseInterface,
+    val moteRepository: IMoteRepository,
     val outdatedDialogmoterCutoffMonths: Int,
 ) : DialogmoteCronjob {
 
@@ -47,15 +46,11 @@ class DialogmoteOutdatedCronjob(
 
         log.info("DialogmoteOutdatedCronjob started with cutoff of $outdatedDialogmoterCutoffMonths months, $cutoff")
 
-        val moteListe = database.findOutdatedMoter(cutoff).toMutableList()
-        // moter som skal lukkes adhoc (basert på hardkodet liste med uuid'er)
-        uuids.forEach { uuid -> moteListe.addAll(database.getDialogmote(UUID.fromString(uuid))) }
-        moteListe.retainAll { pDialogmote ->
-            pDialogmote.status == Dialogmote.Status.INNKALT.name || pDialogmote.status == Dialogmote.Status.NYTT_TID_STED.name
-        }
-        val dialogmoteList = moteListe.map { dialogmoterelasjonService.extendDialogmoteRelations(it) }
-        log.info("Cronjob for outdated moter found count: ${dialogmoteList.size}")
-        for (mote in dialogmoteList) {
+        val outdatedMoter = moteRepository.findOutdatedMoter(cutoff)
+        val moterSomSkalLukkes = outdatedMoter + getAdhocLukkinger()
+
+        log.info("Cronjob for outdated moter found count: ${moterSomSkalLukkes.size}")
+        for (mote in moterSomSkalLukkes) {
             try {
                 val motetidspunkt = mote.tidStedList.latest()?.tid
                 log.info("Found outdated mote: ${mote.uuid} with status ${mote.status} and moteTidspunkt: $motetidspunkt")
@@ -77,8 +72,31 @@ class DialogmoteOutdatedCronjob(
         return outdatedResult
     }
 
+    /**
+     * Henter moter som skal lukkes adhoc fra listen [uuids]
+     * Lukker bare de som har status INNKALT eller NYTT_TID_STED, for å unngå å lukke moter som allerede er lukket eller avlyst
+     *
+     * @return List<Dialogmote> med moter som skal lukkes
+     */
+    private fun getAdhocLukkinger(): List<Dialogmote> =
+        uuids.mapNotNull {
+            try {
+                val mote = moteRepository.getMote(UUID.fromString(it))
+                if (mote.status == Dialogmote.Status.INNKALT || mote.status == Dialogmote.Status.NYTT_TID_STED) {
+                    mote
+                } else {
+                    log.error("Mote with uuid $it has wrong status, skipping close")
+                    null
+                }
+            } catch (e: Exception) {
+                log.error("Failed to get mote with uuid $it, skipping", e)
+                null
+            }
+        }
+
     companion object {
-        private val uuids = listOf<String>("4348a3c5-6795-4402-971c-b1599d114096")
         private val log = LoggerFactory.getLogger(DialogmoteOutdatedCronjob::class.java)
+
+        private val uuids = listOf<String>()
     }
 }
