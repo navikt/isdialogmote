@@ -17,6 +17,16 @@ const val CALL_TILGANGSKONTROLL_ENHET_SUCCESS = "${CALL_TILGANGSKONTROLL_ENHET_B
 const val CALL_TILGANGSKONTROLL_ENHET_FAIL = "${CALL_TILGANGSKONTROLL_ENHET_BASE}_fail_count"
 const val CALL_TILGANGSKONTROLL_ENHET_FORBIDDEN = "${CALL_TILGANGSKONTROLL_ENHET_BASE}_forbidden_count"
 
+const val CALL_TILGANGSKONTROLL_SYFO_TILGANGER_BASE = "${METRICS_NS}_call_tilgangskontroll_syfo_tilgnanger"
+const val CALL_TILGANGSKONTROLL_FULL_TILGANG_TRUE = "${CALL_TILGANGSKONTROLL_SYFO_TILGANGER_BASE}_" +
+        "full_tilgang_true_count"
+const val CALL_TILGANGSKONTROLL_FULL_TILGANG_FALSE = "${CALL_TILGANGSKONTROLL_SYFO_TILGANGER_BASE}_" +
+        "full_tilgang_false_count"
+const val CALL_TILGANGSKONTROLL_SYFO_TILGANGER_FAIL = "${CALL_TILGANGSKONTROLL_SYFO_TILGANGER_BASE}_fail_count"
+const val CALL_TILGANGSKONTROLL_SYFO_TILGANGER_FORBIDDEN = "${CALL_TILGANGSKONTROLL_SYFO_TILGANGER_BASE}_" +
+        "forbidden_count"
+const val CALL_TILGANGSKONTROLL_SYFO_TILGANGER_TIMER = "${CALL_TILGANGSKONTROLL_SYFO_TILGANGER_BASE}_timer"
+
 const val CALL_PDL_SUCCESS = "${METRICS_NS}_call_pdl_success_count"
 const val CALL_PDL_FAIL = "${METRICS_NS}_call_pdl_fail_count"
 
@@ -45,6 +55,20 @@ val COUNT_CALL_TILGANGSKONTROLL_ENHET_FAIL: Counter = Counter.builder(CALL_TILGA
 val COUNT_CALL_TILGANGSKONTROLL_ENHET_FORBIDDEN: Counter = Counter.builder(CALL_TILGANGSKONTROLL_ENHET_FORBIDDEN)
     .description("Counts the number of forbidden calls to istilgangskontroll - enhet")
     .register(METRICS_REGISTRY)
+val COUNT_CALL_TILGANGSKONTROLL_FULL_TILGANG_TRUE: Counter = Counter.builder(CALL_TILGANGSKONTROLL_FULL_TILGANG_TRUE)
+    .description("Counts the number of calls to istilgangskontroll - tilganger returning fullTilgang true")
+    .register(METRICS_REGISTRY)
+val COUNT_CALL_TILGANGSKONTROLL_FULL_TILGANG_FALSE: Counter = Counter.builder(CALL_TILGANGSKONTROLL_FULL_TILGANG_FALSE)
+    .description("Counts the number of calls to istilgangskontroll - tilganger returning fullTilgang false")
+    .register(METRICS_REGISTRY)
+val COUNT_CALL_TILGANGSKONTROLL_SYFO_TILGANGER_FAIL: Counter = Counter.builder(
+    CALL_TILGANGSKONTROLL_SYFO_TILGANGER_FAIL)
+    .description("Counts the number of failed write access calls to istilgangskontroll")
+    .register(METRICS_REGISTRY)
+val COUNT_CALL_TILGANGSKONTROLL_SYFO_TILGANGER_FORBIDDEN: Counter = Counter.builder(
+    CALL_TILGANGSKONTROLL_SYFO_TILGANGER_FORBIDDEN)
+    .description("Counts the number of forbidden write access calls to istilgangskontroll")
+    .register(METRICS_REGISTRY)
 val COUNT_CALL_PDL_SUCCESS: Counter = Counter.builder(CALL_PDL_SUCCESS)
     .description("Counts the number of successful calls to pdl")
     .register(METRICS_REGISTRY)
@@ -71,6 +95,10 @@ val HISTOGRAM_CALL_TILGANGSKONTROLL_ENHET_TIMER: Timer = Timer
 val HISTOGRAM_CALL_TILGANGSKONTROLL_PERSONS_TIMER: Timer = Timer
     .builder(CALL_TILGANGSKONTROLL_PERSONS_TIMER)
     .description("Timer for calls to tilgangskontroll persons")
+    .register(METRICS_REGISTRY)
+val HISTOGRAM_CALL_TILGANGSKONTROLL_SYFO_TILGANGER_TIMER: Timer = Timer
+    .builder(CALL_TILGANGSKONTROLL_SYFO_TILGANGER_TIMER)
+    .description("Timer for write access calls to tilgangskontroll")
     .register(METRICS_REGISTRY)
 val HISTOGRAM_CALL_DIALOGMOTER_ENHET_TIMER: Timer = Timer
     .builder(CALL_DIALOGMOTER_ENHET_TIMER)
