@@ -29,3 +29,28 @@ suspend fun RoutingContext.validateVeilederAccess(
         )
     }
 }
+
+suspend fun RoutingContext.validateVeilederFullTilgangAndPersonAccess(
+    dialogmoteTilgangService: DialogmoteTilgangService,
+    personIdentToAccess: PersonIdent,
+    action: String,
+    requestBlock: suspend () -> Unit,
+) {
+    val callId = getCallId()
+
+    val token = getBearerHeader()
+        ?: throw IllegalArgumentException("No Authorization header supplied")
+
+    val hasVeilederAccess = dialogmoteTilgangService.hasFullTilgangAndPersonAccess(
+        callId = callId,
+        personIdentList = listOf(personIdentToAccess),
+        token = token,
+    )
+    if (hasVeilederAccess) {
+        requestBlock()
+    } else {
+        throw ForbiddenAccessVeilederException(
+            action = action,
+        )
+    }
+}

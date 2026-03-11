@@ -13,7 +13,7 @@ import no.nav.syfo.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.api.callIdArgument
 import no.nav.syfo.api.getBearerHeader
 import no.nav.syfo.api.getCallId
-import no.nav.syfo.api.validateVeilederAccess
+import no.nav.syfo.api.validateVeilederFullTilgangAndPersonAccess
 import no.nav.syfo.application.DialogmoteService
 import no.nav.syfo.application.DialogmoteTilgangService
 import org.slf4j.Logger
@@ -47,7 +47,7 @@ fun Route.registerDialogmoteActionsApiV2(
 
             val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-            validateVeilederAccess(
+            validateVeilederFullTilgangAndPersonAccess(
                 dialogmoteTilgangService = dialogmoteTilgangService,
                 personIdentToAccess = dialogmote.arbeidstaker.personIdent,
                 action = "Avlys Dialogmote for moteUUID"
@@ -71,7 +71,7 @@ fun Route.registerDialogmoteActionsApiV2(
 
             val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-            validateVeilederAccess(
+            validateVeilederFullTilgangAndPersonAccess(
                 dialogmoteTilgangService = dialogmoteTilgangService,
                 personIdentToAccess = dialogmote.arbeidstaker.personIdent,
                 action = "Mellomlagre Dialogmote for moteUUID"
@@ -96,7 +96,7 @@ fun Route.registerDialogmoteActionsApiV2(
 
             val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-            validateVeilederAccess(
+            validateVeilederFullTilgangAndPersonAccess(
                 dialogmoteTilgangService = dialogmoteTilgangService,
                 personIdentToAccess = dialogmote.arbeidstaker.personIdent,
                 action = "Ferdigstill Dialogmote for moteUUID"
@@ -123,7 +123,7 @@ fun Route.registerDialogmoteActionsApiV2(
 
             val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-            validateVeilederAccess(
+            validateVeilederFullTilgangAndPersonAccess(
                 dialogmoteTilgangService = dialogmoteTilgangService,
                 personIdentToAccess = dialogmote.arbeidstaker.personIdent,
                 action = "Endre Ferdigstilt Dialogmote for moteUUID"
@@ -151,7 +151,7 @@ fun Route.registerDialogmoteActionsApiV2(
 
             val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-            validateVeilederAccess(
+            validateVeilederFullTilgangAndPersonAccess(
                 dialogmoteTilgangService = dialogmoteTilgangService,
                 personIdentToAccess = dialogmote.arbeidstaker.personIdent,
                 action = "Create NewDialogmoteTidSted for moteUUID"
@@ -166,6 +166,7 @@ fun Route.registerDialogmoteActionsApiV2(
             }
         }
 
+        // TODO
         post(dialogmoteActionsApiOvertaPath) {
             val callId = getCallId()
             try {
@@ -197,6 +198,7 @@ fun Route.registerDialogmoteActionsApiV2(
             }
         }
 
+        // TODO
         patch(dialogmoteTildelPath) {
             val callId = getCallId()
             try {
