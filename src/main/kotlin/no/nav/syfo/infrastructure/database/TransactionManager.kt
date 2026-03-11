@@ -11,7 +11,6 @@ class TransactionManager(private val database: DatabaseInterface) : ITransaction
         database.connection.use { connection ->
             val result = block(DatabaseTransaction(connection))
             connection.commit()
-            connection.close()
             result
         }
 }
