@@ -58,13 +58,8 @@ class AvventRepository(
 
     private fun Connection.insertAvvent(avvent: Avvent): Avvent =
         this
-            .prepareStatement(
-                """
-                INSERT INTO avvent (uuid, created_at, frist, created_by, personident, beskrivelse, is_lukket)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                RETURNING *
-                """.trimIndent(),
-            ).use { preparedStatement ->
+            .prepareStatement(INSERT_AVVENT)
+            .use { preparedStatement ->
                 preparedStatement.setObject(1, avvent.uuid)
                 preparedStatement.setObject(2, avvent.createdAt)
                 preparedStatement.setObject(3, avvent.frist)
@@ -77,26 +72,16 @@ class AvventRepository(
 
     private fun Connection.queryAvvent(uuid: UUID): Avvent? =
         this
-            .prepareStatement(
-                """
-                SELECT * FROM avvent WHERE uuid = ?
-                """.trimIndent(),
-            ).use { preparedStatement ->
+            .prepareStatement(GET_AVVENT)
+            .use { preparedStatement ->
                 preparedStatement.setObject(1, uuid)
                 preparedStatement.executeQuery().toList { toAvvent() }.firstOrNull()
             }
 
     private fun Connection.queryActiveAvvent(personident: PersonIdent): Avvent? =
         this
-            .prepareStatement(
-                """
-                SELECT * FROM avvent 
-                WHERE personident = ?
-                AND is_lukket = false
-                ORDER BY created_by desc
-                LIMIT 1
-                """.trimIndent(),
-            ).use { preparedStatement ->
+            .prepareStatement(GET_ACTIVE_AVVENT_FOR_PERSON)
+            .use { preparedStatement ->
                 preparedStatement.setString(1, personident.value)
                 preparedStatement.executeQuery().toList { toAvvent() }.firstOrNull()
             }
@@ -104,14 +89,8 @@ class AvventRepository(
     private fun Connection.queryActiveAvventForPersonidenter(personidenter: List<PersonIdent>): List<Avvent> {
         val personidentArray = this.createArrayOf("varchar", personidenter.map { it.value }.toTypedArray())
         return this
-            .prepareStatement(
-                """
-                SELECT * FROM avvent 
-                WHERE personident = ANY(?)
-                AND is_lukket = false
-                ORDER BY created_at desc 
-                """.trimIndent(),
-            ).use { preparedStatement ->
+            .prepareStatement(GET_ACTIVE_AVVENT_FOR_PERSONIDENTER)
+            .use { preparedStatement ->
                 preparedStatement.setArray(1, personidentArray)
                 preparedStatement.executeQuery().toList { toAvvent() }
             }
@@ -119,14 +98,43 @@ class AvventRepository(
 
     private fun Connection.updateLukket(uuid: UUID) {
         this
-            .prepareStatement(
-                """
-                UPDATE avvent SET is_lukket = true WHERE uuid = ?
-                """.trimIndent(),
-            ).use { preparedStatement ->
+            .prepareStatement(UPDATE_LUKKET)
+            .use { preparedStatement ->
                 preparedStatement.setObject(1, uuid)
                 preparedStatement.executeUpdate()
             }
+    }
+
+    companion object {
+        private const val INSERT_AVVENT =
+            """
+                INSERT INTO avvent (uuid, created_at, frist, created_by, personident, beskrivelse, is_lukket)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                RETURNING *
+            """
+        private const val GET_AVVENT =
+            """
+                SELECT * FROM avvent WHERE uuid = ?
+            """
+        private const val GET_ACTIVE_AVVENT_FOR_PERSON =
+            """
+                SELECT * FROM avvent 
+                WHERE personident = ?
+                AND is_lukket = false
+                ORDER BY created_by desc
+                LIMIT 1
+            """
+        private const val GET_ACTIVE_AVVENT_FOR_PERSONIDENTER =
+            """
+                SELECT * FROM avvent 
+                WHERE personident = ANY(?)
+                AND is_lukket = false
+                ORDER BY created_at desc 
+            """
+        private const val UPDATE_LUKKET =
+            """
+                UPDATE avvent SET is_lukket = true WHERE uuid = ?
+            """
     }
 }
 
