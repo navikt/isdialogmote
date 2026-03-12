@@ -40,8 +40,8 @@ fun Route.registerAvventApi(
 
         post("/query") {
             val query = call.receive<QueryAvventDTO>()
-            val personidenter = query.personidenter.map { personIdent ->
-                PersonIdent(personIdent)
+            val personidenter = query.personidenter.map { personident ->
+                PersonIdent(personident)
             }
 
             validateVeilederAccess(

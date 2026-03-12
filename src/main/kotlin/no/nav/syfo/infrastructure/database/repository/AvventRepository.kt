@@ -5,6 +5,7 @@ import no.nav.syfo.application.ITransaction
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Avvent
 import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.toList
 import java.sql.ResultSet
 import java.util.UUID
 
@@ -38,7 +39,7 @@ class AvventRepository(
         }
     }
 
-    override fun getAvvent(uuid: UUID): Avvent? {
+    override fun getAvvent(uuid: UUID): Avvent? =
         database.connection.use { connection ->
             connection
                 .prepareStatement(
@@ -47,30 +48,29 @@ class AvventRepository(
                     """.trimIndent(),
                 ).use { preparedStatement ->
                     preparedStatement.setObject(1, uuid)
-                    preparedStatement.executeQuery().use { resultSet ->
-                        return if (resultSet.next()) resultSet.toAvvent() else null
-                    }
+                    preparedStatement.executeQuery().toList { toAvvent() }.firstOrNull()
                 }
         }
-    }
 
-    override fun getActiveAvvent(personident: PersonIdent, transaction: ITransaction?): Avvent? {
+    override fun getActiveAvvent(
+        personident: PersonIdent,
+        transaction: ITransaction?,
+    ): Avvent? {
         val connection = transaction?.connection ?: database.connection
-        val result = connection
-            .prepareStatement(
-                """
-                SELECT * FROM avvent 
-                WHERE personident = ?
-                AND is_lukket = false
-                ORDER BY created_by desc
-                LIMIT 1
-                """.trimIndent(),
-            ).use { preparedStatement ->
-                preparedStatement.setString(1, personident.value)
-                preparedStatement.executeQuery().use { resultSet ->
-                    return@use if (resultSet.next()) resultSet.toAvvent() else null
+        val result =
+            connection
+                .prepareStatement(
+                    """
+                    SELECT * FROM avvent 
+                    WHERE personident = ?
+                    AND is_lukket = false
+                    ORDER BY created_by desc
+                    LIMIT 1
+                    """.trimIndent(),
+                ).use { preparedStatement ->
+                    preparedStatement.setString(1, personident.value)
+                    preparedStatement.executeQuery().toList { toAvvent() }.firstOrNull()
                 }
-            }
         if (transaction == null) {
             connection.close()
         }
@@ -79,7 +79,7 @@ class AvventRepository(
 
     override fun getActiveAvventForPersonidenter(personidenter: List<PersonIdent>): List<Avvent> {
         if (personidenter.isEmpty()) return emptyList()
-        database.connection.use { connection ->
+        return database.connection.use { connection ->
             val personidentArray = connection.createArrayOf("varchar", personidenter.map { it.value }.toTypedArray())
             connection
                 .prepareStatement(
@@ -91,11 +91,7 @@ class AvventRepository(
                     """.trimIndent(),
                 ).use { preparedStatement ->
                     preparedStatement.setArray(1, personidentArray)
-                    preparedStatement.executeQuery().use { resultSet ->
-                        val result = mutableListOf<Avvent>()
-                        while (resultSet.next()) result.add(resultSet.toAvvent())
-                        return result
-                    }
+                    preparedStatement.executeQuery().toList { toAvvent() }
                 }
         }
     }
