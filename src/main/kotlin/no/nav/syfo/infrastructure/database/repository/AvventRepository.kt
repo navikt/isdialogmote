@@ -15,28 +15,31 @@ class AvventRepository(
     override fun persist(
         avvent: Avvent,
         transaction: ITransaction?,
-    ) {
+    ): Avvent {
         val connection = transaction?.connection ?: database.connection
-        connection
-            .prepareStatement(
-                """
-                INSERT INTO avvent (uuid, created_at, frist, created_by, personident, beskrivelse, is_lukket)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                """.trimIndent(),
-            ).use { preparedStatement ->
-                preparedStatement.setObject(1, avvent.uuid)
-                preparedStatement.setObject(2, avvent.createdAt)
-                preparedStatement.setObject(3, avvent.frist)
-                preparedStatement.setString(4, avvent.createdBy)
-                preparedStatement.setString(5, avvent.personident.value)
-                preparedStatement.setString(6, avvent.beskrivelse)
-                preparedStatement.setBoolean(7, avvent.isLukket)
-                preparedStatement.executeUpdate()
-            }
+        val persisted =
+            connection
+                .prepareStatement(
+                    """
+                    INSERT INTO avvent (uuid, created_at, frist, created_by, personident, beskrivelse, is_lukket)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    RETURNING *
+                    """.trimIndent(),
+                ).use { preparedStatement ->
+                    preparedStatement.setObject(1, avvent.uuid)
+                    preparedStatement.setObject(2, avvent.createdAt)
+                    preparedStatement.setObject(3, avvent.frist)
+                    preparedStatement.setString(4, avvent.createdBy)
+                    preparedStatement.setString(5, avvent.personident.value)
+                    preparedStatement.setString(6, avvent.beskrivelse)
+                    preparedStatement.setBoolean(7, avvent.isLukket)
+                    preparedStatement.executeQuery().toList { toAvvent() }.single()
+                }
         if (transaction == null) {
             connection.commit()
             connection.close()
         }
+        return persisted
     }
 
     override fun getAvvent(uuid: UUID): Avvent? =

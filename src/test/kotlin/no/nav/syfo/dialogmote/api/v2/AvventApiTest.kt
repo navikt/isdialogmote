@@ -69,6 +69,8 @@ class AvventApiTest {
                         setBody(createAvventDTO)
                     }
                 assertEquals(HttpStatusCode.OK, response.status)
+                val avvent = response.body<Avvent>()
+                assertEquals(ARBEIDSTAKER_FNR.value, avvent.personident.value)
             }
         }
 

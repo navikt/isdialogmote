@@ -33,8 +33,8 @@ fun Route.registerAvventApi(
                     ?: throw IllegalArgumentException("No Authorization header supplied")
 
                 val navident = getNAVIdentFromToken(token)
-                avventService.persist(avvent.toAvvent(navident))
-                call.respond(HttpStatusCode.OK)
+                val avvent = avventService.persist(avvent.toAvvent(navident))
+                call.respond(HttpStatusCode.OK, avvent)
             }
         }
 
