@@ -9,7 +9,6 @@ import io.ktor.server.routing.route
 import no.nav.syfo.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.api.dto.QueryAvventDTO
 import no.nav.syfo.api.dto.CreateAvventDTO
-import no.nav.syfo.api.dto.toAvvent
 import no.nav.syfo.api.getBearerHeader
 import no.nav.syfo.api.validateVeilederAccess
 import no.nav.syfo.application.AvventService
