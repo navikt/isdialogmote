@@ -33,10 +33,13 @@ class AvventRepository(
         personident: PersonIdent,
         transaction: ITransaction?,
     ): Avvent? =
-        transaction?.connection?.queryActiveAvvent(personident)
-            ?: database.connection.use { connection ->
+        if (transaction != null) {
+            transaction.connection.queryActiveAvvent(personident)
+        } else {
+            database.connection.use { connection ->
                 connection.queryActiveAvvent(personident)
             }
+        }
 
     override fun getActiveAvventForPersonidenter(personidenter: List<PersonIdent>): List<Avvent> {
         if (personidenter.isEmpty()) return emptyList()
