@@ -34,6 +34,7 @@ import no.nav.syfo.infrastructure.database.createMotedeltakerVarselArbeidstaker
 import no.nav.syfo.infrastructure.database.createMotedeltakerVarselBehandler
 import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.createNewReferat
+import no.nav.syfo.infrastructure.database.repository.AvventRepository
 import no.nav.syfo.infrastructure.database.updateMoteTidSted
 import no.nav.syfo.infrastructure.database.updateMoteTildeltVeileder
 import no.nav.syfo.infrastructure.database.updateMotedeltakerBehandler
@@ -54,6 +55,7 @@ class DialogmoteService(
     private val varselService: VarselService,
     private val pdlClient: PdlClient,
     private val pdfRepository: IPdfRepository,
+    private val avventRepository: AvventRepository
 ) {
     fun getDialogmote(moteUUID: UUID): Dialogmote =
         moteRepository.getMote(moteUUID)
@@ -75,10 +77,10 @@ class DialogmoteService(
         callId: String,
         token: String,
     ) {
-        val personIdent = PersonIdent(newDialogmoteDTO.arbeidstaker.personIdent)
+        val personident = PersonIdent(newDialogmoteDTO.arbeidstaker.personIdent)
         val virksomhetsnummer = Virksomhetsnummer(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer)
 
-        val isAnyUnfinishedDialogmoter = getDialogmoteList(personIdent).filter {
+        val isAnyUnfinishedDialogmoter = getDialogmoteList(personident).filter {
             it.arbeidsgiver.virksomhetsnummer == virksomhetsnummer
         }.anyActive()
 
@@ -87,17 +89,17 @@ class DialogmoteService(
         }
 
         val narmesteLeder = narmesteLederClient.activeLeder(
-            personIdent = personIdent,
+            personIdent = personident,
             virksomhetsnummer = virksomhetsnummer,
             callId = callId,
             token = token,
         )
 
-        val arbeidstakernavn = pdlClient.navn(personIdent)
+        val arbeidstakernavn = pdlClient.navn(personident)
 
         val behandlendeEnhetDTO = behandlendeEnhetClient.getEnhet(
             callId = callId,
-            personIdent = personIdent,
+            personIdent = personident,
             token = token,
         ) ?: throw RuntimeException("Failed to request (or missing) BehandlendeEnhet of Person")
 
@@ -109,7 +111,7 @@ class DialogmoteService(
         val pdfInnkallingArbeidstaker = pdfGenClient.pdfInnkalling(
             callId = callId,
             mottakerNavn = arbeidstakernavn,
-            mottakerFodselsnummer = personIdent.value,
+            mottakerFodselsnummer = personident.value,
             pdfContent = newDialogmoteDTO.arbeidstaker.innkalling,
         ) ?: throw RuntimeException("Failed to request PDF - Innkalling Arbeidstaker")
 
@@ -128,7 +130,7 @@ class DialogmoteService(
         }
 
         val digitalVarsling = isDigitalVarselEnabled(
-            personIdent = personIdent,
+            personIdent = personident,
             token = token,
             callId = callId,
         )
@@ -147,6 +149,12 @@ class DialogmoteService(
                 opprettetAv = newDialogmote.opprettetAv,
                 token = token,
             )
+            avventRepository.getActiveAvvent(
+                transaction = transaction,
+                personident = personident,
+            )?.let { activeAvvent ->
+                avventRepository.setLukket(activeAvvent.uuid, transaction)
+            }
             createAndSendVarsel(
                 connection = transaction.connection,
                 arbeidstakerId = createdDialogmoteIdentifiers.motedeltakerArbeidstakerIdPair.first,
