@@ -34,7 +34,6 @@ import no.nav.syfo.infrastructure.database.createMotedeltakerVarselArbeidstaker
 import no.nav.syfo.infrastructure.database.createMotedeltakerVarselBehandler
 import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
 import no.nav.syfo.infrastructure.database.createNewReferat
-import no.nav.syfo.infrastructure.database.repository.AvventRepository
 import no.nav.syfo.infrastructure.database.updateMoteTidSted
 import no.nav.syfo.infrastructure.database.updateMoteTildeltVeileder
 import no.nav.syfo.infrastructure.database.updateMotedeltakerBehandler
@@ -55,7 +54,7 @@ class DialogmoteService(
     private val varselService: VarselService,
     private val pdlClient: PdlClient,
     private val pdfRepository: IPdfRepository,
-    private val avventRepository: AvventRepository
+    private val avventRepository: IAvventRepository
 ) {
     fun getDialogmote(moteUUID: UUID): Dialogmote =
         moteRepository.getMote(moteUUID)
