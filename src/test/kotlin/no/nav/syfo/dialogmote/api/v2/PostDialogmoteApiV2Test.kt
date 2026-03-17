@@ -8,7 +8,9 @@ import io.mockk.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
+import no.nav.syfo.api.dto.CreateAvventDTO
 import no.nav.syfo.api.dto.DialogmoteDTO
+import no.nav.syfo.api.dto.QueryAvventDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
@@ -323,6 +325,49 @@ class PostDialogmoteApiV2Test {
                         any()
                     )
                 }
+            }
+        }
+
+        @Test
+        fun `should close active avvent when creating moteinnkalling`() {
+            val newDialogmoteDTO = generateNewDialogmoteDTO(
+                personIdent = ARBEIDSTAKER_FNR,
+            )
+            val createAvventDTO = CreateAvventDTO(
+                frist = LocalDate.now().plusWeeks(2),
+                personident = ARBEIDSTAKER_FNR.value,
+                beskrivelse = "Avventer noe",
+            )
+
+            testApplication {
+                val client = setupApiAndClient(
+                    behandlerVarselService = behandlerVarselService,
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+
+                val avventResponse = client.post("/api/avvent") {
+                    bearerAuth(validToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(createAvventDTO)
+                }
+                assertEquals(HttpStatusCode.OK, avventResponse.status)
+
+                val queryBefore = client.post("/api/avvent/query") {
+                    bearerAuth(validToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(QueryAvventDTO(personidenter = listOf(ARBEIDSTAKER_FNR.value)))
+                }
+                assertEquals(1, queryBefore.body<List<Avvent>>().size)
+
+                client.postMote(validToken, newDialogmoteDTO)
+
+                val queryAfter = client.post("/api/avvent/query") {
+                    bearerAuth(validToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(QueryAvventDTO(personidenter = listOf(ARBEIDSTAKER_FNR.value)))
+                }
+                assertEquals(0, queryAfter.body<List<Avvent>>().size)
             }
         }
 

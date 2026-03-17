@@ -116,6 +116,8 @@ fun Application.apiModule(
         isDokumentportenSendingEnabled = environment.dokumentportenSendingEnabled
     )
 
+    val avventRepository = AvventRepository(database)
+
     val dialogmoteService = DialogmoteService(
         transactionManager = transactionManager,
         moteRepository = moteRepository,
@@ -128,6 +130,7 @@ fun Application.apiModule(
         varselService = varselService,
         pdlClient = pdlClient,
         pdfRepository = pdfRepository,
+        avventRepository = avventRepository,
     )
 
     val narmesteLederTilgangService = NarmesteLederAccessService(
@@ -137,7 +140,7 @@ fun Application.apiModule(
     )
 
     val avventService = AvventService(
-        avventRepository = AvventRepository(database),
+        avventRepository = avventRepository,
         transactionManager = transactionManager,
     )
 
