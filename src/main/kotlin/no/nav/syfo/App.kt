@@ -34,6 +34,7 @@ import no.nav.syfo.infrastructure.client.altinn.createPort
 import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenClient
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.infrastructure.client.motebehov.MotebehovClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
@@ -145,6 +146,11 @@ fun main() {
         azureAdV2Client = azureAdV2Client,
         scopeClientId = environment.dokumentportenClientId,
     )
+    val motebehovClient = MotebehovClient(
+        azureAdV2Client = azureAdV2Client,
+        syfomotebehovClientId = environment.syfomotebehovClientId,
+        syfomotebehovBaseUrl = environment.syfomotebehovUrl,
+    )
 
     lateinit var behandlerVarselService: BehandlerVarselService
     lateinit var dialogmotestatusService: DialogmotestatusService
@@ -209,6 +215,7 @@ fun main() {
                 pdfGenClient = pdfGenClient,
                 narmesteLederClient = narmesteLederClient,
                 dokumentportenClient = dokumentportenClient,
+                motebehovClient = motebehovClient,
                 pdfRepository = pdfRepository,
                 moteRepository = moteRepository,
                 transactionManager = transactionManager,

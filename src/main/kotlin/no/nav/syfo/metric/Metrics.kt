@@ -60,6 +60,31 @@ val COUNT_KAFKA_CONSUMER_PDL_AKTOR_TOMBSTONE: Counter =
         .description("Counts the number of tombstones received from topic - pdl-aktor-v2")
         .register(METRICS_REGISTRY)
 
+const val CALL_MOTEBEHOV_BEHANDLE_BASE = "${METRICS_NS}_call_motebehov_behandle"
+const val CALL_MOTEBEHOV_BEHANDLE_SUCCESS = "${CALL_MOTEBEHOV_BEHANDLE_BASE}_success_count"
+const val CALL_MOTEBEHOV_BEHANDLE_FAIL = "${CALL_MOTEBEHOV_BEHANDLE_BASE}_fail_count"
+
+const val CALL_MOTEBEHOV_TILBAKEMELDING_BASE = "${METRICS_NS}_call_motebehov_tilbakemelding"
+const val CALL_MOTEBEHOV_TILBAKEMELDING_SUCCESS = "${CALL_MOTEBEHOV_TILBAKEMELDING_BASE}_success_count"
+const val CALL_MOTEBEHOV_TILBAKEMELDING_FAIL = "${CALL_MOTEBEHOV_TILBAKEMELDING_BASE}_fail_count"
+
+val COUNT_CALL_MOTEBEHOV_BEHANDLE_SUCCESS: Counter = Counter
+    .builder(CALL_MOTEBEHOV_BEHANDLE_SUCCESS)
+    .description("Counts the number of successful calls to syfomotebehov - behandle")
+    .register(METRICS_REGISTRY)
+val COUNT_CALL_MOTEBEHOV_BEHANDLE_FAIL: Counter = Counter
+    .builder(CALL_MOTEBEHOV_BEHANDLE_FAIL)
+    .description("Counts the number of failed calls to syfomotebehov - behandle")
+    .register(METRICS_REGISTRY)
+val COUNT_CALL_MOTEBEHOV_TILBAKEMELDING_SUCCESS: Counter = Counter
+    .builder(CALL_MOTEBEHOV_TILBAKEMELDING_SUCCESS)
+    .description("Counts the number of successful calls to syfomotebehov - tilbakemelding")
+    .register(METRICS_REGISTRY)
+val COUNT_CALL_MOTEBEHOV_TILBAKEMELDING_FAIL: Counter = Counter
+    .builder(CALL_MOTEBEHOV_TILBAKEMELDING_FAIL)
+    .description("Counts the number of failed calls to syfomotebehov - tilbakemelding")
+    .register(METRICS_REGISTRY)
+
 // Timers
 const val CALL_TILGANGSKONTROLL_ENHET_TIMER = "${CALL_TILGANGSKONTROLL_ENHET_BASE}_timer"
 const val CALL_TILGANGSKONTROLL_PERSONS_TIMER = "${CALL_TILGANGSKONTROLL_PERSONS_BASE}_timer"
