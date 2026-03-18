@@ -11,7 +11,7 @@ class MotebehovService(
 ) {
     suspend fun behandleMotebehov(
         personident: PersonIdent,
-        tilbakemeldingDTO: MotebehovTilbakemeldingDTO?,
+        tilbakemeldinger: List<MotebehovTilbakemeldingDTO>,
         token: String,
         callId: String,
     ) {
@@ -25,9 +25,9 @@ class MotebehovService(
             token = token,
             callId = callId,
         )
-        if (tilbakemeldingDTO != null) {
+        tilbakemeldinger.forEach { tilbakemelding ->
             motebehovClient.sendTilbakemelding(
-                tilbakemelding = tilbakemeldingDTO,
+                tilbakemelding = tilbakemelding,
                 token = token,
                 callId = callId,
             )

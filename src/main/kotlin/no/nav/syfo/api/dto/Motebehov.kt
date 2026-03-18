@@ -7,5 +7,5 @@ data class MotebehovTilbakemeldingDTO(
 
 data class BehandleMotebehovDTO(
     val personident: String,
-    val motebehovTilbakemelding: MotebehovTilbakemeldingDTO?,
+    val tilbakemeldinger: List<MotebehovTilbakemeldingDTO>,
 )
