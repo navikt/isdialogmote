@@ -1,6 +1,5 @@
 package no.nav.syfo.api.dto
 
-
 data class MotebehovTilbakemeldingDTO(
     val varseltekst: String,
     val motebehovId: String,
