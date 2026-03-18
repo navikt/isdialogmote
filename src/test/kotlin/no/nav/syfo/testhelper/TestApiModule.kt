@@ -6,6 +6,7 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.*
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.infrastructure.client.motebehov.MotebehovClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
@@ -68,6 +69,12 @@ fun Application.testApiModule(
         scopeClientId = externalMockEnvironment.environment.dokumentportenClientId,
         client = externalMockEnvironment.mockHttpClient,
     )
+    val motebehovClient = MotebehovClient(
+        azureAdV2Client = externalMockEnvironment.azureAdV2Client,
+        syfomotebehovClientId = externalMockEnvironment.environment.syfomotebehovClientId,
+        syfomotebehovBaseUrl = externalMockEnvironment.environment.syfomotebehovUrl,
+        httpClient = externalMockEnvironment.mockHttpClient,
+    )
 
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,
@@ -89,6 +96,7 @@ fun Application.testApiModule(
         kontaktinformasjonClient = kontaktinformasjonClient,
         narmesteLederClient = narmesteLederClient,
         dokumentportenClient = dokumentportenClient,
+        motebehovClient = motebehovClient,
         pdfRepository = externalMockEnvironment.pdfRepository,
         moteRepository = externalMockEnvironment.moteRepository,
         transactionManager = externalMockEnvironment.transactionManager,

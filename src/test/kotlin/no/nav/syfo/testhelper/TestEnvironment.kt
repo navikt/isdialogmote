@@ -64,6 +64,8 @@ fun testEnvironment() = Environment(
     dokumentportenUrl = "dokumentportenUrl",
     dokumentportenClientId = "api://dokumentporten/.default",
     dokumentportenSendingEnabled = true,
+    syfomotebehovUrl = "syfomotebehovUrl",
+    syfomotebehovClientId = "syfomotebehovClientId",
     outdatedDialogmoteCutoffMonths = 12,
     isJournalforingRetryEnabled = true,
 )
