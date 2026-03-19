@@ -11,6 +11,7 @@ class MotebehovService(
 ) {
     suspend fun behandleMotebehov(
         personident: PersonIdent,
+        harBehovForMote: Boolean,
         tilbakemeldinger: List<Tilbakemelding>,
         token: String,
         callId: String,
@@ -20,9 +21,11 @@ class MotebehovService(
             token = token,
             callId = callId,
         )
-        transactionManager.run { transaction ->
-            avventRepository.getActiveAvvent(personident, transaction)?.let {
-                avventRepository.setLukket(it.uuid, transaction)
+        if (!harBehovForMote) {
+            transactionManager.run { transaction ->
+                avventRepository.getActiveAvvent(personident, transaction)?.let {
+                    avventRepository.setLukket(it.uuid, transaction)
+                }
             }
         }
         tilbakemeldinger.forEach { tilbakemelding ->

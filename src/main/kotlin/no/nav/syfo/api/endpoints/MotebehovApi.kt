@@ -36,6 +36,7 @@ fun Route.registerMotebehovApi(
 
                 motebehovService.behandleMotebehov(
                     personident = personident,
+                    harBehovForMote = behandleMotebehovDTO.harBehovForMote,
                     tilbakemeldinger = behandleMotebehovDTO.tilbakemeldinger.map { it.toTilbakemelding() },
                     token = token,
                     callId = callId,

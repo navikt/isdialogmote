@@ -15,5 +15,6 @@ data class MotebehovTilbakemeldingDTO(
 
 data class BehandleMotebehovDTO(
     val personident: String,
+    val harBehovForMote: Boolean,
     val tilbakemeldinger: List<MotebehovTilbakemeldingDTO>,
 )

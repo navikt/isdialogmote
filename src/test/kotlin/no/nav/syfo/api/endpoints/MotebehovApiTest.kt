@@ -38,6 +38,7 @@ class MotebehovApiTest {
     private val behandleMotebehovDTO =
         BehandleMotebehovDTO(
             personident = ARBEIDSTAKER_FNR.value,
+            harBehovForMote = true,
             tilbakemeldinger = listOf(
                 MotebehovTilbakemeldingDTO(
                     varseltekst = "Test tilbakemelding",
