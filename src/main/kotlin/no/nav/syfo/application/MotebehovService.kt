@@ -1,30 +1,30 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.api.dto.MotebehovTilbakemeldingDTO
+import no.nav.syfo.application.client.IMotebehovClient
 import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.infrastructure.client.motebehov.MotebehovClient
+import no.nav.syfo.domain.motebehov.Tilbakemelding
 
 class MotebehovService(
-    private val motebehovClient: MotebehovClient,
+    private val motebehovClient: IMotebehovClient,
     private val avventRepository: IAvventRepository,
     private val transactionManager: ITransactionManager,
 ) {
     suspend fun behandleMotebehov(
         personident: PersonIdent,
-        tilbakemeldinger: List<MotebehovTilbakemeldingDTO>,
+        tilbakemeldinger: List<Tilbakemelding>,
         token: String,
         callId: String,
     ) {
-        transactionManager.run { transaction ->
-            avventRepository.getActiveAvvent(personident, transaction)?.let {
-                avventRepository.setLukket(it.uuid, transaction)
-            }
-        }
         motebehovClient.behandleMotebehov(
             personIdent = personident,
             token = token,
             callId = callId,
         )
+        transactionManager.run { transaction ->
+            avventRepository.getActiveAvvent(personident, transaction)?.let {
+                avventRepository.setLukket(it.uuid, transaction)
+            }
+        }
         tilbakemeldinger.forEach { tilbakemelding ->
             motebehovClient.sendTilbakemelding(
                 tilbakemelding = tilbakemelding,

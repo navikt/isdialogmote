@@ -10,8 +10,9 @@ import no.nav.syfo.api.NAV_CALL_ID_HEADER
 import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.api.bearerHeader
 import no.nav.syfo.api.callIdArgument
-import no.nav.syfo.api.dto.MotebehovTilbakemeldingDTO
+import no.nav.syfo.application.client.IMotebehovClient
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.motebehov.Tilbakemelding
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.httpClientDefault
 import no.nav.syfo.metric.COUNT_CALL_MOTEBEHOV_BEHANDLE_FAIL
@@ -25,11 +26,11 @@ class MotebehovClient(
     private val syfomotebehovClientId: String,
     syfomotebehovBaseUrl: String,
     private val httpClient: HttpClient = httpClientDefault(),
-) {
+) : IMotebehovClient {
     private val behandleUrl = "$syfomotebehovBaseUrl$MOTEBEHOV_BEHANDLE_PATH"
     private val tilbakemeldingUrl = "$syfomotebehovBaseUrl$MOTEBEHOV_TILBAKEMELDING_PATH"
 
-    suspend fun behandleMotebehov(
+    override suspend fun behandleMotebehov(
         personIdent: PersonIdent,
         token: String,
         callId: String,
@@ -56,8 +57,8 @@ class MotebehovClient(
         }
     }
 
-    suspend fun sendTilbakemelding(
-        tilbakemelding: MotebehovTilbakemeldingDTO,
+    override suspend fun sendTilbakemelding(
+        tilbakemelding: Tilbakemelding,
         token: String,
         callId: String,
     ) {
