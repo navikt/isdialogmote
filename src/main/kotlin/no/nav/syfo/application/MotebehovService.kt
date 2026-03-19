@@ -1,8 +1,10 @@
 package no.nav.syfo.application
 
+import io.ktor.client.plugins.ResponseException
 import no.nav.syfo.application.client.IMotebehovClient
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.motebehov.Tilbakemelding
+import org.slf4j.LoggerFactory
 
 class MotebehovService(
     private val motebehovClient: IMotebehovClient,
@@ -21,6 +23,11 @@ class MotebehovService(
             token = token,
             callId = callId,
         )
+        sendTilbakemeldinger(
+            tilbakemeldinger = tilbakemeldinger,
+            token = token,
+            callId = callId,
+        )
         if (!harBehovForMote) {
             transactionManager.run { transaction ->
                 avventRepository.getActiveAvvent(personident, transaction)?.let {
@@ -28,12 +35,30 @@ class MotebehovService(
                 }
             }
         }
+    }
+
+    private suspend fun sendTilbakemeldinger(
+        tilbakemeldinger: List<Tilbakemelding>,
+        token: String,
+        callId: String,
+    ) {
         tilbakemeldinger.forEach { tilbakemelding ->
-            motebehovClient.sendTilbakemelding(
-                tilbakemelding = tilbakemelding,
-                token = token,
-                callId = callId,
-            )
+            try {
+                motebehovClient.sendTilbakemelding(
+                    tilbakemelding = tilbakemelding,
+                    token = token,
+                    callId = callId,
+                )
+            } catch (e: ResponseException) {
+                log.error(
+                    "Failed to send tilbakemelding with motebehovId ${tilbakemelding.motebehovId}. Response status: ${e.response.status}, callId: $callId",
+                    e,
+                )
+            }
         }
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(MotebehovService::class.java)
     }
 }
