@@ -18,4 +18,12 @@ class AvventService(
     fun getAvventForIdenter(personidenter: List<PersonIdent>): List<Avvent> {
         return avventRepository.getActiveAvventForPersonidenter(personidenter)
     }
+
+    suspend fun lukkAvvent(personident: PersonIdent) {
+        transactionManager.run { transaction ->
+            avventRepository.getActiveAvvent(personident, transaction)?.let {
+                avventRepository.setLukket(it.uuid, transaction)
+            }
+        }
+    }
 }
