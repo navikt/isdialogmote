@@ -9,7 +9,6 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import no.nav.syfo.api.dto.BehandleMotebehovDTO
 import no.nav.syfo.api.getCallId
-import no.nav.syfo.api.getBearerHeader
 import no.nav.syfo.api.validateVeilederAccess
 import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.application.MotebehovService
@@ -28,10 +27,7 @@ fun Route.registerMotebehovApi(
                 dialogmoteTilgangService = dialogmoteTilgangService,
                 personIdentToAccess = personident,
                 action = "Behandle motebehov for Person with PersonIdent",
-            ) {
-                val token =
-                    getBearerHeader()
-                        ?: throw IllegalArgumentException("No Authorization header supplied")
+            ) { token ->
                 val callId = getCallId()
 
                 motebehovService.behandleMotebehov(
