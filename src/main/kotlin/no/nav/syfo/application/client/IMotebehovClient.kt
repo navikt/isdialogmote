@@ -7,12 +7,10 @@ interface IMotebehovClient {
     suspend fun behandleMotebehov(
         personIdent: PersonIdent,
         token: String,
-        callId: String,
     )
 
     suspend fun sendTilbakemelding(
         tilbakemelding: Tilbakemelding,
         token: String,
-        callId: String,
     )
 }

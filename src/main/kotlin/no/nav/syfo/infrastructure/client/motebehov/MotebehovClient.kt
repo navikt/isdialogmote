@@ -1,15 +1,19 @@
 package no.nav.syfo.infrastructure.client.motebehov
 
-import io.ktor.client.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.ServerResponseException
+import io.ktor.client.request.accept
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.contentType
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.api.NAV_CALL_ID_HEADER
 import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.api.bearerHeader
-import no.nav.syfo.api.callIdArgument
 import no.nav.syfo.application.client.IMotebehovClient
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.motebehov.Tilbakemelding
@@ -33,7 +37,6 @@ class MotebehovClient(
     override suspend fun behandleMotebehov(
         personIdent: PersonIdent,
         token: String,
-        callId: String,
     ) {
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
             scopeClientId = syfomotebehovClientId,
@@ -44,15 +47,14 @@ class MotebehovClient(
             httpClient.post(behandleUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(oboToken))
                 header(NAV_PERSONIDENT_HEADER, personIdent.value)
-                header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
             }
             COUNT_CALL_MOTEBEHOV_BEHANDLE_SUCCESS.increment()
         } catch (e: ClientRequestException) {
-            handleUnexpectedResponseException(e.response, "behandle", callId)
+            handleUnexpectedResponseException(e.response, "behandle")
             throw e
         } catch (e: ServerResponseException) {
-            handleUnexpectedResponseException(e.response, "behandle", callId)
+            handleUnexpectedResponseException(e.response, "behandle")
             throw e
         }
     }
@@ -60,7 +62,6 @@ class MotebehovClient(
     override suspend fun sendTilbakemelding(
         tilbakemelding: Tilbakemelding,
         token: String,
-        callId: String,
     ) {
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
             scopeClientId = syfomotebehovClientId,
@@ -70,17 +71,16 @@ class MotebehovClient(
         try {
             httpClient.post(tilbakemeldingUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(oboToken))
-                header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
                 setBody(tilbakemelding)
             }
             COUNT_CALL_MOTEBEHOV_TILBAKEMELDING_SUCCESS.increment()
         } catch (e: ClientRequestException) {
-            handleUnexpectedResponseException(e.response, "tilbakemelding", callId)
+            handleUnexpectedResponseException(e.response, "tilbakemelding")
             throw e
         } catch (e: ServerResponseException) {
-            handleUnexpectedResponseException(e.response, "tilbakemelding", callId)
+            handleUnexpectedResponseException(e.response, "tilbakemelding")
             throw e
         }
     }
@@ -88,12 +88,10 @@ class MotebehovClient(
     private fun handleUnexpectedResponseException(
         response: HttpResponse,
         resource: String,
-        callId: String,
     ) {
         log.error(
-            "Error while calling syfomotebehov $resource with {}, {}",
+            "Error while calling syfomotebehov $resource with {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
-            callIdArgument(callId),
         )
         when (resource) {
             "behandle" -> COUNT_CALL_MOTEBEHOV_BEHANDLE_FAIL.increment()

@@ -8,7 +8,6 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import no.nav.syfo.api.dto.BehandleMotebehovDTO
-import no.nav.syfo.api.getCallId
 import no.nav.syfo.api.validateVeilederAccess
 import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.application.MotebehovService
@@ -28,14 +27,11 @@ fun Route.registerMotebehovApi(
                 personIdentToAccess = personident,
                 action = "Behandle motebehov for Person with PersonIdent",
             ) { token ->
-                val callId = getCallId()
-
                 motebehovService.behandleMotebehov(
                     personident = personident,
                     harBehovForMote = behandleMotebehovDTO.harBehovForMote,
                     tilbakemeldinger = behandleMotebehovDTO.tilbakemeldinger.map { it.toTilbakemelding() },
                     token = token,
-                    callId = callId,
                 )
                 call.respond(HttpStatusCode.OK)
             }

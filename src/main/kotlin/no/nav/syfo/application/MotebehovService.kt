@@ -16,17 +16,14 @@ class MotebehovService(
         harBehovForMote: Boolean,
         tilbakemeldinger: List<Tilbakemelding>,
         token: String,
-        callId: String,
     ) {
         motebehovClient.behandleMotebehov(
             personIdent = personident,
             token = token,
-            callId = callId,
         )
         sendTilbakemeldinger(
             tilbakemeldinger = tilbakemeldinger,
             token = token,
-            callId = callId,
         )
         if (!harBehovForMote) {
             transactionManager.run { transaction ->
@@ -40,18 +37,16 @@ class MotebehovService(
     private suspend fun sendTilbakemeldinger(
         tilbakemeldinger: List<Tilbakemelding>,
         token: String,
-        callId: String,
     ) {
         tilbakemeldinger.forEach { tilbakemelding ->
             try {
                 motebehovClient.sendTilbakemelding(
                     tilbakemelding = tilbakemelding,
                     token = token,
-                    callId = callId,
                 )
             } catch (e: ResponseException) {
                 log.error(
-                    "Failed to send tilbakemelding with motebehovId ${tilbakemelding.motebehovId}. Response status: ${e.response.status}, callId: $callId",
+                    "Failed to send tilbakemelding with motebehovId ${tilbakemelding.motebehovId}. Response status: ${e.response.status}",
                     e,
                 )
             }

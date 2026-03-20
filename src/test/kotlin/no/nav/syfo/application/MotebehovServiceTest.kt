@@ -26,7 +26,6 @@ class MotebehovServiceTest {
     )
 
     private val token = "test-token"
-    private val callId = "test-call-id"
     private val personident = ARBEIDSTAKER_FNR
 
     private val tilbakemelding = Tilbakemelding(
@@ -48,8 +47,8 @@ class MotebehovServiceTest {
     fun setup() {
         clearMocks(motebehovClient, avventRepository, transactionManager)
 
-        coJustRun { motebehovClient.behandleMotebehov(any(), any(), any()) }
-        coJustRun { motebehovClient.sendTilbakemelding(any(), any(), any()) }
+        coJustRun { motebehovClient.behandleMotebehov(any(), any()) }
+        coJustRun { motebehovClient.sendTilbakemelding(any(), any()) }
         coEvery { transactionManager.run<Any?>(any()) } coAnswers {
             val block = firstArg<suspend (ITransaction) -> Any?>()
             block(mockk())
@@ -68,11 +67,10 @@ class MotebehovServiceTest {
                     harBehovForMote = true,
                     tilbakemeldinger = emptyList(),
                     token = token,
-                    callId = callId,
                 )
 
                 coVerify(exactly = 1) {
-                    motebehovClient.behandleMotebehov(personident, token, callId)
+                    motebehovClient.behandleMotebehov(personident, token)
                 }
             }
         }
@@ -88,7 +86,6 @@ class MotebehovServiceTest {
                     harBehovForMote = false,
                     tilbakemeldinger = emptyList(),
                     token = token,
-                    callId = callId,
                 )
 
                 verify(exactly = 1) {
@@ -105,7 +102,6 @@ class MotebehovServiceTest {
                     harBehovForMote = true,
                     tilbakemeldinger = emptyList(),
                     token = token,
-                    callId = callId,
                 )
 
                 verify(exactly = 0) {
@@ -127,7 +123,6 @@ class MotebehovServiceTest {
                     harBehovForMote = false,
                     tilbakemeldinger = emptyList(),
                     token = token,
-                    callId = callId,
                 )
 
                 verify(exactly = 1) {
@@ -153,14 +148,13 @@ class MotebehovServiceTest {
                     harBehovForMote = false,
                     tilbakemeldinger = listOf(tilbakemelding, tilbakemelding2),
                     token = token,
-                    callId = callId,
                 )
 
                 coVerify(exactly = 1) {
-                    motebehovClient.sendTilbakemelding(tilbakemelding, token, callId)
+                    motebehovClient.sendTilbakemelding(tilbakemelding, token)
                 }
                 coVerify(exactly = 1) {
-                    motebehovClient.sendTilbakemelding(tilbakemelding2, token, callId)
+                    motebehovClient.sendTilbakemelding(tilbakemelding2, token)
                 }
             }
         }
@@ -175,11 +169,10 @@ class MotebehovServiceTest {
                     harBehovForMote = false,
                     tilbakemeldinger = emptyList(),
                     token = token,
-                    callId = callId,
                 )
 
                 coVerify(exactly = 0) {
-                    motebehovClient.sendTilbakemelding(any(), any(), any())
+                    motebehovClient.sendTilbakemelding(any(), any())
                 }
             }
         }
