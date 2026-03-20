@@ -87,6 +87,8 @@ spec:
         - application: isdialogmelding
         - application: syfo-dokumentporten
           namespace: team-esyfo
+        - application: syfomotebehov
+          namespace: team-esyfo
   azure:
     application:
       allowAllUsers: true
@@ -144,6 +146,10 @@ spec:
       value: "http://isdialogmelding"
     - name: DIALOGMELDING_CLIENT_ID
       value: "dev-gcp.teamsykefravr.isdialogmelding"
+    - name: SYFOMOTEBEHOV_URL
+      value: "http://syfomotebehov.team-esyfo"
+    - name: SYFOMOTEBEHOV_CLIENT_ID
+      value: "dev-gcp.team-esyfo.syfomotebehov"
     - name: ALTINN_WS_URL
       value: "https://tt02.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternalBasic.svc"
     - name: OUTDATED_DIALOGMOTE_CUTOFF_MONTHS

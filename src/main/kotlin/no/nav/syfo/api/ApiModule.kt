@@ -19,6 +19,7 @@ import no.nav.syfo.api.endpoints.registerAvventApi
 import no.nav.syfo.api.endpoints.registerDialogmoteActionsApiV2
 import no.nav.syfo.api.endpoints.registerDialogmoteApiV2
 import no.nav.syfo.api.endpoints.registerDialogmoteEnhetApiV2
+import no.nav.syfo.api.endpoints.registerMotebehovApi
 import no.nav.syfo.api.endpoints.registerNarmestelederBrevApi
 import no.nav.syfo.api.endpoints.registerPodApi
 import no.nav.syfo.api.endpoints.registerPrometheusApi
@@ -32,12 +33,14 @@ import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.application.IMoteRepository
 import no.nav.syfo.application.IPdfRepository
 import no.nav.syfo.application.ITransactionManager
+import no.nav.syfo.application.MotebehovService
 import no.nav.syfo.application.NarmesteLederAccessService
 import no.nav.syfo.application.NarmesteLederVarselService
 import no.nav.syfo.application.VarselService
 import no.nav.syfo.infrastructure.client.altinn.AltinnClient
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenClient
+import no.nav.syfo.infrastructure.client.motebehov.MotebehovClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
@@ -68,6 +71,7 @@ fun Application.apiModule(
     kontaktinformasjonClient: KontaktinformasjonClient,
     narmesteLederClient: NarmesteLederClient,
     dokumentportenClient: DokumentportenClient,
+    motebehovClient: MotebehovClient,
     pdfRepository: IPdfRepository,
     moteRepository: IMoteRepository,
     transactionManager: ITransactionManager,
@@ -144,6 +148,12 @@ fun Application.apiModule(
         transactionManager = transactionManager,
     )
 
+    val motebehovService = MotebehovService(
+        motebehovClient = motebehovClient,
+        avventRepository = avventRepository,
+        transactionManager = transactionManager,
+    )
+
     routing {
         registerPodApi(applicationState, database)
         registerPrometheusApi()
@@ -165,6 +175,10 @@ fun Application.apiModule(
             registerAvventApi(
                 avventService = avventService,
                 dialogmoteTilgangService = dialogmoteTilgangService
+            )
+            registerMotebehovApi(
+                motebehovService = motebehovService,
+                dialogmoteTilgangService = dialogmoteTilgangService,
             )
         }
         authenticate(JwtIssuerType.SELVBETJENING.name) {
