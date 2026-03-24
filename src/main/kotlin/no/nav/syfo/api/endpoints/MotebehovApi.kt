@@ -7,7 +7,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import no.nav.syfo.api.dto.BehandleMotebehovDTO
+import no.nav.syfo.api.dto.MotebehovVurderingDTO
 import no.nav.syfo.api.validateVeilederAccess
 import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.application.MotebehovService
@@ -18,9 +18,9 @@ fun Route.registerMotebehovApi(
     dialogmoteTilgangService: DialogmoteTilgangService,
 ) {
     route("/api/motebehov") {
-        post("/behandle") {
-            val behandleMotebehovDTO = call.receive<BehandleMotebehovDTO>()
-            val personident = PersonIdent(behandleMotebehovDTO.personident)
+        post("/vurderinger") {
+            val vurdering = call.receive<MotebehovVurderingDTO>()
+            val personident = PersonIdent(vurdering.personident)
 
             validateVeilederAccess(
                 dialogmoteTilgangService = dialogmoteTilgangService,
@@ -29,8 +29,8 @@ fun Route.registerMotebehovApi(
             ) { token ->
                 motebehovService.behandleMotebehov(
                     personident = personident,
-                    harBehovForMote = behandleMotebehovDTO.harBehovForMote,
-                    tilbakemeldinger = behandleMotebehovDTO.tilbakemeldinger.map { it.toTilbakemelding() },
+                    harBehovForMote = vurdering.harBehovForMote,
+                    tilbakemeldinger = vurdering.tilbakemeldinger.map { it.toTilbakemelding() },
                     token = token,
                 )
                 call.respond(HttpStatusCode.OK)

@@ -7,7 +7,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
-import no.nav.syfo.api.dto.BehandleMotebehovDTO
+import no.nav.syfo.api.dto.MotebehovVurderingDTO
 import no.nav.syfo.api.dto.MotebehovTilbakemeldingDTO
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -35,8 +35,8 @@ class MotebehovApiTest {
             VEILEDER_IDENT,
         )
 
-    private val behandleMotebehovDTO =
-        BehandleMotebehovDTO(
+    private val motebehovVurderingDTO =
+        MotebehovVurderingDTO(
             personident = ARBEIDSTAKER_FNR.value,
             harBehovForMote = true,
             tilbakemeldinger = listOf(
@@ -64,10 +64,10 @@ class MotebehovApiTest {
             testApplication {
                 val client = setupApiAndClient()
                 val response =
-                    client.post("$MOTEBEHOV_API_PATH/behandle") {
+                    client.post("$MOTEBEHOV_API_PATH/vurderinger") {
                         bearerAuth(validToken)
                         contentType(ContentType.Application.Json)
-                        setBody(behandleMotebehovDTO)
+                        setBody(motebehovVurderingDTO)
                     }
                 assertEquals(HttpStatusCode.OK, response.status)
             }
@@ -77,7 +77,7 @@ class MotebehovApiTest {
         fun `returns OK when behandling motebehov with multiple tilbakemeldinger`() {
             testApplication {
                 val client = setupApiAndClient()
-                val dto = behandleMotebehovDTO.copy(
+                val dto = motebehovVurderingDTO.copy(
                     tilbakemeldinger = listOf(
                         MotebehovTilbakemeldingDTO(
                             varseltekst = "Første tilbakemelding",
@@ -90,7 +90,7 @@ class MotebehovApiTest {
                     ),
                 )
                 val response =
-                    client.post("$MOTEBEHOV_API_PATH/behandle") {
+                    client.post("$MOTEBEHOV_API_PATH/vurderinger") {
                         bearerAuth(validToken)
                         contentType(ContentType.Application.Json)
                         setBody(dto)
@@ -103,9 +103,9 @@ class MotebehovApiTest {
         fun `returns OK when behandling motebehov with empty tilbakemeldinger`() {
             testApplication {
                 val client = setupApiAndClient()
-                val dto = behandleMotebehovDTO.copy(tilbakemeldinger = emptyList())
+                val dto = motebehovVurderingDTO.copy(tilbakemeldinger = emptyList())
                 val response =
-                    client.post("$MOTEBEHOV_API_PATH/behandle") {
+                    client.post("$MOTEBEHOV_API_PATH/vurderinger") {
                         bearerAuth(validToken)
                         contentType(ContentType.Application.Json)
                         setBody(dto)
@@ -119,10 +119,10 @@ class MotebehovApiTest {
             testApplication {
                 val client = setupApiAndClient()
                 val response =
-                    client.post("$MOTEBEHOV_API_PATH/behandle") {
+                    client.post("$MOTEBEHOV_API_PATH/vurderinger") {
                         bearerAuth(validToken)
                         contentType(ContentType.Application.Json)
-                        setBody(behandleMotebehovDTO.copy(personident = ARBEIDSTAKER_VEILEDER_NO_ACCESS.value))
+                        setBody(motebehovVurderingDTO.copy(personident = ARBEIDSTAKER_VEILEDER_NO_ACCESS.value))
                     }
                 assertEquals(HttpStatusCode.Forbidden, response.status)
             }
@@ -133,9 +133,9 @@ class MotebehovApiTest {
             testApplication {
                 val client = setupApiAndClient()
                 val response =
-                    client.post("$MOTEBEHOV_API_PATH/behandle") {
+                    client.post("$MOTEBEHOV_API_PATH/vurderinger") {
                         contentType(ContentType.Application.Json)
-                        setBody(behandleMotebehovDTO)
+                        setBody(motebehovVurderingDTO)
                     }
                 assertEquals(HttpStatusCode.Unauthorized, response.status)
             }
