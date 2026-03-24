@@ -23,6 +23,10 @@ data class CreateAvventDTO(
         )
 }
 
+data class LukkAvventDTO(
+    val personident: String,
+)
+
 data class QueryAvventDTO(
     val personidenter: List<String>,
 )
