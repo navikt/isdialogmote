@@ -63,6 +63,8 @@ data class Environment(
     val altinnUsername: String = getEnvVar("ALTINN_USERNAME"),
     val altinnPassword: String = getEnvVar("ALTINN_PASSWORD"),
     val altinnSendingEnabled: Boolean = getEnvVar("ALTINN_SENDING_ENABLED").toBoolean(),
+    val syfomotebehovUrl: String = getEnvVar("SYFOMOTEBEHOV_URL"),
+    val syfomotebehovClientId: String = getEnvVar("SYFOMOTEBEHOV_CLIENT_ID"),
     val dokumentportenUrl: String = getEnvVar("DOKUMENTPORTEN_URL"),
     val dokumentportenClientId: String = getEnvVar("DOKUMENTPORTEN_CLIENT_ID"),
     val dokumentportenSendingEnabled: Boolean = getEnvVar("DOKUMENTPORTEN_SENDING_ENABLED").toBoolean(),

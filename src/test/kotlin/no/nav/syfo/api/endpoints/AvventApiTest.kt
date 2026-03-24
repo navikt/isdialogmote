@@ -1,4 +1,4 @@
-package no.nav.syfo.dialogmote.api.v2
+package no.nav.syfo.api.endpoints
 
 import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth

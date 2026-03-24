@@ -9,7 +9,7 @@ suspend fun RoutingContext.validateVeilederAccess(
     dialogmoteTilgangService: DialogmoteTilgangService,
     personIdentToAccess: PersonIdent,
     action: String,
-    requestBlock: suspend () -> Unit,
+    requestBlock: suspend (token: String) -> Unit,
 ) {
     val callId = getCallId()
 
@@ -22,7 +22,7 @@ suspend fun RoutingContext.validateVeilederAccess(
         token = token,
     )
     if (hasVeilederAccess) {
-        requestBlock()
+        requestBlock(token)
     } else {
         throw ForbiddenAccessVeilederException(
             action = action,

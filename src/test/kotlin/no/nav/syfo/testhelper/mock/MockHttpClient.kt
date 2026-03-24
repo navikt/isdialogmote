@@ -32,6 +32,7 @@ fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
                 requestUrl.startsWith("/${environment.ispdfgenUrl}") -> pdfGenMockResponse(request)
                 requestUrl.startsWith("/${environment.dialogmeldingUrl}") -> getBehandlerResponse(request)
                 requestUrl.startsWith("/${environment.dokumentportenUrl}") -> dokumentportenMock(request)
+                requestUrl.startsWith("/${environment.syfomotebehovUrl}") -> syfomotebehovMock(request)
 
                 else -> error("Unhandled ${request.url.encodedPath}")
             }
