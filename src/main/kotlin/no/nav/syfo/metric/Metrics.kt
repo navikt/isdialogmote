@@ -2,8 +2,8 @@ package no.nav.syfo.metric
 
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.Timer
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 
 const val METRICS_NS = "isdialogmote"
 

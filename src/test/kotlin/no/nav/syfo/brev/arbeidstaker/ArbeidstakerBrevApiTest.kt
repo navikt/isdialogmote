@@ -51,15 +51,17 @@ import no.nav.syfo.testhelper.mock.pdfReferat
 import no.nav.syfo.testhelper.postAndGetDialogmote
 import no.nav.syfo.testhelper.postMote
 import no.nav.syfo.testhelper.setupApiAndClient
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertNull
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.test.assertContentEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class ArbeidstakerBrevApiTest {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
@@ -361,7 +363,7 @@ class ArbeidstakerBrevApiTest {
 
                     arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
                     assertNotNull(arbeidstakerBrevDTO)
-                    assertEquals(DialogmoteSvarType.KOMMER.name, arbeidstakerBrevDTO!!.svar!!.svarType)
+                    assertEquals(DialogmoteSvarType.KOMMER.name, arbeidstakerBrevDTO.svar!!.svarType)
                 }
 
                 val response = client.getDialogmoter(validTokenVeileder, ARBEIDSTAKER_FJERDE_FNR)
@@ -553,8 +555,8 @@ class ArbeidstakerBrevApiTest {
 
                     arbeidstakerBrevDTO = arbeidstakerBrevList.firstOrNull()
                     assertNotNull(arbeidstakerBrevDTO)
-                    assertEquals(MotedeltakerVarselType.REFERAT.name, arbeidstakerBrevDTO!!.brevType)
-                    assertNotNull(arbeidstakerBrevDTO!!.lestDato)
+                    assertEquals(MotedeltakerVarselType.REFERAT.name, arbeidstakerBrevDTO.brevType)
+                    assertNotNull(arbeidstakerBrevDTO.lestDato)
                 }
 
                 client.post(urlReferatUUIDLes) {
@@ -583,7 +585,7 @@ class ArbeidstakerBrevApiTest {
                 }.apply {
                     assertEquals(HttpStatusCode.OK, status)
                     val pdfContent = bodyAsChannel().toByteArray()
-                    assertArrayEquals(pdfInnkalling, pdfContent)
+                    assertContentEquals(pdfInnkalling, pdfContent)
                 }
 
                 val urlPdfForReferatNedlasting =
@@ -593,7 +595,7 @@ class ArbeidstakerBrevApiTest {
                 }.apply {
                     assertEquals(HttpStatusCode.OK, status)
                     val pdfContent = bodyAsChannel().toByteArray()
-                    assertArrayEquals(pdfReferat, pdfContent)
+                    assertContentEquals(pdfReferat, pdfContent)
                 }
             }
         }
@@ -695,7 +697,7 @@ class ArbeidstakerBrevApiTest {
                 }.apply {
                     assertEquals(HttpStatusCode.OK, status)
                     val pdfContent = bodyAsChannel().toByteArray()
-                    assertArrayEquals(pdfInnkalling, pdfContent)
+                    assertContentEquals(pdfInnkalling, pdfContent)
                 }
 
                 val urlPdfForReferatNedlasting =
@@ -710,7 +712,7 @@ class ArbeidstakerBrevApiTest {
                 }.apply {
                     assertEquals(HttpStatusCode.OK, status)
                     val pdfContent = bodyAsChannel().toByteArray()
-                    assertArrayEquals(pdfReferat, pdfContent)
+                    assertContentEquals(pdfReferat, pdfContent)
                 }
             }
         }

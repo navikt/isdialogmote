@@ -41,6 +41,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class NarmesteLederBrevTest {
 
