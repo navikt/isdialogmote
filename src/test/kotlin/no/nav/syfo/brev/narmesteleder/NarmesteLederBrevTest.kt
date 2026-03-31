@@ -327,7 +327,7 @@ class NarmesteLederBrevTest {
                     val arbeidstakerBrevUpdatedDTO = arbeidsgiverBrevList.firstOrNull()
                     assertNotNull(arbeidstakerBrevUpdatedDTO)
                     assertEquals(MotedeltakerVarselType.REFERAT.name, arbeidstakerBrevUpdatedDTO.brevType)
-                    assertEquals(arbeidsgiverBrevDTO.lestDato, arbeidstakerBrevUpdatedDTO.lestDato)
+                    assertEquals(arbeidsgiverBrevDTO!!.lestDato, arbeidstakerBrevUpdatedDTO.lestDato)
                 }
 
                 val urlPdfForReferatNedlasting =
