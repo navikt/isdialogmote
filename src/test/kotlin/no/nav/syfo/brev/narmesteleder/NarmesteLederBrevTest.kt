@@ -207,7 +207,7 @@ class NarmesteLederBrevTest {
 
                     val narmesteLederBrevDTO = narmesteLederBrevList.firstOrNull()
                     assertNotNull(narmesteLederBrevDTO)
-                    assertEquals(DialogmoteSvarType.KOMMER.name, narmesteLederBrevDTO!!.svar!!.svarType)
+                    assertEquals(DialogmoteSvarType.KOMMER.name, narmesteLederBrevDTO.svar!!.svarType)
                 }
 
                 client.getDialogmoter(validTokenVeileder, ARBEIDSTAKER_FNR).apply {
@@ -306,7 +306,7 @@ class NarmesteLederBrevTest {
 
                     arbeidsgiverBrevDTO = arbeidsgiverBrevList.firstOrNull()
                     assertNotNull(arbeidsgiverBrevDTO)
-                    assertEquals(MotedeltakerVarselType.REFERAT.name, arbeidsgiverBrevDTO!!.brevType)
+                    assertEquals(MotedeltakerVarselType.REFERAT.name, arbeidsgiverBrevDTO.brevType)
                     assertNotNull(arbeidsgiverBrevDTO.lestDato)
                 }
 
@@ -326,8 +326,8 @@ class NarmesteLederBrevTest {
 
                     val arbeidstakerBrevUpdatedDTO = arbeidsgiverBrevList.firstOrNull()
                     assertNotNull(arbeidstakerBrevUpdatedDTO)
-                    assertEquals(MotedeltakerVarselType.REFERAT.name, arbeidstakerBrevUpdatedDTO!!.brevType)
-                    assertEquals(arbeidsgiverBrevDTO!!.lestDato, arbeidstakerBrevUpdatedDTO.lestDato)
+                    assertEquals(MotedeltakerVarselType.REFERAT.name, arbeidstakerBrevUpdatedDTO.brevType)
+                    assertEquals(arbeidsgiverBrevDTO.lestDato, arbeidstakerBrevUpdatedDTO.lestDato)
                 }
 
                 val urlPdfForReferatNedlasting =
@@ -364,7 +364,7 @@ class NarmesteLederBrevTest {
 
                     val endretReferatBrevDTO = arbeidsgiverBrevList.firstOrNull()
                     assertNotNull(endretReferatBrevDTO)
-                    assertEquals(BrevType.REFERAT_ENDRET.name, endretReferatBrevDTO!!.brevType)
+                    assertEquals(BrevType.REFERAT_ENDRET.name, endretReferatBrevDTO.brevType)
                 }
             }
         }
