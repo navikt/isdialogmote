@@ -29,9 +29,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
-import org.junit.jupiter.api.assertNull
 import java.time.LocalDate
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
@@ -161,7 +161,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
                     assertNotNull(arbeidstakerVarselDTOBrevBestilt.brevBestiltTidspunkt)
                     assertEquals(
                         LocalDate.now(),
-                        arbeidstakerVarselDTOBrevBestilt.brevBestiltTidspunkt!!.toLocalDate()
+                        arbeidstakerVarselDTOBrevBestilt.brevBestiltTidspunkt.toLocalDate()
                     )
                 }
             }

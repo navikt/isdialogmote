@@ -3,7 +3,6 @@ package no.nav.syfo.infrastructure.database
 import com.zaxxer.hikari.HikariConfig
 
 import com.zaxxer.hikari.HikariDataSource
-import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory
 import no.nav.syfo.metric.METRICS_REGISTRY
 import org.flywaydb.core.Flyway
 import java.sql.Connection
@@ -32,7 +31,7 @@ class Database(
             minimumIdle = 1
             isAutoCommit = false
             transactionIsolation = "TRANSACTION_READ_COMMITTED"
-            metricsTrackerFactory = PrometheusMetricsTrackerFactory(METRICS_REGISTRY.prometheusRegistry)
+            metricRegistry = METRICS_REGISTRY
             validate()
         }
     )

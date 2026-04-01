@@ -30,6 +30,7 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import java.util.*
+import kotlin.test.assertNotNull
 
 class DialogmeldingServiceTest {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()

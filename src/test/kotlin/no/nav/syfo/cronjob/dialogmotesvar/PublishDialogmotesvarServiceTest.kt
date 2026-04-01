@@ -18,6 +18,7 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import java.time.OffsetDateTime
 import java.util.*
+import kotlin.test.assertNotNull
 
 class PublishDialogmotesvarServiceTest {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
