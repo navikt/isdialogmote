@@ -60,6 +60,7 @@ spec:
         - application: syfomodiaperson
           namespace: teamsykefravr
           cluster: prod-gcp
+        - application: syfooversiktsrv
         - application: syfomoteoversikt
           namespace: teamsykefravr
           cluster: prod-gcp
