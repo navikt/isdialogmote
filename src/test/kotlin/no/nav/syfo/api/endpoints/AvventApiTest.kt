@@ -8,6 +8,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
+import no.nav.syfo.api.dto.AvventDTO
 import no.nav.syfo.api.dto.LukkAvventDTO
 import no.nav.syfo.api.dto.QueryAvventDTO
 import no.nav.syfo.api.dto.CreateAvventDTO
@@ -71,8 +72,8 @@ class AvventApiTest {
                         setBody(createAvventDTO)
                     }
                 assertEquals(HttpStatusCode.OK, response.status)
-                val avvent = response.body<Avvent>()
-                assertEquals(ARBEIDSTAKER_FNR.value, avvent.personident.value)
+                val avvent = response.body<AvventDTO>()
+                assertEquals(ARBEIDSTAKER_FNR.value, avvent.personident)
             }
         }
 
@@ -124,9 +125,9 @@ class AvventApiTest {
                     }
 
                 assertEquals(HttpStatusCode.OK, response.status)
-                val avventList = response.body<List<Avvent>>()
+                val avventList = response.body<List<AvventDTO>>()
                 assertEquals(1, avventList.size)
-                assertEquals(ARBEIDSTAKER_FNR.value, avventList.first().personident.value)
+                assertEquals(ARBEIDSTAKER_FNR.value, avventList.first().personident)
             }
         }
 

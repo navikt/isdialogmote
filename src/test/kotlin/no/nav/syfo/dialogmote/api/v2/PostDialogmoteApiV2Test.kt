@@ -8,6 +8,7 @@ import io.mockk.*
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
 import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
 import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
+import no.nav.syfo.api.dto.AvventDTO
 import no.nav.syfo.api.dto.CreateAvventDTO
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.dto.QueryAvventDTO
@@ -358,7 +359,7 @@ class PostDialogmoteApiV2Test {
                     contentType(ContentType.Application.Json)
                     setBody(QueryAvventDTO(personidenter = listOf(ARBEIDSTAKER_FNR.value)))
                 }
-                assertEquals(1, queryBefore.body<List<Avvent>>().size)
+                assertEquals(1, queryBefore.body<List<AvventDTO>>().size)
 
                 client.postMote(validToken, newDialogmoteDTO)
 
@@ -367,7 +368,7 @@ class PostDialogmoteApiV2Test {
                     contentType(ContentType.Application.Json)
                     setBody(QueryAvventDTO(personidenter = listOf(ARBEIDSTAKER_FNR.value)))
                 }
-                assertEquals(0, queryAfter.body<List<Avvent>>().size)
+                assertEquals(0, queryAfter.body<List<AvventDTO>>().size)
             }
         }
 
