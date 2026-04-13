@@ -13,11 +13,11 @@ import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.application.MotebehovService
 import no.nav.syfo.domain.PersonIdent
 
-fun Route.registerMotebehovApi(
+fun Route.registerMotebehovApiV2(
     motebehovService: MotebehovService,
     dialogmoteTilgangService: DialogmoteTilgangService,
 ) {
-    route("/api/motebehov") {
+    route("/api/v2/motebehov") {
         post("/vurderinger") {
             val vurdering = call.receive<MotebehovVurderingDTO>()
             val personident = PersonIdent(vurdering.personident)

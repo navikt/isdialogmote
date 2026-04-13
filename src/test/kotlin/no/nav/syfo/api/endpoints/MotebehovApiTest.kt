@@ -22,7 +22,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-private const val MOTEBEHOV_API_PATH = "/api/motebehov"
+private const val MOTEBEHOV_API_PATH = "/api/v2/motebehov"
 
 class MotebehovApiTest {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()

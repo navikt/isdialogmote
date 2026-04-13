@@ -347,14 +347,14 @@ class PostDialogmoteApiV2Test {
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
 
-                val avventResponse = client.post("/api/avvent") {
+                val avventResponse = client.post("/api/v2/avvent") {
                     bearerAuth(validToken)
                     contentType(ContentType.Application.Json)
                     setBody(createAvventDTO)
                 }
                 assertEquals(HttpStatusCode.OK, avventResponse.status)
 
-                val queryBefore = client.post("/api/avvent/query") {
+                val queryBefore = client.post("/api/v2/avvent/query") {
                     bearerAuth(validToken)
                     contentType(ContentType.Application.Json)
                     setBody(QueryAvventDTO(personidenter = listOf(ARBEIDSTAKER_FNR.value)))
@@ -363,7 +363,7 @@ class PostDialogmoteApiV2Test {
 
                 client.postMote(validToken, newDialogmoteDTO)
 
-                val queryAfter = client.post("/api/avvent/query") {
+                val queryAfter = client.post("/api/v2/avvent/query") {
                     bearerAuth(validToken)
                     contentType(ContentType.Application.Json)
                     setBody(QueryAvventDTO(personidenter = listOf(ARBEIDSTAKER_FNR.value)))

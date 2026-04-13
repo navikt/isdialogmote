@@ -15,11 +15,11 @@ import no.nav.syfo.api.authentication.installJwtAuthentication
 import no.nav.syfo.api.authentication.installMetrics
 import no.nav.syfo.api.authentication.installStatusPages
 import no.nav.syfo.api.endpoints.registerArbeidstakerBrevApi
-import no.nav.syfo.api.endpoints.registerAvventApi
+import no.nav.syfo.api.endpoints.registerAvventApiV2
 import no.nav.syfo.api.endpoints.registerDialogmoteActionsApiV2
 import no.nav.syfo.api.endpoints.registerDialogmoteApiV2
 import no.nav.syfo.api.endpoints.registerDialogmoteEnhetApiV2
-import no.nav.syfo.api.endpoints.registerMotebehovApi
+import no.nav.syfo.api.endpoints.registerMotebehovApiV2
 import no.nav.syfo.api.endpoints.registerNarmestelederBrevApi
 import no.nav.syfo.api.endpoints.registerPodApi
 import no.nav.syfo.api.endpoints.registerPrometheusApi
@@ -172,11 +172,11 @@ fun Application.apiModule(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService
             )
-            registerAvventApi(
+            registerAvventApiV2(
                 avventService = avventService,
                 dialogmoteTilgangService = dialogmoteTilgangService
             )
-            registerMotebehovApi(
+            registerMotebehovApiV2(
                 motebehovService = motebehovService,
                 dialogmoteTilgangService = dialogmoteTilgangService,
             )

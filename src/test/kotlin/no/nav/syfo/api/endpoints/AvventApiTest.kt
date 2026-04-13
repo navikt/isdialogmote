@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
-private const val AVVENT_API_PATH = "/api/avvent"
+private const val AVVENT_API_PATH = "/api/v2/avvent"
 
 class AvventApiTest {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
