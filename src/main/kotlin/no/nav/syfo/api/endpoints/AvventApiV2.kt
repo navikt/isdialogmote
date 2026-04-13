@@ -17,11 +17,11 @@ import no.nav.syfo.application.AvventService
 import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.domain.PersonIdent
 
-fun Route.registerAvventApi(
+fun Route.registerAvventApiV2(
     avventService: AvventService,
     dialogmoteTilgangService: DialogmoteTilgangService
 ) {
-    route("/api/avvent") {
+    route("/api/v2/avvent") {
         post {
             val avvent = call.receive<CreateAvventDTO>()
 
