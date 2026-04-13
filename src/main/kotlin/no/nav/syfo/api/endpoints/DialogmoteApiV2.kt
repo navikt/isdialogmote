@@ -13,6 +13,7 @@ import no.nav.syfo.api.getBearerHeader
 import no.nav.syfo.api.getCallId
 import no.nav.syfo.api.getPersonIdentHeader
 import no.nav.syfo.api.validateVeilederAccess
+import no.nav.syfo.api.validateVeilederFullTilgangAndPersonAccess
 import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.domain.PersonIdent
 
@@ -76,7 +77,7 @@ fun Route.registerDialogmoteApiV2(
 
             val personIdent = PersonIdent(newDialogmoteDTO.arbeidstaker.personIdent)
 
-            validateVeilederAccess(
+            validateVeilederFullTilgangAndPersonAccess(
                 dialogmoteTilgangService = dialogmoteTilgangService,
                 personIdentToAccess = personIdent,
                 action = "Create new Dialogmoteinnkalling"

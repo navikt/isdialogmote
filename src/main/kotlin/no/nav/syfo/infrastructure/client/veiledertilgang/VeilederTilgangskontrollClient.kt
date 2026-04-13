@@ -26,12 +26,57 @@ class VeilederTilgangskontrollClient(
     private val httpClient: HttpClient = httpClientDefault(),
 ) {
 
+    private val tilgangskontrollSyfoPermissionsUrl: String
     private val tilgangskontrollPersonListUrl: String
     private val tilgangskontrollEnhetUrl: String
 
     init {
+        tilgangskontrollSyfoPermissionsUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_SYFO_PERMISSIONS_PATH"
         tilgangskontrollPersonListUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_PERSON_LIST_PATH"
         tilgangskontrollEnhetUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_ENHET_PATH"
+    }
+
+    suspend fun hasSyfoFullTilgang(
+        token: String,
+        callId: String,
+    ): Boolean {
+        val oboToken = azureAdV2Client.getOnBehalfOfToken(
+            scopeClientId = tilgangskontrollClientId,
+            token = token
+        )?.accessToken ?: throw RuntimeException("Failed to retrieve syfo-tilganger: Failed to get OBO token")
+
+        val startTime = System.currentTimeMillis()
+        return try {
+            val response: HttpResponse = httpClient.get(urlString = tilgangskontrollSyfoPermissionsUrl) {
+                header(HttpHeaders.Authorization, bearerHeader(token = oboToken))
+                header(NAV_CALL_ID_HEADER, value = callId)
+                accept(ContentType.Application.Json)
+            }
+            if (response.body<Tilgang>().fullTilgang) {
+                COUNT_CALL_TILGANGSKONTROLL_FULL_TILGANG_TRUE.increment()
+                true
+            } else {
+                COUNT_CALL_TILGANGSKONTROLL_FULL_TILGANG_FALSE.increment()
+                false
+            }
+        } catch (e: ClientRequestException) {
+            if (e.response.status == HttpStatusCode.Forbidden) {
+                COUNT_CALL_TILGANGSKONTROLL_SYFO_TILGANGER_FORBIDDEN.increment()
+            } else {
+                handleUnexpectedResponseException(e.response, resourceSyfoTilganger, callId)
+            }
+            false
+        } catch (e: ServerResponseException) {
+            COUNT_CALL_TILGANGSKONTROLL_SYFO_TILGANGER_FAIL.increment()
+            handleUnexpectedResponseException(e.response, resourceSyfoTilganger, callId)
+            false
+        } catch (e: ClosedReceiveChannelException) {
+            handleClosedReceiveChannelException(e, "hasSyfoFullTilgang", resourceSyfoTilganger)
+            false
+        } finally {
+            val duration = Duration.ofMillis(System.currentTimeMillis() - startTime)
+            HISTOGRAM_CALL_TILGANGSKONTROLL_SYFO_TILGANGER_TIMER.record(duration)
+        }
     }
 
     suspend fun hasAccessToPersonList(
@@ -44,7 +89,7 @@ class VeilederTilgangskontrollClient(
             token = token
         )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
 
-        val starttime = System.currentTimeMillis()
+        val startTime = System.currentTimeMillis()
         return try {
             val personIdentStringList = personIdentList.map { it.value }
 
@@ -71,7 +116,7 @@ class VeilederTilgangskontrollClient(
             handleClosedReceiveChannelException(e, "hasAccessToPersonList", resourcePersonList)
             emptyList()
         } finally {
-            val duration = Duration.ofMillis(System.currentTimeMillis() - starttime)
+            val duration = Duration.ofMillis(System.currentTimeMillis() - startTime)
             HISTOGRAM_CALL_TILGANGSKONTROLL_PERSONS_TIMER.record(duration)
         }
     }
@@ -87,7 +132,7 @@ class VeilederTilgangskontrollClient(
         )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
 
         val url = "$tilgangskontrollEnhetUrl/${enhetNr.value}"
-        val starttime = System.currentTimeMillis()
+        val startTime = System.currentTimeMillis()
         return try {
             val response: HttpResponse = httpClient.get(url) {
                 header(HttpHeaders.Authorization, bearerHeader(oboToken))
@@ -111,7 +156,7 @@ class VeilederTilgangskontrollClient(
             handleClosedReceiveChannelException(e, "hasAccessToEnhet", resourceEnhet)
             false
         } finally {
-            val duration = Duration.ofMillis(System.currentTimeMillis() - starttime)
+            val duration = Duration.ofMillis(System.currentTimeMillis() - startTime)
             HISTOGRAM_CALL_TILGANGSKONTROLL_ENHET_TIMER.record(duration)
         }
     }
@@ -153,10 +198,12 @@ class VeilederTilgangskontrollClient(
     companion object {
         private val log = LoggerFactory.getLogger(VeilederTilgangskontrollClient::class.java)
 
+        private const val resourceSyfoTilganger = "SYFO_TILGANGER"
         private const val resourcePersonList = "PERSONLIST"
         private const val resourceEnhet = "ENHET"
 
         const val TILGANGSKONTROLL_COMMON_PATH = "/api/tilgang/navident"
+        const val TILGANGSKONTROLL_SYFO_PERMISSIONS_PATH = "$TILGANGSKONTROLL_COMMON_PATH/syfo"
         const val TILGANGSKONTROLL_PERSON_LIST_PATH = "$TILGANGSKONTROLL_COMMON_PATH/brukere"
         const val TILGANGSKONTROLL_ENHET_PATH = "$TILGANGSKONTROLL_COMMON_PATH/enhet"
     }
