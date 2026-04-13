@@ -21,6 +21,28 @@ fun Route.registerAvventApiV2(
     avventService: AvventService,
     dialogmoteTilgangService: DialogmoteTilgangService
 ) {
+    // TODO: Delete this route after updating syfooversiktsrv to use v2
+    route("/api/avvent") {
+        post("/query") {
+            val query = call.receive<QueryAvventDTO>()
+            val personidenter = query.personidenter.map { personident ->
+                PersonIdent(personident)
+            }
+
+            validateVeilederAccess(
+                dialogmoteTilgangService = dialogmoteTilgangService,
+                personIdenterToAccess = personidenter,
+                action = "Query Avvent for Person with PersonIdenter",
+            ) {
+                val avventList =
+                    avventService
+                        .getAvventForIdenter(personidenter)
+                        .map { it.toAvventDTO() }
+                call.respond(avventList)
+            }
+        }
+    }
+
     route("/api/v2/avvent") {
         post {
             val avvent = call.receive<CreateAvventDTO>()
