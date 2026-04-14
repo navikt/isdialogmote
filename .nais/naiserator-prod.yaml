@@ -70,6 +70,9 @@ spec:
         - application: esyfo-proxy
           namespace: team-esyfo
           cluster: prod-gcp
+        - application: esyfo-microfrontends
+          namespace: team-esyfo
+          cluster: prod-gcp
     outbound:
       external:
         - host: "login.microsoftonline.com"
