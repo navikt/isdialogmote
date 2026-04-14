@@ -100,7 +100,7 @@ class MotebehovClient(
     }
 
     companion object {
-        private const val MOTEBEHOV_BASE_PATH = "/api/internad/v4/veileder"
+        private const val MOTEBEHOV_BASE_PATH = "/syfomotebehov/api/internad/v4/veileder"
         const val MOTEBEHOV_BEHANDLE_PATH = "$MOTEBEHOV_BASE_PATH/motebehov/behandle"
         const val MOTEBEHOV_TILBAKEMELDING_PATH = "$MOTEBEHOV_BASE_PATH/motebehov/tilbakemelding"
 
