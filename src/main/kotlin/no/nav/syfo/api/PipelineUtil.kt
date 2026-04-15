@@ -16,9 +16,9 @@ suspend fun RoutingContext.validateVeilederAccess(
     val token = getBearerHeader()
         ?: throw IllegalArgumentException("No Authorization header supplied")
 
-    val hasVeilederAccess = dialogmoteTilgangService.hasAccessToAllDialogmotePersons(
+    val hasVeilederAccess = dialogmoteTilgangService.hasAccessToDialogmotePerson(
         callId = callId,
-        personIdentList = listOf(personIdentToAccess),
+        personident = personIdentToAccess,
         token = token,
     )
     if (hasVeilederAccess) {

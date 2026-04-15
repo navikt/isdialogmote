@@ -9,6 +9,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.api.NAV_CALL_ID_HEADER
+import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.api.bearerHeader
 import no.nav.syfo.api.callIdArgument
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
@@ -26,12 +27,36 @@ class VeilederTilgangskontrollClient(
     private val httpClient: HttpClient = httpClientDefault(),
 ) {
 
-    private val tilgangskontrollPersonListUrl: String
-    private val tilgangskontrollEnhetUrl: String
+    private val tilgangskontrollPersonUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_PERSON_PATH"
+    private val tilgangskontrollPersonListUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_PERSON_LIST_PATH"
+    private val tilgangskontrollEnhetUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_ENHET_PATH"
 
-    init {
-        tilgangskontrollPersonListUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_PERSON_LIST_PATH"
-        tilgangskontrollEnhetUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_ENHET_PATH"
+    suspend fun hasAccessToPerson(
+        personident: PersonIdent,
+        token: String,
+        callId: String,
+    ): Boolean {
+        val oboToken = azureAdV2Client.getOnBehalfOfToken(
+            scopeClientId = tilgangskontrollClientId,
+            token = token
+        )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
+
+        return try {
+            val tilgang = httpClient.get(urlString = tilgangskontrollPersonUrl) {
+                header(HttpHeaders.Authorization, bearerHeader(token = oboToken))
+                header(NAV_CALL_ID_HEADER, value = callId)
+                accept(ContentType.Application.Json)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
+            }
+            tilgang.body<Tilgang>().erGodkjent
+        } catch (e: ResponseException) {
+            if (e.response.status == HttpStatusCode.Forbidden) {
+                log.warn("Access to person forbidden: $callId")
+            } else {
+                handleUnexpectedResponseException(e.response, tilgangskontrollPersonUrl, callId)
+            }
+            false
+        }
     }
 
     suspend fun hasAccessToPersonList(
@@ -157,6 +182,7 @@ class VeilederTilgangskontrollClient(
         private const val resourceEnhet = "ENHET"
 
         const val TILGANGSKONTROLL_COMMON_PATH = "/api/tilgang/navident"
+        const val TILGANGSKONTROLL_PERSON_PATH = "$TILGANGSKONTROLL_COMMON_PATH/person"
         const val TILGANGSKONTROLL_PERSON_LIST_PATH = "$TILGANGSKONTROLL_COMMON_PATH/brukere"
         const val TILGANGSKONTROLL_ENHET_PATH = "$TILGANGSKONTROLL_COMMON_PATH/enhet"
     }

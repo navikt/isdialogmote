@@ -2,9 +2,11 @@ package no.nav.syfo.testhelper.mock
 
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
+import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.client.veiledertilgang.Tilgang
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient.Companion.TILGANGSKONTROLL_ENHET_PATH
 import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient.Companion.TILGANGSKONTROLL_PERSON_LIST_PATH
+import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient.Companion.TILGANGSKONTROLL_PERSON_PATH
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FJERDE_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
@@ -14,6 +16,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_BEHANDLENDE_ENHET
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_JOURNALFORING
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_TREDJE_FNR
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR_NO_ACCESS
@@ -41,6 +44,15 @@ fun MockRequestHandleScope.tilgangskontrollResponse(request: HttpRequestData): H
 
         requestUrl.endsWith("$TILGANGSKONTROLL_ENHET_PATH/${ENHET_NR_NO_ACCESS.value}") ->
             respondOk(Tilgang(erGodkjent = false))
+
+        requestUrl.contains(TILGANGSKONTROLL_PERSON_PATH) -> {
+            val personident = request.headers[NAV_PERSONIDENT_HEADER]
+            if (personident == ARBEIDSTAKER_VEILEDER_NO_ACCESS.value) {
+                respondOk(Tilgang(erGodkjent = false))
+            } else {
+                respondOk(Tilgang(erGodkjent = true))
+            }
+        }
 
         else -> error("Unhandled $requestUrl")
     }

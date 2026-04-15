@@ -20,6 +20,17 @@ class DialogmoteTilgangService(
         return personListWithVeilederAccess.containsAll(personIdentList)
     }
 
+    suspend fun hasAccessToDialogmotePerson(
+        personident: PersonIdent,
+        token: String,
+        callId: String,
+    ): Boolean =
+        veilederTilgangskontrollClient.hasAccessToPerson(
+            personident = personident,
+            token = token,
+            callId = callId,
+        )
+
     suspend fun hasAccessToDialogmotePersonList(
         personIdentList: List<PersonIdent>,
         token: String,
