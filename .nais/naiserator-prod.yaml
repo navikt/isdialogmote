@@ -70,7 +70,7 @@ spec:
         - application: esyfo-proxy
           namespace: team-esyfo
           cluster: prod-gcp
-        - application: esyfo-microfrontends
+        - application: dialogmote-microfrontend
           namespace: team-esyfo
           cluster: prod-gcp
     outbound:
