@@ -6,16 +6,16 @@ version = "1.0.0"
 
 val altinnCorrespondenceAgencyExternalVersion = "1.2021.02.22-10.45-4201aaea72fb"
 val cxfVersion = "3.6.10"
-val confluentVersion = "8.1.0"
+val confluentVersion = "8.2.0"
 val flywayVersion = "11.19.0"
 val hikariVersion = "7.0.2"
 val isdialogmoteSchemaVersion = "1.0.5"
-val jacksonDataTypeVersion = "2.20.1"
-val jacksonDatabindVersion = "3.1.0"
+val jacksonDataTypeVersion = "2.21.2"
+val jacksonDatabindVersion = "3.1.2"
 val jedisVersion = "5.2.0"
 val jsonVersion = "20250517"
-val kafkaVersion = "4.1.1"
-val ktorVersion = "3.4.1"
+val kafkaVersion = "4.2.0"
+val ktorVersion = "3.4.2"
 val jaxbApiVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.3.6"
 val jaxsWsApiVersion = "2.3.1"
@@ -23,10 +23,10 @@ val logbackVersion = "1.5.32"
 val logstashEncoderVersion = "9.0"
 val micrometerRegistryVersion = "1.16.4"
 val mockkVersion = "1.14.6"
-val nimbusjosejwtVersion = "10.8"
-val postgresEmbeddedVersion = "2.2.0"
+val nimbusjosejwtVersion = "10.9"
+val postgresEmbeddedVersion = "2.2.2"
 val postgresVersion = "42.7.10"
-val postgresRuntimeVersion = "17.5.0"
+val postgresRuntimeVersion = "17.9.0"
 val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
 
 plugins {
@@ -92,26 +92,12 @@ dependencies {
         exclude(group = "org.apache.logging.log4j")
     }
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", excludeLog4j)
-    constraints {
-        implementation("commons-beanutils:commons-beanutils") {
-            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
-            version {
-                require("1.11.0")
-            }
-        }
-    }
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion", excludeLog4j)
     constraints {
-        implementation("org.apache.avro:avro") {
-            because("io.confluent:kafka-avro-serializer:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
-            version {
-                require("1.12.1")
-            }
-        }
         implementation("org.apache.commons:commons-lang3") {
             because("org.apache.commons:commons-lang3:3.16.0 -> https://www.cve.org/CVERecord?id=CVE-2025-48924")
             version {
-                require("3.19.0")
+                require("3.20.0")
             }
         }
         implementation("com.google.guava:guava") {
@@ -129,12 +115,6 @@ dependencies {
                 require("4.8.179")
             }
         }
-        implementation("org.glassfish.jersey.core:jersey-client") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2025-12383")
-            version {
-                require("3.1.11")
-            }
-        }
         implementation("com.nimbusds:nimbus-jose-jwt") {
             version {
                 require(nimbusjosejwtVersion)
@@ -142,15 +122,6 @@ dependencies {
         }
     }
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion")
-    constraints {
-        implementation("org.apache.avro:avro") {
-            because("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion -> https://nvd.nist.gov/vuln/detail/CVE-2023-39410")
-            version {
-                require("1.12.1")
-            }
-        }
-    }
-
     implementation("no.nav.tjenestespesifikasjoner:servicemeldingMedKontaktinformasjon-v1-tjenestespesifikasjon:$tjenesteSpesifikasjonerGithubVersion")
 
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
