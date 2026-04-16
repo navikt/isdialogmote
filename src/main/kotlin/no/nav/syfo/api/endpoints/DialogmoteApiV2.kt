@@ -54,7 +54,7 @@ fun Route.registerDialogmoteApiV2(
             val dialogmoteList =
                 dialogmoteService.getDialogmoteUnfinishedListForVeilederIdent(getNAVIdentFromToken(token))
 
-            val personListWithVeilederAccess = dialogmoteTilgangService.hasAccessToDialogmotePersonList(
+            val personListWithVeilederAccess = dialogmoteTilgangService.filterAccessToDialogmotePersonList(
                 personIdentList = dialogmoteList.map { it.arbeidstaker.personIdent },
                 token = token,
                 callId = callId,

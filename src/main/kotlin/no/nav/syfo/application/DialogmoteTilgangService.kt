@@ -11,16 +11,22 @@ class DialogmoteTilgangService(
         token: String,
         callId: String,
     ): Boolean {
-        val personListWithVeilederAccess = hasAccessToDialogmotePersonList(
-            personIdentList = personIdentList,
+        // TODO: Her skal vi også sjekke full tilgang (så kan *ikke* bruke filterAccessToDialogmotePersonList)
+        return personIdentList.all { hasAccessToDialogmotePerson(it, token, callId) }
+    }
+
+    suspend fun hasAccessToDialogmotePerson(
+        personident: PersonIdent,
+        token: String,
+        callId: String,
+    ): Boolean =
+        veilederTilgangskontrollClient.hasAccessToPerson(
+            personident = personident,
             token = token,
             callId = callId,
         )
 
-        return personListWithVeilederAccess.containsAll(personIdentList)
-    }
-
-    suspend fun hasAccessToDialogmotePersonList(
+    suspend fun filterAccessToDialogmotePersonList(
         personIdentList: List<PersonIdent>,
         token: String,
         callId: String,
