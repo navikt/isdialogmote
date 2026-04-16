@@ -149,7 +149,7 @@ class AvventApiTest {
         }
 
         @Test
-        fun `returns Forbidden when veileder has no access to person`() {
+        fun `filters persons who the veileder does not have access to`() {
             testApplication {
                 val client = setupApiAndClient()
                 val response =
@@ -158,7 +158,9 @@ class AvventApiTest {
                         contentType(ContentType.Application.Json)
                         setBody(QueryAvventDTO(personidenter = listOf(ARBEIDSTAKER_VEILEDER_NO_ACCESS.value)))
                     }
-                assertEquals(HttpStatusCode.Forbidden, response.status)
+                assertEquals(HttpStatusCode.OK, response.status)
+                val avventList = response.body<List<Avvent>>()
+                assertEquals(0, avventList.size)
             }
         }
     }

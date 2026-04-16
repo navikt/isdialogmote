@@ -12,6 +12,7 @@ import no.nav.syfo.api.dto.LukkAvventDTO
 import no.nav.syfo.api.dto.QueryAvventDTO
 import no.nav.syfo.api.dto.toAvventDTO
 import no.nav.syfo.api.getBearerHeader
+import no.nav.syfo.api.getCallId
 import no.nav.syfo.api.validateVeilederAccess
 import no.nav.syfo.application.AvventService
 import no.nav.syfo.application.DialogmoteTilgangService
@@ -21,28 +22,6 @@ fun Route.registerAvventApiV2(
     avventService: AvventService,
     dialogmoteTilgangService: DialogmoteTilgangService
 ) {
-    // TODO: Delete this route after updating syfooversiktsrv to use v2
-    route("/api/avvent") {
-        post("/query") {
-            val query = call.receive<QueryAvventDTO>()
-            val personidenter = query.personidenter.map { personident ->
-                PersonIdent(personident)
-            }
-
-            validateVeilederAccess(
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdenterToAccess = personidenter,
-                action = "Query Avvent for Person with PersonIdenter",
-            ) {
-                val avventList =
-                    avventService
-                        .getAvventForIdenter(personidenter)
-                        .map { it.toAvventDTO() }
-                call.respond(avventList)
-            }
-        }
-    }
-
     route("/api/v2/avvent") {
         post {
             val avvent = call.receive<CreateAvventDTO>()
@@ -67,21 +46,22 @@ fun Route.registerAvventApiV2(
 
         post("/query") {
             val query = call.receive<QueryAvventDTO>()
+            val token = getBearerHeader()
+                ?: throw IllegalArgumentException("No Authorization header supplied")
+            val callId = getCallId()
             val personidenter = query.personidenter.map { personident ->
                 PersonIdent(personident)
             }
-
-            validateVeilederAccess(
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdenterToAccess = personidenter,
-                action = "Query Avvent for Person with PersonIdenter",
-            ) {
-                val avventList =
-                    avventService
-                        .getAvventForIdenter(personidenter)
-                        .map { it.toAvventDTO() }
-                call.respond(avventList)
-            }
+            val personListWithVeilederAccess = dialogmoteTilgangService.hasAccessToDialogmotePersonList(
+                personIdentList = personidenter,
+                token = token,
+                callId = callId,
+            )
+            val avventList =
+                avventService
+                    .getAvventForIdenter(personListWithVeilederAccess)
+                    .map { it.toAvventDTO() }
+            call.respond(avventList)
         }
 
         post("/lukk") {

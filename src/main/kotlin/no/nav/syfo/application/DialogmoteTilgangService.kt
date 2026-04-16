@@ -11,13 +11,12 @@ class DialogmoteTilgangService(
         token: String,
         callId: String,
     ): Boolean {
-        val personListWithVeilederAccess = hasAccessToDialogmotePersonList(
-            personIdentList = personIdentList,
-            token = token,
-            callId = callId,
-        )
-
-        return personListWithVeilederAccess.containsAll(personIdentList)
+        personIdentList.map {
+            if (!hasAccessToDialogmotePerson(it, token, callId)) {
+                return false
+            }
+        }
+        return true
     }
 
     suspend fun hasAccessToDialogmotePerson(

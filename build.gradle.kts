@@ -73,6 +73,7 @@ dependencies {
 
     // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonDataTypeVersion")
+    implementation("tools.jackson.core:jackson-databind:$jacksonDatabindVersion")
     implementation("javax.xml.bind:jaxb-api:$jaxbApiVersion")
     implementation("org.glassfish.jaxb:jaxb-runtime:$jaxbRuntimeVersion")
 
@@ -87,12 +88,13 @@ dependencies {
     testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:$postgresRuntimeVersion"))
 
     // Kafka
-    val excludeLog4j = fun ExternalModuleDependency.() {
+    val exclutions = fun ExternalModuleDependency.() {
         exclude(group = "log4j")
         exclude(group = "org.apache.logging.log4j")
+        exclude(group = "commons-lang")
     }
-    implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", excludeLog4j)
-    implementation("io.confluent:kafka-avro-serializer:$confluentVersion", excludeLog4j)
+    implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", exclutions)
+    implementation("io.confluent:kafka-avro-serializer:$confluentVersion", exclutions)
     constraints {
         implementation("org.apache.commons:commons-lang3") {
             because("org.apache.commons:commons-lang3:3.16.0 -> https://www.cve.org/CVERecord?id=CVE-2025-48924")
@@ -106,8 +108,13 @@ dependencies {
                 require("33.4.0-jre")
             }
         }
+        implementation("org.eclipse.jetty:jetty-server") {
+            version {
+                require("12.0.34")
+            }
+        }
     }
-    implementation("io.confluent:kafka-schema-registry:$confluentVersion", excludeLog4j)
+    implementation("io.confluent:kafka-schema-registry:$confluentVersion", exclutions)
     constraints {
         implementation("io.github.classgraph:classgraph") {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
@@ -131,10 +138,10 @@ dependencies {
 
     // Soap
     implementation("no.nav.tjenestespesifikasjoner:altinn-correspondence-agency-external-basic:$altinnCorrespondenceAgencyExternalVersion")
-    implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
-    implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
-    implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
-    implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
+    implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion", exclutions)
+    implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion", exclutions)
+    implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion", exclutions)
+    implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion", exclutions)
     implementation("javax.xml.ws:jaxws-api:$jaxsWsApiVersion")
 }
 
