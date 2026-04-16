@@ -52,7 +52,7 @@ fun Route.registerAvventApiV2(
             val personidenter = query.personidenter.map { personident ->
                 PersonIdent(personident)
             }
-            val personListWithVeilederAccess = dialogmoteTilgangService.hasAccessToDialogmotePersonList(
+            val personListWithVeilederAccess = dialogmoteTilgangService.filterAccessToDialogmotePersonList(
                 personIdentList = personidenter,
                 token = token,
                 callId = callId,

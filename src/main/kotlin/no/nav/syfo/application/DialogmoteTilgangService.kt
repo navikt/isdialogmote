@@ -11,7 +11,7 @@ class DialogmoteTilgangService(
         token: String,
         callId: String,
     ): Boolean {
-        // TODO: Her skal vi også sjekke full tilgang (så kan *ikke* bruke hasAccessToDialogmotePersonList)
+        // TODO: Her skal vi også sjekke full tilgang (så kan *ikke* bruke filterAccessToDialogmotePersonList)
         return personIdentList.all { hasAccessToDialogmotePerson(it, token, callId) }
     }
 
@@ -26,7 +26,7 @@ class DialogmoteTilgangService(
             callId = callId,
         )
 
-    suspend fun hasAccessToDialogmotePersonList(
+    suspend fun filterAccessToDialogmotePersonList(
         personIdentList: List<PersonIdent>,
         token: String,
         callId: String,

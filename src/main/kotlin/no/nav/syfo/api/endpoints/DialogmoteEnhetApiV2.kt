@@ -53,7 +53,7 @@ fun Route.registerDialogmoteEnhetApiV2(
                         val duration = Duration.ofMillis(System.currentTimeMillis() - starttime)
                         HISTOGRAM_CALL_DIALOGMOTER_ENHET_TIMER.record(duration)
 
-                        val personListWithVeilederAccess = dialogmoteTilgangService.hasAccessToDialogmotePersonList(
+                        val personListWithVeilederAccess = dialogmoteTilgangService.filterAccessToDialogmotePersonList(
                             personIdentList = dialogmoteList.map { it.arbeidstaker.personIdent },
                             token = token,
                             callId = callId,
