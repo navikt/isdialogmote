@@ -11,12 +11,8 @@ class DialogmoteTilgangService(
         token: String,
         callId: String,
     ): Boolean {
-        personIdentList.map {
-            if (!hasAccessToDialogmotePerson(it, token, callId)) {
-                return false
-            }
-        }
-        return true
+        // TODO: Her skal vi også sjekke full tilgang (så kan *ikke* bruke hasAccessToDialogmotePersonList)
+        return personIdentList.all { hasAccessToDialogmotePerson(it, token, callId) }
     }
 
     suspend fun hasAccessToDialogmotePerson(
