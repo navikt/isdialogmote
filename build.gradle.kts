@@ -88,13 +88,13 @@ dependencies {
     testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:$postgresRuntimeVersion"))
 
     // Kafka
-    val exclutions = fun ExternalModuleDependency.() {
+    val exclusions = fun ExternalModuleDependency.() {
         exclude(group = "log4j")
         exclude(group = "org.apache.logging.log4j")
         exclude(group = "commons-lang")
     }
-    implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", exclutions)
-    implementation("io.confluent:kafka-avro-serializer:$confluentVersion", exclutions)
+    implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", exclusions)
+    implementation("io.confluent:kafka-avro-serializer:$confluentVersion", exclusions)
     constraints {
         implementation("org.apache.commons:commons-lang3") {
             because("org.apache.commons:commons-lang3:3.16.0 -> https://www.cve.org/CVERecord?id=CVE-2025-48924")
@@ -114,7 +114,7 @@ dependencies {
             }
         }
     }
-    implementation("io.confluent:kafka-schema-registry:$confluentVersion", exclutions)
+    implementation("io.confluent:kafka-schema-registry:$confluentVersion", exclusions)
     constraints {
         implementation("io.github.classgraph:classgraph") {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
@@ -138,10 +138,10 @@ dependencies {
 
     // Soap
     implementation("no.nav.tjenestespesifikasjoner:altinn-correspondence-agency-external-basic:$altinnCorrespondenceAgencyExternalVersion")
-    implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion", exclutions)
-    implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion", exclutions)
-    implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion", exclutions)
-    implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion", exclutions)
+    implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion", exclusions)
+    implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion", exclusions)
+    implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion", exclusions)
+    implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion", exclusions)
     implementation("javax.xml.ws:jaxws-api:$jaxsWsApiVersion")
 }
 
