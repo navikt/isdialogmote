@@ -10,7 +10,6 @@ import no.nav.syfo.api.getCallId
 import no.nav.syfo.application.DialogmoteService
 import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.domain.EnhetNr
-import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.metric.HISTOGRAM_CALL_DIALOGMOTER_ENHET_TIMER
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -24,7 +23,6 @@ const val dialogmoteApienhetNrParam = "enhetNr"
 fun Route.registerDialogmoteEnhetApiV2(
     dialogmoteService: DialogmoteService,
     dialogmoteTilgangService: DialogmoteTilgangService,
-    veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
 ) {
     route(dialogmoteApiV2Basepath) {
         get("$dialogmoteApiEnhetUrlPath/{$dialogmoteApienhetNrParam}") {
@@ -37,7 +35,7 @@ fun Route.registerDialogmoteEnhetApiV2(
                 val token = getBearerHeader()
                     ?: throw IllegalArgumentException("No Authorization header supplied")
 
-                val accessToEnhet = veilederTilgangskontrollClient.hasAccessToEnhet(
+                val accessToEnhet = dialogmoteTilgangService.hasAccessToEnhet(
                     enhetNr = enhetNr,
                     token = token,
                     callId = callId

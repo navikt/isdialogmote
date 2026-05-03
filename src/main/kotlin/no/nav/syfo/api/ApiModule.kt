@@ -46,10 +46,11 @@ import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.Oppfolgingstilfelle
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
-import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangEnhetClient
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.repository.AvventRepository
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.tilgangskontroll.client.VeilederTilgangskontrollClient
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -66,6 +67,7 @@ fun Application.apiModule(
     pdlClient: PdlClient,
     behandlendeEnhetClient: BehandlendeEnhetClient,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
+    veilederTilgangEnhetClient: VeilederTilgangEnhetClient,
     oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     pdfGenClient: PdfGenClient,
     kontaktinformasjonClient: KontaktinformasjonClient,
@@ -97,6 +99,7 @@ fun Application.apiModule(
 
     val dialogmoteTilgangService = DialogmoteTilgangService(
         veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+        veilederTilgangEnhetClient = veilederTilgangEnhetClient,
     )
 
     val narmesteLederVarselService = NarmesteLederVarselService(
@@ -161,7 +164,6 @@ fun Application.apiModule(
             registerDialogmoteEnhetApiV2(
                 dialogmoteService = dialogmoteService,
                 dialogmoteTilgangService = dialogmoteTilgangService,
-                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             )
             registerDialogmoteApiV2(
                 dialogmoteService = dialogmoteService,

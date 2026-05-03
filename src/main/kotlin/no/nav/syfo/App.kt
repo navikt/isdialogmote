@@ -41,7 +41,11 @@ import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
-import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangEnhetClient
+import no.nav.syfo.azure.AzureAdClient
+import no.nav.syfo.azure.AzureEnvironment
+import no.nav.syfo.tilgangskontroll.client.VeilederTilgangskontrollClient
+import no.nav.syfo.tilgangskontroll.client.VeilederTilgangConfig
 import no.nav.syfo.infrastructure.database.TransactionManager
 import no.nav.syfo.infrastructure.database.repository.MoteRepository
 import no.nav.syfo.infrastructure.database.repository.PdfRepository
@@ -129,10 +133,25 @@ fun main() {
     val pdfGenClient = PdfGenClient(
         pdfGenBaseUrl = environment.ispdfgenUrl
     )
+    val veilederTilgangAzureAdClient = AzureAdClient(
+        azureEnvironment = AzureEnvironment(
+            appClientId = environment.aadAppClient,
+            appClientSecret = environment.aadAppSecret,
+            appWellKnownUrl = environment.azureAppWellKnownUrl,
+            openidConfigTokenEndpoint = environment.aadTokenEndpoint,
+        ),
+    )
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
-        azureAdV2Client = azureAdV2Client,
+        azureAdClient = veilederTilgangAzureAdClient,
+        config = VeilederTilgangConfig(
+            baseUrl = environment.istilgangskontrollUrl,
+            clientId = environment.istilgangskontrollClientId,
+        ),
+    )
+    val veilederTilgangEnhetClient = VeilederTilgangEnhetClient(
+        azureAdClient = veilederTilgangAzureAdClient,
         tilgangskontrollClientId = environment.istilgangskontrollClientId,
-        tilgangskontrollBaseUrl = environment.istilgangskontrollUrl
+        tilgangskontrollBaseUrl = environment.istilgangskontrollUrl,
     )
     val narmesteLederClient = NarmesteLederClient(
         narmesteLederBaseUrl = environment.narmestelederUrl,
@@ -210,6 +229,7 @@ fun main() {
                 pdlClient = pdlClient,
                 behandlendeEnhetClient = behandlendeEnhetClient,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                veilederTilgangEnhetClient = veilederTilgangEnhetClient,
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,
                 kontaktinformasjonClient = kontaktinformasjonClient,
                 pdfGenClient = pdfGenClient,

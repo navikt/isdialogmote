@@ -5,6 +5,7 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val altinnCorrespondenceAgencyExternalVersion = "1.2021.02.22-10.45-4201aaea72fb"
+val isyfoBackendUtilsVersion = "0.0.5"
 val cxfVersion = "3.6.10"
 val confluentVersion = "8.2.0"
 val flywayVersion = "11.19.0"
@@ -129,6 +130,7 @@ dependencies {
         }
     }
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion")
+    implementation("no.nav.syfo:isyfo-backend-utils:$isyfoBackendUtilsVersion")
     implementation("no.nav.tjenestespesifikasjoner:servicemeldingMedKontaktinformasjon-v1-tjenestespesifikasjon:$tjenesteSpesifikasjonerGithubVersion")
 
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
