@@ -25,7 +25,7 @@ val micrometerRegistryVersion = "1.16.4"
 val mockkVersion = "1.14.6"
 val nimbusjosejwtVersion = "10.9"
 val postgresEmbeddedVersion = "2.2.2"
-val postgresVersion = "42.7.10"
+val postgresVersion = "42.7.11"
 val postgresRuntimeVersion = "17.9.0"
 val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
 
