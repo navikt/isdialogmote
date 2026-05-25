@@ -30,7 +30,7 @@ val postgresRuntimeVersion = "17.9.0"
 val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
 
 plugins {
-    kotlin("jvm") version "2.3.10"
+    kotlin("jvm") version "2.3.21"
     id("com.gradleup.shadow") version "8.3.8"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("com.github.ben-manes.versions") version "0.54.0"
