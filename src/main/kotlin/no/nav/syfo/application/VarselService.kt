@@ -95,6 +95,7 @@ class VarselService(
                     varseltype = varselType,
                     arbeidstakerPersonIdent = arbeidstakerPersonIdent,
                     arbeidstakernavn = arbeidstakernavn,
+                    manglerNarmesteLeder = narmesteLeder == null
                 ),
                 token = token,
                 callId = callId,

@@ -616,7 +616,6 @@ class DialogmoteService(
             dialogmotedeltakerService.slettBrukeroppgaverPaMote(
                 dialogmote = dialogmote
             )
-
             varselService.sendVarsel(
                 varselType = MotedeltakerVarselType.REFERAT,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,

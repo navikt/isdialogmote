@@ -16,6 +16,7 @@ data class DokumentportenDocumentRequestDTO(
     val summary: String,
     val fnr: String,
     val fullName: String,
+    val varselInstruks: VarselInstruks? = null,
 ) {
 
     override fun equals(other: Any?): Boolean {
@@ -65,6 +66,7 @@ data class DokumentportenDocumentRequestDTO(
             varseltype: MotedeltakerVarselType,
             arbeidstakerPersonIdent: PersonIdent,
             arbeidstakernavn: String,
+            manglerNarmesteLeder: Boolean,
         ): DokumentportenDocumentRequestDTO {
             return DokumentportenDocumentRequestDTO(
                 documentId = reference,
@@ -76,6 +78,7 @@ data class DokumentportenDocumentRequestDTO(
                 summary = summary(varseltype, arbeidstakernavn),
                 fnr = arbeidstakerPersonIdent.value,
                 fullName = arbeidstakernavn,
+                varselInstruks = if (manglerNarmesteLeder) VarselInstruks.opprettForVarselType(varseltype) else null
             )
         }
 
