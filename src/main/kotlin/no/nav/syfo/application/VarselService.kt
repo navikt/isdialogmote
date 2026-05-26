@@ -69,7 +69,16 @@ class VarselService(
 
         val hasActiveTilfelle = tilfelle != null && !tilfelle.isInactive()
 
-        if (isAltinnSendingEnabled) {
+        if (isAltinnSendingEnabled && LocalDateTime.now().isBefore(
+                LocalDateTime.of(
+                        /* year = */ 2026,
+                        /* month = */ 5,
+                        /* dayOfMonth = */ 29,
+                        /* hour = */ 23,
+                        /* minute = */59
+                    )
+            )
+        ) {
             altinnClient.sendToVirksomhet(
                 altinnMelding = altinnMelding,
             )
