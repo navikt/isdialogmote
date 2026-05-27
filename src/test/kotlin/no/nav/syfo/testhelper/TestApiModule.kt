@@ -6,6 +6,7 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.*
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.infrastructure.client.ereg.EregClient
 import no.nav.syfo.infrastructure.client.motebehov.MotebehovClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
@@ -75,6 +76,10 @@ fun Application.testApiModule(
         syfomotebehovBaseUrl = externalMockEnvironment.environment.syfomotebehovUrl,
         httpClient = externalMockEnvironment.mockHttpClient,
     )
+    val eregClient = EregClient(
+        baseUrl = externalMockEnvironment.environment.eregUrl,
+        httpClient = externalMockEnvironment.mockHttpClient,
+    )
 
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,
@@ -97,6 +102,7 @@ fun Application.testApiModule(
         narmesteLederClient = narmesteLederClient,
         dokumentportenClient = dokumentportenClient,
         motebehovClient = motebehovClient,
+        eregClient = eregClient,
         pdfRepository = externalMockEnvironment.pdfRepository,
         moteRepository = externalMockEnvironment.moteRepository,
         transactionManager = externalMockEnvironment.transactionManager,

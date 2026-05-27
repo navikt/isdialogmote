@@ -16,6 +16,7 @@ import java.time.LocalDateTime
 import java.util.*
 import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenClient
 import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenDocumentRequestDTO
+import no.nav.syfo.infrastructure.client.ereg.EregClient
 
 class VarselService(
     private val arbeidstakerVarselService: ArbeidstakerVarselService,
@@ -26,6 +27,7 @@ class VarselService(
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     private val isAltinnSendingEnabled: Boolean,
     private val isDokumentportenSendingEnabled: Boolean,
+    private val eregClient: EregClient,
 ) {
     private val log: Logger = LoggerFactory.getLogger(VarselService::class.java)
 
@@ -86,16 +88,20 @@ class VarselService(
 
         if (isDokumentportenSendingEnabled) {
             log.info("Dokumentporten utsending er aktiv. Starter utsending av $varselType")
+            val manglerNarmesteLeder = narmesteLeder == null
+            val virksomhetsnavn =
+                if (manglerNarmesteLeder) eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer) else null
 
             dokumentportenClient.sendDocument(
                 DokumentportenDocumentRequestDTO.create(
                     reference = virksomhetsbrevId,
                     virksomhetsnummer = virksomhetsnummer,
+                    virksomhetsnavn = virksomhetsnavn,
                     file = virksomhetsPdf,
                     varseltype = varselType,
                     arbeidstakerPersonIdent = arbeidstakerPersonIdent,
                     arbeidstakernavn = arbeidstakernavn,
-                    manglerNarmesteLeder = narmesteLeder == null
+                    manglerNarmesteLeder = manglerNarmesteLeder,
                 ),
                 token = token,
                 callId = callId,

@@ -23,6 +23,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenClient
+import no.nav.syfo.infrastructure.client.ereg.EregClient
 
 class VarselServiceTest {
 
@@ -31,6 +32,7 @@ class VarselServiceTest {
     private val behandlerVarselService = mockk<BehandlerVarselService>()
     private val altinnClient = mockk<AltinnClient>()
     private val oppfolgingstilfelleClient = mockk<OppfolgingstilfelleClient>()
+    private val eregClient = mockk<EregClient>()
     private val anyOppfolgingstilfelle = Oppfolgingstilfelle(
         start = LocalDate.now().minusDays(10),
         end = LocalDate.now().plusDays(10),
@@ -45,6 +47,7 @@ class VarselServiceTest {
         isAltinnSendingEnabled = true,
         dokumentportenClient = mockk<DokumentportenClient>(relaxed = true),
         isDokumentportenSendingEnabled = true,
+        eregClient = eregClient,
     )
 
     @BeforeEach
@@ -54,11 +57,13 @@ class VarselServiceTest {
         clearMocks(behandlerVarselService)
         clearMocks(altinnClient)
         clearMocks(oppfolgingstilfelleClient)
+        clearMocks(eregClient)
 
         justRun { arbeidstakerVarselService.sendVarsel(any(), any(), any(), any(), any()) }
         justRun { narmesteLederVarselService.sendVarsel(any(), any(), any()) }
         justRun { behandlerVarselService.sendVarsel(any(), any(), any(), any(), any(), any(), any(), any()) }
         justRun { altinnClient.sendToVirksomhet(any()) }
+        coEvery { eregClient.organisasjonVirksomhetsnavn(any()) } returns null
     }
 
     @Test
