@@ -53,16 +53,6 @@ class VarselService(
         token: String,
         callId: String,
     ) {
-        val altinnMelding = createAltinnMelding(
-            virksomhetsbrevId,
-            virksomhetsnummer,
-            virksomhetsPdf,
-            varselType,
-            arbeidstakerPersonIdent,
-            arbeidstakernavn,
-            narmesteLeder != null,
-        )
-
         val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfellePerson(
             callId = callId,
             personIdent = arbeidstakerPersonIdent,
@@ -81,6 +71,15 @@ class VarselService(
                     )
             )
         ) {
+            val altinnMelding = createAltinnMelding(
+                virksomhetsbrevId,
+                virksomhetsnummer,
+                virksomhetsPdf,
+                varselType,
+                arbeidstakerPersonIdent,
+                arbeidstakernavn,
+                narmesteLeder != null,
+            )
             altinnClient.sendToVirksomhet(
                 altinnMelding = altinnMelding,
             )
