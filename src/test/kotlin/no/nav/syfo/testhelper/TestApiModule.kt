@@ -20,6 +20,10 @@ fun Application.testApiModule(
     behandlerVarselService: BehandlerVarselService = mockk(),
     altinnMock: ICorrespondenceAgencyExternalBasic = mockk(),
     esyfovarselProducer: EsyfovarselProducer = mockk(relaxed = true),
+    eregClient: EregClient = EregClient(
+        baseUrl = externalMockEnvironment.environment.eregUrl,
+        httpClient = externalMockEnvironment.mockHttpClient,
+    ),
 ) {
     val dialogmotestatusService = DialogmotestatusService(
         oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
@@ -76,11 +80,6 @@ fun Application.testApiModule(
         syfomotebehovBaseUrl = externalMockEnvironment.environment.syfomotebehovUrl,
         httpClient = externalMockEnvironment.mockHttpClient,
     )
-    val eregClient = EregClient(
-        baseUrl = externalMockEnvironment.environment.eregUrl,
-        httpClient = externalMockEnvironment.mockHttpClient,
-    )
-
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,
         esyfovarselProducer = esyfovarselProducer,
