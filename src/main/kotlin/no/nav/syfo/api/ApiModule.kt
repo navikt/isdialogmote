@@ -40,6 +40,7 @@ import no.nav.syfo.application.VarselService
 import no.nav.syfo.infrastructure.client.altinn.AltinnClient
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenClient
+import no.nav.syfo.infrastructure.client.ereg.EregClient
 import no.nav.syfo.infrastructure.client.motebehov.MotebehovClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
@@ -72,6 +73,7 @@ fun Application.apiModule(
     narmesteLederClient: NarmesteLederClient,
     dokumentportenClient: DokumentportenClient,
     motebehovClient: MotebehovClient,
+    eregClient: EregClient,
     pdfRepository: IPdfRepository,
     moteRepository: IMoteRepository,
     transactionManager: ITransactionManager,
@@ -117,7 +119,8 @@ fun Application.apiModule(
         dokumentportenClient = dokumentportenClient,
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
         isAltinnSendingEnabled = environment.altinnSendingEnabled,
-        isDokumentportenSendingEnabled = environment.dokumentportenSendingEnabled
+        isDokumentportenSendingEnabled = environment.dokumentportenSendingEnabled,
+        eregClient = eregClient,
     )
 
     val avventRepository = AvventRepository(database)

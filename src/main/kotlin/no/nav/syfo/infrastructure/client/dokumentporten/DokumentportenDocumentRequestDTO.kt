@@ -5,6 +5,7 @@ import java.util.UUID
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
+import no.nav.syfo.infrastructure.client.ereg.EregVirksomhetsnavn
 
 data class DokumentportenDocumentRequestDTO(
     val documentId: UUID,
@@ -62,6 +63,7 @@ data class DokumentportenDocumentRequestDTO(
         fun create(
             reference: UUID,
             virksomhetsnummer: Virksomhetsnummer,
+            virksomhetsnavn: EregVirksomhetsnavn?,
             file: ByteArray,
             varseltype: MotedeltakerVarselType,
             arbeidstakerPersonIdent: PersonIdent,
@@ -78,7 +80,11 @@ data class DokumentportenDocumentRequestDTO(
                 summary = summary(varseltype, arbeidstakernavn),
                 fnr = arbeidstakerPersonIdent.value,
                 fullName = arbeidstakernavn,
-                varselInstruks = if (manglerNarmesteLeder) VarselInstruks.opprettForVarselType(varseltype) else null
+                varselInstruks = if (manglerNarmesteLeder) VarselInstruks.opprettForVarselType(
+                    varselType = varseltype,
+                    virksomhetsnummer = virksomhetsnummer,
+                    virksomhetsnavn = virksomhetsnavn,
+                ) else null
             )
         }
 
