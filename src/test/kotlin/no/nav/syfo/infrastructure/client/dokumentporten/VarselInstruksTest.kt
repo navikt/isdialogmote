@@ -68,7 +68,7 @@ class VarselInstruksTest {
         )
 
         assertEquals(HendelseType.AG_VARSEL_ALTINN_RESSURS, varselInstruks.type, scenario)
-        assertEquals("DIALOGMOTE", varselInstruks.kilde, scenario)
+        assertEquals("isdialogmote", varselInstruks.kilde, scenario)
         assertEquals(forventning.epostTittel, varselInstruks.notifikasjonInnhold.epostTittel, scenario)
         assertEquals(forventning.varselTekst, varselInstruks.notifikasjonInnhold.varselTekst, scenario)
         assertContains(varselInstruks.notifikasjonInnhold.epostBody, forventetMottaker, message = scenario)

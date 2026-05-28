@@ -5,6 +5,7 @@ import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.client.ereg.EregVirksomhetsnavn
 
+private const val KILDE = "isdialogmote"
 private const val VARSEL_TEKST_INNKALT = "Innkalling til dialogmøte med Nav"
 private const val VARSEL_TEKST_AVLYST = "Dialogmøte med Nav er avlyst"
 private const val VARSEL_TEKST_EMAIL_TITTEL_NYTT_TID_STED = "Dialogmøte med Nav er endret"
@@ -181,7 +182,7 @@ data class VarselInstruks(
                     smsTekst = toSMSBody(varselType, virksomhetsnummer, virksomhetsnavn),
                     varselTekst = toVarselTekst(varselType)
                 ),
-                kilde = "DIALOGMOTE"
+                kilde = KILDE
             )
         }
     }
