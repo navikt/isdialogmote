@@ -53,8 +53,10 @@ private val EMAIL_BODY_AVLYST = """
 private val EMAIL_BODY_REFERAT = """
     <p>{mottaker} har vært i dialogmøte med Nav i forbindelse med
     sykefraværet til en av deres ansatte.</p>
+    
+    <p>Referatet er nå tilgjengelig.</p>
 
-    <p> Du kan lese referatet i {mottaker} sin innboks i Altinn, eller ved å logge inn på Min side arbeidsgiver hos Nav.</p>
+    <p>Du kan lese referatet i {mottaker} sin innboks i Altinn, eller ved å logge inn på Min side arbeidsgiver hos Nav.</p>
 
     <p>$SIGNATUR</p>
 """
@@ -93,6 +95,8 @@ private val SMS_BODY_AVLYST = """
 private val SMS_BODY_REFERAT = """
     {mottaker} har vært i dialogmøte med Nav i forbindelse med
     sykefraværet til en av deres ansatte.
+    
+     Referatet er nå tilgjengelig.
 
      Du kan lese referatet i {mottaker} sin innboks i Altinn, eller ved å logge inn på Min side arbeidsgiver hos Nav.
 
