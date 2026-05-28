@@ -72,10 +72,10 @@ class VarselService(
         if (isAltinnSendingEnabled && LocalDateTime.now().isBefore(
                 LocalDateTime.of(
                         /* year = */ 2026,
-                        /* month = */ 5,
-                        /* dayOfMonth = */ 29,
-                        /* hour = */ 23,
-                        /* minute = */59
+                        /* month = */ 6,
+                        /* dayOfMonth = */ 15,
+                        /* hour = */ 11,
+                        /* minute = */45
                     )
             )
         ) {
