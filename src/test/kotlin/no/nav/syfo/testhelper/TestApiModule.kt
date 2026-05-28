@@ -10,9 +10,11 @@ import no.nav.syfo.infrastructure.client.motebehov.MotebehovClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
-import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangEnhetClient
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.tilgangskontroll.client.VeilederTilgangskontrollClient
+import no.nav.syfo.tilgangskontroll.client.VeilederTilgangConfig
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
@@ -33,7 +35,15 @@ fun Application.testApiModule(
         moteRepository = externalMockEnvironment.moteRepository,
     )
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
-        azureAdV2Client = externalMockEnvironment.azureAdV2Client,
+        azureAdClient = externalMockEnvironment.azureAdClient,
+        config = VeilederTilgangConfig(
+            baseUrl = externalMockEnvironment.environment.istilgangskontrollUrl,
+            clientId = externalMockEnvironment.environment.istilgangskontrollClientId,
+        ),
+        httpClient = externalMockEnvironment.mockHttpClient,
+    )
+    val veilederTilgangEnhetClient = VeilederTilgangEnhetClient(
+        azureAdClient = externalMockEnvironment.azureAdClient,
         tilgangskontrollClientId = externalMockEnvironment.environment.istilgangskontrollClientId,
         tilgangskontrollBaseUrl = externalMockEnvironment.environment.istilgangskontrollUrl,
         httpClient = externalMockEnvironment.mockHttpClient,
@@ -91,6 +101,7 @@ fun Application.testApiModule(
         pdlClient = externalMockEnvironment.pdlClient,
         oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
         veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+        veilederTilgangEnhetClient = veilederTilgangEnhetClient,
         behandlendeEnhetClient = behandlendeEnhetClient,
         pdfGenClient = pdfGenClient,
         kontaktinformasjonClient = kontaktinformasjonClient,

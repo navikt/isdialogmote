@@ -11,6 +11,8 @@ import no.nav.syfo.infrastructure.database.TransactionManager
 import no.nav.syfo.infrastructure.database.repository.MoteRepository
 import no.nav.syfo.infrastructure.database.repository.PdfRepository
 import no.nav.syfo.testhelper.mock.*
+import no.nav.syfo.azure.AzureAdClient
+import no.nav.syfo.azure.AzureEnvironment
 import redis.clients.jedis.DefaultJedisClientConfig
 import redis.clients.jedis.HostAndPort
 import redis.clients.jedis.JedisPool
@@ -46,6 +48,15 @@ class ExternalMockEnvironment private constructor() {
         aadAppSecret = environment.aadAppSecret,
         aadTokenEndpoint = environment.aadTokenEndpoint,
         valkeyStore = redisCache,
+        httpClient = mockHttpClient,
+    )
+    val azureAdClient = AzureAdClient(
+        azureEnvironment = AzureEnvironment(
+            appClientId = environment.aadAppClient,
+            appClientSecret = environment.aadAppSecret,
+            appWellKnownUrl = environment.azureAppWellKnownUrl,
+            openidConfigTokenEndpoint = environment.aadTokenEndpoint,
+        ),
         httpClient = mockHttpClient,
     )
     val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
