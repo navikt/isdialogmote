@@ -79,12 +79,13 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
     private fun Connection.extendDialogmoteRelations(dialogmote: PDialogmote): Dialogmote {
         val arbeidstaker = this.getMotedeltakerArbeidstaker(dialogmote.id)
         val arbeidsgiver = this.getMotedeltakerArbeidsgiver(dialogmote.id)
+        val behandler = this.getBehandler(dialogmote.id)
         val tidSted = this.getTidSted(dialogmote.id)
 
         return dialogmote.toDialogmote(
             dialogmotedeltakerArbeidstaker = arbeidstaker,
             dialogmotedeltakerArbeidsgiver = arbeidsgiver,
-            dialogmotedeltakerBehandler = this.getBehandler(dialogmote.id),
+            dialogmotedeltakerBehandler = behandler,
             dialogmoteTidStedList = tidSted.map { it.toDialogmoteTidSted() },
             referatList = this.getReferater(dialogmote.id, arbeidstaker.id, arbeidsgiver.id)
         )
