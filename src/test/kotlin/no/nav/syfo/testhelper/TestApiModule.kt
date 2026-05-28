@@ -6,6 +6,7 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.*
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.infrastructure.client.ereg.EregClient
 import no.nav.syfo.infrastructure.client.motebehov.MotebehovClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
@@ -19,6 +20,10 @@ fun Application.testApiModule(
     behandlerVarselService: BehandlerVarselService = mockk(),
     altinnMock: ICorrespondenceAgencyExternalBasic = mockk(),
     esyfovarselProducer: EsyfovarselProducer = mockk(relaxed = true),
+    eregClient: EregClient = EregClient(
+        baseUrl = externalMockEnvironment.environment.eregUrl,
+        httpClient = externalMockEnvironment.mockHttpClient,
+    ),
 ) {
     val dialogmotestatusService = DialogmotestatusService(
         oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
@@ -75,7 +80,6 @@ fun Application.testApiModule(
         syfomotebehovBaseUrl = externalMockEnvironment.environment.syfomotebehovUrl,
         httpClient = externalMockEnvironment.mockHttpClient,
     )
-
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,
         esyfovarselProducer = esyfovarselProducer,
@@ -97,6 +101,7 @@ fun Application.testApiModule(
         narmesteLederClient = narmesteLederClient,
         dokumentportenClient = dokumentportenClient,
         motebehovClient = motebehovClient,
+        eregClient = eregClient,
         pdfRepository = externalMockEnvironment.pdfRepository,
         moteRepository = externalMockEnvironment.moteRepository,
         transactionManager = externalMockEnvironment.transactionManager,

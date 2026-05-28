@@ -466,12 +466,17 @@ class DialogmoteVarselJournalforingCronjobTest {
             personIdent = UserConstants.ARBEIDSTAKER_FNR,
             virksomhetsnummer = UserConstants.VIRKSOMHETSNUMMER_EREG_FAILS.value,
         )
+        val eregClientApiMock = mockk<EregClient>()
+        coEvery {
+            eregClientApiMock.organisasjonVirksomhetsnavn(UserConstants.VIRKSOMHETSNUMMER_EREG_FAILS)
+        } returns null
 
         testApplication {
             val client = setupApiAndClient(
                 behandlerVarselService = behandlerVarselService,
                 altinnMock = altinnMock,
-                esyfovarselProducer = esyfovarselProducerMock
+                esyfovarselProducer = esyfovarselProducerMock,
+                eregClient = eregClientApiMock,
             )
             client.postMote(validToken, newDialogmoteDTO)
         }

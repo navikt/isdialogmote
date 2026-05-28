@@ -19,6 +19,7 @@ import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.dialogmote.Dialogmote
+import no.nav.syfo.infrastructure.client.ereg.EregClient
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -28,6 +29,10 @@ fun ApplicationTestBuilder.setupApiAndClient(
     behandlerVarselService: BehandlerVarselService = mockk(),
     altinnMock: ICorrespondenceAgencyExternalBasic = mockk(),
     esyfovarselProducer: EsyfovarselProducer = mockk(relaxed = true),
+    eregClient: EregClient = EregClient(
+        baseUrl = ExternalMockEnvironment.getInstance().environment.eregUrl,
+        httpClient = ExternalMockEnvironment.getInstance().mockHttpClient,
+    ),
 ): HttpClient {
     application {
         testApiModule(
@@ -35,6 +40,7 @@ fun ApplicationTestBuilder.setupApiAndClient(
             behandlerVarselService = behandlerVarselService,
             altinnMock = altinnMock,
             esyfovarselProducer = esyfovarselProducer,
+            eregClient = eregClient,
         )
     }
     val client = createClient {
