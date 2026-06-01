@@ -6,20 +6,20 @@ import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.client.ereg.EregVirksomhetsnavn
 
 private const val KILDE = "isdialogmote"
-private const val VARSEL_TEKST_INNKALT = "Viktig: Innkalling til dialogmøte med Nav"
-private const val VARSEL_TEKST_AVLYST = "Viktig: Dialogmøte med Nav er avlyst"
-private const val VARSEL_TEKST_EMAIL_TITTEL_NYTT_TID_STED = "Viktig: Dialogmøte med Nav er endret"
-private const val VARSEL_TEKST_REFERAT = "Referat fra dialogmøte med Nav"
+internal const val VARSEL_TEKST_INNKALT = "Viktig: Innkalling til dialogmøte med Nav"
+internal const val VARSEL_TEKST_AVLYST = "Viktig: Dialogmøte med Nav er avlyst"
+internal const val VARSEL_TEKST_EMAIL_TITTEL_NYTT_TID_STED = "Viktig: Dialogmøte med Nav er endret"
+internal const val VARSEL_TEKST_REFERAT = "Referat fra dialogmøte med Nav"
 
-private const val EMAIL_TITTEL_INNKALT = "Viktig: Innkalling til dialogmøte med Nav - {mottaker}"
-private const val EMAIL_TITTEL_NYTT_TID_STED = "Viktig: Dialogmøte med Nav er endret - {mottaker}"
-private const val EMAIL_TITTEL_AVLYST = "Viktig: Dialogmøte med Nav er avlyst - {mottaker}"
-private const val EMAIL_TITTEL_REFERAT = "Referat fra dialogmøte med Nav - {mottaker}"
+internal const val EMAIL_TITTEL_INNKALT = "Viktig: Innkalling til dialogmøte med Nav - {mottaker}"
+internal const val EMAIL_TITTEL_NYTT_TID_STED = "Viktig: Dialogmøte med Nav er endret - {mottaker}"
+internal const val EMAIL_TITTEL_AVLYST = "Viktig: Dialogmøte med Nav er avlyst - {mottaker}"
+internal const val EMAIL_TITTEL_REFERAT = "Referat fra dialogmøte med Nav - {mottaker}"
 private const val SIGNATUR = "Vennlig hilsen Nav"
 
 private const val MOTTAKER_PLACEHOLDER = "{mottaker}"
 
-private val EMAIL_BODY_INNKALT = """
+internal val EMAIL_BODY_INNKALT = """
     <p>Hei,
     Nav har kalt inn til et dialogmøte for en av deres ansatte. Når nærmeste leder ikke er registrert hos Nav, går innkallingen til bedriften.
     Du mottar denne beskjeden fordi du er satt opp for å motta varsler om dialogmøter i Altinn for {mottaker}.
@@ -33,7 +33,7 @@ private val EMAIL_BODY_INNKALT = """
 
     <p>$SIGNATUR</p>
 """.trimIndent()
-private val EMAIL_BODY_NYTT_TID_STED = """
+internal val EMAIL_BODY_NYTT_TID_STED = """
     <p>Hei,
     Nav har flyttet tid eller sted for et dialogmøte for en av deres ansatte. Når nærmeste leder ikke er registrert hos Nav, går endringen til bedriften.
     Du mottar denne beskjeden fordi du er satt opp for å motta varsler om dialogmøter i Altinn for {mottaker}.
@@ -48,7 +48,7 @@ private val EMAIL_BODY_NYTT_TID_STED = """
     <p>$SIGNATUR</p>
 """.trimIndent()
 
-private val EMAIL_BODY_AVLYST = """
+internal val EMAIL_BODY_AVLYST = """
     <p>Hei,
     Nav har avlyst et dialogmøte for en av deres ansatte. Når nærmeste leder ikke er registrert hos Nav, går avlysningen til bedriften.
     Du mottar denne beskjeden fordi du er satt opp for å motta varsler om dialogmøter i Altinn for {mottaker}.
@@ -63,7 +63,7 @@ private val EMAIL_BODY_AVLYST = """
     <p>$SIGNATUR</p>
 """.trimIndent()
 
-private val EMAIL_BODY_REFERAT = """
+internal val EMAIL_BODY_REFERAT = """
     <p>Hei,
     Nav har sendt referat fra et dialogmøte for en av deres ansatte. Når nærmeste leder ikke er registrert hos Nav, går referatet til bedriften.
     Du mottar denne beskjeden fordi du er satt opp for å motta varsler om dialogmøter i Altinn for {mottaker}.
@@ -78,7 +78,7 @@ private val EMAIL_BODY_REFERAT = """
     <p>$SIGNATUR</p>
 """.trimIndent()
 
-private val SMS_BODY_INNKALT = """
+internal val SMS_BODY_INNKALT = """
     {mottaker} er innkalt til dialogmøte med Nav i forbindelse med
     sykefraværet til en av deres ansatte.
 
@@ -87,7 +87,7 @@ private val SMS_BODY_INNKALT = """
     $SIGNATUR
 """.trimIndent()
 
-private val SMS_BODY_NYTT_TID_STED = """
+internal val SMS_BODY_NYTT_TID_STED = """
     {mottaker} er innkalt til dialogmøte med Nav i forbindelse med
     sykefraværet til en av deres ansatte.
 
@@ -98,7 +98,7 @@ private val SMS_BODY_NYTT_TID_STED = """
     $SIGNATUR
 """.trimIndent()
 
-private val SMS_BODY_AVLYST = """
+internal val SMS_BODY_AVLYST = """
     {mottaker} var kalt inn til et dialogmøte med Nav i forbindelse med
     sykefraværet til en av deres ansatte.
 
@@ -109,7 +109,7 @@ private val SMS_BODY_AVLYST = """
     $SIGNATUR
 """.trimIndent()
 
-private val SMS_BODY_REFERAT = """
+internal val SMS_BODY_REFERAT = """
     {mottaker} har vært i dialogmøte med Nav i forbindelse med
     sykefraværet til en av deres ansatte.
     

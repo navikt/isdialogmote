@@ -69,20 +69,32 @@ class VarselInstruksTest {
 
         assertEquals(HendelseType.AG_VARSEL_ALTINN_RESSURS, varselInstruks.type, scenario)
         assertEquals("isdialogmote", varselInstruks.kilde, scenario)
-        assertEquals(forventning.epostTittel, varselInstruks.notifikasjonInnhold.epostTittel, scenario)
+        assertEquals(
+            forventning.epostTittelTemplate.withMottaker(forventetMottaker),
+            varselInstruks.notifikasjonInnhold.epostTittel,
+            scenario,
+        )
         assertEquals(forventning.varselTekst, varselInstruks.notifikasjonInnhold.varselTekst, scenario)
+        assertEquals(
+            forventning.epostBodyTemplate.withMottaker(forventetMottaker),
+            varselInstruks.notifikasjonInnhold.epostBody,
+            scenario,
+        )
+        assertEquals(
+            forventning.smsTekstTemplate.withMottaker(forventetMottaker),
+            varselInstruks.notifikasjonInnhold.smsTekst,
+            scenario,
+        )
         assertContains(varselInstruks.notifikasjonInnhold.epostBody, forventetMottaker, message = scenario)
         assertContains(varselInstruks.notifikasjonInnhold.smsTekst, forventetMottaker, message = scenario)
-        forventning.epostFragmenter.forEach {
-            assertContains(varselInstruks.notifikasjonInnhold.epostBody, it, message = scenario)
-        }
-        forventning.smsFragmenter.forEach {
-            assertContains(varselInstruks.notifikasjonInnhold.smsTekst, it, message = scenario)
-        }
+        assertFalse(varselInstruks.notifikasjonInnhold.epostTittel.contains("{mottaker}"), scenario)
         assertFalse(varselInstruks.notifikasjonInnhold.epostBody.contains("{mottaker}"), scenario)
         assertFalse(varselInstruks.notifikasjonInnhold.smsTekst.contains("{mottaker}"), scenario)
+        assertFalse(varselInstruks.notifikasjonInnhold.varselTekst.contains("{mottaker}"), scenario)
+        assertFalse(varselInstruks.notifikasjonInnhold.epostTittel.contains("null"), scenario)
         assertFalse(varselInstruks.notifikasjonInnhold.epostBody.contains("null"), scenario)
         assertFalse(varselInstruks.notifikasjonInnhold.smsTekst.contains("null"), scenario)
+        assertFalse(varselInstruks.notifikasjonInnhold.varselTekst.contains("null"), scenario)
     }
 
     private fun scenarioBeskrivelse(
@@ -93,64 +105,42 @@ class VarselInstruksTest {
 
     private data class VarselInstruksForventning(
         val varselType: MotedeltakerVarselType,
-        val epostTittel: String,
+        val epostTittelTemplate: String,
         val varselTekst: String,
-        val epostFragmenter: List<String>,
-        val smsFragmenter: List<String>,
+        val epostBodyTemplate: String,
+        val smsTekstTemplate: String,
     )
+
+    private fun String.withMottaker(mottaker: String): String = replace("{mottaker}", mottaker)
 
     private val forventninger = listOf(
         VarselInstruksForventning(
             varselType = MotedeltakerVarselType.INNKALT,
-            epostTittel = "Innkalling til dialogmøte med Nav",
-            varselTekst = "Innkalling til dialogmøte med Nav",
-            epostFragmenter = listOf(
-                "er innkalt til dialogmøte med Nav",
-                "Du kan lese innkallingen",
-            ),
-            smsFragmenter = listOf(
-                "er innkalt til dialogmøte med Nav",
-                "Du kan lese innkallingen",
-            ),
+            epostTittelTemplate = EMAIL_TITTEL_INNKALT,
+            varselTekst = VARSEL_TEKST_INNKALT,
+            epostBodyTemplate = EMAIL_BODY_INNKALT,
+            smsTekstTemplate = SMS_BODY_INNKALT,
         ),
         VarselInstruksForventning(
             varselType = MotedeltakerVarselType.NYTT_TID_STED,
-            epostTittel = "Dialogmøte med Nav er endret",
-            varselTekst = "Dialogmøte med Nav er endret",
-            epostFragmenter = listOf(
-                "Nav har endret tidspunktet eller stedet for dialogmøtet.",
-                "Du kan lese endringen",
-            ),
-            smsFragmenter = listOf(
-                "Nav har endret tidspunktet eller stedet for dialogmøtet.",
-                "Du kan lese endringen",
-            ),
+            epostTittelTemplate = EMAIL_TITTEL_NYTT_TID_STED,
+            varselTekst = VARSEL_TEKST_EMAIL_TITTEL_NYTT_TID_STED,
+            epostBodyTemplate = EMAIL_BODY_NYTT_TID_STED,
+            smsTekstTemplate = SMS_BODY_NYTT_TID_STED,
         ),
         VarselInstruksForventning(
             varselType = MotedeltakerVarselType.AVLYST,
-            epostTittel = "Dialogmøte med Nav er avlyst",
-            varselTekst = "Dialogmøte med Nav er avlyst",
-            epostFragmenter = listOf(
-                "Dialogmøtet har blitt avlyst.",
-                "Du kan lese avlysningen",
-            ),
-            smsFragmenter = listOf(
-                "Dialogmøtet har blitt avlyst.",
-                "Du kan lese avlysningen",
-            ),
+            epostTittelTemplate = EMAIL_TITTEL_AVLYST,
+            varselTekst = VARSEL_TEKST_AVLYST,
+            epostBodyTemplate = EMAIL_BODY_AVLYST,
+            smsTekstTemplate = SMS_BODY_AVLYST,
         ),
         VarselInstruksForventning(
             varselType = MotedeltakerVarselType.REFERAT,
-            epostTittel = "Referat fra dialogmøte med Nav",
-            varselTekst = "Referat fra dialogmøte med Nav",
-            epostFragmenter = listOf(
-                "har vært i dialogmøte med Nav",
-                "Du kan lese referatet",
-            ),
-            smsFragmenter = listOf(
-                "har vært i dialogmøte med Nav",
-                "Du kan lese referatet",
-            ),
+            epostTittelTemplate = EMAIL_TITTEL_REFERAT,
+            varselTekst = VARSEL_TEKST_REFERAT,
+            epostBodyTemplate = EMAIL_BODY_REFERAT,
+            smsTekstTemplate = SMS_BODY_REFERAT,
         ),
     )
 }
