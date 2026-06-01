@@ -34,6 +34,7 @@ import no.nav.syfo.infrastructure.client.altinn.createPort
 import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenClient
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
+import no.nav.syfo.infrastructure.client.ereg.EregClient
 import no.nav.syfo.infrastructure.client.motebehov.MotebehovClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
@@ -151,6 +152,9 @@ fun main() {
         syfomotebehovClientId = environment.syfomotebehovClientId,
         syfomotebehovBaseUrl = environment.syfomotebehovUrl,
     )
+    val eregClient = EregClient(
+        baseUrl = environment.eregUrl,
+    )
 
     lateinit var behandlerVarselService: BehandlerVarselService
     lateinit var dialogmotestatusService: DialogmotestatusService
@@ -216,6 +220,7 @@ fun main() {
                 narmesteLederClient = narmesteLederClient,
                 dokumentportenClient = dokumentportenClient,
                 motebehovClient = motebehovClient,
+                eregClient = eregClient,
                 pdfRepository = pdfRepository,
                 moteRepository = moteRepository,
                 transactionManager = transactionManager,
