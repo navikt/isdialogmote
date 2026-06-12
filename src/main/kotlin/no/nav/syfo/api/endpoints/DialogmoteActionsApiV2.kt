@@ -45,7 +45,7 @@ fun Route.registerDialogmoteActionsApiV2(
 
             checkPersonAndSyfoTilgang(
                 action = "Avlys Dialogmote for moteUUID",
-                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent),
+                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
             ) { authorizedUser, _, callId ->
@@ -67,7 +67,7 @@ fun Route.registerDialogmoteActionsApiV2(
 
             checkPersonAndSyfoTilgang(
                 action = "Mellomlagre Dialogmote for moteUUID",
-                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent),
+                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
             ) { authorizedUser, _, _ ->

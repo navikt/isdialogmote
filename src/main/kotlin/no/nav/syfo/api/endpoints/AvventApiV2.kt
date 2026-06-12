@@ -14,8 +14,8 @@ import no.nav.syfo.application.AvventService
 import no.nav.syfo.common.tilgangskontroll.checkPersonAndSyfoTilgang
 import no.nav.syfo.common.tilgangskontroll.filterPersonsUserHasAccessTo
 import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
-import no.nav.syfo.common.types.ident.PersonIdent
 import no.nav.syfo.common.types.ident.PersonIdent as CommonPersonIdent
+import no.nav.syfo.domain.PersonIdent
 
 fun Route.registerAvventApiV2(
     avventService: AvventService,

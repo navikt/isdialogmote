@@ -1,6 +1,6 @@
 package no.nav.syfo.api.dto
 
-import no.nav.syfo.common.types.ident.PersonIdent
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.Dialogmote

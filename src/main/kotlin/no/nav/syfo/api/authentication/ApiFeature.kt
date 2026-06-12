@@ -21,7 +21,7 @@ import no.nav.syfo.api.getCallId
 import no.nav.syfo.api.getConsumerId
 import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.common.tilgangskontroll.TilgangDeniedException
-import no.nav.syfo.common.types.ident.PersonIdent
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.metric.METRICS_REGISTRY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

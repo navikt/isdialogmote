@@ -10,11 +10,11 @@ import no.nav.syfo.application.DialogmoteService
 import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.api.dto.NewDialogmoteDTO
 import no.nav.syfo.api.getBearerHeader
-import no.nav.syfo.api.getCallId
 import no.nav.syfo.common.tilgangskontroll.checkPersonAndSyfoTilgang
 import no.nav.syfo.common.tilgangskontroll.filterPersonsUserHasAccessTo
 import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
-import no.nav.syfo.common.types.ident.PersonIdent
+import no.nav.syfo.common.types.ident.PersonIdent as CommonPersonIdent
+import no.nav.syfo.domain.PersonIdent
 
 const val dialogmoteApiV2Basepath = "/api/v2/dialogmote"
 
@@ -44,14 +44,13 @@ fun Route.registerDialogmoteApiV2(
             }
         }
         get(dialogmoteApiVeilederIdentUrlPath) {
-            val callId = getCallId()
             val token = getBearerHeader()
                 ?: throw IllegalArgumentException("No Authorization header supplied")
 
             val dialogmoteList =
                 dialogmoteService.getDialogmoteUnfinishedListForVeilederIdent(getNAVIdentFromToken(token))
 
-            val libraryPersonIdents = dialogmoteList.map { PersonIdent(it.arbeidstaker.personIdent.value) }
+            val libraryPersonIdents = dialogmoteList.map { CommonPersonIdent(it.arbeidstaker.personIdent.value) }
             val accessiblePersonIdentValues = filterPersonsUserHasAccessTo(
                 action = "Get Dialogmoter for VeilederIdent",
                 personIdenter = libraryPersonIdents,
@@ -67,11 +66,10 @@ fun Route.registerDialogmoteApiV2(
 
         post(dialogmoteApiPersonIdentUrlPath) {
             val newDialogmoteDTO = call.receive<NewDialogmoteDTO>()
-            val personIdent = PersonIdent(newDialogmoteDTO.arbeidstaker.personIdent)
 
             checkPersonAndSyfoTilgang(
                 action = "Create new Dialogmoteinnkalling",
-                personIdent = PersonIdent(personIdent.value),
+                personIdent = CommonPersonIdent(newDialogmoteDTO.arbeidstaker.personIdent),
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
             ) { authorizedUser, _, callId ->
