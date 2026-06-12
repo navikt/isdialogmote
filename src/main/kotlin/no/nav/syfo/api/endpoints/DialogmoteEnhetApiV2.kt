@@ -1,16 +1,17 @@
 package no.nav.syfo.api.endpoints
 
-import io.ktor.http.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import no.nav.syfo.api.callIdArgument
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.plugins.callid.callId
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.route
 import no.nav.syfo.api.dto.DialogmoteDTO
-import no.nav.syfo.api.getBearerHeader
-import no.nav.syfo.api.getCallId
 import no.nav.syfo.application.DialogmoteService
-import no.nav.syfo.application.DialogmoteTilgangService
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
+import no.nav.syfo.common.tilgangskontroll.filterPersonsUserHasAccessTo
+import no.nav.syfo.common.types.ident.PersonIdent
 import no.nav.syfo.domain.EnhetNr
-import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.metric.HISTOGRAM_CALL_DIALOGMOTER_ENHET_TIMER
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -23,57 +24,50 @@ const val dialogmoteApienhetNrParam = "enhetNr"
 
 fun Route.registerDialogmoteEnhetApiV2(
     dialogmoteService: DialogmoteService,
-    dialogmoteTilgangService: DialogmoteTilgangService,
-    veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
+    tilgangskontrollClient: TilgangskontrollClient,
 ) {
     route(dialogmoteApiV2Basepath) {
         get("$dialogmoteApiEnhetUrlPath/{$dialogmoteApienhetNrParam}") {
-            val callId = getCallId()
             try {
                 val inkluderHistoriske = call.request.queryParameters["inkluderHistoriske"] == "true"
-                val enhetNr = call.parameters[dialogmoteApienhetNrParam]?.let { navEnhet -> EnhetNr(navEnhet) }
-                    ?: throw IllegalArgumentException("No EnhetNr request param supplied")
+                val enhetNr =
+                    call.parameters[dialogmoteApienhetNrParam]
+                        ?.let { navEnhet -> EnhetNr(navEnhet) }
+                        ?: throw IllegalArgumentException("No EnhetNr request param supplied")
 
-                val token = getBearerHeader()
-                    ?: throw IllegalArgumentException("No Authorization header supplied")
-
-                val accessToEnhet = veilederTilgangskontrollClient.hasAccessToEnhet(
-                    enhetNr = enhetNr,
-                    token = token,
-                    callId = callId
-                )
-                when (accessToEnhet) {
-                    true -> {
-                        val starttime = System.currentTimeMillis()
-                        val dialogmoteList = if (inkluderHistoriske) dialogmoteService.getDialogmoteList(
-                            enhetNr = enhetNr,
-                        ) else dialogmoteService.getDialogmoteUnfinishedList(
+                val starttime = System.currentTimeMillis()
+                val dialogmoteList =
+                    if (inkluderHistoriske) {
+                        dialogmoteService.getDialogmoteList(
                             enhetNr = enhetNr,
                         )
-                        val duration = Duration.ofMillis(System.currentTimeMillis() - starttime)
-                        HISTOGRAM_CALL_DIALOGMOTER_ENHET_TIMER.record(duration)
-
-                        val personListWithVeilederAccess = dialogmoteTilgangService.filterAccessToDialogmotePersonList(
-                            personIdentList = dialogmoteList.map { it.arbeidstaker.personIdent },
-                            token = token,
-                            callId = callId,
+                    } else {
+                        dialogmoteService.getDialogmoteUnfinishedList(
+                            enhetNr = enhetNr,
                         )
-                        val dialogmoteDTOList = dialogmoteList.filter { dialogmote ->
-                            personListWithVeilederAccess.contains(dialogmote.arbeidstaker.personIdent)
+                    }
+                val duration = Duration.ofMillis(System.currentTimeMillis() - starttime)
+                HISTOGRAM_CALL_DIALOGMOTER_ENHET_TIMER.record(duration)
+
+                val libraryPersonIdents = dialogmoteList.map { PersonIdent(it.arbeidstaker.personIdent.value) }
+                val accessiblePersonIdentValues =
+                    filterPersonsUserHasAccessTo(
+                        action = "Get Dialogmote list for EnhetNr",
+                        personIdenter = libraryPersonIdents,
+                        tilgangskontrollClient = tilgangskontrollClient,
+                    )?.map { it.value }?.toHashSet() ?: emptySet()
+
+                val dialogmoteDTOList =
+                    dialogmoteList
+                        .filter { dialogmote ->
+                            dialogmote.arbeidstaker.personIdent.value in accessiblePersonIdentValues
                         }.map { dialogmote ->
                             DialogmoteDTO.from(dialogmote)
                         }
-                        call.respond(dialogmoteDTOList)
-                    }
-                    else -> {
-                        val accessDeniedMessage = "Denied Veileder access to Dialogmoter for EnhetNr $enhetNr"
-                        log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
-                        call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
-                    }
-                }
+                call.respond(dialogmoteDTOList)
             } catch (e: IllegalArgumentException) {
                 val illegalArgumentMessage = "Could not retrieve DialogmoteList for EnhetNr"
-                log.warn("$illegalArgumentMessage: {}, {}", e.message, callId)
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, call.callId)
                 call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
             }
         }

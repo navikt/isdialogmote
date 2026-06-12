@@ -42,7 +42,8 @@ import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
 import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
-import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
+import no.nav.syfo.common.util.ClientConfig
 import no.nav.syfo.infrastructure.database.TransactionManager
 import no.nav.syfo.infrastructure.database.repository.MoteRepository
 import no.nav.syfo.infrastructure.database.repository.PdfRepository
@@ -130,10 +131,14 @@ fun main() {
     val pdfGenClient = PdfGenClient(
         pdfGenBaseUrl = environment.ispdfgenUrl
     )
-    val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
-        azureAdV2Client = azureAdV2Client,
-        tilgangskontrollClientId = environment.istilgangskontrollClientId,
-        tilgangskontrollBaseUrl = environment.istilgangskontrollUrl
+    val tilgangskontrollClient = TilgangskontrollClient(
+        oboTokenProvider = { targetClientId, token ->
+            azureAdV2Client.getOnBehalfOfToken(scopeClientId = targetClientId, token = token)?.accessToken
+        },
+        clientConfig = ClientConfig(
+            baseUrl = environment.istilgangskontrollUrl,
+            clientId = environment.istilgangskontrollClientId,
+        ),
     )
     val narmesteLederClient = NarmesteLederClient(
         narmesteLederBaseUrl = environment.narmestelederUrl,
@@ -213,7 +218,7 @@ fun main() {
                 arbeidstakerVarselService = arbeidstakerVarselService,
                 pdlClient = pdlClient,
                 behandlendeEnhetClient = behandlendeEnhetClient,
-                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                tilgangskontrollClient = tilgangskontrollClient,
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,
                 kontaktinformasjonClient = kontaktinformasjonClient,
                 pdfGenClient = pdfGenClient,

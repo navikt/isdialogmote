@@ -20,7 +20,8 @@ import no.nav.syfo.api.getBearerHeader
 import no.nav.syfo.api.getCallId
 import no.nav.syfo.api.getConsumerId
 import no.nav.syfo.application.exception.ConflictException
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.common.tilgangskontroll.TilgangDeniedException
+import no.nav.syfo.common.types.ident.PersonIdent
 import no.nav.syfo.metric.METRICS_REGISTRY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -118,7 +119,7 @@ fun Application.installStatusPages() {
             val logExceptionMessage = "Caught exception, callId=$callId, consumerClientId=$consumerId"
             val log = call.application.log
             when (cause) {
-                is ForbiddenAccessVeilederException, is ConflictException -> {
+                is TilgangDeniedException, is ConflictException -> {
                     log.warn(logExceptionMessage, cause)
                 }
                 else -> {
@@ -135,7 +136,7 @@ fun Application.installStatusPages() {
                 is IllegalArgumentException -> {
                     HttpStatusCode.BadRequest
                 }
-                is ForbiddenAccessVeilederException -> {
+                is TilgangDeniedException -> {
                     HttpStatusCode.Forbidden
                 }
                 is ConflictException -> {
@@ -155,8 +156,3 @@ fun Application.installStatusPages() {
         }
     }
 }
-
-class ForbiddenAccessVeilederException(
-    action: String,
-    message: String = "Denied NAVIdent access to personIdent: $action",
-) : RuntimeException(message)

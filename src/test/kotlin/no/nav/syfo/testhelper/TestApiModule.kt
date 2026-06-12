@@ -11,9 +11,11 @@ import no.nav.syfo.infrastructure.client.motebehov.MotebehovClient
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederClient
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
-import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
+import no.nav.syfo.common.token.OboTokenProvider
+import no.nav.syfo.common.util.ClientConfig
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
@@ -37,10 +39,17 @@ fun Application.testApiModule(
         arbeidstakerVarselService = arbeidstakerVarselService,
         moteRepository = externalMockEnvironment.moteRepository,
     )
-    val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
-        azureAdV2Client = externalMockEnvironment.azureAdV2Client,
-        tilgangskontrollClientId = externalMockEnvironment.environment.istilgangskontrollClientId,
-        tilgangskontrollBaseUrl = externalMockEnvironment.environment.istilgangskontrollUrl,
+    val tilgangskontrollClient = TilgangskontrollClient(
+        oboTokenProvider = OboTokenProvider { targetClientId, token ->
+            externalMockEnvironment.azureAdV2Client.getOnBehalfOfToken(
+                scopeClientId = targetClientId,
+                token = token,
+            )?.accessToken
+        },
+        clientConfig = ClientConfig(
+            baseUrl = externalMockEnvironment.environment.istilgangskontrollUrl,
+            clientId = externalMockEnvironment.environment.istilgangskontrollClientId,
+        ),
         httpClient = externalMockEnvironment.mockHttpClient,
     )
     val behandlendeEnhetClient = BehandlendeEnhetClient(
@@ -94,7 +103,7 @@ fun Application.testApiModule(
         arbeidstakerVarselService = arbeidstakerVarselService,
         pdlClient = externalMockEnvironment.pdlClient,
         oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
-        veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+        tilgangskontrollClient = tilgangskontrollClient,
         behandlendeEnhetClient = behandlendeEnhetClient,
         pdfGenClient = pdfGenClient,
         kontaktinformasjonClient = kontaktinformasjonClient,

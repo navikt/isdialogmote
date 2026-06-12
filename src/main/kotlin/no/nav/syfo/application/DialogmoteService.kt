@@ -8,8 +8,8 @@ import no.nav.syfo.api.dto.NewReferatDTO
 import no.nav.syfo.api.dto.toNewDialogmote
 import no.nav.syfo.api.dto.toNewReferat
 import no.nav.syfo.application.exception.ConflictException
+import no.nav.syfo.common.types.ident.PersonIdent
 import no.nav.syfo.domain.EnhetNr
-import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.ArbeidstakerBrev
 import no.nav.syfo.domain.dialogmote.Dialogmote
@@ -207,7 +207,7 @@ class DialogmoteService(
         val pdfAvlysningArbeidstaker = pdfGenClient.pdfAvlysning(
             callId = callId,
             mottakerNavn = arbeidstakernavn,
-            mottakerFodselsnummer = avlystDialogmote.arbeidstaker.personIdent.value,
+            mottakerFodselsnummer = avlystDialogmote.arbeidstaker.personIdent,
             pdfContent = avlysningTilMottakere.arbeidstaker.avlysning,
         ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidstaker")
 
@@ -294,7 +294,7 @@ class DialogmoteService(
         val pdfEndringArbeidstaker = pdfGenClient.pdfEndringTidSted(
             callId = callId,
             mottakerNavn = arbeidstakernavn,
-            mottakerFodselsnummer = endretDialogmote.arbeidstaker.personIdent.value,
+            mottakerFodselsnummer = endretDialogmote.arbeidstaker.personIdent,
             pdfContent = endretTidSted.arbeidstaker.endringsdokument,
         ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidstaker")
 

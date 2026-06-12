@@ -27,6 +27,7 @@ val nimbusjosejwtVersion = "10.9"
 val postgresEmbeddedVersion = "2.2.2"
 val postgresVersion = "42.7.11"
 val postgresRuntimeVersion = "17.9.0"
+val isyfoBackendCommonVersion = "0.0.47"
 val tjenesteSpesifikasjonerGithubVersion = "1.2020.06.11-19.53-1cad83414166"
 
 plugins {
@@ -129,8 +130,10 @@ dependencies {
         }
     }
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion")
+    implementation("no.nav.syfo:isyfo-backend-common:$isyfoBackendCommonVersion")
     implementation("no.nav.tjenestespesifikasjoner:servicemeldingMedKontaktinformasjon-v1-tjenestespesifikasjon:$tjenesteSpesifikasjonerGithubVersion")
 
+    testImplementation(testFixtures("no.nav.syfo:isyfo-backend-common:$isyfoBackendCommonVersion"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")

@@ -6,71 +6,65 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import no.nav.syfo.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.api.dto.CreateAvventDTO
 import no.nav.syfo.api.dto.LukkAvventDTO
 import no.nav.syfo.api.dto.QueryAvventDTO
 import no.nav.syfo.api.dto.toAvventDTO
-import no.nav.syfo.api.getBearerHeader
-import no.nav.syfo.api.getCallId
-import no.nav.syfo.api.validateVeilederAccess
 import no.nav.syfo.application.AvventService
-import no.nav.syfo.application.DialogmoteTilgangService
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.common.tilgangskontroll.checkPersonAndSyfoTilgang
+import no.nav.syfo.common.tilgangskontroll.filterPersonsUserHasAccessTo
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
+import no.nav.syfo.common.types.ident.PersonIdent
+import no.nav.syfo.common.types.ident.PersonIdent as CommonPersonIdent
 
 fun Route.registerAvventApiV2(
     avventService: AvventService,
-    dialogmoteTilgangService: DialogmoteTilgangService
+    tilgangskontrollClient: TilgangskontrollClient,
 ) {
     route("/api/v2/avvent") {
         post {
             val avvent = call.receive<CreateAvventDTO>()
 
-            validateVeilederAccess(
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = PersonIdent(avvent.personident),
+            checkPersonAndSyfoTilgang(
                 action = "Create Avvent for Person with PersonIdent",
-            ) {
-                val token =
-                    getBearerHeader()
-                        ?: throw IllegalArgumentException("No Authorization header supplied")
-
-                val navident = getNAVIdentFromToken(token)
-                val avvent =
+                personIdent = CommonPersonIdent(avvent.personident),
+                tilgangskontrollClient = tilgangskontrollClient,
+                requiresWriteAccess = true,
+            ) { authorizedUser, _, _ ->
+                val navident = authorizedUser.navIdent.value
+                val avventDTO =
                     avventService
                         .persist(avvent.toAvvent(navident))
                         .toAvventDTO()
-                call.respond(HttpStatusCode.OK, avvent)
+                call.respond(HttpStatusCode.OK, avventDTO)
             }
         }
 
         post("/query") {
             val query = call.receive<QueryAvventDTO>()
-            val token = getBearerHeader()
-                ?: throw IllegalArgumentException("No Authorization header supplied")
-            val callId = getCallId()
-            val personidenter = query.personidenter.map { personident ->
-                PersonIdent(personident)
-            }
-            val personListWithVeilederAccess = dialogmoteTilgangService.filterAccessToDialogmotePersonList(
-                personIdentList = personidenter,
-                token = token,
-                callId = callId,
-            )
+            val libraryPersonIdents = query.personidenter.map { CommonPersonIdent(it) }
+            val accessiblePersonIdents = filterPersonsUserHasAccessTo(
+                action = "Query Avvent",
+                personIdenter = libraryPersonIdents,
+                tilgangskontrollClient = tilgangskontrollClient,
+            )?.map { PersonIdent(it.value) } ?: emptyList()
+
             val avventList =
                 avventService
-                    .getAvventForIdenter(personListWithVeilederAccess)
+                    .getAvventForIdenter(accessiblePersonIdents)
                     .map { it.toAvventDTO() }
             call.respond(avventList)
         }
 
         post("/lukk") {
             val personident = PersonIdent(call.receive<LukkAvventDTO>().personident)
-            validateVeilederAccess(
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = personident,
+
+            checkPersonAndSyfoTilgang(
                 action = "Close Avvent for Person with PersonIdent",
-            ) {
+                personIdent = CommonPersonIdent(personident.value),
+                tilgangskontrollClient = tilgangskontrollClient,
+                requiresWriteAccess = true,
+            ) { _, _, _ ->
                 avventService.lukkAvvent(personident)
                 call.respond(HttpStatusCode.OK)
             }

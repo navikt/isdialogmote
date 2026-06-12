@@ -11,10 +11,10 @@ import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.api.dto.NewDialogmoteDTO
 import no.nav.syfo.api.getBearerHeader
 import no.nav.syfo.api.getCallId
-import no.nav.syfo.api.getPersonIdentHeader
-import no.nav.syfo.api.validateVeilederAccess
-import no.nav.syfo.application.DialogmoteTilgangService
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.common.tilgangskontroll.checkPersonAndSyfoTilgang
+import no.nav.syfo.common.tilgangskontroll.filterPersonsUserHasAccessTo
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
+import no.nav.syfo.common.types.ident.PersonIdent
 
 const val dialogmoteApiV2Basepath = "/api/v2/dialogmote"
 
@@ -24,20 +24,17 @@ const val dialogmoteApiVeilederIdentUrlPath = "/veilederident"
 
 fun Route.registerDialogmoteApiV2(
     dialogmoteService: DialogmoteService,
-    dialogmoteTilgangService: DialogmoteTilgangService,
+    tilgangskontrollClient: TilgangskontrollClient,
     dialogmotestatusService: DialogmotestatusService,
 ) {
     route(dialogmoteApiV2Basepath) {
         get(dialogmoteApiPersonIdentUrlPath) {
-            val personIdent = getPersonIdentHeader()?.let { personIdent ->
-                PersonIdent(personIdent)
-            } ?: throw IllegalArgumentException("No PersonIdent supplied")
-
-            validateVeilederAccess(
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = personIdent,
-                action = "Read Dialogmoter for Person with PersonIdent"
-            ) {
+            checkPersonAndSyfoTilgang(
+                action = "Read Dialogmoter for Person with PersonIdent",
+                tilgangskontrollClient = tilgangskontrollClient,
+                requiresWriteAccess = false,
+            ) { _, targetPersonIdent, _ ->
+                val personIdent = PersonIdent(targetPersonIdent.value)
                 val dialogmoteDTOList = dialogmoteService.getDialogmoteList(
                     personident = personIdent,
                 ).map { dialogmote ->
@@ -54,36 +51,33 @@ fun Route.registerDialogmoteApiV2(
             val dialogmoteList =
                 dialogmoteService.getDialogmoteUnfinishedListForVeilederIdent(getNAVIdentFromToken(token))
 
-            val personListWithVeilederAccess = dialogmoteTilgangService.filterAccessToDialogmotePersonList(
-                personIdentList = dialogmoteList.map { it.arbeidstaker.personIdent },
-                token = token,
-                callId = callId,
-            ).toHashSet()
+            val libraryPersonIdents = dialogmoteList.map { PersonIdent(it.arbeidstaker.personIdent.value) }
+            val accessiblePersonIdentValues = filterPersonsUserHasAccessTo(
+                action = "Get Dialogmoter for VeilederIdent",
+                personIdenter = libraryPersonIdents,
+                tilgangskontrollClient = tilgangskontrollClient,
+            )?.map { it.value }?.toHashSet() ?: emptySet()
 
-            val dialogmoteDTOList =
-                dialogmoteList.filter { dialogmote -> personListWithVeilederAccess.contains(dialogmote.arbeidstaker.personIdent) }
-                    .map { dialogmote -> DialogmoteDTO.from(dialogmote) }
+            val dialogmoteDTOList = dialogmoteList
+                .filter { dialogmote -> dialogmote.arbeidstaker.personIdent.value in accessiblePersonIdentValues }
+                .map { dialogmote -> DialogmoteDTO.from(dialogmote) }
 
             call.respond(dialogmoteDTOList)
         }
 
         post(dialogmoteApiPersonIdentUrlPath) {
-            val callId = getCallId()
-            val token = getBearerHeader()
-                ?: throw IllegalArgumentException("No Authorization header supplied")
-
             val newDialogmoteDTO = call.receive<NewDialogmoteDTO>()
-
             val personIdent = PersonIdent(newDialogmoteDTO.arbeidstaker.personIdent)
 
-            validateVeilederAccess(
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = personIdent,
-                action = "Create new Dialogmoteinnkalling"
-            ) {
+            checkPersonAndSyfoTilgang(
+                action = "Create new Dialogmoteinnkalling",
+                personIdent = PersonIdent(personIdent.value),
+                tilgangskontrollClient = tilgangskontrollClient,
+                requiresWriteAccess = true,
+            ) { authorizedUser, _, callId ->
                 dialogmoteService.createMoteinnkalling(
                     newDialogmoteDTO = newDialogmoteDTO,
-                    token = token,
+                    token = authorizedUser.token,
                     callId = callId,
                 )
                 call.respond(HttpStatusCode.OK)
@@ -91,15 +85,12 @@ fun Route.registerDialogmoteApiV2(
         }
 
         get("/personident/motestatusendringer") {
-            val personident = getPersonIdentHeader()?.let { personident ->
-                PersonIdent(personident)
-            } ?: throw IllegalArgumentException("No Personident supplied")
-
-            validateVeilederAccess(
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = personident,
-                action = "GET dialogmote statusendringer for Personident"
-            ) {
+            checkPersonAndSyfoTilgang(
+                action = "GET dialogmote statusendringer for Personident",
+                tilgangskontrollClient = tilgangskontrollClient,
+                requiresWriteAccess = false,
+            ) { _, targetPersonIdent, _ ->
+                val personident = PersonIdent(targetPersonIdent.value)
                 val dialogmoteStatusEndringer = dialogmotestatusService.getMoteStatusEndringer(personident)
 
                 if (dialogmoteStatusEndringer.isEmpty()) {

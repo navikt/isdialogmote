@@ -12,7 +12,7 @@ data class DialogmotedeltakerArbeidstakerDTO(
         fun from(arbeidstaker: DialogmotedeltakerArbeidstaker): DialogmotedeltakerArbeidstakerDTO {
             return DialogmotedeltakerArbeidstakerDTO(
                 uuid = arbeidstaker.uuid.toString(),
-                personIdent = arbeidstaker.personIdent.value,
+                personIdent = arbeidstaker.personIdent,
                 type = arbeidstaker.type.name,
                 varselList = arbeidstaker.varselList.map { DialogmotedeltakerArbeidstakerVarselDTO.from(it) },
             )
