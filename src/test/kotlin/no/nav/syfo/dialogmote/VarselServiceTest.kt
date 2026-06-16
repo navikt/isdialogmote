@@ -8,7 +8,6 @@ import no.nav.syfo.application.NarmesteLederVarselService
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.client.altinn.AltinnClient
 import no.nav.syfo.infrastructure.client.altinn.createAltinnMelding
-import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.ARBEIDSGIVERPERIODE_DAYS
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.Oppfolgingstilfelle
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.application.VarselService
@@ -44,7 +43,7 @@ class VarselServiceTest {
         behandlerVarselService = behandlerVarselService,
         altinnClient = altinnClient,
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
-        isAltinnSendingEnabled = true,
+        isAltinnSendingEnabled = false,
         dokumentportenClient = mockk<DokumentportenClient>(relaxed = true),
         isDokumentportenSendingEnabled = true,
         eregClient = eregClient,
@@ -67,7 +66,7 @@ class VarselServiceTest {
     }
 
     @Test
-    fun `Send varsel to nærmeste leder`() {
+    fun `Send varsel to nærmeste leder, but not to Altinn 2`() {
         coEvery {
             oppfolgingstilfelleClient.oppfolgingstilfellePerson(
                 any(),
@@ -110,7 +109,7 @@ class VarselServiceTest {
                 callId = "callId",
             )
 
-            verify(exactly = 1) { altinnClient.sendToVirksomhet(altinnMelding) }
+            verify(exactly = 0) { altinnClient.sendToVirksomhet(altinnMelding) }
             verify(exactly = 1) {
                 narmesteLederVarselService.sendVarsel(
                     narmesteLeder,
@@ -122,7 +121,7 @@ class VarselServiceTest {
     }
 
     @Test
-    fun `Send brev to Altinn when no nærmeste leder`() {
+    fun `don't send varsel when no nærmeste leder`() {
         coEvery {
             oppfolgingstilfelleClient.oppfolgingstilfellePerson(
                 any(),
@@ -165,7 +164,7 @@ class VarselServiceTest {
                 callId = "callId",
             )
 
-            verify(exactly = 1) {
+            verify(exactly = 0) {
                 altinnClient.sendToVirksomhet(
                     altinnMelding
                 )
@@ -175,63 +174,7 @@ class VarselServiceTest {
     }
 
     @Test
-    fun `Send brev to Altinn, and not varsel to nærmeste leder when no active tilfelle`() {
-        coEvery {
-            oppfolgingstilfelleClient.oppfolgingstilfellePerson(
-                any(),
-                any(),
-                any()
-            )
-        } returns Oppfolgingstilfelle(
-            start = LocalDate.MIN,
-            end = LocalDate.now().minusDays(ARBEIDSGIVERPERIODE_DAYS + 1),
-        )
-        val virksomhetsbrevId = UUID.randomUUID()
-        val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
-        val altinnMelding = createAltinnMelding(
-            virksomhetsbrevId,
-            VIRKSOMHETSNUMMER_NO_NARMESTELEDER,
-            virksomhetsPdf,
-            MotedeltakerVarselType.INNKALT,
-            arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
-            arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
-            false
-        )
-
-        runBlocking {
-            varselService.sendVarsel(
-                varselType = MotedeltakerVarselType.INNKALT,
-                isDigitalVarselEnabledForArbeidstaker = false,
-                arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
-                arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
-                arbeidstakerbrevId = UUID.randomUUID(),
-                narmesteLeder = null,
-                virksomhetsbrevId = virksomhetsbrevId,
-                virksomhetsPdf = virksomhetsPdf,
-                virksomhetsnummer = VIRKSOMHETSNUMMER_NO_NARMESTELEDER,
-                behandlerId = null,
-                behandlerRef = null,
-                behandlerDocument = emptyList(),
-                behandlerPdf = byteArrayOf(0x2E, 0x38),
-                behandlerbrevId = null,
-                behandlerbrevParentId = null,
-                behandlerInnkallingUuid = null,
-                motetidspunkt = LocalDateTime.now().plusDays(1L),
-                token = "token",
-                callId = "callId",
-            )
-
-            verify(exactly = 1) {
-                altinnClient.sendToVirksomhet(
-                    altinnMelding
-                )
-            }
-            verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), any()) }
-        }
-    }
-
-    @Test
-    fun `Send brev to Altinn, and not varsel to nærmeste leder when no oppfolgingstilfelle exists`() {
+    fun `No varsel to nærmeste leder when no oppfolgingstilfelle exists`() {
         coEvery { oppfolgingstilfelleClient.oppfolgingstilfellePerson(any(), any(), any()) } returns null
         val virksomhetsbrevId = UUID.randomUUID()
         val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
@@ -268,7 +211,7 @@ class VarselServiceTest {
                 callId = "callId",
             )
 
-            verify(exactly = 1) {
+            verify(exactly = 0) {
                 altinnClient.sendToVirksomhet(
                     altinnMelding
                 )
