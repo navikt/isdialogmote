@@ -54,6 +54,7 @@ import no.nav.syfo.infrastructure.kafka.janitor.kafkaJanitorEventProducerConfig
 import no.nav.syfo.testdata.reset.TestdataResetService
 import no.nav.syfo.testdata.reset.kafka.TestdataResetConsumer
 import no.nav.syfo.testdata.reset.kafka.kafkaTestdataResetConsumerConfig
+import io.micrometer.core.instrument.Metrics
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
@@ -66,6 +67,8 @@ fun main() {
     val logger = LoggerFactory.getLogger("ktor.application")
     logger.info("isdialogmote starting with java version: " + Runtime.version())
     val environment = Environment()
+
+    Metrics.addRegistry(no.nav.syfo.metric.METRICS_REGISTRY)
 
     val behandlerDialogmeldingProducer = BehandlerDialogmeldingProducer(
         kafkaProducerBehandlerDialogmeldingBestilling = KafkaProducer<String, KafkaBehandlerDialogmeldingDTO>(
