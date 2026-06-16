@@ -156,7 +156,7 @@ spec:
     - name: OUTDATED_DIALOGMOTE_CUTOFF_MONTHS
       value: "9"
     - name: ALTINN_SENDING_ENABLED
-      value: "true"
+      value: "false"
     - name: DOKUMENTPORTEN_URL
       value: http://syfo-dokumentporten.team-esyfo
     - name: DOKUMENTPORTEN_CLIENT_ID

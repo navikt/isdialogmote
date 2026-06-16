@@ -104,7 +104,7 @@ class PostDialogmoteApiV2Test {
                 )
                 client.postMote(validToken, newDialogmoteDTO)
                 verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-                verify(exactly = 1) {
+                verify(exactly = 0) {
                     altinnMock.insertCorrespondenceBasicV2(
                         any(),
                         any(),
@@ -317,7 +317,7 @@ class PostDialogmoteApiV2Test {
                 client.postMote(validToken, newDialogmoteDTO)
                 verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
                 clearMocks(esyfovarselProducerMock)
-                verify(exactly = 1) {
+                verify(exactly = 0) {
                     altinnMock.insertCorrespondenceBasicV2(
                         any(),
                         any(),
