@@ -40,12 +40,7 @@ fun Application.testApiModule(
         moteRepository = externalMockEnvironment.moteRepository,
     )
     val tilgangskontrollClient = TilgangskontrollClient(
-        oboTokenProvider = OboTokenProvider { targetClientId, token ->
-            externalMockEnvironment.azureAdV2Client.getOnBehalfOfToken(
-                scopeClientId = targetClientId,
-                token = token,
-            )?.accessToken
-        },
+        oboTokenProvider = OboTokenProvider { _, token -> token },
         clientConfig = ClientConfig(
             baseUrl = externalMockEnvironment.environment.istilgangskontrollUrl,
             clientId = externalMockEnvironment.environment.istilgangskontrollClientId,
