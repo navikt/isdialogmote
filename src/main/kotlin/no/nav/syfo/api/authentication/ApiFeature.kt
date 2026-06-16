@@ -116,7 +116,7 @@ fun Application.installStatusPages() {
         exception<Throwable> { call, cause ->
             val callId = call.getCallId()
             val consumerId = call.getConsumerId()
-            val logExceptionMessage = "Caught exception, callId=$callId, consumerClientId=$consumerId"
+            val logExceptionMessage = "Caught exception: ${cause.message}, callId=$callId, consumerClientId=$consumerId"
             val log = call.application.log
             when (cause) {
                 is TilgangDeniedException, is ConflictException -> {
