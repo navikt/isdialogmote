@@ -50,10 +50,10 @@ fun Route.registerDialogmoteApiV2(
             val dialogmoteList =
                 dialogmoteService.getDialogmoteUnfinishedListForVeilederIdent(getNAVIdentFromToken(token))
 
-            val libraryPersonIdents = dialogmoteList.map { CommonPersonIdent(it.arbeidstaker.personIdent.value) }
+            val personIdents = dialogmoteList.map { CommonPersonIdent(it.arbeidstaker.personIdent.value) }
             val accessiblePersonIdentValues = filterPersonsUserHasAccessTo(
                 action = "Get Dialogmoter for VeilederIdent",
-                personIdenter = libraryPersonIdents,
+                personIdenter = personIdents,
                 tilgangskontrollClient = tilgangskontrollClient,
             )?.map { it.value }?.toHashSet() ?: emptySet()
 

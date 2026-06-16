@@ -42,10 +42,10 @@ fun Route.registerAvventApiV2(
 
         post("/query") {
             val query = call.receive<QueryAvventDTO>()
-            val libraryPersonIdents = query.personidenter.map { CommonPersonIdent(it) }
+            val personIdents = query.personidenter.map { CommonPersonIdent(it) }
             val accessiblePersonIdents = filterPersonsUserHasAccessTo(
                 action = "Query Avvent",
-                personIdenter = libraryPersonIdents,
+                personIdenter = personIdents,
                 tilgangskontrollClient = tilgangskontrollClient,
             )?.map { PersonIdent(it.value) } ?: emptyList()
 

@@ -49,11 +49,11 @@ fun Route.registerDialogmoteEnhetApiV2(
                 val duration = Duration.ofMillis(System.currentTimeMillis() - starttime)
                 HISTOGRAM_CALL_DIALOGMOTER_ENHET_TIMER.record(duration)
 
-                val libraryPersonIdents = dialogmoteList.map { PersonIdent(it.arbeidstaker.personIdent.value) }
+                val personIdenter = dialogmoteList.map { PersonIdent(it.arbeidstaker.personIdent.value) }
                 val accessiblePersonIdentValues =
                     filterPersonsUserHasAccessTo(
                         action = "Get Dialogmote list for EnhetNr",
-                        personIdenter = libraryPersonIdents,
+                        personIdenter = personIdenter,
                         tilgangskontrollClient = tilgangskontrollClient,
                     )?.map { it.value }?.toHashSet() ?: emptySet()
 
