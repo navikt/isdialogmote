@@ -20,6 +20,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT_READONLY
 import no.nav.syfo.testhelper.generator.generateInkallingHendelse
 import no.nav.syfo.testhelper.generator.generateNewDialogmote
 import no.nav.syfo.testhelper.generator.generateNewDialogmoteDTO
@@ -42,6 +43,11 @@ class GetDialogmoteApiV2Test {
         externalMockEnvironment.environment.aadAppClient,
         externalMockEnvironment.wellKnownVeilederV2.issuer,
         VEILEDER_IDENT,
+    )
+    private val validTokenReadOnly = generateJWTNavIdent(
+        externalMockEnvironment.environment.aadAppClient,
+        externalMockEnvironment.wellKnownVeilederV2.issuer,
+        VEILEDER_IDENT_READONLY,
     )
 
     @Nested
@@ -169,6 +175,21 @@ class GetDialogmoteApiV2Test {
 
                 assertEquals(newDialogmoteDTO.tidSted.sted, dialogmoteDTO.sted)
                 assertEquals("", dialogmoteDTO.videoLink)
+            }
+        }
+
+        @Test
+        fun `veileder med lesetilgang kan hente dialogmoter`() {
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                val response = client.get(urlMote) {
+                    bearerAuth(validTokenReadOnly)
+                    header(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_FNR.value)
+                }
+                assertEquals(HttpStatusCode.OK, response.status)
             }
         }
     }

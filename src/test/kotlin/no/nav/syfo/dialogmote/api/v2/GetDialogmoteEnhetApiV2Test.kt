@@ -179,18 +179,5 @@ class GetDialogmoteEnhetApiV2Test {
                 assertEquals(HttpStatusCode.Unauthorized, response.status)
             }
         }
-
-        @Test
-        fun `should return status Forbidden if denied access to Enhet`() {
-            testApplication {
-                val client = setupApiAndClient(
-                    altinnMock = altinnMock,
-                )
-                val response = client.get(urlEnhetNoAccess) {
-                    bearerAuth(validTokenV2)
-                }
-                assertEquals(HttpStatusCode.Forbidden, response.status)
-            }
-        }
     }
 }

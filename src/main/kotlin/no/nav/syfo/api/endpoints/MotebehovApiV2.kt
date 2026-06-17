@@ -8,30 +8,32 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import no.nav.syfo.api.dto.MotebehovVurderingDTO
-import no.nav.syfo.api.validateVeilederAccess
-import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.application.MotebehovService
+import no.nav.syfo.common.tilgangskontroll.checkPersonAndSyfoTilgang
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.common.types.ident.PersonIdent as CommonPersonIdent
 
 fun Route.registerMotebehovApiV2(
     motebehovService: MotebehovService,
-    dialogmoteTilgangService: DialogmoteTilgangService,
+    tilgangskontrollClient: TilgangskontrollClient,
 ) {
     route("/api/v2/motebehov") {
         post("/vurderinger") {
             val vurdering = call.receive<MotebehovVurderingDTO>()
             val personident = PersonIdent(vurdering.personident)
 
-            validateVeilederAccess(
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = personident,
+            checkPersonAndSyfoTilgang(
                 action = "Behandle motebehov for Person with PersonIdent",
-            ) { token ->
+                personIdent = CommonPersonIdent(personident.value),
+                tilgangskontrollClient = tilgangskontrollClient,
+                requiresWriteAccess = true,
+            ) { authorizedUser, _, _ ->
                 motebehovService.behandleMotebehov(
                     personident = personident,
                     harBehovForMote = vurdering.harBehovForMote,
                     tilbakemeldinger = vurdering.tilbakemeldinger.map { it.toTilbakemelding() },
-                    token = token,
+                    token = authorizedUser.token,
                 )
                 call.respond(HttpStatusCode.OK)
             }

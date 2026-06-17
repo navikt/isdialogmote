@@ -8,12 +8,12 @@ import io.ktor.http.*
 import no.nav.syfo.infrastructure.client.cache.ValkeyStore
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.httpClientDefault
-import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Token
 import no.nav.syfo.metric.COUNT_CALL_PDL_FAIL
 import no.nav.syfo.metric.COUNT_CALL_PDL_SUCCESS
 import no.nav.syfo.api.NAV_CALL_ID_HEADER
 import no.nav.syfo.api.bearerHeader
+import no.nav.syfo.domain.PersonIdent
 import org.slf4j.LoggerFactory
 
 class PdlClient(

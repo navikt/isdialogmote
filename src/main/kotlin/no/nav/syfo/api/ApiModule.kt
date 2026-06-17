@@ -27,7 +27,6 @@ import no.nav.syfo.application.ArbeidstakerVarselService
 import no.nav.syfo.application.AvventService
 import no.nav.syfo.application.BehandlerVarselService
 import no.nav.syfo.application.DialogmoteService
-import no.nav.syfo.application.DialogmoteTilgangService
 import no.nav.syfo.application.DialogmotedeltakerService
 import no.nav.syfo.application.DialogmotestatusService
 import no.nav.syfo.application.IMoteRepository
@@ -47,10 +46,10 @@ import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.Oppfolgingstilfelle
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
-import no.nav.syfo.infrastructure.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.repository.AvventRepository
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -66,7 +65,7 @@ fun Application.apiModule(
     arbeidstakerVarselService: ArbeidstakerVarselService,
     pdlClient: PdlClient,
     behandlendeEnhetClient: BehandlendeEnhetClient,
-    veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
+    tilgangskontrollClient: TilgangskontrollClient,
     oppfolgingstilfelleClient: OppfolgingstilfelleClient,
     pdfGenClient: PdfGenClient,
     kontaktinformasjonClient: KontaktinformasjonClient,
@@ -96,10 +95,6 @@ fun Application.apiModule(
         ),
     )
     installStatusPages()
-
-    val dialogmoteTilgangService = DialogmoteTilgangService(
-        veilederTilgangskontrollClient = veilederTilgangskontrollClient,
-    )
 
     val narmesteLederVarselService = NarmesteLederVarselService(
         esyfovarselProducer = esyfovarselProducer,
@@ -163,25 +158,24 @@ fun Application.apiModule(
         authenticate(JwtIssuerType.VEILEDER_V2.name) {
             registerDialogmoteEnhetApiV2(
                 dialogmoteService = dialogmoteService,
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                tilgangskontrollClient = tilgangskontrollClient,
             )
             registerDialogmoteApiV2(
                 dialogmoteService = dialogmoteService,
-                dialogmoteTilgangService = dialogmoteTilgangService,
+                tilgangskontrollClient = tilgangskontrollClient,
                 dialogmotestatusService = dialogmotestatusService,
             )
             registerDialogmoteActionsApiV2(
                 dialogmoteService = dialogmoteService,
-                dialogmoteTilgangService = dialogmoteTilgangService
+                tilgangskontrollClient = tilgangskontrollClient,
             )
             registerAvventApiV2(
                 avventService = avventService,
-                dialogmoteTilgangService = dialogmoteTilgangService
+                tilgangskontrollClient = tilgangskontrollClient,
             )
             registerMotebehovApiV2(
                 motebehovService = motebehovService,
-                dialogmoteTilgangService = dialogmoteTilgangService,
+                tilgangskontrollClient = tilgangskontrollClient,
             )
         }
         authenticate(JwtIssuerType.SELVBETJENING.name) {

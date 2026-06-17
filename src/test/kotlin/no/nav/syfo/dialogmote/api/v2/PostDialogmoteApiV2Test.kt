@@ -30,6 +30,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER
 import no.nav.syfo.testhelper.UserConstants.ENHET_NR
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT_READONLY
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.testhelper.mock.oppfolgingstilfellePersonDTO
 import org.junit.jupiter.api.AfterEach
@@ -61,6 +62,11 @@ class PostDialogmoteApiV2Test {
         externalMockEnvironment.environment.aadAppClient,
         externalMockEnvironment.wellKnownVeilederV2.issuer,
         VEILEDER_IDENT,
+    )
+    private val validTokenReadOnly = generateJWTNavIdent(
+        externalMockEnvironment.environment.aadAppClient,
+        externalMockEnvironment.wellKnownVeilederV2.issuer,
+        VEILEDER_IDENT_READONLY,
     )
 
     @BeforeEach
@@ -489,6 +495,20 @@ class PostDialogmoteApiV2Test {
                 assertEquals(HttpStatusCode.InternalServerError, response.status)
                 verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
                 clearMocks(esyfovarselProducerMock)
+            }
+        }
+
+        @Test
+        fun `veileder med lesetilgang kan ikke opprette dialogmote`() {
+            val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+            testApplication {
+                val client = setupApiAndClient()
+                val response = client.post(url) {
+                    bearerAuth(validTokenReadOnly)
+                    contentType(ContentType.Application.Json)
+                    setBody(newDialogmoteDTO)
+                }
+                assertEquals(HttpStatusCode.Forbidden, response.status)
             }
         }
     }

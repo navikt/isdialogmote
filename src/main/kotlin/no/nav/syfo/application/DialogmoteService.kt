@@ -8,8 +8,8 @@ import no.nav.syfo.api.dto.NewReferatDTO
 import no.nav.syfo.api.dto.toNewDialogmote
 import no.nav.syfo.api.dto.toNewReferat
 import no.nav.syfo.application.exception.ConflictException
-import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.ArbeidstakerBrev
 import no.nav.syfo.domain.dialogmote.Dialogmote

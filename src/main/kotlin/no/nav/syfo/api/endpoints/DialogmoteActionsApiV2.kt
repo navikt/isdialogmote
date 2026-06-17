@@ -13,9 +13,10 @@ import no.nav.syfo.api.authentication.getNAVIdentFromToken
 import no.nav.syfo.api.callIdArgument
 import no.nav.syfo.api.getBearerHeader
 import no.nav.syfo.api.getCallId
-import no.nav.syfo.api.validateVeilederAccess
 import no.nav.syfo.application.DialogmoteService
-import no.nav.syfo.application.DialogmoteTilgangService
+import no.nav.syfo.common.tilgangskontroll.checkPersonAndSyfoTilgang
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
+import no.nav.syfo.common.types.ident.PersonIdent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -33,52 +34,46 @@ const val dialogmoteTildelPath = "/tildel"
 
 fun Route.registerDialogmoteActionsApiV2(
     dialogmoteService: DialogmoteService,
-    dialogmoteTilgangService: DialogmoteTilgangService,
+    tilgangskontrollClient: TilgangskontrollClient,
 ) {
     route(dialogmoteApiV2Basepath) {
         post("/{$dialogmoteApiMoteParam}$dialogmoteApiMoteAvlysPath") {
-            val callId = getCallId()
-
-            val token = getBearerHeader()
-                ?: throw IllegalArgumentException("No Authorization header supplied")
-
             val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
             val avlysningTilMottakereDto = call.receive<AvlysningTilMottakereDTO>()
 
             val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-            validateVeilederAccess(
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = dialogmote.arbeidstaker.personIdent,
-                action = "Avlys Dialogmote for moteUUID"
-            ) {
+            checkPersonAndSyfoTilgang(
+                action = "Avlys Dialogmote for moteUUID",
+                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                tilgangskontrollClient = tilgangskontrollClient,
+                requiresWriteAccess = true,
+            ) { authorizedUser, _, callId ->
                 dialogmoteService.avlysMoteinnkalling(
                     callId = callId,
                     dialogmote = dialogmote,
                     avlysningTilMottakere = avlysningTilMottakereDto,
-                    token = token,
+                    token = authorizedUser.token,
                 )
                 call.respond(HttpStatusCode.OK)
             }
         }
 
         post("/{$dialogmoteApiMoteParam}$dialogmoteApiMoteMellomlagrePath") {
-            val token = getBearerHeader()
-                ?: throw IllegalArgumentException("No Authorization header supplied")
-
             val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
             val newReferat = call.receive<NewReferatDTO>()
 
             val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-            validateVeilederAccess(
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = dialogmote.arbeidstaker.personIdent,
-                action = "Mellomlagre Dialogmote for moteUUID"
-            ) {
+            checkPersonAndSyfoTilgang(
+                action = "Mellomlagre Dialogmote for moteUUID",
+                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                tilgangskontrollClient = tilgangskontrollClient,
+                requiresWriteAccess = true,
+            ) { authorizedUser, _, _ ->
                 dialogmoteService.mellomlagreReferat(
                     dialogmote = dialogmote,
-                    opprettetAv = getNAVIdentFromToken(token),
+                    opprettetAv = authorizedUser.navIdent.value,
                     referat = newReferat,
                 )
                 call.respond(HttpStatusCode.OK)
@@ -86,81 +81,68 @@ fun Route.registerDialogmoteActionsApiV2(
         }
 
         post("/{$dialogmoteApiMoteParam}$dialogmoteApiMoteFerdigstillPath") {
-            val callId = getCallId()
-
-            val token = getBearerHeader()
-                ?: throw IllegalArgumentException("No Authorization header supplied")
-
             val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
             val newReferat = call.receive<NewReferatDTO>()
 
             val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-            validateVeilederAccess(
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = dialogmote.arbeidstaker.personIdent,
-                action = "Ferdigstill Dialogmote for moteUUID"
-            ) {
+            checkPersonAndSyfoTilgang(
+                action = "Ferdigstill Dialogmote for moteUUID",
+                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                tilgangskontrollClient = tilgangskontrollClient,
+                requiresWriteAccess = true,
+            ) { authorizedUser, _, callId ->
                 dialogmoteService.ferdigstillMote(
                     callId = callId,
                     dialogmote = dialogmote,
-                    opprettetAv = getNAVIdentFromToken(token),
+                    opprettetAv = authorizedUser.navIdent.value,
                     referat = newReferat,
-                    token = token,
+                    token = authorizedUser.token,
                 )
                 call.respond(HttpStatusCode.OK)
             }
         }
 
         post("/{$dialogmoteApiMoteParam}$dialogmoteApiMoteEndreFerdigstiltPath") {
-            val callId = getCallId()
-
-            val token = getBearerHeader()
-                ?: throw IllegalArgumentException("No Authorization header supplied")
-
             val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
             val newReferat = call.receive<NewReferatDTO>()
 
             val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-            validateVeilederAccess(
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = dialogmote.arbeidstaker.personIdent,
-                action = "Endre Ferdigstilt Dialogmote for moteUUID"
-            ) {
+            checkPersonAndSyfoTilgang(
+                action = "Endre Ferdigstilt Dialogmote for moteUUID",
+                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                tilgangskontrollClient = tilgangskontrollClient,
+                requiresWriteAccess = true,
+            ) { authorizedUser, _, callId ->
                 dialogmoteService.endreFerdigstiltReferat(
                     callId = callId,
                     dialogmote = dialogmote,
-                    opprettetAv = getNAVIdentFromToken(token),
+                    opprettetAv = authorizedUser.navIdent.value,
                     referat = newReferat,
-                    token = token,
+                    token = authorizedUser.token,
                 )
                 call.respond(HttpStatusCode.OK)
             }
         }
 
         post("/{$dialogmoteApiMoteParam}$dialogmoteApiMoteTidStedPath") {
-            val callId = getCallId()
-
-            val token = getBearerHeader()
-                ?: throw IllegalArgumentException("No Authorization header supplied")
-
             val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
-
             val endreDialogmoteTidSted = call.receive<EndretTidStedDTO>()
 
             val dialogmote = dialogmoteService.getDialogmote(moteUUID)
 
-            validateVeilederAccess(
-                dialogmoteTilgangService = dialogmoteTilgangService,
-                personIdentToAccess = dialogmote.arbeidstaker.personIdent,
-                action = "Create NewDialogmoteTidSted for moteUUID"
-            ) {
+            checkPersonAndSyfoTilgang(
+                action = "Create NewDialogmoteTidSted for moteUUID",
+                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                tilgangskontrollClient = tilgangskontrollClient,
+                requiresWriteAccess = true,
+            ) { authorizedUser, _, callId ->
                 dialogmoteService.nyttMoteinnkallingTidSted(
                     callId = callId,
                     dialogmote = dialogmote,
                     endretTidSted = endreDialogmoteTidSted,
-                    token = token,
+                    token = authorizedUser.token,
                 )
                 call.respond(HttpStatusCode.OK)
             }
@@ -177,12 +159,14 @@ fun Route.registerDialogmoteActionsApiV2(
                 }
 
                 val dialogmoter = dialogmoteUuids.map { dialogmoteService.getDialogmote(UUID.fromString(it)) }
-                if (dialogmoteTilgangService.hasAccessToAllDialogmotePersons(
-                        personIdentList = dialogmoter.map { it.arbeidstaker.personIdent },
-                        token,
-                        callId
+                val hasWriteAccessToAll = dialogmoter.all { dialogmote ->
+                    tilgangskontrollClient.hasWriteAccess(
+                        callId = callId,
+                        personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                        token = token,
                     )
-                ) {
+                }
+                if (hasWriteAccessToAll) {
                     dialogmoteService.tildelMoter(getNAVIdentFromToken(token), dialogmoter)
                     call.respond(HttpStatusCode.OK)
                 } else {
@@ -208,13 +192,14 @@ fun Route.registerDialogmoteActionsApiV2(
                 }
 
                 val dialogmoter = dialogmoteUuids.map { dialogmoteService.getDialogmote(it) }
-
-                if (dialogmoteTilgangService.hasAccessToAllDialogmotePersons(
-                        personIdentList = dialogmoter.map { it.arbeidstaker.personIdent },
-                        token,
-                        callId
+                val hasWriteAccessToAll = dialogmoter.all { dialogmote ->
+                    tilgangskontrollClient.hasWriteAccess(
+                        callId = callId,
+                        personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                        token = token,
                     )
-                ) {
+                }
+                if (hasWriteAccessToAll) {
                     dialogmoteService.tildelMoter(veilederIdent, dialogmoter)
                     call.respond(HttpStatusCode.NoContent)
                 } else {
