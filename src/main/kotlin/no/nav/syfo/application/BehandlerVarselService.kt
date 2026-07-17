@@ -43,7 +43,7 @@ class BehandlerVarselService(
         behandlerDialogmeldingProducer.sendDialogmelding(
             dialogmelding = KafkaBehandlerDialogmeldingDTO(
                 behandlerRef = behandlerRef,
-                personident = arbeidstakerPersonIdent.value,
+                personIdent = arbeidstakerPersonIdent.value,
                 dialogmeldingUuid = varselUuid.toString(),
                 dialogmeldingRefParent = varselParentId,
                 dialogmeldingRefConversation = getConversationUuid(varselUuid, varselInnkallingUuid).toString(),

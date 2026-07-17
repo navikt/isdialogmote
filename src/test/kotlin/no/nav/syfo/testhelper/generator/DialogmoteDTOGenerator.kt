@@ -94,7 +94,7 @@ fun generateEndreDialogmoteTidStedDTOWithBehandler() = EndretTidStedDTO(
 fun generateMotedeltakerArbeidstakerDTO(
     personident: Personident,
 ) = NewDialogmotedeltakerArbeidstakerDTO(
-    personident = personident.value,
+    personIdent = personident.value,
     fritekstInnkalling = "Ipsum lorum arbeidstaker",
     innkalling = generateDocumentComponentList(),
 )
@@ -132,7 +132,7 @@ fun generateDocumentComponentList(): List<DocumentComponentDTO> {
 fun generateMotedeltakerArbeidstakerDTOMissingValues(
     personident: Personident,
 ) = NewDialogmotedeltakerArbeidstakerDTO(
-    personident = personident.value,
+    personIdent = personident.value,
     fritekstInnkalling = null,
     innkalling = emptyList(),
 )
@@ -146,7 +146,7 @@ fun generateMotedeltakerArbeidsgiverDTO(
 )
 
 fun generateMotedeltakerBehandlerDTO() = NewDialogmotedeltakerBehandlerDTO(
-    personident = BEHANDLER_FNR.value,
+    personIdent = BEHANDLER_FNR.value,
     behandlerRef = BEHANDLER_REF,
     behandlerNavn = BEHANDLER_NAVN,
     behandlerKontor = BEHANDLER_KONTOR,

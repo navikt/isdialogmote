@@ -131,7 +131,7 @@ class PostDialogmoteApiV2Test {
                 assertEquals(ENHET_NR.value, dialogmoteDTO.tildeltEnhet)
                 assertEquals(VEILEDER_IDENT, dialogmoteDTO.tildeltVeilederIdent)
 
-                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                 assertEquals(1, dialogmoteDTO.arbeidstaker.varselList.size)
 
                 assertNull(dialogmoteDTO.behandler)
@@ -214,7 +214,7 @@ class PostDialogmoteApiV2Test {
                 assertEquals(ENHET_NR.value, dialogmoteDTO.tildeltEnhet)
                 assertEquals(VEILEDER_IDENT, dialogmoteDTO.tildeltVeilederIdent)
 
-                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                 assertEquals(1, dialogmoteDTO.arbeidstaker.varselList.size)
 
                 assertNull(dialogmoteDTO.behandler)
@@ -260,7 +260,7 @@ class PostDialogmoteApiV2Test {
                 assertEquals(ENHET_NR.value, dialogmoteDTO.tildeltEnhet)
                 assertEquals(VEILEDER_IDENT, dialogmoteDTO.tildeltVeilederIdent)
 
-                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                 assertEquals(
                     newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
                     dialogmoteDTO.arbeidsgiver.virksomhetsnummer
@@ -272,7 +272,7 @@ class PostDialogmoteApiV2Test {
                     newDialogmoteDTO.behandler.behandlerKontor,
                     dialogmoteDTO.behandler.behandlerKontor
                 )
-                assertEquals(newDialogmoteDTO.behandler.personident, dialogmoteDTO.behandler.personident)
+                assertEquals(newDialogmoteDTO.behandler.personIdent, dialogmoteDTO.behandler.personIdent)
 
                 val behandlerVarselDTO = dialogmoteDTO.behandler.varselList.first()
                 assertEquals(MotedeltakerVarselType.INNKALT.name, behandlerVarselDTO.varselType)

@@ -97,7 +97,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
                 assertEquals(ENHET_NR.value, dialogmoteDTO.tildeltEnhet)
                 assertEquals(VEILEDER_IDENT, dialogmoteDTO.tildeltVeilederIdent)
 
-                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                 assertEquals(1, dialogmoteDTO.arbeidstaker.varselList.size)
 
                 val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()
@@ -182,7 +182,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
                 assertEquals(ENHET_NR.value, dialogmoteDTO.tildeltEnhet)
                 assertEquals(VEILEDER_IDENT, dialogmoteDTO.tildeltVeilederIdent)
 
-                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                 assertEquals(1, dialogmoteDTO.arbeidstaker.varselList.size)
 
                 val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.first()

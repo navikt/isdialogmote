@@ -20,7 +20,7 @@ data class NewDialogmoteDTO(
 )
 
 data class NewDialogmotedeltakerArbeidstakerDTO(
-    val personident: String,
+    val personIdent: String,
     val fritekstInnkalling: String?,
     val innkalling: List<DocumentComponentDTO>,
 )
@@ -32,7 +32,7 @@ data class NewDialogmotedeltakerArbeidsgiverDTO(
 )
 
 data class NewDialogmotedeltakerBehandlerDTO(
-    val personident: String?,
+    val personIdent: String?,
     val behandlerRef: String,
     val behandlerNavn: String,
     val behandlerKontor: String,
@@ -56,7 +56,7 @@ fun NewDialogmoteDTO.toNewDialogmote(
         tildeltEnhet = navEnhet.value,
         opprettetAv = requestByNAVIdent,
         arbeidstaker = NewDialogmotedeltakerArbeidstaker(
-            personident = Personident(this.arbeidstaker.personident),
+            personident = Personident(this.arbeidstaker.personIdent),
             fritekstInnkalling = this.arbeidstaker.fritekstInnkalling,
         ),
         arbeidsgiver = NewDialogmotedeltakerArbeidsgiver(
@@ -65,7 +65,7 @@ fun NewDialogmoteDTO.toNewDialogmote(
         ),
         behandler = this.behandler?.let {
             NewDialogmotedeltakerBehandler(
-                personident = it.personident?.let { personident -> Personident(personident) },
+                personident = it.personIdent?.let { personident -> Personident(personident) },
                 behandlerRef = it.behandlerRef,
                 behandlerNavn = it.behandlerNavn,
                 behandlerKontor = it.behandlerKontor,

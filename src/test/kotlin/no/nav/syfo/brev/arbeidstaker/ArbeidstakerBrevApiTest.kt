@@ -225,7 +225,7 @@ class ArbeidstakerBrevApiTest {
                     assertEquals(1, dialogmoteList.size)
 
                     val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
+                    assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                     assertEquals(
                         newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
                         dialogmoteDTO.arbeidsgiver.virksomhetsnummer
@@ -373,7 +373,7 @@ class ArbeidstakerBrevApiTest {
                 assertEquals(1, dialogmoteList.size)
 
                 val dialogmoteDTO = dialogmoteList.first()
-                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                 assertEquals(
                     newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
                     dialogmoteDTO.arbeidsgiver.virksomhetsnummer

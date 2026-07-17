@@ -103,7 +103,7 @@ class GetDialogmoteEnhetApiV2Test {
 
                 val dialogmoteDTO_0 = dialogmoteList[0]
                 assertEquals(ENHET_NR.value, dialogmoteDTO_0.tildeltEnhet)
-                assertEquals(newDialogmote.arbeidstaker.personident.value, dialogmoteDTO_0.arbeidstaker.personident)
+                assertEquals(newDialogmote.arbeidstaker.personident.value, dialogmoteDTO_0.arbeidstaker.personIdent)
                 assertEquals(
                     newDialogmote.arbeidsgiver.virksomhetsnummer.value,
                     dialogmoteDTO_0.arbeidsgiver.virksomhetsnummer
@@ -113,7 +113,7 @@ class GetDialogmoteEnhetApiV2Test {
 
                 val dialogmoteDTO_1 = dialogmoteList[1]
                 assertEquals(ENHET_NR.value, dialogmoteDTO_1.tildeltEnhet)
-                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO_1.arbeidstaker.personident)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO_1.arbeidstaker.personIdent)
                 assertEquals(
                     newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
                     dialogmoteDTO_1.arbeidsgiver.virksomhetsnummer

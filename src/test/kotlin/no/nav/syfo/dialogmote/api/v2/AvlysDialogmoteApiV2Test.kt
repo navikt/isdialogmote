@@ -114,7 +114,7 @@ class AvlysDialogmoteApiV2Test {
                     val dialogmoteDTO = dialogmoteList.first()
                     assertEquals(Dialogmote.Status.AVLYST.name, dialogmoteDTO.status)
 
-                    assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
+                    assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                     val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
                         it.varselType == MotedeltakerVarselType.AVLYST.name
                     }
@@ -381,7 +381,7 @@ class AvlysDialogmoteApiV2Test {
                 val dialogmoteDTO = dialogmoteList.first()
                 assertEquals(Dialogmote.Status.AVLYST.name, dialogmoteDTO.status)
 
-                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                 val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
                     it.varselType == MotedeltakerVarselType.AVLYST.name
                 }

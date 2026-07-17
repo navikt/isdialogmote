@@ -114,7 +114,7 @@ class FerdigstillDialogmoteApiV2Test {
 
                 val dialogmoteDTO = dialogmoteList.first()
                 assertEquals(Dialogmote.Status.FERDIGSTILT.name, dialogmoteDTO.status)
-                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                 assertEquals(
                     newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
                     dialogmoteDTO.arbeidsgiver.virksomhetsnummer

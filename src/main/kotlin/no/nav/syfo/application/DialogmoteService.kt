@@ -76,7 +76,7 @@ class DialogmoteService(
         callId: String,
         token: String,
     ) {
-        val personident = Personident(newDialogmoteDTO.arbeidstaker.personident)
+        val personident = Personident(newDialogmoteDTO.arbeidstaker.personIdent)
         val virksomhetsnummer = Virksomhetsnummer(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer)
 
         val isAnyUnfinishedDialogmoter = getDialogmoteList(personident).filter {
