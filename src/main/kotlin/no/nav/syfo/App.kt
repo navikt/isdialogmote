@@ -2,6 +2,7 @@ package no.nav.syfo
 
 import com.typesafe.config.ConfigFactory
 import io.ktor.server.application.ApplicationStarted
+import io.ktor.server.application.ApplicationStopPreparing
 import io.ktor.server.config.HoconApplicationConfig
 import io.ktor.server.engine.*
 import io.ktor.server.netty.Netty
@@ -309,12 +310,9 @@ fun main() {
                     }
                 }
             }
-        }
-    )
-
-    Runtime.getRuntime().addShutdownHook(
-        Thread {
-            server.stop(10, 10, TimeUnit.SECONDS)
+            monitor.subscribe(ApplicationStopPreparing) {
+                applicationState.ready = false
+            }
         }
     )
 
