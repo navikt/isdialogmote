@@ -6,7 +6,7 @@ import java.time.LocalDate
 
 data class OppfolgingstilfellePersonDTO(
     val oppfolgingstilfelleList: List<OppfolgingstilfelleDTO>,
-    val personident: String,
+    val personIdent: String,
 )
 
 data class OppfolgingstilfelleDTO(

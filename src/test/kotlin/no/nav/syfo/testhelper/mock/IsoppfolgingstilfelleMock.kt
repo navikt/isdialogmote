@@ -26,7 +26,7 @@ fun oppfolgingstilfellePersonDTO(
     personident: Personident = ARBEIDSTAKER_FNR,
     end: LocalDate = LocalDate.now().plusDays(10),
 ) = OppfolgingstilfellePersonDTO(
-    personident = personident.value,
+    personIdent = personident.value,
     oppfolgingstilfelleList = listOf(
         OppfolgingstilfelleDTO(
             arbeidstakerAtTilfelleEnd = true,
@@ -42,7 +42,7 @@ fun oppfolgingstilfellePersonDTO(
 fun oppfolgingstilfellePersonDTONoTilfelle(
     personident: Personident,
 ) = OppfolgingstilfellePersonDTO(
-    personident = personident.value,
+    personIdent = personident.value,
     oppfolgingstilfelleList = emptyList()
 )
 
