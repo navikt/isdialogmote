@@ -6,7 +6,6 @@ import io.ktor.server.application.ApplicationStopPreparing
 import io.ktor.server.config.HoconApplicationConfig
 import io.ktor.server.engine.*
 import io.ktor.server.netty.Netty
-import java.util.concurrent.TimeUnit
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.api.authentication.getWellKnown
 import no.nav.syfo.infrastructure.client.cache.ValkeyStore
