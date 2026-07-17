@@ -15,7 +15,7 @@ import no.nav.syfo.api.callIdArgument
 import no.nav.syfo.infrastructure.client.cache.ValkeyStore
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.httpClientDefault
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.client.tokendings.TokendingsClient
 import no.nav.syfo.domain.Virksomhetsnummer
 import org.slf4j.LoggerFactory
@@ -38,27 +38,27 @@ class OppfolgingstilfelleClient(
     private val CACHE_OPPFOLGINGSTILFELLE_NL_KEY_PREFIX = "oppfolgingstilfelle-nl-"
 
     suspend fun oppfolgingstilfellePerson(
-        personIdent: PersonIdent,
+        personident: Personident,
         token: String,
         callId: String? = null,
     ): Oppfolgingstilfelle? =
         oppfolgingstilfelle(
-            personIdent = personIdent,
+            personident = personident,
             path = personOppfolgingstilfelleUrl,
             token = token,
             callId = callId,
         )
 
     suspend fun oppfolgingstilfelleSystem(
-        personIdent: PersonIdent,
+        personident: Personident,
     ): Oppfolgingstilfelle? =
         oppfolgingstilfelle(
-            personIdent = personIdent,
+            personident = personident,
             path = personOppfolgingstilfelleSystemUrl,
         )
 
     private suspend fun oppfolgingstilfelle(
-        personIdent: PersonIdent,
+        personident: Personident,
         path: String,
         token: String? = null,
         callId: String? = null,
@@ -68,7 +68,7 @@ class OppfolgingstilfelleClient(
             val response: HttpResponse = httpClient.get(path) {
                 header(HttpHeaders.Authorization, bearerHeader(getAzureAccessToken(token)))
                 header(NAV_CALL_ID_HEADER, callIdToUse)
-                header(NAV_PERSONIDENT_HEADER, personIdent.value)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
                 accept(ContentType.Application.Json)
             }
             val oppfolgingstilfellePerson = response.body<OppfolgingstilfellePersonDTO>()
@@ -87,8 +87,8 @@ class OppfolgingstilfelleClient(
     }
 
     suspend fun oppfolgingstilfelleTokenx(
-        arbeidstakerPersonIdentNumber: PersonIdent,
-        narmesteLederPersonIdentNumber: PersonIdent,
+        arbeidstakerPersonIdentNumber: Personident,
+        narmesteLederPersonIdentNumber: Personident,
         tokenx: String,
         virksomhetsnummer: Virksomhetsnummer,
         callId: String,

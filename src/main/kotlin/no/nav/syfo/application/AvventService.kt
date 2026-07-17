@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.dialogmote.Avvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -17,11 +17,11 @@ class AvventService(
             avventRepository.persist(avvent, transaction)
         }
 
-    fun getAvventForIdenter(personidenter: List<PersonIdent>): List<Avvent> {
+    fun getAvventForIdenter(personidenter: List<Personident>): List<Avvent> {
         return avventRepository.getActiveAvventForPersonidenter(personidenter)
     }
 
-    suspend fun lukkAvvent(personident: PersonIdent) {
+    suspend fun lukkAvvent(personident: Personident) {
         transactionManager.run { transaction ->
             avventRepository.getActiveAvvent(personident, transaction)?.let {
                 avventRepository.setLukket(it.uuid, transaction)

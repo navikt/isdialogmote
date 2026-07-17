@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
@@ -34,7 +34,7 @@ class VarselService(
     suspend fun sendVarsel(
         varselType: MotedeltakerVarselType,
         isDigitalVarselEnabledForArbeidstaker: Boolean,
-        arbeidstakerPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: Personident,
         arbeidstakernavn: String,
         arbeidstakerbrevId: UUID,
         narmesteLeder: NarmesteLederRelasjonDTO?,
@@ -55,7 +55,7 @@ class VarselService(
     ) {
         val tilfelle = oppfolgingstilfelleClient.oppfolgingstilfellePerson(
             callId = callId,
-            personIdent = arbeidstakerPersonIdent,
+            personident = arbeidstakerPersonIdent,
             token = token,
         )
 
@@ -111,7 +111,7 @@ class VarselService(
             log.info("Skal varsle bruker digitalt om $varselType")
             arbeidstakerVarselService.sendVarsel(
                 varseltype = varselType,
-                personIdent = arbeidstakerPersonIdent,
+                personident = arbeidstakerPersonIdent,
                 varselUuid = arbeidstakerbrevId,
                 journalpostId = null,
                 motetidspunkt = motetidspunkt
@@ -136,8 +136,8 @@ class VarselService(
 
     fun sendNarmesteLederSvarVarselHendelse(
         narmesteLederSvar: DialogmoteSvarType,
-        narmesteLederPersonIdent: PersonIdent,
-        arbeidstakerPersonIdent: PersonIdent,
+        narmesteLederPersonIdent: Personident,
+        arbeidstakerPersonIdent: Personident,
         virksomhetsnummer: Virksomhetsnummer,
     ) {
         narmesteLederVarselService.sendNarmesteLederSvarVarselHendelse(

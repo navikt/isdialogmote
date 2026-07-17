@@ -114,7 +114,7 @@ class AvlysDialogmoteApiV2Test {
                     val dialogmoteDTO = dialogmoteList.first()
                     assertEquals(Dialogmote.Status.AVLYST.name, dialogmoteDTO.status)
 
-                    assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
+                    assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
                     val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
                         it.varselType == MotedeltakerVarselType.AVLYST.name
                     }
@@ -324,7 +324,7 @@ class AvlysDialogmoteApiV2Test {
     @DisplayName("Møtet tilbake i tid")
     inner class MotetTilbakeITid {
         private val newDialogmoteDTO = generateNewDialogmoteDTO(
-            personIdent = ARBEIDSTAKER_FNR,
+            personident = ARBEIDSTAKER_FNR,
             dato = LocalDateTime.now().plusDays(-30)
         )
 
@@ -381,7 +381,7 @@ class AvlysDialogmoteApiV2Test {
                 val dialogmoteDTO = dialogmoteList.first()
                 assertEquals(Dialogmote.Status.AVLYST.name, dialogmoteDTO.status)
 
-                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
                 val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
                     it.varselType == MotedeltakerVarselType.AVLYST.name
                 }

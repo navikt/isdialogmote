@@ -59,12 +59,12 @@ class DialogmoteJournalpostDistribusjonCronjob(
     fun referatJournalpostDistribusjon(): DialogmoteCronjobResult {
         val result = DialogmoteCronjobResult()
         referatJournalpostService.getDialogmoteReferatForJournalpostDistribusjonList()
-            .forEach { (referatId, personIdent, referatJournalpostId, motetidspunkt) ->
+            .forEach { (referatId, personident, referatJournalpostId, motetidspunkt) ->
                 try {
                     log.info("ArbeidstakerVarsel-journalpost-distribusjon til reserverte via esyfovarsel. About to send varsel of type: ${MotedeltakerVarselType.REFERAT}")
                     arbeidstakerVarselService.sendVarsel(
                         MotedeltakerVarselType.REFERAT,
-                        personIdent,
+                        personident,
                         UUID.randomUUID(),
                         referatJournalpostId!!,
                         motetidspunkt

@@ -2,8 +2,8 @@ package no.nav.syfo.testhelper.mock
 
 import no.nav.syfo.common.mock.tilgangskontroll.MockUserSyfoTilgangLevel
 import no.nav.syfo.common.mock.tilgangskontroll.MockUserTilgangDetails
-import no.nav.syfo.common.types.ident.NavIdent
-import no.nav.syfo.common.types.ident.PersonIdent as LibPersonIdent
+import no.nav.syfo.common.types.ident.Navident
+import no.nav.syfo.common.types.ident.Personident as LibPersonIdent
 import no.nav.syfo.testhelper.UserConstants
 
 val accessiblePersonIdents = setOf(
@@ -20,15 +20,15 @@ val accessiblePersonIdents = setOf(
 )
 
 val mockTilgangDetailsPerNavIdent = mapOf(
-    NavIdent(UserConstants.VEILEDER_IDENT) to MockUserTilgangDetails(
+    Navident(UserConstants.VEILEDER_IDENT) to MockUserTilgangDetails(
         syfoTilgangLevel = MockUserSyfoTilgangLevel.FULL,
         personsUserHasAccessTo = accessiblePersonIdents,
     ),
-    NavIdent(UserConstants.VEILEDER_IDENT_2) to MockUserTilgangDetails(
+    Navident(UserConstants.VEILEDER_IDENT_2) to MockUserTilgangDetails(
         syfoTilgangLevel = MockUserSyfoTilgangLevel.FULL,
         personsUserHasAccessTo = accessiblePersonIdents,
     ),
-    NavIdent(UserConstants.VEILEDER_IDENT_READONLY) to MockUserTilgangDetails(
+    Navident(UserConstants.VEILEDER_IDENT_READONLY) to MockUserTilgangDetails(
         syfoTilgangLevel = MockUserSyfoTilgangLevel.READ,
         personsUserHasAccessTo = accessiblePersonIdents,
     ),

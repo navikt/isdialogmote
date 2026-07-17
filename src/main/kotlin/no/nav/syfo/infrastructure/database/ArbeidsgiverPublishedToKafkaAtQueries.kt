@@ -3,7 +3,7 @@ package no.nav.syfo.infrastructure.database
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.Dialogmotesvar
 import no.nav.syfo.infrastructure.cronjob.dialogmotesvar.SenderType
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.util.toOffsetDateTimeUTC
 import java.sql.*
 import java.time.*
@@ -53,7 +53,7 @@ fun DatabaseInterface.updateArbeidsgiverVarselPublishedAt(
 
 fun ResultSet.toDialogmotesvarArbeidsgiver(): Dialogmotesvar = Dialogmotesvar(
     moteuuid = UUID.fromString(getString("mote_uuid")),
-    ident = PersonIdent(getString("personident")),
+    ident = Personident(getString("personident")),
     svarType = DialogmoteSvarType.valueOf(getString("svar_type")),
     dbRef = UUID.fromString(getString("varsel_uuid")),
     brevSentAt = getTimestamp("brev_sent_at").toLocalDateTime().toOffsetDateTimeUTC(),

@@ -25,7 +25,7 @@ class OppfolgingstilfellePersonDTOTest {
             endDate = latestEndDate,
         )
         val oppfolgingstilfellePersonDTO = OppfolgingstilfellePersonDTO(
-            personIdent = UserConstants.ARBEIDSTAKER_FNR.value,
+            personident = UserConstants.ARBEIDSTAKER_FNR.value,
             oppfolgingstilfelleList = listOf(
                 tilfelleWithWrongEndDate,
                 tilfelleWithCorrectEndDate,

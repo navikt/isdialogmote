@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.infrastructure.database.model.PMotedeltakerBehandlerVarsel
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.api.authentication.configuredJacksonMapper
 import java.sql.*
 import java.time.Instant
@@ -115,7 +115,7 @@ const val queryGetMotedeltakerBehandlerVarselOfTypeByArbeidstakerAndUuid =
 
 fun DatabaseInterface.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
     varselType: MotedeltakerVarselType,
-    arbeidstakerPersonIdent: PersonIdent,
+    arbeidstakerPersonIdent: Personident,
     uuid: String,
 ): Pair<Int, PMotedeltakerBehandlerVarsel>? {
     return this.connection.use { connection ->
@@ -142,8 +142,8 @@ const val queryGetMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler =
 
 fun DatabaseInterface.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler(
     varselType: MotedeltakerVarselType,
-    arbeidstakerPersonIdent: PersonIdent,
-    behandlerPersonIdent: PersonIdent,
+    arbeidstakerPersonIdent: Personident,
+    behandlerPersonIdent: Personident,
 ): PMotedeltakerBehandlerVarsel? {
     return this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler).use {
@@ -169,7 +169,7 @@ const val queryGetMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId =
 
 fun DatabaseInterface.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId(
     varselType: MotedeltakerVarselType,
-    arbeidstakerPersonIdent: PersonIdent,
+    arbeidstakerPersonIdent: Personident,
     moteId: Int,
 ): PMotedeltakerBehandlerVarsel? {
     return this.connection.use { connection ->

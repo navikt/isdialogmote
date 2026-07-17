@@ -2,7 +2,7 @@ package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.domain.ForesporselType
 import no.nav.syfo.domain.Kodeverk
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.SvarType
 import no.nav.syfo.infrastructure.kafka.dialogmelding.Dialogmelding
 import no.nav.syfo.infrastructure.kafka.dialogmelding.Foresporsel
@@ -16,8 +16,8 @@ import java.util.*
 fun generateKafkaDialogmeldingDTO(
     msgId: String? = null,
     msgType: String,
-    personIdentPasient: PersonIdent,
-    personIdentBehandler: PersonIdent,
+    personIdentPasient: Personident,
+    personIdentBehandler: Personident,
     conversationRef: String?,
     parentRef: String?,
     innkallingMoterespons: InnkallingMoterespons?

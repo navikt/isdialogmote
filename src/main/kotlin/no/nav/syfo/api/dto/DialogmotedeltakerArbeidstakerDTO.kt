@@ -4,7 +4,7 @@ import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
 
 data class DialogmotedeltakerArbeidstakerDTO(
     val uuid: String,
-    val personIdent: String,
+    val personident: String,
     val type: String,
     val varselList: List<DialogmotedeltakerArbeidstakerVarselDTO>,
 ) {
@@ -12,7 +12,7 @@ data class DialogmotedeltakerArbeidstakerDTO(
         fun from(arbeidstaker: DialogmotedeltakerArbeidstaker): DialogmotedeltakerArbeidstakerDTO {
             return DialogmotedeltakerArbeidstakerDTO(
                 uuid = arbeidstaker.uuid.toString(),
-                personIdent = arbeidstaker.personIdent.value,
+                personident = arbeidstaker.personident.value,
                 type = arbeidstaker.type.name,
                 varselList = arbeidstaker.varselList.map { DialogmotedeltakerArbeidstakerVarselDTO.from(it) },
             )

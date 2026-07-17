@@ -167,7 +167,7 @@ class PostDialogmoteTidStedApiV2Test {
                 val dialogmoteDTO = dialogmoteList.first()
                 assertEquals(Dialogmote.Status.NYTT_TID_STED.name, dialogmoteDTO.status)
 
-                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
                 val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
                     it.varselType == MotedeltakerVarselType.NYTT_TID_STED.name
                 }

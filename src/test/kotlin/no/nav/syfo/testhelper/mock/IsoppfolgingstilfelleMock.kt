@@ -7,7 +7,7 @@ import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.Oppfolgingstilfelle
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleDTO
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfellePersonDTO
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.ARBEIDSGIVERPERIODE_DAYS
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FJERDE_FNR
@@ -23,10 +23,10 @@ import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import java.time.LocalDate
 
 fun oppfolgingstilfellePersonDTO(
-    personIdent: PersonIdent = ARBEIDSTAKER_FNR,
+    personident: Personident = ARBEIDSTAKER_FNR,
     end: LocalDate = LocalDate.now().plusDays(10),
 ) = OppfolgingstilfellePersonDTO(
-    personIdent = personIdent.value,
+    personident = personident.value,
     oppfolgingstilfelleList = listOf(
         OppfolgingstilfelleDTO(
             arbeidstakerAtTilfelleEnd = true,
@@ -40,9 +40,9 @@ fun oppfolgingstilfellePersonDTO(
 )
 
 fun oppfolgingstilfellePersonDTONoTilfelle(
-    personIdent: PersonIdent,
+    personident: Personident,
 ) = OppfolgingstilfellePersonDTO(
-    personIdent = personIdent.value,
+    personident = personident.value,
     oppfolgingstilfelleList = emptyList()
 )
 
@@ -59,10 +59,10 @@ fun oppfolgingstilfelleDTOOverlappingOTList() = listOf(
 
 fun MockRequestHandleScope.oppfolgingstilfelleMockResponse(request: HttpRequestData): HttpResponseData {
     val requestUrl = request.url.encodedPath
-    val personIdent = request.headers[NAV_PERSONIDENT_HEADER]
+    val personident = request.headers[NAV_PERSONIDENT_HEADER]
     return when {
         requestUrl.endsWith(ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_PERSON_PATH) -> {
-            when (personIdent) {
+            when (personident) {
                 ARBEIDSTAKER_FNR.value -> respondOk(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_FNR))
                 ARBEIDSTAKER_ANNEN_FNR.value -> respondOk(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_ANNEN_FNR))
                 ARBEIDSTAKER_TREDJE_FNR.value -> respondOk(oppfolgingstilfellePersonDTO(ARBEIDSTAKER_TREDJE_FNR))
@@ -81,7 +81,7 @@ fun MockRequestHandleScope.oppfolgingstilfelleMockResponse(request: HttpRequestD
                 )
                 ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE.value -> respondOk(
                     oppfolgingstilfellePersonDTO(
-                        personIdent = ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE,
+                        personident = ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE,
                         end = LocalDate.now().minusDays(ARBEIDSGIVERPERIODE_DAYS + 1),
                     )
                 )
@@ -89,7 +89,7 @@ fun MockRequestHandleScope.oppfolgingstilfelleMockResponse(request: HttpRequestD
             }
         }
         requestUrl.endsWith(ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_NARMESTELEDER_PATH) -> {
-            when (personIdent) {
+            when (personident) {
                 ARBEIDSTAKER_FNR.value -> respondOk(oppfolgingstilfelleDTOOverlappingOTList())
                 else -> respondOk(emptyList<OppfolgingstilfelleDTO>())
             }

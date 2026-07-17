@@ -12,7 +12,7 @@ import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.domain.dialogmote.DialogmoteStatusEndret
 import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
 import no.nav.syfo.domain.dialogmote.latest
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.time.Instant
 import java.time.LocalDateTime
@@ -39,7 +39,7 @@ class PublishDialogmoteStatusEndringService(
             dialogmoteStatusEndret = dialogmoteStatusEndret,
             dialogmoteTidStedList = moteRepository.getTidSted(moteId),
             pDialogmote = database.getDialogmote(id = moteId).first(),
-            personIdent = database.getMoteDeltakerArbeidstaker(moteId).personIdent,
+            personident = database.getMoteDeltakerArbeidstaker(moteId).personident,
             virksomhetsnummer = database.getMoteDeltakerArbeidsgiver(moteId).virksomhetsnummer,
         )
         dialogmoteStatusEndringProducer.sendDialogmoteStatusEndring(kDialogmoteStatusEndring)
@@ -54,7 +54,7 @@ fun createKDialogmoteStatusEndring(
     dialogmoteStatusEndret: DialogmoteStatusEndret,
     dialogmoteTidStedList: List<DialogmoteTidSted>,
     pDialogmote: PDialogmote,
-    personIdent: PersonIdent,
+    personident: Personident,
     virksomhetsnummer: Virksomhetsnummer,
 ): KDialogmoteStatusEndring {
     val kDialogmoteStatusEndring = KDialogmoteStatusEndring()
@@ -62,7 +62,7 @@ fun createKDialogmoteStatusEndring(
     kDialogmoteStatusEndring.setDialogmoteTidspunkt(dialogmoteTidStedList.latest()!!.tid.toInstantOslo())
     kDialogmoteStatusEndring.setStatusEndringType(dialogmoteStatusEndret.status.name)
     kDialogmoteStatusEndring.setStatusEndringTidspunkt(dialogmoteStatusEndret.createdAt.toInstantOslo())
-    kDialogmoteStatusEndring.setPersonIdent(personIdent.value)
+    kDialogmoteStatusEndring.setPersonIdent(personident.value)
     kDialogmoteStatusEndring.setVirksomhetsnummer(virksomhetsnummer.value)
     kDialogmoteStatusEndring.setEnhetNr(pDialogmote.tildeltEnhet)
     kDialogmoteStatusEndring.setNavIdent(dialogmoteStatusEndret.opprettetAv)

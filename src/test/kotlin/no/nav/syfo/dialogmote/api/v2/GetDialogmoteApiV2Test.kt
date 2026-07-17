@@ -95,7 +95,7 @@ class GetDialogmoteApiV2Test {
                 assertEquals(1, dialogmoteList.size)
 
                 val dialogmoteDTO = dialogmoteList.first()
-                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
                 assertEquals(
                     newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
                     dialogmoteDTO.arbeidsgiver.virksomhetsnummer
@@ -167,7 +167,7 @@ class GetDialogmoteApiV2Test {
                 assertEquals(1, dialogmoteList.size)
 
                 val dialogmoteDTO = dialogmoteList.first()
-                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
                 assertEquals(
                     newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
                     dialogmoteDTO.arbeidsgiver.virksomhetsnummer
@@ -277,7 +277,7 @@ class GetDialogmoteApiV2Test {
         }
 
         @Test
-        fun `should return status BadRequest if NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied`() {
+        fun `should return status BadRequest if NAV_PERSONIDENT_HEADER with invalid Personident is supplied`() {
             testApplication {
                 val client = setupApiAndClient(
                     altinnMock = altinnMock,

@@ -24,7 +24,7 @@ class MoteRepositoryTest {
     private val newDialogmote = generateNewDialogmote(UserConstants.ARBEIDSTAKER_FNR)
     private val newDialogmoteWithBehandler = generateNewDialogmoteWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
     private val newDialogmoteNotBelongingToArbeidstaker = generateNewDialogmote(UserConstants.ARBEIDSTAKER_ANNEN_FNR)
-    private val moteTilhorendeArbeidstaker = newDialogmote.arbeidstaker.personIdent
+    private val moteTilhorendeArbeidstaker = newDialogmote.arbeidstaker.personident
     private val otherArbeidstakerNoMoter = UserConstants.ARBEIDSTAKER_ANNEN_FNR
 
     @BeforeEach
@@ -84,7 +84,7 @@ class MoteRepositoryTest {
 
         val retrievedMote = moteRepository.getMote(createdDialogmote.dialogmoteIdPair.second)
 
-        assertEquals(newDialogmote.arbeidstaker.personIdent, retrievedMote.arbeidstaker.personIdent)
+        assertEquals(newDialogmote.arbeidstaker.personident, retrievedMote.arbeidstaker.personident)
         assertEquals(newDialogmote.arbeidsgiver.virksomhetsnummer, retrievedMote.arbeidsgiver.virksomhetsnummer)
         assertTrue(retrievedMote.tidStedList.isNotEmpty())
         assertEquals(newDialogmote.tidSted.sted, retrievedMote.tidStedList.first().sted)
@@ -102,7 +102,7 @@ class MoteRepositoryTest {
         val retrievedMote = moteRepository.getMote(createdDialogmote.dialogmoteIdPair.second)
 
         assertNotNull(retrievedMote.behandler)
-        assertEquals(newDialogmoteWithBehandler.behandler?.personIdent, retrievedMote.behandler?.personIdent)
+        assertEquals(newDialogmoteWithBehandler.behandler?.personident, retrievedMote.behandler?.personident)
         assertEquals(newDialogmoteWithBehandler.behandler?.behandlerNavn, retrievedMote.behandler?.behandlerNavn)
     }
 }

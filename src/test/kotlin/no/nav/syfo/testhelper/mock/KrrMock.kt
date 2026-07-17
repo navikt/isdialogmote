@@ -8,16 +8,16 @@ import no.nav.syfo.infrastructure.client.person.kontaktinfo.DigitalKontaktinfoBo
 import no.nav.syfo.testhelper.UserConstants
 
 fun digitalKontaktinfoBolkKanVarslesTrue(
-    personIdent: String,
+    personident: String,
 ) = DigitalKontaktinfoBolk(
     personer = mapOf(
-        personIdent to DigitalKontaktinfo(
+        personident to DigitalKontaktinfo(
             epostadresse = UserConstants.PERSON_EMAIL,
             kanVarsles = true,
             reservert = false,
             mobiltelefonnummer = UserConstants.PERSON_TLF,
             aktiv = true,
-            personident = personIdent,
+            personident = personident,
         )
     )
 )

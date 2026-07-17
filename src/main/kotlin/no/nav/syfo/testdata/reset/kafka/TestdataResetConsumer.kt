@@ -2,7 +2,7 @@ package no.nav.syfo.testdata.reset.kafka
 
 import kotlinx.coroutines.delay
 import no.nav.syfo.ApplicationState
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.testdata.reset.TestdataResetService
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
@@ -27,7 +27,7 @@ class TestdataResetConsumer(
                 if (records.count() > 0) {
                     records.forEach { record ->
                         if (record.value() != null) {
-                            testdataResetService.resetTestdata(PersonIdent(record.value()))
+                            testdataResetService.resetTestdata(Personident(record.value()))
                         } else {
                             log.warn("TestdataResetConsumer: Value of ConsumerRecord from topic $TESTDATA_RESET_TOPIC is null")
                         }

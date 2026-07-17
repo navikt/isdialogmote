@@ -2,7 +2,7 @@ package no.nav.syfo.infrastructure.kafka.behandler
 
 data class KafkaBehandlerDialogmeldingDTO(
     val behandlerRef: String,
-    val personIdent: String,
+    val personident: String,
     val dialogmeldingUuid: String,
     val dialogmeldingRefParent: String?,
     val dialogmeldingRefConversation: String,

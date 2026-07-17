@@ -8,7 +8,7 @@ import no.nav.syfo.api.dto.NewReferatDTO
 import no.nav.syfo.api.dto.toNewDialogmote
 import no.nav.syfo.api.dto.toNewReferat
 import no.nav.syfo.application.exception.ConflictException
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.ArbeidstakerBrev
@@ -59,7 +59,7 @@ class DialogmoteService(
     fun getDialogmote(moteUUID: UUID): Dialogmote =
         moteRepository.getMote(moteUUID)
 
-    fun getDialogmoteList(personident: PersonIdent): List<Dialogmote> =
+    fun getDialogmoteList(personident: Personident): List<Dialogmote> =
         moteRepository.getMoterFor(personident)
 
     fun getDialogmoteList(enhetNr: EnhetNr): List<Dialogmote> =
@@ -76,7 +76,7 @@ class DialogmoteService(
         callId: String,
         token: String,
     ) {
-        val personident = PersonIdent(newDialogmoteDTO.arbeidstaker.personIdent)
+        val personident = Personident(newDialogmoteDTO.arbeidstaker.personident)
         val virksomhetsnummer = Virksomhetsnummer(newDialogmoteDTO.arbeidsgiver.virksomhetsnummer)
 
         val isAnyUnfinishedDialogmoter = getDialogmoteList(personident).filter {
@@ -84,11 +84,11 @@ class DialogmoteService(
         }.anyActive()
 
         if (isAnyUnfinishedDialogmoter) {
-            throw ConflictException("Denied access to create Dialogmote: unfinished Dialogmote exists for PersonIdent")
+            throw ConflictException("Denied access to create Dialogmote: unfinished Dialogmote exists for Personident")
         }
 
         val narmesteLeder = narmesteLederClient.activeLeder(
-            personIdent = personident,
+            personident = personident,
             virksomhetsnummer = virksomhetsnummer,
             callId = callId,
             token = token,
@@ -98,7 +98,7 @@ class DialogmoteService(
 
         val behandlendeEnhetDTO = behandlendeEnhetClient.getEnhet(
             callId = callId,
-            personIdent = personident,
+            personident = personident,
             token = token,
         ) ?: throw RuntimeException("Failed to request (or missing) BehandlendeEnhet of Person")
 
@@ -129,7 +129,7 @@ class DialogmoteService(
         }
 
         val digitalVarsling = isDigitalVarselEnabled(
-            personIdent = personident,
+            personident = personident,
             token = token,
             callId = callId,
         )
@@ -163,7 +163,7 @@ class DialogmoteService(
                 behandlerRef = newDialogmote.behandler?.behandlerRef,
                 behandlerParentVarselId = null,
                 behandlerInnkallingUuid = null,
-                arbeidstakerPersonIdent = newDialogmote.arbeidstaker.personIdent,
+                arbeidstakerPersonIdent = newDialogmote.arbeidstaker.personident,
                 pdfArbeidstaker = pdfInnkallingArbeidstaker,
                 pdfArbeidsgiver = pdfInnkallingArbeidsgiver,
                 pdfBehandler = pdfInnkallingBehandler,
@@ -195,10 +195,10 @@ class DialogmoteService(
             throw IllegalArgumentException("Failed to Avlys Dialogmote: missing behandler")
         }
 
-        val arbeidstakernavn = pdlClient.navn(avlystDialogmote.arbeidstaker.personIdent)
+        val arbeidstakernavn = pdlClient.navn(avlystDialogmote.arbeidstaker.personident)
         val virksomhetsnummer = avlystDialogmote.arbeidsgiver.virksomhetsnummer
         val narmesteLeder = narmesteLederClient.activeLeder(
-            personIdent = avlystDialogmote.arbeidstaker.personIdent,
+            personident = avlystDialogmote.arbeidstaker.personident,
             virksomhetsnummer = virksomhetsnummer,
             callId = callId,
             token = token,
@@ -207,7 +207,7 @@ class DialogmoteService(
         val pdfAvlysningArbeidstaker = pdfGenClient.pdfAvlysning(
             callId = callId,
             mottakerNavn = arbeidstakernavn,
-            mottakerFodselsnummer = avlystDialogmote.arbeidstaker.personIdent.value,
+            mottakerFodselsnummer = avlystDialogmote.arbeidstaker.personident.value,
             pdfContent = avlysningTilMottakere.arbeidstaker.avlysning,
         ) ?: throw RuntimeException("Failed to request PDF - Avlysning Arbeidstaker")
 
@@ -226,7 +226,7 @@ class DialogmoteService(
         }
 
         val digitalVarsling = isDigitalVarselEnabled(
-            personIdent = avlystDialogmote.arbeidstaker.personIdent,
+            personident = avlystDialogmote.arbeidstaker.personident,
             token = token,
             callId = callId,
         )
@@ -252,7 +252,7 @@ class DialogmoteService(
                 behandlerRef = avlystDialogmote.behandler?.behandlerRef,
                 behandlerParentVarselId = avlystDialogmote.behandler?.findParentVarselId(),
                 behandlerInnkallingUuid = avlystDialogmote.behandler?.findInnkallingVarselUuid(),
-                arbeidstakerPersonIdent = avlystDialogmote.arbeidstaker.personIdent,
+                arbeidstakerPersonIdent = avlystDialogmote.arbeidstaker.personident,
                 pdfArbeidstaker = pdfAvlysningArbeidstaker,
                 pdfArbeidsgiver = pdfAvlysningArbeidsgiver,
                 pdfBehandler = pdfAvlysningBehandler,
@@ -283,9 +283,9 @@ class DialogmoteService(
             throw IllegalArgumentException("Failed to change tid/sted: missing behandler")
         }
         val virksomhetsnummer = endretDialogmote.arbeidsgiver.virksomhetsnummer
-        val arbeidstakernavn = pdlClient.navn(endretDialogmote.arbeidstaker.personIdent)
+        val arbeidstakernavn = pdlClient.navn(endretDialogmote.arbeidstaker.personident)
         val narmesteLeder = narmesteLederClient.activeLeder(
-            personIdent = endretDialogmote.arbeidstaker.personIdent,
+            personident = endretDialogmote.arbeidstaker.personident,
             virksomhetsnummer = virksomhetsnummer,
             callId = callId,
             token = token,
@@ -294,7 +294,7 @@ class DialogmoteService(
         val pdfEndringArbeidstaker = pdfGenClient.pdfEndringTidSted(
             callId = callId,
             mottakerNavn = arbeidstakernavn,
-            mottakerFodselsnummer = endretDialogmote.arbeidstaker.personIdent.value,
+            mottakerFodselsnummer = endretDialogmote.arbeidstaker.personident.value,
             pdfContent = endretTidSted.arbeidstaker.endringsdokument,
         ) ?: throw RuntimeException("Failed to request PDF - EndringTidSted Arbeidstaker")
 
@@ -313,7 +313,7 @@ class DialogmoteService(
         }
 
         val digitalVarsling = isDigitalVarselEnabled(
-            personIdent = endretDialogmote.arbeidstaker.personIdent,
+            personident = endretDialogmote.arbeidstaker.personident,
             token = token,
             callId = callId,
         )
@@ -343,7 +343,7 @@ class DialogmoteService(
                 behandlerRef = endretDialogmote.behandler?.behandlerRef,
                 behandlerParentVarselId = endretDialogmote.behandler?.findParentVarselId(),
                 behandlerInnkallingUuid = endretDialogmote.behandler?.findInnkallingVarselUuid(),
-                arbeidstakerPersonIdent = endretDialogmote.arbeidstaker.personIdent,
+                arbeidstakerPersonIdent = endretDialogmote.arbeidstaker.personident,
                 arbeidstakernavn = arbeidstakernavn,
                 pdfArbeidstaker = pdfEndringArbeidstaker,
                 pdfArbeidsgiver = pdfEndringArbeidsgiver,
@@ -372,7 +372,7 @@ class DialogmoteService(
         behandlerRef: String?,
         behandlerParentVarselId: String?,
         behandlerInnkallingUuid: UUID?,
-        arbeidstakerPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: Personident,
         arbeidstakernavn: String,
         pdfArbeidstaker: ByteArray,
         pdfArbeidsgiver: ByteArray,
@@ -539,13 +539,13 @@ class DialogmoteService(
         val ferdigstiltDialogmote = dialogmote.ferdigstill()
 
         val narmesteLeder = narmesteLederClient.activeLeder(
-            personIdent = ferdigstiltDialogmote.arbeidstaker.personIdent,
+            personident = ferdigstiltDialogmote.arbeidstaker.personident,
             virksomhetsnummer = ferdigstiltDialogmote.arbeidsgiver.virksomhetsnummer,
             callId = callId,
             token = token,
         )
 
-        val arbeidstakernavn = pdlClient.navn(ferdigstiltDialogmote.arbeidstaker.personIdent)
+        val arbeidstakernavn = pdlClient.navn(ferdigstiltDialogmote.arbeidstaker.personident)
 
         val pdfReferat = pdfGenClient.pdfReferat(
             callId = callId,
@@ -553,7 +553,7 @@ class DialogmoteService(
         ) ?: throw RuntimeException("Failed to request PDF - Referat")
 
         val digitalVarsling = isDigitalVarselEnabled(
-            personIdent = ferdigstiltDialogmote.arbeidstaker.personIdent,
+            personident = ferdigstiltDialogmote.arbeidstaker.personident,
             token = token,
             callId = callId,
         )
@@ -619,7 +619,7 @@ class DialogmoteService(
             varselService.sendVarsel(
                 varselType = MotedeltakerVarselType.REFERAT,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
-                arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
+                arbeidstakerPersonIdent = dialogmote.arbeidstaker.personident,
                 arbeidstakernavn = arbeidstakernavn,
                 arbeidstakerbrevId = referatUuid,
                 narmesteLeder = narmesteLeder,
@@ -651,13 +651,13 @@ class DialogmoteService(
         val endretFerdigstiltReferatDialogmote = dialogmote.endreFerdigstiltReferat()
 
         val narmesteLeder = narmesteLederClient.activeLeder(
-            personIdent = endretFerdigstiltReferatDialogmote.arbeidstaker.personIdent,
+            personident = endretFerdigstiltReferatDialogmote.arbeidstaker.personident,
             virksomhetsnummer = endretFerdigstiltReferatDialogmote.arbeidsgiver.virksomhetsnummer,
             callId = callId,
             token = token,
         )
 
-        val arbeidstakernavn = pdlClient.navn(endretFerdigstiltReferatDialogmote.arbeidstaker.personIdent)
+        val arbeidstakernavn = pdlClient.navn(endretFerdigstiltReferatDialogmote.arbeidstaker.personident)
 
         val pdfReferat = pdfGenClient.pdfReferat(
             callId = callId,
@@ -665,7 +665,7 @@ class DialogmoteService(
         ) ?: throw RuntimeException("Failed to request PDF - Referat")
 
         val digitalVarsling = isDigitalVarselEnabled(
-            personIdent = endretFerdigstiltReferatDialogmote.arbeidstaker.personIdent,
+            personident = endretFerdigstiltReferatDialogmote.arbeidstaker.personident,
             token = token,
             callId = callId,
         )
@@ -721,7 +721,7 @@ class DialogmoteService(
             varselService.sendVarsel(
                 varselType = MotedeltakerVarselType.REFERAT,
                 isDigitalVarselEnabledForArbeidstaker = digitalVarsling,
-                arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
+                arbeidstakerPersonIdent = dialogmote.arbeidstaker.personident,
                 arbeidstakernavn = arbeidstakernavn,
                 arbeidstakerbrevId = referatUuid,
                 narmesteLeder = narmesteLeder,
@@ -781,12 +781,12 @@ class DialogmoteService(
     }
 
     private suspend fun isDigitalVarselEnabled(
-        personIdent: PersonIdent,
+        personident: Personident,
         token: String,
         callId: String,
     ): Boolean {
         return kontaktinformasjonClient.isDigitalVarselEnabled(
-            personIdent = personIdent,
+            personident = personident,
             token = token,
             callId = callId,
         )
@@ -795,14 +795,14 @@ class DialogmoteService(
     fun publishNarmesteLederSvarVarselHendelse(
         brev: NarmesteLederBrev,
         narmesteLederSvar: DialogmoteSvarType,
-        narmesteLederPersonIdent: PersonIdent,
+        narmesteLederPersonIdent: Personident,
     ) {
         val dialogmoteDeltagerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(
             motedeltakerArbeidsgiverId = brev.motedeltakerArbeidsgiverId,
         )
         val arbeidstakerPersonIdent = moteRepository.getMotedeltakerArbeidstaker(
             moteId = dialogmoteDeltagerArbeidsgiver.moteId,
-        ).personIdent
+        ).personident
 
         varselService.sendNarmesteLederSvarVarselHendelse(
             narmesteLederSvar = narmesteLederSvar,

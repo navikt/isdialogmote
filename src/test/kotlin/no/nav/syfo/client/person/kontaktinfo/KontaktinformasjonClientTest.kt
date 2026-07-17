@@ -20,9 +20,9 @@ import org.junit.jupiter.api.Test
 
 class KontaktinformasjonClientTest {
 
-    private val personIdent = UserConstants.ARBEIDSTAKER_FNR
-    private val digitalKontaktInfo = digitalKontaktinfoBolkKanVarslesTrue(personIdent.value)
-    private val digitalKontaktInfoCacheKey = "$CACHE_KONTAKTINFORMASJON_KEY_PREFIX${personIdent.value}"
+    private val personident = UserConstants.ARBEIDSTAKER_FNR
+    private val digitalKontaktInfo = digitalKontaktinfoBolkKanVarslesTrue(personident.value)
+    private val digitalKontaktInfoCacheKey = "$CACHE_KONTAKTINFORMASJON_KEY_PREFIX${personident.value}"
     private val anyToken = "token"
     private val anyCallId = "callId"
 
@@ -51,7 +51,7 @@ class KontaktinformasjonClientTest {
         } returns digitalKontaktInfo
 
         runBlocking {
-            assertTrue(client.isDigitalVarselEnabled(personIdent, anyToken, anyCallId))
+            assertTrue(client.isDigitalVarselEnabled(personident, anyToken, anyCallId))
         }
         verify(exactly = 1) {
             cacheMock.getObject<DigitalKontaktinfoBolk>(
@@ -70,7 +70,7 @@ class KontaktinformasjonClientTest {
         } returns null
 
         runBlocking {
-            assertTrue(client.isDigitalVarselEnabled(personIdent, anyToken, anyCallId))
+            assertTrue(client.isDigitalVarselEnabled(personident, anyToken, anyCallId))
         }
 
         verify(exactly = 1) {

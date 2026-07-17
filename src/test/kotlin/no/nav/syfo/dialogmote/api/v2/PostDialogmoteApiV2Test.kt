@@ -98,7 +98,7 @@ class PostDialogmoteApiV2Test {
         fun `should return OK if request is successful`() {
             val moteTidspunkt = DIALOGMOTE_TIDSPUNKT_FIXTURE
             val newDialogmoteDTO = generateNewDialogmoteDTO(
-                personIdent = ARBEIDSTAKER_FNR,
+                personident = ARBEIDSTAKER_FNR,
                 dato = moteTidspunkt,
             )
 
@@ -131,7 +131,7 @@ class PostDialogmoteApiV2Test {
                 assertEquals(ENHET_NR.value, dialogmoteDTO.tildeltEnhet)
                 assertEquals(VEILEDER_IDENT, dialogmoteDTO.tildeltVeilederIdent)
 
-                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
                 assertEquals(1, dialogmoteDTO.arbeidstaker.varselList.size)
 
                 assertNull(dialogmoteDTO.behandler)
@@ -214,7 +214,7 @@ class PostDialogmoteApiV2Test {
                 assertEquals(ENHET_NR.value, dialogmoteDTO.tildeltEnhet)
                 assertEquals(VEILEDER_IDENT, dialogmoteDTO.tildeltVeilederIdent)
 
-                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
                 assertEquals(1, dialogmoteDTO.arbeidstaker.varselList.size)
 
                 assertNull(dialogmoteDTO.behandler)
@@ -260,7 +260,7 @@ class PostDialogmoteApiV2Test {
                 assertEquals(ENHET_NR.value, dialogmoteDTO.tildeltEnhet)
                 assertEquals(VEILEDER_IDENT, dialogmoteDTO.tildeltVeilederIdent)
 
-                assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
+                assertEquals(newDialogmoteDTO.arbeidstaker.personident, dialogmoteDTO.arbeidstaker.personident)
                 assertEquals(
                     newDialogmoteDTO.arbeidsgiver.virksomhetsnummer,
                     dialogmoteDTO.arbeidsgiver.virksomhetsnummer
@@ -272,7 +272,7 @@ class PostDialogmoteApiV2Test {
                     newDialogmoteDTO.behandler.behandlerKontor,
                     dialogmoteDTO.behandler.behandlerKontor
                 )
-                assertEquals(newDialogmoteDTO.behandler.personIdent, dialogmoteDTO.behandler.personIdent)
+                assertEquals(newDialogmoteDTO.behandler.personident, dialogmoteDTO.behandler.personident)
 
                 val behandlerVarselDTO = dialogmoteDTO.behandler.varselList.first()
                 assertEquals(MotedeltakerVarselType.INNKALT.name, behandlerVarselDTO.varselType)
@@ -313,7 +313,7 @@ class PostDialogmoteApiV2Test {
         @Test
         fun `should return OK if request is successful does not have a leader for Virksomhet`() {
             val newDialogmoteDTO =
-                generateNewDialogmoteDTO(personIdent = ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
+                generateNewDialogmoteDTO(personident = ARBEIDSTAKER_VIRKSOMHET_NO_NARMESTELEDER)
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
@@ -338,7 +338,7 @@ class PostDialogmoteApiV2Test {
         @Test
         fun `should close active avvent when creating moteinnkalling`() {
             val newDialogmoteDTO = generateNewDialogmoteDTO(
-                personIdent = ARBEIDSTAKER_FNR,
+                personident = ARBEIDSTAKER_FNR,
             )
             val createAvventDTO = CreateAvventDTO(
                 frist = LocalDate.now().plusWeeks(2),
@@ -379,7 +379,7 @@ class PostDialogmoteApiV2Test {
         }
 
         @Test
-        fun `should return OK if requesting to create Dialogmote for PersonIdent with inactive Oppfolgingstilfelle`() {
+        fun `should return OK if requesting to create Dialogmote for Personident with inactive Oppfolgingstilfelle`() {
             val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE)
             testApplication {
                 val client = setupApiAndClient(
@@ -459,7 +459,7 @@ class PostDialogmoteApiV2Test {
         }
 
         @Test
-        fun `should return Conflict if requesting to create Dialogmote for PersonIdent with an existing unfinished Dialogmote`() {
+        fun `should return Conflict if requesting to create Dialogmote for Personident with an existing unfinished Dialogmote`() {
             val newDialogmoteDTO = generateNewDialogmoteDTOWithMissingValues(ARBEIDSTAKER_FNR)
 
             testApplication {
@@ -483,7 +483,7 @@ class PostDialogmoteApiV2Test {
         }
 
         @Test
-        fun `should return InternalServerError if requesting to create Dialogmote for PersonIdent no behandlende enhet`() {
+        fun `should return InternalServerError if requesting to create Dialogmote for Personident no behandlende enhet`() {
             val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_NO_BEHANDLENDE_ENHET)
             testApplication {
                 val client = setupApiAndClient(

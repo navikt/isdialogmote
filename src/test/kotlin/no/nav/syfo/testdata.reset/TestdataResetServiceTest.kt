@@ -29,7 +29,7 @@ class TestdataResetServiceTest {
     @Test
     fun `Skal slette dialogmøte fra database for oppgitt arbeidstaker`() {
         // Populate database with new dialogmote for arbeidstaker
-        val newDialogmote = generateNewDialogmote(personIdent = ARBEIDSTAKER_FNR)
+        val newDialogmote = generateNewDialogmote(personident = ARBEIDSTAKER_FNR)
         database.connection.use { connection ->
             connection.createNewDialogmoteWithReferences(
                 newDialogmote = newDialogmote,
@@ -51,7 +51,7 @@ class TestdataResetServiceTest {
     @Test
     fun `Skal ikke slette dialogmøte på annen arbeidstaker`() {
         // Populate database with new dialogmote for arbeidstaker
-        val newDialogmote = generateNewDialogmote(personIdent = ARBEIDSTAKER_FNR)
+        val newDialogmote = generateNewDialogmote(personident = ARBEIDSTAKER_FNR)
         database.connection.use { connection ->
             connection.createNewDialogmoteWithReferences(
                 newDialogmote = newDialogmote,
