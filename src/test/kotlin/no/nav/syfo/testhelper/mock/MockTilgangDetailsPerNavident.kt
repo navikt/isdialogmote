@@ -19,7 +19,7 @@ val accessiblePersonIdents = setOf(
     LibPersonIdent(UserConstants.ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE.value),
 )
 
-val mockTilgangDetailsPerNavIdent = mapOf(
+val mockTilgangDetailsPerNavident = mapOf(
     Navident(UserConstants.VEILEDER_IDENT) to MockUserTilgangDetails(
         syfoTilgangLevel = MockUserSyfoTilgangLevel.FULL,
         personsUserHasAccessTo = accessiblePersonIdents,

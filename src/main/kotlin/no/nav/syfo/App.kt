@@ -175,6 +175,8 @@ fun main() {
         factory = Netty,
         environment = applicationEngineEnvironment,
         configure = {
+            shutdownGracePeriod = 5000
+            shutdownTimeout = 10000
             connector {
                 port = applicationPort
             }
