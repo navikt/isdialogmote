@@ -1,13 +1,13 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.kafka.identhendelse.IdentType
 import no.nav.syfo.infrastructure.kafka.identhendelse.Identifikator
 import no.nav.syfo.infrastructure.kafka.identhendelse.KafkaIdenthendelseDTO
 import no.nav.syfo.testhelper.UserConstants
 
 fun generateKafkaIdenthendelseDTOGenerator(
-    personident: PersonIdent = UserConstants.ARBEIDSTAKER_FNR,
+    personident: Personident = UserConstants.ARBEIDSTAKER_FNR,
     hasOldPersonident: Boolean,
 ): KafkaIdenthendelseDTO {
     val identifikatorer = mutableListOf(

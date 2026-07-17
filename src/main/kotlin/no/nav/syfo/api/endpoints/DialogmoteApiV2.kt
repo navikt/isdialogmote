@@ -13,8 +13,8 @@ import no.nav.syfo.api.getBearerHeader
 import no.nav.syfo.common.tilgangskontroll.checkPersonAndSyfoTilgang
 import no.nav.syfo.common.tilgangskontroll.filterPersonsUserHasAccessTo
 import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
-import no.nav.syfo.common.types.ident.PersonIdent as CommonPersonIdent
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.common.types.ident.Personident as CommonPersonident
+import no.nav.syfo.domain.Personident
 
 const val dialogmoteApiV2Basepath = "/api/v2/dialogmote"
 
@@ -30,13 +30,13 @@ fun Route.registerDialogmoteApiV2(
     route(dialogmoteApiV2Basepath) {
         get(dialogmoteApiPersonIdentUrlPath) {
             checkPersonAndSyfoTilgang(
-                action = "Read Dialogmoter for Person with PersonIdent",
+                action = "Read Dialogmoter for Person with Personident",
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = false,
             ) { _, targetPersonIdent, _ ->
-                val personIdent = PersonIdent(targetPersonIdent.value)
+                val personident = Personident(targetPersonIdent.value)
                 val dialogmoteDTOList = dialogmoteService.getDialogmoteList(
-                    personident = personIdent,
+                    personident = personident,
                 ).map { dialogmote ->
                     DialogmoteDTO.from(dialogmote)
                 }
@@ -50,15 +50,15 @@ fun Route.registerDialogmoteApiV2(
             val dialogmoteList =
                 dialogmoteService.getDialogmoteUnfinishedListForVeilederIdent(getNAVIdentFromToken(token))
 
-            val personIdents = dialogmoteList.map { CommonPersonIdent(it.arbeidstaker.personIdent.value) }
+            val personIdents = dialogmoteList.map { CommonPersonident(it.arbeidstaker.personident.value) }
             val accessiblePersonIdentValues = filterPersonsUserHasAccessTo(
                 action = "Get Dialogmoter for VeilederIdent",
-                personIdenter = personIdents,
+                personidenter = personIdents,
                 tilgangskontrollClient = tilgangskontrollClient,
             )?.map { it.value }?.toHashSet() ?: emptySet()
 
             val dialogmoteDTOList = dialogmoteList
-                .filter { dialogmote -> dialogmote.arbeidstaker.personIdent.value in accessiblePersonIdentValues }
+                .filter { dialogmote -> dialogmote.arbeidstaker.personident.value in accessiblePersonIdentValues }
                 .map { dialogmote -> DialogmoteDTO.from(dialogmote) }
 
             call.respond(dialogmoteDTOList)
@@ -69,7 +69,7 @@ fun Route.registerDialogmoteApiV2(
 
             checkPersonAndSyfoTilgang(
                 action = "Create new Dialogmoteinnkalling",
-                personIdent = CommonPersonIdent(newDialogmoteDTO.arbeidstaker.personIdent),
+                personident = CommonPersonident(newDialogmoteDTO.arbeidstaker.personIdent),
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
             ) { authorizedUser, _, callId ->
@@ -88,7 +88,7 @@ fun Route.registerDialogmoteApiV2(
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = false,
             ) { _, targetPersonIdent, _ ->
-                val personident = PersonIdent(targetPersonIdent.value)
+                val personident = Personident(targetPersonIdent.value)
                 val dialogmoteStatusEndringer = dialogmotestatusService.getMoteStatusEndringer(personident)
 
                 if (dialogmoteStatusEndringer.isEmpty()) {

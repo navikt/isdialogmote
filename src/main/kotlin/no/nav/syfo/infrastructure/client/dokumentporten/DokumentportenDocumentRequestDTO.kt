@@ -2,7 +2,7 @@ package no.nav.syfo.infrastructure.client.dokumentporten
 
 import com.fasterxml.jackson.annotation.JsonValue
 import java.util.UUID
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.infrastructure.client.ereg.EregVirksomhetsnavn
@@ -66,7 +66,7 @@ data class DokumentportenDocumentRequestDTO(
             virksomhetsnavn: EregVirksomhetsnavn?,
             file: ByteArray,
             varseltype: MotedeltakerVarselType,
-            arbeidstakerPersonIdent: PersonIdent,
+            arbeidstakerPersonIdent: Personident,
             arbeidstakernavn: String,
             manglerNarmesteLeder: Boolean,
         ): DokumentportenDocumentRequestDTO {

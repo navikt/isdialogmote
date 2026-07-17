@@ -1,6 +1,6 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
@@ -30,9 +30,9 @@ fun generateNewDialogmoteTidSted() = NewDialogmoteTidSted(
 )
 
 fun generateMotedeltakerArbeidstaker(
-    personIdent: PersonIdent,
+    personident: Personident,
 ) = NewDialogmotedeltakerArbeidstaker(
-    personIdent = personIdent,
+    personident = personident,
     fritekstInnkalling = "Ipsum lorum arbeidstaker"
 )
 
@@ -42,34 +42,34 @@ fun generateMotedeltakerArbeidsgiver() = NewDialogmotedeltakerArbeidsgiver(
 )
 
 fun generateMotedeltakerBehandler() = NewDialogmotedeltakerBehandler(
-    personIdent = UserConstants.BEHANDLER_FNR,
+    personident = UserConstants.BEHANDLER_FNR,
     behandlerRef = "1234",
     behandlerNavn = UserConstants.BEHANDLER_NAVN,
     behandlerKontor = UserConstants.BEHANDLER_KONTOR,
 )
 
 fun generateNewDialogmote(
-    personIdent: PersonIdent,
+    personident: Personident,
     status: Dialogmote.Status = Dialogmote.Status.INNKALT,
 ): NewDialogmote = NewDialogmote(
     status = status,
     opprettetAv = UserConstants.VEILEDER_IDENT,
     tildeltVeilederIdent = UserConstants.VEILEDER_IDENT,
     tildeltEnhet = UserConstants.ENHET_NR.value,
-    arbeidstaker = generateMotedeltakerArbeidstaker(personIdent),
+    arbeidstaker = generateMotedeltakerArbeidstaker(personident),
     arbeidsgiver = generateMotedeltakerArbeidsgiver(),
     tidSted = generateNewDialogmoteTidSted()
 )
 
 fun generateNewDialogmoteWithBehandler(
-    personIdent: PersonIdent,
+    personident: Personident,
     status: Dialogmote.Status = Dialogmote.Status.INNKALT,
 ): NewDialogmote = NewDialogmote(
     status = status,
     opprettetAv = UserConstants.VEILEDER_IDENT,
     tildeltVeilederIdent = UserConstants.VEILEDER_IDENT,
     tildeltEnhet = UserConstants.ENHET_NR.value,
-    arbeidstaker = generateMotedeltakerArbeidstaker(personIdent),
+    arbeidstaker = generateMotedeltakerArbeidstaker(personident),
     arbeidsgiver = generateMotedeltakerArbeidsgiver(),
     tidSted = generateNewDialogmoteTidSted(),
     behandler = generateMotedeltakerBehandler()
@@ -125,7 +125,7 @@ fun generateDialogmotedeltakerArbeidstaker() = DialogmotedeltakerArbeidstaker(
     createdAt = LocalDateTime.now().minusMonths(6L),
     updatedAt = LocalDateTime.now().minusMonths(6L),
     moteId = 1,
-    personIdent = UserConstants.ARBEIDSTAKER_FNR,
+    personident = UserConstants.ARBEIDSTAKER_FNR,
     type = DialogmotedeltakerType.ARBEIDSTAKER,
     emptyList()
 )

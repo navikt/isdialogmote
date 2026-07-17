@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.database
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.NewDialogmote
 import no.nav.syfo.domain.dialogmote.TidStedDTO
@@ -54,10 +54,10 @@ const val queryGetDialogmoteListForPersonIdent =
         ORDER BY MOTE.created_at DESC
     """
 
-fun DatabaseInterface.getDialogmoteList(personIdent: PersonIdent): List<PDialogmote> {
+fun DatabaseInterface.getDialogmoteList(personident: Personident): List<PDialogmote> {
     return connection.use { connection ->
         connection.prepareStatement(queryGetDialogmoteListForPersonIdent).use {
-            it.setString(1, personIdent.value)
+            it.setString(1, personident.value)
             it.executeQuery().toList { toPDialogmote() }
         }
     }
@@ -102,7 +102,7 @@ fun Connection.createNewDialogmoteWithReferences(
     val motedeltakerArbeidstakerIdPair = this.createMotedeltakerArbeidstaker(
         commit = false,
         moteId = moteId,
-        personIdent = newDialogmote.arbeidstaker.personIdent,
+        personident = newDialogmote.arbeidstaker.personident,
     )
     val motedeltakerArbeidsgiverIdPair = this.createMotedeltakerArbeidsgiver(
         commit = false,

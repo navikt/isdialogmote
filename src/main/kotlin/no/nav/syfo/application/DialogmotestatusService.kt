@@ -4,7 +4,7 @@ import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.Oppfolgingstilfelle
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.api.dto.DialogmoteStatusEndringDTO
 import no.nav.syfo.infrastructure.database.updateMoteStatus
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.NewDialogmote
 import java.sql.Connection
@@ -48,7 +48,7 @@ class DialogmotestatusService(
     ) = createMoteStatusEndring(
         connection = connection,
         dialogmoteId = dialogmoteId,
-        arbeidstakerPersonIdent = newDialogmote.arbeidstaker.personIdent,
+        arbeidstakerPersonIdent = newDialogmote.arbeidstaker.personident,
         isBehandlerMotedeltaker = newDialogmote.behandler != null,
         dialogmoteStatus = dialogmoteStatus,
         opprettetAv = opprettetAv,
@@ -66,7 +66,7 @@ class DialogmotestatusService(
     ) = createMoteStatusEndring(
         connection = connection,
         dialogmoteId = dialogmote.id,
-        arbeidstakerPersonIdent = dialogmote.arbeidstaker.personIdent,
+        arbeidstakerPersonIdent = dialogmote.arbeidstaker.personident,
         isBehandlerMotedeltaker = dialogmote.behandler != null,
         dialogmoteStatus = dialogmoteStatus,
         opprettetAv = opprettetAv,
@@ -74,13 +74,13 @@ class DialogmotestatusService(
         token = token,
     )
 
-    fun getMoteStatusEndringer(personident: PersonIdent): List<DialogmoteStatusEndringDTO> =
+    fun getMoteStatusEndringer(personident: Personident): List<DialogmoteStatusEndringDTO> =
         moteStatusEndretRepository.getMoteStatusEndringer(personident)
 
     private suspend fun createMoteStatusEndring(
         connection: Connection,
         dialogmoteId: Int,
-        arbeidstakerPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: Personident,
         isBehandlerMotedeltaker: Boolean,
         dialogmoteStatus: Dialogmote.Status,
         opprettetAv: String,
@@ -89,13 +89,13 @@ class DialogmotestatusService(
     ) {
         val tilfelle = if (token != null) {
             oppfolgingstilfelleClient.oppfolgingstilfellePerson(
-                personIdent = arbeidstakerPersonIdent,
+                personident = arbeidstakerPersonIdent,
                 token = token,
                 callId = callId,
             )
         } else {
             oppfolgingstilfelleClient.oppfolgingstilfelleSystem(
-                personIdent = arbeidstakerPersonIdent,
+                personident = arbeidstakerPersonIdent,
             )
         }
 

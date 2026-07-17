@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.client.dokarkiv.domain
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.util.*
 
@@ -66,8 +66,8 @@ data class JournalpostRequest private constructor(
 }
 
 fun createJournalpostRequest(
-    brukerPersonIdent: PersonIdent,
-    mottakerPersonIdent: PersonIdent? = null,
+    brukerPersonIdent: Personident,
+    mottakerPersonIdent: Personident? = null,
     mottakerHprId: Int? = null,
     mottakerVirksomhetsnummer: Virksomhetsnummer? = null,
     mottakerNavn: String,

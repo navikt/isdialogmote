@@ -277,7 +277,7 @@ class GetDialogmoteApiV2Test {
         }
 
         @Test
-        fun `should return status BadRequest if NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied`() {
+        fun `should return status BadRequest if NAV_PERSONIDENT_HEADER with invalid Personident is supplied`() {
             testApplication {
                 val client = setupApiAndClient(
                     altinnMock = altinnMock,

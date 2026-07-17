@@ -463,7 +463,7 @@ class DialogmoteVarselJournalforingCronjobTest {
     @Test
     fun `should fail to update journalpost if call to ereg fails`() {
         val newDialogmoteDTO = generateNewDialogmoteDTO(
-            personIdent = UserConstants.ARBEIDSTAKER_FNR,
+            personident = UserConstants.ARBEIDSTAKER_FNR,
             virksomhetsnummer = UserConstants.VIRKSOMHETSNUMMER_EREG_FAILS.value,
         )
         val eregClientApiMock = mockk<EregClient>()

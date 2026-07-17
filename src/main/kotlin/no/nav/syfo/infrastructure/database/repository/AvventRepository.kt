@@ -2,7 +2,7 @@ package no.nav.syfo.infrastructure.database.repository
 
 import no.nav.syfo.application.IAvventRepository
 import no.nav.syfo.application.ITransaction
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.dialogmote.Avvent
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
@@ -30,7 +30,7 @@ class AvventRepository(
         }
 
     override fun getActiveAvvent(
-        personident: PersonIdent,
+        personident: Personident,
         transaction: ITransaction?,
     ): Avvent? =
         if (transaction != null) {
@@ -41,7 +41,7 @@ class AvventRepository(
             }
         }
 
-    override fun getActiveAvventForPersonidenter(personidenter: List<PersonIdent>): List<Avvent> {
+    override fun getActiveAvventForPersonidenter(personidenter: List<Personident>): List<Avvent> {
         if (personidenter.isEmpty()) return emptyList()
         return database.connection.use { connection ->
             connection.queryActiveAvventForPersonidenter(personidenter)
@@ -81,7 +81,7 @@ class AvventRepository(
                 preparedStatement.executeQuery().toList { toAvvent() }.firstOrNull()
             }
 
-    private fun Connection.queryActiveAvvent(personident: PersonIdent): Avvent? =
+    private fun Connection.queryActiveAvvent(personident: Personident): Avvent? =
         this
             .prepareStatement(GET_ACTIVE_AVVENT_FOR_PERSON)
             .use { preparedStatement ->
@@ -89,7 +89,7 @@ class AvventRepository(
                 preparedStatement.executeQuery().toList { toAvvent() }.firstOrNull()
             }
 
-    private fun Connection.queryActiveAvventForPersonidenter(personidenter: List<PersonIdent>): List<Avvent> {
+    private fun Connection.queryActiveAvventForPersonidenter(personidenter: List<Personident>): List<Avvent> {
         val personidentArray = this.createArrayOf("varchar", personidenter.map { it.value }.toTypedArray())
         return this
             .prepareStatement(GET_ACTIVE_AVVENT_FOR_PERSONIDENTER)
@@ -147,7 +147,7 @@ private fun ResultSet.toAvvent() =
         createdAt = this.getObject("created_at", java.time.OffsetDateTime::class.java),
         frist = this.getObject("frist", java.time.LocalDate::class.java),
         createdBy = this.getString("created_by"),
-        personident = PersonIdent(this.getString("personident")),
+        personident = Personident(this.getString("personident")),
         beskrivelse = this.getString("beskrivelse"),
         isLukket = this.getBoolean("is_lukket"),
     )

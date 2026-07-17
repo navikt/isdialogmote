@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
 import no.nav.syfo.domain.dialogmote.Referat
@@ -23,15 +23,15 @@ class ReferatJournalpostService(
     private val database: DatabaseInterface,
     private val moteRepository: IMoteRepository,
 ) {
-    fun getDialogmoteReferatJournalforingListArbeidstaker(): List<Pair<PersonIdent, Referat>> {
+    fun getDialogmoteReferatJournalforingListArbeidstaker(): List<Pair<Personident, Referat>> {
         return moteRepository.getFerdigstilteReferatWithoutJournalpostArbeidstakerList()
     }
 
-    fun getDialogmoteReferatJournalforingListArbeidsgiver(): List<Triple<Virksomhetsnummer, PersonIdent, Referat>> {
+    fun getDialogmoteReferatJournalforingListArbeidsgiver(): List<Triple<Virksomhetsnummer, Personident, Referat>> {
         return moteRepository.getFerdigstilteReferatWithoutJournalpostArbeidsgiverList()
     }
 
-    fun getDialogmoteReferatJournalforingListBehandler(): List<Triple<PersonIdent, DialogmotedeltakerBehandler, Referat>> {
+    fun getDialogmoteReferatJournalforingListBehandler(): List<Triple<Personident, DialogmotedeltakerBehandler, Referat>> {
         return database.getFerdigstilteReferatWithoutJournalpostBehandlerList().map { pReferat ->
             val andreDeltakere = database.getAndreDeltakereForReferatID(pReferat.id).map {
                 it.toDialogmoteDeltakerAnnen()
@@ -41,7 +41,7 @@ class ReferatJournalpostService(
             val motedeltakerBehandler = moteRepository.getMotedeltakerBehandler(pReferat.moteId)!!
 
             Triple(
-                first = motedeltakerArbeidstaker.personIdent,
+                first = motedeltakerArbeidstaker.personident,
                 second = motedeltakerBehandler,
                 third = pReferat.toReferat(
                     andreDeltakere = andreDeltakere,
@@ -61,7 +61,7 @@ class ReferatJournalpostService(
                 val motedeltakerArbeidstaker = database.getMoteDeltakerArbeidstaker(pReferat.moteId)
                 ReferatForJournalpostDistribusjon(
                     pReferat.id,
-                    motedeltakerArbeidstaker.personIdent,
+                    motedeltakerArbeidstaker.personident,
                     pReferat.journalpostIdArbeidstaker,
                     getMotetidspunkt(pReferat.moteId)
                 )

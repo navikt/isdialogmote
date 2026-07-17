@@ -1,6 +1,6 @@
 package no.nav.syfo.domain.dialogmote
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -15,7 +15,7 @@ data class DialogmotedeltakerBehandler(
     val behandlerKontor: String,
     val behandlerType: BehandlerType,
     val type: DialogmotedeltakerType,
-    val personIdent: PersonIdent?,
+    val personident: Personident?,
     val varselList: List<DialogmotedeltakerBehandlerVarsel>,
     val deltatt: Boolean,
     val mottarReferat: Boolean,

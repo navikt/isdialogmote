@@ -4,7 +4,7 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.nav.syfo.api.authentication.personIdent
+import no.nav.syfo.api.authentication.personident
 import no.nav.syfo.api.callIdArgument
 import no.nav.syfo.api.getCallId
 import no.nav.syfo.domain.ArbeidstakerResponsDTO
@@ -38,15 +38,15 @@ fun Route.registerArbeidstakerBrevApi(
         get {
             val callId = getCallId()
             try {
-                val requestPersonIdent = call.personIdent()
-                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+                val requestPersonIdent = call.personident()
+                    ?: throw IllegalArgumentException("No Personident found in token")
                 val allPersonIdents = pdlClient.hentFolkeregisterIdenter(
-                    personIdent = requestPersonIdent,
+                    personident = requestPersonIdent,
                     callId = callId,
                 )
-                val arbeidstakerBrevDTOList = allPersonIdents.flatMap { personIdent ->
+                val arbeidstakerBrevDTOList = allPersonIdents.flatMap { personident ->
                     dialogmoteService.getDialogmoteList(
-                        personident = personIdent,
+                        personident = personident,
                     ).filter { dialogmote ->
                         dialogmote.status != Dialogmote.Status.LUKKET
                     }.toArbeidstakerBrevDTOList()
@@ -62,10 +62,10 @@ fun Route.registerArbeidstakerBrevApi(
         get("/{$arbeidstakerBrevApiBrevParam}$arbeidstakerBrevApiPdfPath") {
             val callId = getCallId()
             try {
-                val requestPersonIdent = call.personIdent()
-                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+                val requestPersonIdent = call.personident()
+                    ?: throw IllegalArgumentException("No Personident found in token")
                 val allPersonIdents = pdlClient.hentFolkeregisterIdenter(
-                    personIdent = requestPersonIdent,
+                    personident = requestPersonIdent,
                     callId = callId,
                 )
 
@@ -77,7 +77,7 @@ fun Route.registerArbeidstakerBrevApi(
                     moteDeltakerArbeidstakerId = brev.motedeltakerArbeidstakerId
                 )
 
-                val hasAccessToBrev = allPersonIdents.contains(motedeltakerArbeidstaker.personIdent)
+                val hasAccessToBrev = allPersonIdents.contains(motedeltakerArbeidstaker.personident)
                 if (hasAccessToBrev && brev.pdfId != null) {
                     val pdf = pdfRepository.getPdf(brev.pdfId!!).pdf
                     call.respond(PdfContent(pdf))
@@ -96,11 +96,11 @@ fun Route.registerArbeidstakerBrevApi(
         post("/{$arbeidstakerBrevApiBrevParam}$arbeidstakerBrevApiLesPath") {
             val callId = getCallId()
             try {
-                val requestPersonIdent = call.personIdent()
-                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+                val requestPersonIdent = call.personident()
+                    ?: throw IllegalArgumentException("No Personident found in token")
 
                 val allPersonIdents = pdlClient.hentFolkeregisterIdenter(
-                    personIdent = requestPersonIdent,
+                    personident = requestPersonIdent,
                     callId = callId,
                 )
 
@@ -112,11 +112,11 @@ fun Route.registerArbeidstakerBrevApi(
                     moteDeltakerArbeidstakerId = brev.motedeltakerArbeidstakerId
                 )
 
-                val hasAccessToBrev = allPersonIdents.contains(motedeltakerArbeidstaker.personIdent)
+                val hasAccessToBrev = allPersonIdents.contains(motedeltakerArbeidstaker.personident)
                 if (hasAccessToBrev) {
                     if (brev.lestDatoArbeidstaker == null) {
                         dialogmotedeltakerService.updateArbeidstakerBrevSettSomLest(
-                            personIdent = requestPersonIdent,
+                            personident = requestPersonIdent,
                             brevUuid = brevUuid,
                         )
                     }
@@ -136,10 +136,10 @@ fun Route.registerArbeidstakerBrevApi(
         post("/{$arbeidstakerBrevApiBrevParam}$arbeidstakerBrevApiResponsPath") {
             val callId = getCallId()
             try {
-                val requestPersonIdent = call.personIdent()
-                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+                val requestPersonIdent = call.personident()
+                    ?: throw IllegalArgumentException("No Personident found in token")
                 val allPersonIdents = pdlClient.hentFolkeregisterIdenter(
-                    personIdent = requestPersonIdent,
+                    personident = requestPersonIdent,
                     callId = callId,
                 )
                 val brevUuid = UUID.fromString(call.parameters[arbeidstakerBrevApiBrevParam])
@@ -151,7 +151,7 @@ fun Route.registerArbeidstakerBrevApi(
                     moteDeltakerArbeidstakerId = brev.motedeltakerArbeidstakerId
                 )
 
-                val hasAccessToBrev = allPersonIdents.contains(motedeltakerArbeidstaker.personIdent)
+                val hasAccessToBrev = allPersonIdents.contains(motedeltakerArbeidstaker.personident)
                 if (hasAccessToBrev) {
                     val updated = dialogmotedeltakerService.updateArbeidstakerBrevWithRespons(
                         brevUuid = brevUuid,

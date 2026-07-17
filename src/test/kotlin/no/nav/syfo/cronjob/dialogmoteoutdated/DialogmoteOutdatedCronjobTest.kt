@@ -107,7 +107,7 @@ class DialogmoteOutdatedCronjobTest {
     @Test
     fun `Setter status paa gammel innkalling til LUKKET`() {
         val newDialogmoteDTO = generateNewDialogmoteDTO(
-            personIdent = UserConstants.ARBEIDSTAKER_FNR,
+            personident = UserConstants.ARBEIDSTAKER_FNR,
             dato = LocalDateTime.now().minusDays(40),
         )
         testApplication {
@@ -140,7 +140,7 @@ class DialogmoteOutdatedCronjobTest {
     @Test
     fun `Setter status paa gammel innkalling med status NYTT_TID_STED til LUKKET`() {
         val newDialogmoteDTO = generateNewDialogmoteDTO(
-            personIdent = UserConstants.ARBEIDSTAKER_FNR,
+            personident = UserConstants.ARBEIDSTAKER_FNR,
             dato = LocalDateTime.now().minusDays(40),
         )
 
@@ -187,7 +187,7 @@ class DialogmoteOutdatedCronjobTest {
     @Test
     fun `Endrer ikke status paa ny innkalling`() {
         val newDialogmoteDTO = generateNewDialogmoteDTO(
-            personIdent = UserConstants.ARBEIDSTAKER_FNR,
+            personident = UserConstants.ARBEIDSTAKER_FNR,
             dato = LocalDateTime.now().minusDays(20),
         )
 
@@ -220,7 +220,7 @@ class DialogmoteOutdatedCronjobTest {
     @Test
     fun `Setter ikke status paa gammelt mote med status FERDIGSTILT til LUKKET`() {
         val newDialogmoteDTO = generateNewDialogmoteDTO(
-            personIdent = UserConstants.ARBEIDSTAKER_FNR,
+            personident = UserConstants.ARBEIDSTAKER_FNR,
             dato = LocalDateTime.now().minusDays(40),
         )
 
@@ -264,7 +264,7 @@ class DialogmoteOutdatedCronjobTest {
     @Test
     fun `Setter ikke status paa gammelt mote med status AVLYST til LUKKET`() {
         val newDialogmoteDTO = generateNewDialogmoteDTO(
-            personIdent = UserConstants.ARBEIDSTAKER_FNR,
+            personident = UserConstants.ARBEIDSTAKER_FNR,
             dato = LocalDateTime.now().minusDays(40),
         )
 

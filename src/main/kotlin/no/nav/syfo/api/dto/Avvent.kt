@@ -1,6 +1,6 @@
 package no.nav.syfo.api.dto
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.dialogmote.Avvent
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -38,7 +38,7 @@ data class CreateAvventDTO(
             createdAt = OffsetDateTime.now(),
             frist = this.frist,
             createdBy = createdBy,
-            personident = PersonIdent(this.personident),
+            personident = Personident(this.personident),
             beskrivelse = this.beskrivelse,
             isLukket = false,
         )

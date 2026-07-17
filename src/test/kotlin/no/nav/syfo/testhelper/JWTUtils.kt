@@ -20,13 +20,13 @@ const val keyId = "localhost-signer"
 fun generateJWTNavIdent(
     audience: String,
     issuer: String,
-    navIdent: String,
+    navident: String,
     expiry: LocalDateTime? = LocalDateTime.now().plusHours(1)
 ): String = generateJwt(
     audience = audience,
     claimValueMap = mapOf(
         JWT_CLAIM_AZP to UserConstants.JWT_AZP,
-        JWT_CLAIM_NAVIDENT to navIdent,
+        JWT_CLAIM_NAVIDENT to navident,
     ),
     issuer = issuer,
     expiry = expiry,

@@ -5,14 +5,14 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.api.*
-import no.nav.syfo.api.authentication.personIdent
+import no.nav.syfo.api.authentication.personident
 import no.nav.syfo.application.DialogmoteService
 import no.nav.syfo.application.DialogmotedeltakerService
 import no.nav.syfo.application.IPdfRepository
 import no.nav.syfo.application.NarmesteLederAccessService
 import no.nav.syfo.domain.NarmesteLederResponsDTO
 import no.nav.syfo.domain.PdfContent
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.toNarmesteLederBrevDTOList
@@ -40,10 +40,10 @@ fun Route.registerNarmestelederBrevApi(
             try {
                 val token = this.getBearerHeader()
                     ?: throw IllegalArgumentException("No token found")
-                val narmesteLederPersonIdent = call.personIdent()
-                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+                val narmesteLederPersonIdent = call.personident()
+                    ?: throw IllegalArgumentException("No Personident found in token")
 
-                val arbeidstakerPersonIdent = getPersonIdentHeader()?.let { PersonIdent(it) }
+                val arbeidstakerPersonIdent = getPersonIdentHeader()?.let { Personident(it) }
                     ?: throw IllegalArgumentException("No $NAV_PERSONIDENT_HEADER provided in request header")
 
                 val moteList = dialogmoteService.getDialogmoteList(personident = arbeidstakerPersonIdent)
@@ -80,8 +80,8 @@ fun Route.registerNarmestelederBrevApi(
             try {
                 val token = this.getBearerHeader()
                     ?: throw IllegalArgumentException("No token found")
-                val narmesteLederPersonIdent = call.personIdent()
-                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+                val narmesteLederPersonIdent = call.personident()
+                    ?: throw IllegalArgumentException("No Personident found in token")
 
                 val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
 
@@ -120,8 +120,8 @@ fun Route.registerNarmestelederBrevApi(
             try {
                 val token = this.getBearerHeader()
                     ?: throw IllegalArgumentException("No token found")
-                val narmesteLederPersonIdent = call.personIdent()
-                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+                val narmesteLederPersonIdent = call.personident()
+                    ?: throw IllegalArgumentException("No Personident found in token")
 
                 val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
 
@@ -159,8 +159,8 @@ fun Route.registerNarmestelederBrevApi(
             try {
                 val token = this.getBearerHeader()
                     ?: throw IllegalArgumentException("No token found")
-                val narmesteLederPersonIdent = call.personIdent()
-                    ?: throw IllegalArgumentException("No PersonIdent found in token")
+                val narmesteLederPersonIdent = call.personident()
+                    ?: throw IllegalArgumentException("No Personident found in token")
                 val brevUuid = UUID.fromString(call.parameters[narmesteLederBrevApiBrevParam])
                 val responsDTO = call.receive<NarmesteLederResponsDTO>() // TODO: bytt navn, dette er en post request (med et svar i)
 

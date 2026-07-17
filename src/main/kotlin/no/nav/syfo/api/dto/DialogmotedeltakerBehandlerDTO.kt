@@ -23,7 +23,7 @@ data class DialogmotedeltakerBehandlerDTO(
                 behandlerKontor = behandler.behandlerKontor,
                 behandlerType = behandler.behandlerType.name,
                 type = behandler.type.name,
-                personIdent = behandler.personIdent?.value,
+                personIdent = behandler.personident?.value,
                 varselList = behandler.varselList.map { DialogmotedeltakerBehandlerVarselDTO.from(it) },
                 deltatt = behandler.deltatt,
                 mottarReferat = behandler.mottarReferat,

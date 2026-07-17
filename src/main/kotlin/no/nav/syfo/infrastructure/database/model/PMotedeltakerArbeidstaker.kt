@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.database.model
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstaker
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstakerVarsel
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerType
@@ -13,7 +13,7 @@ data class PMotedeltakerArbeidstaker(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val moteId: Int,
-    val personIdent: PersonIdent,
+    val personident: Personident,
 )
 
 fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(
@@ -24,7 +24,7 @@ fun PMotedeltakerArbeidstaker.toDialogmotedeltakerArbeidstaker(
     createdAt = this.createdAt,
     updatedAt = this.updatedAt,
     moteId = this.moteId,
-    personIdent = this.personIdent,
+    personident = this.personident,
     type = DialogmotedeltakerType.ARBEIDSTAKER,
     varselList = dialogmotedeltakerArbeidstakerVarsel.map {
         it.toDialogmotedeltakerArbeidstakerVarsel()
@@ -40,7 +40,7 @@ fun PMotedeltakerArbeidstaker.toMotedeltakerArbeidstakerUsingDomainVarsler(
     createdAt = this.createdAt,
     updatedAt = this.updatedAt,
     moteId = this.moteId,
-    personIdent = this.personIdent,
+    personident = this.personident,
     type = DialogmotedeltakerType.ARBEIDSTAKER,
     varselList = dialogmotedeltakerArbeidstakerVarsel,
 )

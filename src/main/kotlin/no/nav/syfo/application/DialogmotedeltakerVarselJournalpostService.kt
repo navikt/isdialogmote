@@ -7,7 +7,7 @@ import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstake
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerArbeidstakerVarsel
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.model.toDialogmotedeltakerBehandlerVarsel
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiverVarsel
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidstakerVarsel
@@ -32,13 +32,13 @@ class DialogmotedeltakerVarselJournalpostService(
     private val database: DatabaseInterface,
     private val moteRepository: IMoteRepository,
 ) {
-    fun getDialogmotedeltakerArbeidstakerVarselForJournalforingList(): List<Pair<PersonIdent, DialogmotedeltakerArbeidstakerVarsel>> {
+    fun getDialogmotedeltakerArbeidstakerVarselForJournalforingList(): List<Pair<Personident, DialogmotedeltakerArbeidstakerVarsel>> {
         return getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList().filter { (_, arbeidstakerVarsel) ->
             journalforingVarselTypeList.contains(arbeidstakerVarsel.varselType)
         }
     }
 
-    private fun getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList(): List<Pair<PersonIdent, DialogmotedeltakerArbeidstakerVarsel>> {
+    private fun getDialogmotedeltakerArbeidstakerVarselWithoutJournalpostList(): List<Pair<Personident, DialogmotedeltakerArbeidstakerVarsel>> {
         val motedeltakerArbeidtakerVarselList = database.getMotedeltakerArbeidstakerVarselWithoutJournalpost()
         return motedeltakerArbeidtakerVarselList.map {
             it.toDialogmotedeltakerArbeidstakerVarsel()
@@ -47,19 +47,19 @@ class DialogmotedeltakerVarselJournalpostService(
                 database.getMotedeltakerArbeidstakerById(motedeltakerArbeidstakerVarsel.motedeltakerArbeidstakerId)
                     .toDialogmotedeltakerArbeidstaker(emptyList())
             Pair(
-                motedeltakerArbeidstaker.personIdent,
+                motedeltakerArbeidstaker.personident,
                 motedeltakerArbeidstakerVarsel,
             )
         }
     }
 
-    fun getDialogmotedeltakerArbeidsgiverVarselForJournalforingList(): List<Triple<Virksomhetsnummer, PersonIdent, DialogmotedeltakerArbeidsgiverVarsel>> {
+    fun getDialogmotedeltakerArbeidsgiverVarselForJournalforingList(): List<Triple<Virksomhetsnummer, Personident, DialogmotedeltakerArbeidsgiverVarsel>> {
         return getDialogmotedeltakerArbeidsgiverVarselWithoutJournalpostList().filter { (_, _, arbeidsgiverVarsel) ->
             journalforingVarselTypeList.contains(arbeidsgiverVarsel.varselType)
         }
     }
 
-    private fun getDialogmotedeltakerArbeidsgiverVarselWithoutJournalpostList(): List<Triple<Virksomhetsnummer, PersonIdent, DialogmotedeltakerArbeidsgiverVarsel>> {
+    private fun getDialogmotedeltakerArbeidsgiverVarselWithoutJournalpostList(): List<Triple<Virksomhetsnummer, Personident, DialogmotedeltakerArbeidsgiverVarsel>> {
         val motedeltakerArbeidsgiverVarselList = database.getMotedeltakerArbeidsgiverVarselWithoutJournalpost()
         return motedeltakerArbeidsgiverVarselList.map {
             it.toDialogmotedeltakerArbeidsgiverVarsel()
@@ -72,19 +72,19 @@ class DialogmotedeltakerVarselJournalpostService(
                     .toDialogmotedeltakerArbeidstaker(emptyList())
             Triple(
                 motedeltakerArbeidsgiver.virksomhetsnummer,
-                motedeltakerArbeidstaker.personIdent,
+                motedeltakerArbeidstaker.personident,
                 motedeltakerArbeidsgiverVarsel,
             )
         }
     }
 
-    fun getDialogmotedeltakerBehandlerVarselForJournalforingList(): List<Triple<PersonIdent, DialogmotedeltakerBehandler, DialogmotedeltakerBehandlerVarsel>> {
+    fun getDialogmotedeltakerBehandlerVarselForJournalforingList(): List<Triple<Personident, DialogmotedeltakerBehandler, DialogmotedeltakerBehandlerVarsel>> {
         return getDialogmotedeltakerBehandlerVarselWithoutJournalpostList().filter { (_, _, behandlerVarsel) ->
             journalforingVarselTypeList.contains(behandlerVarsel.varselType)
         }
     }
 
-    private fun getDialogmotedeltakerBehandlerVarselWithoutJournalpostList(): List<Triple<PersonIdent, DialogmotedeltakerBehandler, DialogmotedeltakerBehandlerVarsel>> {
+    private fun getDialogmotedeltakerBehandlerVarselWithoutJournalpostList(): List<Triple<Personident, DialogmotedeltakerBehandler, DialogmotedeltakerBehandlerVarsel>> {
         val motedeltakerBehandlerVarselList = database.getMotedeltakerBehandlerVarselWithoutJournalpost()
         return motedeltakerBehandlerVarselList.map {
             it.toDialogmotedeltakerBehandlerVarsel(emptyList())
@@ -96,14 +96,14 @@ class DialogmotedeltakerVarselJournalpostService(
                 database.getMoteDeltakerArbeidstaker(motedeltakerBehandler.moteId)
                     .toDialogmotedeltakerArbeidstaker(emptyList())
             Triple(
-                motedeltakerArbeidstaker.personIdent,
+                motedeltakerArbeidstaker.personident,
                 motedeltakerBehandler,
                 motedeltakerBehandlerVarsel,
             )
         }
     }
 
-    fun getDialogmotedeltakerArbeidstakerVarselForJournalpostDistribusjonList(): List<Triple<PersonIdent, DialogmotedeltakerArbeidstakerVarsel, LocalDateTime>> {
+    fun getDialogmotedeltakerArbeidstakerVarselForJournalpostDistribusjonList(): List<Triple<Personident, DialogmotedeltakerArbeidstakerVarsel, LocalDateTime>> {
         return database.getMotedeltakerArbeidstakerVarselForFysiskBrevUtsending()
             .map { it.toDialogmotedeltakerArbeidstakerVarsel() }
             .filter { journalforingVarselTypeList.contains(it.varselType) }
@@ -115,7 +115,7 @@ class DialogmotedeltakerVarselJournalpostService(
                         .last()
                         .tid
                 Triple(
-                    motedeltakerArbeidstaker.personIdent,
+                    motedeltakerArbeidstaker.personident,
                     motedeltakerArbeidstakerVarsel,
                     tidspunkt
                 )

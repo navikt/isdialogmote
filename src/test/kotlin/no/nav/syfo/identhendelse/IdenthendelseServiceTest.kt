@@ -3,7 +3,7 @@ package no.nav.syfo.identhendelse
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.IdenthendelseService
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.client.cache.ValkeyStore
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.database.createNewDialogmoteWithReferences
@@ -51,7 +51,7 @@ class IdenthendelseServiceTest {
             val oldIdent = kafkaIdenthendelseDTO.getInactivePersonidenter().first()
 
             // Populate database with new dialogmote using old ident for arbeidstaker
-            val newDialogmote = generateNewDialogmote(personIdent = oldIdent)
+            val newDialogmote = generateNewDialogmote(personident = oldIdent)
             database.connection.use { connection ->
                 connection.createNewDialogmoteWithReferences(
                     newDialogmote = newDialogmote,
@@ -86,7 +86,7 @@ class IdenthendelseServiceTest {
         fun `Skal ikke oppdatere database når arbeidstaker ikke finnes i databasen`() {
             val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTOGenerator(hasOldPersonident = true)
             val newIdent = kafkaIdenthendelseDTO.getActivePersonident()!!
-            val oldIdent = PersonIdent("12333378910")
+            val oldIdent = Personident("12333378910")
 
             // Check that arbeidstaker with old/current personident do not exist in db before update
             val currentMotedeltakerArbeidstaker = database.getMotedeltakerArbeidstakerByIdent(oldIdent)
@@ -137,7 +137,7 @@ class IdenthendelseServiceTest {
             val oldIdent = kafkaIdenthendelseDTO.getInactivePersonidenter().first()
 
             // Populate database with new dialogmote using old ident for arbeidstaker
-            val newDialogmote = generateNewDialogmote(personIdent = oldIdent)
+            val newDialogmote = generateNewDialogmote(personident = oldIdent)
             database.connection.use { connection ->
                 connection.createNewDialogmoteWithReferences(
                     newDialogmote = newDialogmote,
@@ -159,12 +159,12 @@ class IdenthendelseServiceTest {
         @Test
         fun `Skal kaste RuntimeException hvis PDL gir en not_found ved henting av identer`() {
             val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTOGenerator(
-                personident = PersonIdent(UserConstants.ARBEIDSTAKER_WITH_ERROR_FNR.value),
+                personident = Personident(UserConstants.ARBEIDSTAKER_WITH_ERROR_FNR.value),
                 hasOldPersonident = true,
             )
             val oldIdent = kafkaIdenthendelseDTO.getInactivePersonidenter().first()
 
-            val newDialogmote = generateNewDialogmote(personIdent = oldIdent)
+            val newDialogmote = generateNewDialogmote(personident = oldIdent)
             database.connection.use { connection ->
                 connection.createNewDialogmoteWithReferences(
                     newDialogmote = newDialogmote,

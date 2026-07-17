@@ -38,7 +38,7 @@ class GetDialogmoteStatusEndringApiV2Test {
 
     private val newDialogmote = generateNewDialogmote(ARBEIDSTAKER_FNR)
     private val newDialogmoteFerdigstilt = generateNewDialogmote(
-        personIdent = ARBEIDSTAKER_FNR,
+        personident = ARBEIDSTAKER_FNR,
         status = Dialogmote.Status.FERDIGSTILT,
     )
 

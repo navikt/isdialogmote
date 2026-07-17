@@ -4,7 +4,7 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransf
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val isyfoBackendCommonVersion = "0.0.47"
+val isyfoBackendCommonVersion = "1.2.2"
 
 val altinnCorrespondenceAgencyExternalVersion = "1.2021.02.22-10.45-4201aaea72fb"
 val cxfVersion = "3.6.11"

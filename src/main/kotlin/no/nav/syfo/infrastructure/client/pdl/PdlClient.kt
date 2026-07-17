@@ -13,7 +13,7 @@ import no.nav.syfo.metric.COUNT_CALL_PDL_FAIL
 import no.nav.syfo.metric.COUNT_CALL_PDL_SUCCESS
 import no.nav.syfo.api.NAV_CALL_ID_HEADER
 import no.nav.syfo.api.bearerHeader
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import org.slf4j.LoggerFactory
 
 class PdlClient(
@@ -25,16 +25,16 @@ class PdlClient(
 ) {
 
     suspend fun navn(
-        personIdent: PersonIdent,
+        personident: Personident,
     ): String {
-        val cacheKey = "$NAVN_CACHE_KEY_PREFIX${personIdent.value}"
+        val cacheKey = "$NAVN_CACHE_KEY_PREFIX${personident.value}"
         val cachedNavn: String? = valkeyStore.get(key = cacheKey)
         return if (cachedNavn != null) {
             cachedNavn
         } else {
             val token = azureAdV2Client.getSystemToken(pdlClientId)
                 ?: throw RuntimeException("Failed to send request to PDL: No token was found")
-            val navn = person(personIdent, token)?.fullName()
+            val navn = person(personident, token)?.fullName()
                 ?: throw RuntimeException("PDL returned empty navn for given fnr")
             valkeyStore.set(cacheKey, navn, CACHE_EXPIRE_SECONDS)
             navn
@@ -42,23 +42,23 @@ class PdlClient(
     }
 
     suspend fun hentFolkeregisterIdenter(
-        personIdent: PersonIdent,
+        personident: Personident,
         callId: String,
-    ): Set<PersonIdent> {
-        val cacheKey = "$FOLKEREG_IDENTER_CACHE_KEY_PREFIX${personIdent.value}"
-        val cachedIdenter: Set<PersonIdent>? = valkeyStore.getSetObject(key = cacheKey)
+    ): Set<Personident> {
+        val cacheKey = "$FOLKEREG_IDENTER_CACHE_KEY_PREFIX${personident.value}"
+        val cachedIdenter: Set<Personident>? = valkeyStore.getSetObject(key = cacheKey)
         return if (cachedIdenter != null) {
             cachedIdenter
         } else {
-            mutableSetOf(personIdent).also {
+            mutableSetOf(personident).also {
                 it.addAll(
                     hentIdenter(
-                        nyPersonIdent = personIdent.value,
+                        nyPersonIdent = personident.value,
                         callId = callId,
                     )?.identer?.filter { pdlIdent ->
                         pdlIdent.gruppe == IdentGruppe.FOLKEREGISTERIDENT
                     }?.map { pdlIdent ->
-                        PersonIdent(pdlIdent.ident)
+                        Personident(pdlIdent.ident)
                     } ?: emptySet()
                 )
             }.toSet().also {
@@ -114,13 +114,13 @@ class PdlClient(
     }
 
     private suspend fun person(
-        personIdent: PersonIdent,
+        personident: Personident,
         token: AzureAdV2Token,
         callId: String? = null,
     ): PdlHentPerson? {
         val query = getPdlQuery("/pdl/hentPerson.graphql")
 
-        val request = PdlRequest(query, Variables(personIdent.value))
+        val request = PdlRequest(query, Variables(personident.value))
 
         val response: HttpResponse = httpClient.post(pdlUrl) {
             setBody(request)

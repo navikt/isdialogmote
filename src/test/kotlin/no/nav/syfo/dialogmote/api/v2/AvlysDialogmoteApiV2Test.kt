@@ -324,7 +324,7 @@ class AvlysDialogmoteApiV2Test {
     @DisplayName("Møtet tilbake i tid")
     inner class MotetTilbakeITid {
         private val newDialogmoteDTO = generateNewDialogmoteDTO(
-            personIdent = ARBEIDSTAKER_FNR,
+            personident = ARBEIDSTAKER_FNR,
             dato = LocalDateTime.now().plusDays(-30)
         )
 

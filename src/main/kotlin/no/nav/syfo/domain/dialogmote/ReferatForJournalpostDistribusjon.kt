@@ -1,11 +1,11 @@
 package no.nav.syfo.domain.dialogmote
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import java.time.LocalDateTime
 
 data class ReferatForJournalpostDistribusjon(
     val referatId: Int,
-    val personIdent: PersonIdent,
+    val personident: Personident,
     val referatJournalpostId: String?,
     val motetidspunkt: LocalDateTime?
 )

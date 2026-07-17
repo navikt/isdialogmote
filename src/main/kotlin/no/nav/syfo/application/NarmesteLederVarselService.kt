@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
@@ -37,8 +37,8 @@ class NarmesteLederVarselService(
 
     fun sendNarmesteLederSvarVarselHendelse(
         narmesteLederSvar: DialogmoteSvarType,
-        narmesteLederPersonIdent: PersonIdent,
-        arbeidstakerPersonIdent: PersonIdent,
+        narmesteLederPersonIdent: Personident,
+        arbeidstakerPersonIdent: Personident,
         virksomhetsnummer: Virksomhetsnummer,
     ) {
         esyfovarselProducer.sendVarselToEsyfovarsel(
