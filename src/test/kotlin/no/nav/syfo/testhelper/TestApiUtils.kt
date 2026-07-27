@@ -17,7 +17,7 @@ import no.nav.syfo.api.dto.NewDialogmoteDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.client.ereg.EregClient
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
@@ -59,21 +59,21 @@ suspend fun HttpClient.postMote(token: String, newDialogmoteDTO: NewDialogmoteDT
         setBody(newDialogmoteDTO)
     }
 
-suspend fun HttpClient.getDialogmoter(token: String, personIdent: PersonIdent): HttpResponse =
+suspend fun HttpClient.getDialogmoter(token: String, personident: Personident): HttpResponse =
     get("$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath") {
         bearerAuth(token)
-        header(NAV_PERSONIDENT_HEADER, personIdent.value)
+        header(NAV_PERSONIDENT_HEADER, personident.value)
     }
 
 suspend fun HttpClient.postAndGetDialogmote(
     token: String,
     newDialogmoteDTO: NewDialogmoteDTO,
-    personIdent: PersonIdent = ARBEIDSTAKER_FNR,
+    personident: Personident = ARBEIDSTAKER_FNR,
 ): DialogmoteDTO {
     postMote(token, newDialogmoteDTO).apply {
         assertEquals(HttpStatusCode.OK, status)
     }
-    val response = getDialogmoter(token, personIdent)
+    val response = getDialogmoter(token, personident)
 
     assertEquals(HttpStatusCode.OK, response.status)
 

@@ -59,12 +59,12 @@ class DialogmoteVarselJournalforingCronjob(
     ) {
         val arbeidstakerVarselForJournalforingList =
             dialogmotedeltakerVarselJournalpostService.getDialogmotedeltakerArbeidstakerVarselForJournalforingList()
-        arbeidstakerVarselForJournalforingList.forEach { (personIdent, arbeidstakerVarsel) ->
+        arbeidstakerVarselForJournalforingList.forEach { (personident, arbeidstakerVarsel) ->
             try {
-                val navn = pdlClient.navn(personIdent)
+                val navn = pdlClient.navn(personident)
                 val pdf = pdfRepository.getPdf(arbeidstakerVarsel.pdfId).pdf
                 val journalpostRequest = arbeidstakerVarsel.toJournalpostRequest(
-                    personIdent = personIdent,
+                    personident = personident,
                     navn = navn,
                     pdf = pdf,
                 )
@@ -86,12 +86,12 @@ class DialogmoteVarselJournalforingCronjob(
     ) {
         val arbeidsgiverVarselForJournalforingList =
             dialogmotedeltakerVarselJournalpostService.getDialogmotedeltakerArbeidsgiverVarselForJournalforingList()
-        arbeidsgiverVarselForJournalforingList.forEach { (virksomhetsnummer, personIdent, arbeidsgiverVarsel) ->
+        arbeidsgiverVarselForJournalforingList.forEach { (virksomhetsnummer, personident, arbeidsgiverVarsel) ->
             try {
                 val virksomhetsnavn = eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer)
                 val pdf = pdfRepository.getPdf(arbeidsgiverVarsel.pdfId).pdf
                 val journalpostRequest = arbeidsgiverVarsel.toJournalpostRequest(
-                    brukerPersonIdent = personIdent,
+                    brukerPersonIdent = personident,
                     virksomhetsnummer = virksomhetsnummer,
                     virksomhetsnavn = virksomhetsnavn?.virksomhetsnavn ?: "",
                     pdf = pdf,
@@ -114,13 +114,13 @@ class DialogmoteVarselJournalforingCronjob(
     ) {
         val behandlerVarselForJournalforingList =
             dialogmotedeltakerVarselJournalpostService.getDialogmotedeltakerBehandlerVarselForJournalforingList()
-        behandlerVarselForJournalforingList.forEach { (personIdent, behandler, behandlerVarsel) ->
+        behandlerVarselForJournalforingList.forEach { (personident, behandler, behandlerVarsel) ->
             try {
                 val pdf = pdfRepository.getPdf(behandlerVarsel.pdfId).pdf
                 val behandlerDTO = dialogmeldingClient.getBehandler(UUID.fromString(behandler.behandlerRef))
                 val journalpostRequest = behandlerVarsel.toJournalpostRequest(
-                    brukerPersonIdent = personIdent,
-                    behandlerPersonIdent = behandler.personIdent,
+                    brukerPersonIdent = personident,
+                    behandlerPersonIdent = behandler.personident,
                     behandlerHprId = behandlerDTO?.hprId,
                     behandlerNavn = behandler.behandlerNavn,
                     pdf = pdf,
@@ -142,13 +142,13 @@ class DialogmoteVarselJournalforingCronjob(
         journalforingResult: DialogmoteCronjobResult,
     ) {
         val referatList = referatJournalpostService.getDialogmoteReferatJournalforingListArbeidstaker()
-        referatList.forEach { (personIdent, referat) ->
+        referatList.forEach { (personident, referat) ->
             try {
-                val navn = pdlClient.navn(personIdent)
+                val navn = pdlClient.navn(personident)
                 val pdf = pdfRepository.getPdf(referat.pdfId!!).pdf
                 val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
                 val journalpostRequest = referat.toJournalforingRequestArbeidstaker(
-                    personIdent = personIdent,
+                    personident = personident,
                     navn = navn,
                     pdf = pdf,
                     moteTidspunkt = moteTidspunkt,
@@ -171,13 +171,13 @@ class DialogmoteVarselJournalforingCronjob(
         journalforingResult: DialogmoteCronjobResult,
     ) {
         val referatList = referatJournalpostService.getDialogmoteReferatJournalforingListArbeidsgiver()
-        referatList.forEach { (virksomhetsnummer, personIdent, referat) ->
+        referatList.forEach { (virksomhetsnummer, personident, referat) ->
             try {
                 val virksomhetsnavn = eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer)
                 val pdf = pdfRepository.getPdf(referat.pdfId!!).pdf
                 val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
                 val journalpostRequest = referat.toJournalforingRequestArbeidsgiver(
-                    brukerPersonIdent = personIdent,
+                    brukerPersonIdent = personident,
                     virksomhetsnummer = virksomhetsnummer,
                     virksomhetsnavn = virksomhetsnavn?.virksomhetsnavn ?: "",
                     pdf = pdf,
@@ -201,14 +201,14 @@ class DialogmoteVarselJournalforingCronjob(
         journalforingResult: DialogmoteCronjobResult,
     ) {
         val referatList = referatJournalpostService.getDialogmoteReferatJournalforingListBehandler()
-        referatList.forEach { (personIdent, behandler, referat) ->
+        referatList.forEach { (personident, behandler, referat) ->
             try {
                 val pdf = pdfRepository.getPdf(referat.pdfId!!).pdf
                 val moteTidspunkt = referatJournalpostService.getMotetidspunkt(referat.moteId)
                 val behandlerDTO = dialogmeldingClient.getBehandler(UUID.fromString(behandler.behandlerRef))
                 val journalpostRequest = referat.toJournalforingRequestBehandler(
-                    brukerPersonIdent = personIdent,
-                    behandlerPersonIdent = behandler.personIdent,
+                    brukerPersonIdent = personident,
+                    behandlerPersonIdent = behandler.personident,
                     behandlerHprId = behandlerDTO?.hprId,
                     behandlerNavn = behandler.behandlerNavn,
                     pdf = pdf,

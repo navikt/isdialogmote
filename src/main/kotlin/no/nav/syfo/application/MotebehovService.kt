@@ -2,7 +2,7 @@ package no.nav.syfo.application
 
 import io.ktor.client.plugins.ResponseException
 import no.nav.syfo.application.client.IMotebehovClient
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.motebehov.Tilbakemelding
 import org.slf4j.LoggerFactory
 
@@ -12,13 +12,13 @@ class MotebehovService(
     private val transactionManager: ITransactionManager,
 ) {
     suspend fun behandleMotebehov(
-        personident: PersonIdent,
+        personident: Personident,
         harBehovForMote: Boolean,
         tilbakemeldinger: List<Tilbakemelding>,
         token: String,
     ) {
         motebehovClient.behandleMotebehov(
-            personIdent = personident,
+            personident = personident,
             token = token,
         )
         sendTilbakemeldinger(

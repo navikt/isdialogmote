@@ -6,4 +6,4 @@ import io.ktor.client.request.HttpResponseData
 import no.nav.syfo.common.mock.tilgangskontroll.mockTilgangskontrollRequestHandler
 
 fun MockRequestHandleScope.tilgangskontrollResponse(request: HttpRequestData): HttpResponseData =
-    mockTilgangskontrollRequestHandler(request, mockTilgangDetailsPerNavIdent)
+    mockTilgangskontrollRequestHandler(request, mockTilgangDetailsPerNavident)

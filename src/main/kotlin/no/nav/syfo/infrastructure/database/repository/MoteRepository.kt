@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.api.authentication.configuredJacksonMapper
 import no.nav.syfo.application.IMoteRepository
 import no.nav.syfo.domain.EnhetNr
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
@@ -65,10 +65,10 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             connection.getBehandler(moteId)
         }
 
-    override fun getMoterFor(personIdent: PersonIdent): List<Dialogmote> =
+    override fun getMoterFor(personident: Personident): List<Dialogmote> =
         database.connection.use { connection ->
             val dialogmoter = connection.prepareStatement(GET_DIALOGMOTER_FOR_PERSONIDENT_QUERY).use {
-                it.setString(1, personIdent.value)
+                it.setString(1, personident.value)
                 it.executeQuery().toList { toPDialogmote() }
             }
             return dialogmoter.map { dialogmote ->
@@ -178,7 +178,7 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             )
         }
 
-    override fun getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<PersonIdent, Referat>> =
+    override fun getFerdigstilteReferatWithoutJournalpostArbeidstakerList(): List<Pair<Personident, Referat>> =
         database.connection.use { connection ->
             val referater = connection.prepareStatement(GET_FERDIGSTILTE_REFERAT_WITHOUT_JOURNALPOST_ARBEIDSTAKER).use {
                 it.executeQuery().toList { toPReferat() }
@@ -189,7 +189,7 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                 val andreDeltakere = connection.getAndreDeltakereForReferatID(referat.id)
                     .map { it.toDialogmoteDeltakerAnnen() }
 
-                arbeidstaker.personIdent to
+                arbeidstaker.personident to
                     referat.toReferat(
                         andreDeltakere = andreDeltakere,
                         motedeltakerArbeidstakerId = arbeidstaker.id,
@@ -198,7 +198,7 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             }
         }
 
-    override fun getFerdigstilteReferatWithoutJournalpostArbeidsgiverList(): List<Triple<Virksomhetsnummer, PersonIdent, Referat>> =
+    override fun getFerdigstilteReferatWithoutJournalpostArbeidsgiverList(): List<Triple<Virksomhetsnummer, Personident, Referat>> =
         database.connection.use { connection ->
             val referater = connection.prepareStatement(GET_FERDIGSTILTE_REFERAT_WITHOUT_JOURNALPOST_ARBEIDSGIVER).use {
                 it.executeQuery().toList {
@@ -213,7 +213,7 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
 
                 Triple(
                     virksomhetsnummer,
-                    arbeidstaker.personIdent,
+                    arbeidstaker.personident,
                     referat.toReferat(
                         andreDeltakere = andreDeltakere,
                         motedeltakerArbeidstakerId = arbeidstaker.id,

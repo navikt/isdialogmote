@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.database.model
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.dialogmote.BehandlerType
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandler
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerBehandlerVarsel
@@ -18,7 +18,7 @@ data class PMotedeltakerBehandler(
     val behandlerNavn: String,
     val behandlerKontor: String,
     val behandlerType: String,
-    val personIdent: PersonIdent?,
+    val personident: Personident?,
     val mottarReferat: Boolean,
     val deltatt: Boolean,
 )
@@ -36,7 +36,7 @@ fun PMotedeltakerBehandler.toDialogmotedeltakerBehandler(
     behandlerKontor = this.behandlerKontor,
     behandlerType = BehandlerType.valueOf(this.behandlerType),
     type = DialogmotedeltakerType.BEHANDLER,
-    personIdent = this.personIdent,
+    personident = this.personident,
     varselList = dialogmotedeltakerBehandlerVarsel,
     deltatt = this.deltatt,
     mottarReferat = this.mottarReferat,

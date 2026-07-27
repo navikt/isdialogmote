@@ -7,8 +7,8 @@ import java.time.LocalDateTime
 data class DialogmeldingSvar(
     val conversationRef: String?,
     val parentRef: String?,
-    val arbeidstakerPersonIdent: PersonIdent,
-    val behandlerPersonIdent: PersonIdent,
+    val arbeidstakerPersonIdent: Personident,
+    val behandlerPersonIdent: Personident,
     val innkallingDialogmoteSvar: InnkallingDialogmoteSvar,
     val opprettetTidspunkt: LocalDateTime,
 )

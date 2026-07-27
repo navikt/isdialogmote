@@ -14,8 +14,8 @@ import no.nav.syfo.application.AvventService
 import no.nav.syfo.common.tilgangskontroll.checkPersonAndSyfoTilgang
 import no.nav.syfo.common.tilgangskontroll.filterPersonsUserHasAccessTo
 import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
-import no.nav.syfo.common.types.ident.PersonIdent as CommonPersonIdent
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.common.types.ident.Personident as CommonPersonIdent
+import no.nav.syfo.domain.Personident
 
 fun Route.registerAvventApiV2(
     avventService: AvventService,
@@ -26,12 +26,12 @@ fun Route.registerAvventApiV2(
             val avvent = call.receive<CreateAvventDTO>()
 
             checkPersonAndSyfoTilgang(
-                action = "Create Avvent for Person with PersonIdent",
-                personIdent = CommonPersonIdent(avvent.personident),
+                action = "Create Avvent for Person with Personident",
+                personident = CommonPersonIdent(avvent.personident),
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
             ) { authorizedUser, _, _ ->
-                val navident = authorizedUser.navIdent.value
+                val navident = authorizedUser.navident.value
                 val avventDTO =
                     avventService
                         .persist(avvent.toAvvent(navident))
@@ -45,9 +45,9 @@ fun Route.registerAvventApiV2(
             val personIdents = query.personidenter.map { CommonPersonIdent(it) }
             val accessiblePersonIdents = filterPersonsUserHasAccessTo(
                 action = "Query Avvent",
-                personIdenter = personIdents,
+                personidenter = personIdents,
                 tilgangskontrollClient = tilgangskontrollClient,
-            )?.map { PersonIdent(it.value) } ?: emptyList()
+            )?.map { Personident(it.value) } ?: emptyList()
 
             val avventList =
                 avventService
@@ -57,11 +57,11 @@ fun Route.registerAvventApiV2(
         }
 
         post("/lukk") {
-            val personident = PersonIdent(call.receive<LukkAvventDTO>().personident)
+            val personident = Personident(call.receive<LukkAvventDTO>().personident)
 
             checkPersonAndSyfoTilgang(
-                action = "Close Avvent for Person with PersonIdent",
-                personIdent = CommonPersonIdent(personident.value),
+                action = "Close Avvent for Person with Personident",
+                personident = CommonPersonIdent(personident.value),
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
             ) { _, _, _ ->

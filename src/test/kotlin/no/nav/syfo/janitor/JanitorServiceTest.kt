@@ -182,7 +182,7 @@ class JanitorServiceTest {
 
 private fun TestDatabase.createDialogmote(): PDialogmote {
     val newDialogmoteDTO = generateNewDialogmoteDTO(
-        personIdent = UserConstants.ARBEIDSTAKER_FNR,
+        personident = UserConstants.ARBEIDSTAKER_FNR,
     )
     this.connection.use { connection ->
         connection.createNewDialogmoteWithReferences(

@@ -11,8 +11,8 @@ import no.nav.syfo.api.dto.MotebehovVurderingDTO
 import no.nav.syfo.application.MotebehovService
 import no.nav.syfo.common.tilgangskontroll.checkPersonAndSyfoTilgang
 import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
-import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.common.types.ident.PersonIdent as CommonPersonIdent
+import no.nav.syfo.domain.Personident
+import no.nav.syfo.common.types.ident.Personident as CommonPersonIdent
 
 fun Route.registerMotebehovApiV2(
     motebehovService: MotebehovService,
@@ -21,11 +21,11 @@ fun Route.registerMotebehovApiV2(
     route("/api/v2/motebehov") {
         post("/vurderinger") {
             val vurdering = call.receive<MotebehovVurderingDTO>()
-            val personident = PersonIdent(vurdering.personident)
+            val personident = Personident(vurdering.personident)
 
             checkPersonAndSyfoTilgang(
-                action = "Behandle motebehov for Person with PersonIdent",
-                personIdent = CommonPersonIdent(personident.value),
+                action = "Behandle motebehov for Person with Personident",
+                personident = CommonPersonIdent(personident.value),
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
             ) { authorizedUser, _, _ ->

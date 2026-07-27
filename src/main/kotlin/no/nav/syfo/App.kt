@@ -2,10 +2,10 @@ package no.nav.syfo
 
 import com.typesafe.config.ConfigFactory
 import io.ktor.server.application.ApplicationStarted
+import io.ktor.server.application.ApplicationStopPreparing
 import io.ktor.server.config.HoconApplicationConfig
 import io.ktor.server.engine.*
 import io.ktor.server.netty.Netty
-import java.util.concurrent.TimeUnit
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.api.authentication.getWellKnown
 import no.nav.syfo.infrastructure.client.cache.ValkeyStore
@@ -175,6 +175,8 @@ fun main() {
         factory = Netty,
         environment = applicationEngineEnvironment,
         configure = {
+            shutdownGracePeriod = 5000
+            shutdownTimeout = 10000
             connector {
                 port = applicationPort
             }
@@ -309,12 +311,9 @@ fun main() {
                     }
                 }
             }
-        }
-    )
-
-    Runtime.getRuntime().addShutdownHook(
-        Thread {
-            server.stop(10, 10, TimeUnit.SECONDS)
+            monitor.subscribe(ApplicationStopPreparing) {
+                applicationState.ready = false
+            }
         }
     )
 

@@ -2,12 +2,12 @@ package no.nav.syfo.testdata.reset
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.getDialogmoteList
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.testdata.reset.database.deleteMote
 import org.slf4j.LoggerFactory
 
 class TestdataResetService(private val database: DatabaseInterface) {
-    fun resetTestdata(fnr: PersonIdent) {
+    fun resetTestdata(fnr: Personident) {
         log.info("Nullstiller dialogmøter for ${fnr.value}")
         val dialogmoteList = database.getDialogmoteList(fnr)
         database.connection.use { connection ->

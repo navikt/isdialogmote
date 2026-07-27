@@ -1,7 +1,7 @@
 package no.nav.syfo.infrastructure.client.altinn
 
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import java.util.*
 
@@ -114,7 +114,7 @@ fun createAltinnMelding(
     virksomhetsnummer: Virksomhetsnummer,
     file: ByteArray,
     varseltype: MotedeltakerVarselType,
-    arbeidstakerPersonIdent: PersonIdent,
+    arbeidstakerPersonIdent: Personident,
     arbeidstakernavn: String,
     hasNarmesteLeder: Boolean,
 ): AltinnMelding {
@@ -145,11 +145,11 @@ private fun toVarselTypeTitle(varseltype: MotedeltakerVarselType, isCopy: Boolea
 
 private fun toMessageTitle(
     varseltype: MotedeltakerVarselType,
-    personIdent: PersonIdent,
+    personident: Personident,
     navn: String?,
     isCopy: Boolean,
 ): String {
-    return "${toVarselTypeTitle(varseltype, isCopy)} - $navn (${personIdent.value})"
+    return "${toVarselTypeTitle(varseltype, isCopy)} - $navn (${personident.value})"
 }
 
 private fun toDisplayFilename(varseltype: MotedeltakerVarselType): String {

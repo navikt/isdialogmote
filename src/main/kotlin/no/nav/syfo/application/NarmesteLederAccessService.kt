@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.NarmesteLederBrev
@@ -17,10 +17,10 @@ class NarmesteLederAccessService(
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
 ) {
     suspend fun filterMoterByNarmesteLederAccess(
-        arbeidstakerPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: Personident,
         callId: String,
         moteList: List<Dialogmote>,
-        narmesteLederPersonIdent: PersonIdent,
+        narmesteLederPersonIdent: Personident,
         tokenx: String,
     ): List<Dialogmote> {
         return if (moteList.isEmpty()) {
@@ -41,7 +41,7 @@ class NarmesteLederAccessService(
         brev: NarmesteLederBrev,
         callId: String,
         tokenx: String,
-        narmesteLederPersonIdent: PersonIdent,
+        narmesteLederPersonIdent: Personident,
     ): Boolean {
         val dialogmoteDeltagerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(
             motedeltakerArbeidsgiverId = brev.motedeltakerArbeidsgiverId,
@@ -49,7 +49,7 @@ class NarmesteLederAccessService(
 
         val arbeidstakerPersonIdent = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(
             moteId = dialogmoteDeltagerArbeidsgiver.moteId,
-        ).personIdent
+        ).personident
 
         val virksomhetnummerListWhereNarmesteLederOfArbeidstaker = getVirksomhetnummerListWhereNarmesteLederOfArbeidstaker(
             arbeidstakerPersonIdent = arbeidstakerPersonIdent,
@@ -61,9 +61,9 @@ class NarmesteLederAccessService(
     }
 
     private suspend fun getVirksomhetnummerListWhereNarmesteLederOfArbeidstaker(
-        arbeidstakerPersonIdent: PersonIdent,
+        arbeidstakerPersonIdent: Personident,
         callId: String,
-        narmesteLederPersonIdent: PersonIdent,
+        narmesteLederPersonIdent: Personident,
         tokenx: String,
     ): List<Virksomhetsnummer> {
         val aktiveAnsatteRelasjoner = narmesteLederClient.getAktiveAnsatte(
@@ -79,8 +79,8 @@ class NarmesteLederAccessService(
     }
 
     private suspend fun getValidityPeriodStartDateForBrev(
-        arbeidstakerPersonIdentNumber: PersonIdent,
-        narmesteLederPersonIdentNumber: PersonIdent,
+        arbeidstakerPersonIdentNumber: Personident,
+        narmesteLederPersonIdentNumber: Personident,
         tokenx: String,
         virksomhetsnummer: Virksomhetsnummer,
         callId: String,
@@ -101,8 +101,8 @@ class NarmesteLederAccessService(
 
     suspend fun removeExpiredBrevInDialogmoter(
         moteList: List<Dialogmote>,
-        narmesteLederPersonIdentNumber: PersonIdent,
-        arbeidstakerPersonIdentNumber: PersonIdent,
+        narmesteLederPersonIdentNumber: Personident,
+        arbeidstakerPersonIdentNumber: Personident,
         tokenx: String,
         callId: String,
     ): List<Dialogmote> {
@@ -127,7 +127,7 @@ class NarmesteLederAccessService(
         brev: NarmesteLederBrev,
         callId: String,
         tokenx: String,
-        narmesteLederPersonIdentNumber: PersonIdent,
+        narmesteLederPersonIdentNumber: Personident,
     ): Boolean {
         val dialogmoteDeltagerArbeidsgiver = dialogmotedeltakerService.getDialogmoteDeltakerArbeidsgiverById(
             motedeltakerArbeidsgiverId = brev.motedeltakerArbeidsgiverId,
@@ -135,7 +135,7 @@ class NarmesteLederAccessService(
 
         val arbeidstakerPersonIdent = dialogmotedeltakerService.getDialogmoteDeltakerArbeidstaker(
             moteId = dialogmoteDeltagerArbeidsgiver.moteId,
-        ).personIdent
+        ).personident
 
         val startDate = getValidityPeriodStartDateForBrev(
             arbeidstakerPersonIdentNumber = arbeidstakerPersonIdent,

@@ -2,7 +2,7 @@ package no.nav.syfo.application
 
 import java.util.*
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerHendelse
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.HendelseType
@@ -20,14 +20,14 @@ class ArbeidstakerVarselService(
 
     fun sendVarsel(
         varseltype: MotedeltakerVarselType,
-        personIdent: PersonIdent,
+        personident: Personident,
         varselUuid: UUID,
         journalpostId: String?,
         motetidspunkt: LocalDateTime?,
     ) {
         val hendelse = ArbeidstakerHendelse(
             type = getArbeidstakerHendelseType(varseltype),
-            arbeidstakerFnr = personIdent.value,
+            arbeidstakerFnr = personident.value,
             data = VarselData(
                 journalpost = VarselDataJournalpost(varselUuid.toString(), journalpostId),
                 motetidspunkt = motetidspunkt?.let { VarselDataMotetidspunkt(motetidspunkt) }
@@ -39,12 +39,12 @@ class ArbeidstakerVarselService(
     }
 
     fun lesVarsel(
-        personIdent: PersonIdent,
+        personident: Personident,
         varselUuid: UUID,
     ) {
         val hendelse = ArbeidstakerHendelse(
             type = HendelseType.SM_DIALOGMOTE_LEST,
-            arbeidstakerFnr = personIdent.value,
+            arbeidstakerFnr = personident.value,
             data = VarselData(
                 journalpost = VarselDataJournalpost(varselUuid.toString(), null)
             ),

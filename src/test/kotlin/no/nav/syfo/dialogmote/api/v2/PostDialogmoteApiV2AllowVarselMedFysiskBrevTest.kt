@@ -44,7 +44,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
     @Nested
-    @DisplayName("Create Dialogmote for PersonIdent payload")
+    @DisplayName("Create Dialogmote for Personident payload")
     inner class CreateDialogmoteForPersonIdentPayload {
         private val validToken = generateJWTNavIdent(
             externalMockEnvironment.environment.aadAppClient,
@@ -71,7 +71,7 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
         fun `should return OK if request is successful even if ikke-varsle`() {
             val moteTidspunkt = DIALOGMOTE_TIDSPUNKT_FIXTURE
             val newDialogmoteDTO = generateNewDialogmoteDTO(
-                personIdent = ARBEIDSTAKER_IKKE_VARSEL,
+                personident = ARBEIDSTAKER_IKKE_VARSEL,
                 dato = moteTidspunkt,
             )
 

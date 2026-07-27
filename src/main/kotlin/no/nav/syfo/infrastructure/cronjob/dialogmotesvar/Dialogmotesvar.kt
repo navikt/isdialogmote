@@ -1,14 +1,14 @@
 package no.nav.syfo.infrastructure.cronjob.dialogmotesvar
 
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import java.time.OffsetDateTime
 import java.util.*
 
 data class Dialogmotesvar(
     val moteuuid: UUID,
     val dbRef: UUID,
-    val ident: PersonIdent,
+    val ident: Personident,
     val svarType: DialogmoteSvarType,
     val senderType: SenderType,
     val brevSentAt: OffsetDateTime,
@@ -17,7 +17,7 @@ data class Dialogmotesvar(
 )
 
 data class KDialogmotesvar(
-    val ident: PersonIdent,
+    val ident: Personident,
     val svarType: DialogmoteSvarType,
     val senderType: SenderType,
     val brevSentAt: OffsetDateTime,

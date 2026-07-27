@@ -16,7 +16,7 @@ import no.nav.syfo.api.getCallId
 import no.nav.syfo.application.DialogmoteService
 import no.nav.syfo.common.tilgangskontroll.checkPersonAndSyfoTilgang
 import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
-import no.nav.syfo.common.types.ident.PersonIdent
+import no.nav.syfo.common.types.ident.Personident
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -45,7 +45,7 @@ fun Route.registerDialogmoteActionsApiV2(
 
             checkPersonAndSyfoTilgang(
                 action = "Avlys Dialogmote for moteUUID",
-                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                personident = Personident(dialogmote.arbeidstaker.personident.value),
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
             ) { authorizedUser, _, callId ->
@@ -67,13 +67,13 @@ fun Route.registerDialogmoteActionsApiV2(
 
             checkPersonAndSyfoTilgang(
                 action = "Mellomlagre Dialogmote for moteUUID",
-                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                personident = Personident(dialogmote.arbeidstaker.personident.value),
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
             ) { authorizedUser, _, _ ->
                 dialogmoteService.mellomlagreReferat(
                     dialogmote = dialogmote,
-                    opprettetAv = authorizedUser.navIdent.value,
+                    opprettetAv = authorizedUser.navident.value,
                     referat = newReferat,
                 )
                 call.respond(HttpStatusCode.OK)
@@ -88,14 +88,14 @@ fun Route.registerDialogmoteActionsApiV2(
 
             checkPersonAndSyfoTilgang(
                 action = "Ferdigstill Dialogmote for moteUUID",
-                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                personident = Personident(dialogmote.arbeidstaker.personident.value),
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
             ) { authorizedUser, _, callId ->
                 dialogmoteService.ferdigstillMote(
                     callId = callId,
                     dialogmote = dialogmote,
-                    opprettetAv = authorizedUser.navIdent.value,
+                    opprettetAv = authorizedUser.navident.value,
                     referat = newReferat,
                     token = authorizedUser.token,
                 )
@@ -111,14 +111,14 @@ fun Route.registerDialogmoteActionsApiV2(
 
             checkPersonAndSyfoTilgang(
                 action = "Endre Ferdigstilt Dialogmote for moteUUID",
-                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                personident = Personident(dialogmote.arbeidstaker.personident.value),
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
             ) { authorizedUser, _, callId ->
                 dialogmoteService.endreFerdigstiltReferat(
                     callId = callId,
                     dialogmote = dialogmote,
-                    opprettetAv = authorizedUser.navIdent.value,
+                    opprettetAv = authorizedUser.navident.value,
                     referat = newReferat,
                     token = authorizedUser.token,
                 )
@@ -134,7 +134,7 @@ fun Route.registerDialogmoteActionsApiV2(
 
             checkPersonAndSyfoTilgang(
                 action = "Create NewDialogmoteTidSted for moteUUID",
-                personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                personident = Personident(dialogmote.arbeidstaker.personident.value),
                 tilgangskontrollClient = tilgangskontrollClient,
                 requiresWriteAccess = true,
             ) { authorizedUser, _, callId ->
@@ -162,7 +162,7 @@ fun Route.registerDialogmoteActionsApiV2(
                 val hasWriteAccessToAll = dialogmoter.all { dialogmote ->
                     tilgangskontrollClient.hasWriteAccess(
                         callId = callId,
-                        personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                        personident = Personident(dialogmote.arbeidstaker.personident.value),
                         token = token,
                     )
                 }
@@ -170,7 +170,7 @@ fun Route.registerDialogmoteActionsApiV2(
                     dialogmoteService.tildelMoter(getNAVIdentFromToken(token), dialogmoter)
                     call.respond(HttpStatusCode.OK)
                 } else {
-                    val accessDeniedMessage = "Denied Veileder access to Dialogmøter for Person with PersonIdent"
+                    val accessDeniedMessage = "Denied Veileder access to Dialogmøter for Person with Personident"
                     log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
                     call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
                 }
@@ -195,7 +195,7 @@ fun Route.registerDialogmoteActionsApiV2(
                 val hasWriteAccessToAll = dialogmoter.all { dialogmote ->
                     tilgangskontrollClient.hasWriteAccess(
                         callId = callId,
-                        personIdent = PersonIdent(dialogmote.arbeidstaker.personIdent.value),
+                        personident = Personident(dialogmote.arbeidstaker.personident.value),
                         token = token,
                     )
                 }
@@ -203,7 +203,7 @@ fun Route.registerDialogmoteActionsApiV2(
                     dialogmoteService.tildelMoter(veilederIdent, dialogmoter)
                     call.respond(HttpStatusCode.NoContent)
                 } else {
-                    val accessDeniedMessage = "Denied veileder access to dialogmøter for person with PersonIdent"
+                    val accessDeniedMessage = "Denied veileder access to dialogmøter for person with Personident"
                     log.warn("$accessDeniedMessage, {}", callIdArgument(callId))
                     call.respond(HttpStatusCode.Forbidden, accessDeniedMessage)
                 }

@@ -1,6 +1,6 @@
 package no.nav.syfo.api.dto
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.EnhetNr
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.Dialogmote
@@ -56,7 +56,7 @@ fun NewDialogmoteDTO.toNewDialogmote(
         tildeltEnhet = navEnhet.value,
         opprettetAv = requestByNAVIdent,
         arbeidstaker = NewDialogmotedeltakerArbeidstaker(
-            personIdent = PersonIdent(this.arbeidstaker.personIdent),
+            personident = Personident(this.arbeidstaker.personIdent),
             fritekstInnkalling = this.arbeidstaker.fritekstInnkalling,
         ),
         arbeidsgiver = NewDialogmotedeltakerArbeidsgiver(
@@ -65,7 +65,7 @@ fun NewDialogmoteDTO.toNewDialogmote(
         ),
         behandler = this.behandler?.let {
             NewDialogmotedeltakerBehandler(
-                personIdent = it.personIdent?.let { personident -> PersonIdent(personident) },
+                personident = it.personIdent?.let { personident -> Personident(personident) },
                 behandlerRef = it.behandlerRef,
                 behandlerNavn = it.behandlerNavn,
                 behandlerKontor = it.behandlerKontor,

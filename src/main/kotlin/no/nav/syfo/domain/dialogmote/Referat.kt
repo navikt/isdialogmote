@@ -3,7 +3,7 @@ package no.nav.syfo.domain.dialogmote
 import no.nav.syfo.domain.ArbeidstakerBrevDTO
 import no.nav.syfo.domain.BrevType
 import no.nav.syfo.domain.NarmesteLederBrevDTO
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.BrevkodeType
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.JournalpostKanal
@@ -54,13 +54,13 @@ fun List<Referat>.ferdigstilte(): List<Referat> {
 }
 
 fun Referat.toJournalforingRequestArbeidstaker(
-    personIdent: PersonIdent,
+    personident: Personident,
     navn: String,
     pdf: ByteArray,
     moteTidspunkt: LocalDateTime?,
 ) = createJournalpostRequest(
-    brukerPersonIdent = personIdent,
-    mottakerPersonIdent = personIdent,
+    brukerPersonIdent = personident,
+    mottakerPersonIdent = personident,
     mottakerNavn = navn,
     digitalt = this.digitalt,
     dokumentName = this.toJournalpostTittel(moteTidspunkt),
@@ -71,7 +71,7 @@ fun Referat.toJournalforingRequestArbeidstaker(
 )
 
 fun Referat.toJournalforingRequestArbeidsgiver(
-    brukerPersonIdent: PersonIdent,
+    brukerPersonIdent: Personident,
     virksomhetsnummer: Virksomhetsnummer?,
     virksomhetsnavn: String,
     pdf: ByteArray,
@@ -89,8 +89,8 @@ fun Referat.toJournalforingRequestArbeidsgiver(
 )
 
 fun Referat.toJournalforingRequestBehandler(
-    brukerPersonIdent: PersonIdent,
-    behandlerPersonIdent: PersonIdent?,
+    brukerPersonIdent: Personident,
+    behandlerPersonIdent: Personident?,
     behandlerHprId: Int?,
     behandlerNavn: String,
     pdf: ByteArray,

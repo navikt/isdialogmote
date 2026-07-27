@@ -15,7 +15,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.api.bearerHeader
 import no.nav.syfo.application.client.IMotebehovClient
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.motebehov.Tilbakemelding
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.httpClientDefault
@@ -35,7 +35,7 @@ class MotebehovClient(
     private val tilbakemeldingUrl = "$syfomotebehovBaseUrl$MOTEBEHOV_TILBAKEMELDING_PATH"
 
     override suspend fun behandleMotebehov(
-        personIdent: PersonIdent,
+        personident: Personident,
         token: String,
     ) {
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
@@ -46,7 +46,7 @@ class MotebehovClient(
         try {
             httpClient.post(behandleUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(oboToken))
-                header(NAV_PERSONIDENT_HEADER, personIdent.value)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
                 accept(ContentType.Application.Json)
             }
             COUNT_CALL_MOTEBEHOV_BEHANDLE_SUCCESS.increment()

@@ -11,7 +11,7 @@ import no.nav.syfo.api.NAV_CALL_ID_HEADER
 import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.api.bearerHeader
 import no.nav.syfo.api.callIdArgument
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.cache.ValkeyStore
@@ -31,7 +31,7 @@ class NarmesteLederClient(
     private val ansatteNarmesteLederSelvbetjeningPath = "$narmesteLederBaseUrl$NARMESTELEDERE_SELVBETJENING_PATH"
 
     suspend fun activeLeder(
-        personIdent: PersonIdent,
+        personident: Personident,
         virksomhetsnummer: Virksomhetsnummer,
         callId: String,
         token: String,
@@ -45,7 +45,7 @@ class NarmesteLederClient(
             val narmesteLederRelasjon =
                 httpClient.get(narmesteLederPath) {
                     header(HttpHeaders.Authorization, bearerHeader(oboToken))
-                    header(NAV_PERSONIDENT_HEADER, personIdent.value)
+                    header(NAV_PERSONIDENT_HEADER, personident.value)
                     header(NAV_CALL_ID_HEADER, callId)
                     accept(ContentType.Application.Json)
                 }.body<List<NarmesteLederRelasjonDTO>>()
@@ -62,7 +62,7 @@ class NarmesteLederClient(
     }
 
     suspend fun getAktiveAnsatte(
-        narmesteLederIdent: PersonIdent,
+        narmesteLederIdent: Personident,
         tokenx: String,
         callId: String,
     ): List<NarmesteLederRelasjonDTO> {

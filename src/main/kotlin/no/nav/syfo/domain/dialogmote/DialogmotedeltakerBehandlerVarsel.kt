@@ -1,6 +1,6 @@
 package no.nav.syfo.domain.dialogmote
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.DialogmoteDeltakerType
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.JournalpostKanal
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.createJournalpostRequest
@@ -22,8 +22,8 @@ data class DialogmotedeltakerBehandlerVarsel(
 )
 
 fun DialogmotedeltakerBehandlerVarsel.toJournalpostRequest(
-    brukerPersonIdent: PersonIdent,
-    behandlerPersonIdent: PersonIdent?,
+    brukerPersonIdent: Personident,
+    behandlerPersonIdent: Personident?,
     behandlerHprId: Int?,
     behandlerNavn: String,
     pdf: ByteArray,

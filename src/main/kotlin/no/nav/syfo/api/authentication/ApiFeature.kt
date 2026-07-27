@@ -21,7 +21,7 @@ import no.nav.syfo.api.getCallId
 import no.nav.syfo.api.getConsumerId
 import no.nav.syfo.application.exception.ConflictException
 import no.nav.syfo.common.tilgangskontroll.TilgangDeniedException
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.metric.METRICS_REGISTRY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -73,16 +73,16 @@ fun hasExpectedAudience(credentials: JWTCredential, expectedAudience: List<Strin
     return expectedAudience.any { credentials.payload.audience.contains(it) }
 }
 
-fun ApplicationCall.personIdent(): PersonIdent? {
+fun ApplicationCall.personident(): Personident? {
     val token = this.getBearerHeader()
     val decodedJWT = JWT.decode(token)
     val pid = decodedJWT.claims["pid"]
 
     return if (pid == null) {
         val principal: JWTPrincipal? = this.authentication.principal()
-        principal?.payload?.subject?.let { PersonIdent(it) }
+        principal?.payload?.subject?.let { Personident(it) }
     } else {
-        pid.asString()?.let { PersonIdent(it) }
+        pid.asString()?.let { Personident(it) }
     }
 }
 

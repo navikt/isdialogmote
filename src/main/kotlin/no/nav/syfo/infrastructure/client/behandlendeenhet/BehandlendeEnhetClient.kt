@@ -11,7 +11,7 @@ import no.nav.syfo.api.NAV_CALL_ID_HEADER
 import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.api.bearerHeader
 import no.nav.syfo.api.callIdArgument
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.httpClientDefault
 import org.slf4j.LoggerFactory
@@ -30,7 +30,7 @@ class BehandlendeEnhetClient(
 
     suspend fun getEnhet(
         callId: String,
-        personIdent: PersonIdent,
+        personident: Personident,
         token: String,
     ): BehandlendeEnhetDTO? {
         val url = personBehandlendeEnhetV2Url
@@ -42,7 +42,7 @@ class BehandlendeEnhetClient(
             val response: HttpResponse = httpClient.get(url) {
                 header(HttpHeaders.Authorization, bearerHeader(oboToken))
                 header(NAV_CALL_ID_HEADER, callId)
-                header(NAV_PERSONIDENT_HEADER, personIdent.value)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
                 accept(ContentType.Application.Json)
             }
             COUNT_CALL_BEHANDLENDEENHET_SUCCESS.increment()

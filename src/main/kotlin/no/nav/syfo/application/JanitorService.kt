@@ -1,7 +1,7 @@
 package no.nav.syfo.application
 
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorAction
 import no.nav.syfo.infrastructure.kafka.janitor.JanitorEventDTO
@@ -30,11 +30,11 @@ class JanitorService(
     }
 
     private suspend fun handleLukk(event: JanitorEventDTO): Result<Unit> = runCatching {
-        val personIdent = PersonIdent(event.personident)
+        val personident = Personident(event.personident)
         val dialogmoteUUID = UUID.fromString(event.referenceUUID)
         val dialogmote = moteRepository.getMote(moteUUID = dialogmoteUUID).takeIf { it.isActive() }
             ?: throw RuntimeException("Dialogmøte ikke aktivt")
-        if (dialogmote.arbeidstaker.personIdent != personIdent) {
+        if (dialogmote.arbeidstaker.personident != personident) {
             throw RuntimeException("Dialogmote gjelder ikke person")
         }
 

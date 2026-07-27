@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.DialogmotedeltakerArbeidsgiver
@@ -89,7 +89,7 @@ class DialogmotedeltakerService(
     }
 
     fun updateArbeidstakerBrevSettSomLest(
-        personIdent: PersonIdent,
+        personident: Personident,
         brevUuid: UUID,
     ) {
         val isBrevReferat = moteRepository.getReferat(brevUuid) != null
@@ -102,7 +102,7 @@ class DialogmotedeltakerService(
                 )
             }
             arbeidstakerVarselService.lesVarsel(
-                personIdent = personIdent,
+                personident = personident,
                 varselUuid = brevUuid,
             )
             connection.commit()
@@ -112,12 +112,12 @@ class DialogmotedeltakerService(
     fun slettBrukeroppgaverPaMote(
         dialogmote: Dialogmote,
     ) {
-        val personIdent = dialogmote.arbeidstaker.personIdent
+        val personident = dialogmote.arbeidstaker.personident
         dialogmote.arbeidstaker.varselList
             .filter { it.varselType.erBrukeroppgaveVarsel() }
             .forEach { brukeroppgaveVarsel ->
                 arbeidstakerVarselService.lesVarsel(
-                    personIdent = personIdent,
+                    personident = personident,
                     varselUuid = brukeroppgaveVarsel.uuid
                 )
             }

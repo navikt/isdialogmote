@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.database
 
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.BehandlerType
 import no.nav.syfo.domain.dialogmote.NewDialogmotedeltakerArbeidsgiver
@@ -26,7 +26,7 @@ const val queryCreateMotedeltakerArbeidstaker =
 fun Connection.createMotedeltakerArbeidstaker(
     commit: Boolean = true,
     moteId: Int,
-    personIdent: PersonIdent,
+    personident: Personident,
 ): Pair<Int, UUID> {
     val now = Timestamp.from(Instant.now())
     val motedeltakerUuid = UUID.randomUUID()
@@ -35,7 +35,7 @@ fun Connection.createMotedeltakerArbeidstaker(
         it.setTimestamp(2, now)
         it.setTimestamp(3, now)
         it.setInt(4, moteId)
-        it.setString(5, personIdent.value)
+        it.setString(5, personident.value)
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -100,7 +100,7 @@ const val queryGetMotedeltakerArbeidstakerByIdent =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.getMotedeltakerArbeidstakerByIdent(personident: PersonIdent): List<PMotedeltakerArbeidstaker> {
+fun DatabaseInterface.getMotedeltakerArbeidstakerByIdent(personident: Personident): List<PMotedeltakerArbeidstaker> {
     return this.connection.use { connection ->
         connection.prepareStatement(queryGetMotedeltakerArbeidstakerByIdent).use {
             it.setString(1, personident.value)
@@ -116,7 +116,7 @@ const val queryUpdateMotedeltakerArbeidstakerPersonident =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.updateMotedeltakerArbeidstakerPersonident(nyPersonident: PersonIdent, gammelPersonident: PersonIdent): Int {
+fun DatabaseInterface.updateMotedeltakerArbeidstakerPersonident(nyPersonident: Personident, gammelPersonident: Personident): Int {
     var updatedRows: Int
     val now = Timestamp.from(Instant.now())
     this.connection.use { connection ->
@@ -139,7 +139,7 @@ fun ResultSet.toPMotedeltakerArbeidstaker(): PMotedeltakerArbeidstaker =
         createdAt = getTimestamp("created_at").toLocalDateTime(),
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         moteId = getInt("mote_id"),
-        personIdent = PersonIdent(getString("personident")),
+        personident = Personident(getString("personident")),
     )
 
 const val queryCreateMotedeltakerBehandler =
@@ -175,7 +175,7 @@ fun Connection.createMotedeltakerBehandler(
         it.setString(6, newDialogmotedeltakerBehandler.behandlerNavn)
         it.setString(7, newDialogmotedeltakerBehandler.behandlerKontor)
         it.setString(8, BehandlerType.FASTLEGE.name)
-        it.setString(9, newDialogmotedeltakerBehandler.personIdent?.value)
+        it.setString(9, newDialogmotedeltakerBehandler.personident?.value)
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -243,7 +243,7 @@ fun ResultSet.toPMotedeltakerBehandler(): PMotedeltakerBehandler =
         createdAt = getTimestamp("created_at").toLocalDateTime(),
         updatedAt = getTimestamp("updated_at").toLocalDateTime(),
         moteId = getInt("mote_id"),
-        personIdent = getString("personident")?.let { PersonIdent(it) },
+        personident = getString("personident")?.let { Personident(it) },
         behandlerRef = getString("behandler_ref"),
         behandlerNavn = getString("behandler_navn"),
         behandlerKontor = getString("behandler_kontor"),

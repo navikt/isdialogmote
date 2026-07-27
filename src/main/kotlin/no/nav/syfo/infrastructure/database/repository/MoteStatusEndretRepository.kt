@@ -4,7 +4,7 @@ import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.api.dto.DialogmoteStatusEndringDTO
 import no.nav.syfo.infrastructure.database.model.PMoteStatusEndret
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import java.sql.Connection
 import java.sql.ResultSet
@@ -16,7 +16,7 @@ import java.util.*
 
 class MoteStatusEndretRepository(private val database: DatabaseInterface) {
 
-    fun getMoteStatusEndringer(personident: PersonIdent): List<DialogmoteStatusEndringDTO> =
+    fun getMoteStatusEndringer(personident: Personident): List<DialogmoteStatusEndringDTO> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_MOTE_STATUS_ENDRINGER).use { ps ->
                 ps.setString(1, personident.value)

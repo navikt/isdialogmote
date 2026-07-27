@@ -2,7 +2,7 @@ package no.nav.syfo.domain.dialogmote
 
 import no.nav.syfo.domain.NarmesteLederBrevDTO
 import no.nav.syfo.domain.NarmesteLederBrevSvarDTO
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.DialogmoteDeltakerType
 import no.nav.syfo.infrastructure.client.dokarkiv.domain.JournalpostKanal
@@ -53,7 +53,7 @@ fun DialogmotedeltakerArbeidsgiverVarsel.toNarmesteLederBrevDTO(
 )
 
 fun DialogmotedeltakerArbeidsgiverVarsel.toJournalpostRequest(
-    brukerPersonIdent: PersonIdent,
+    brukerPersonIdent: Personident,
     virksomhetsnummer: Virksomhetsnummer?,
     virksomhetsnavn: String,
     pdf: ByteArray,

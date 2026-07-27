@@ -5,7 +5,7 @@ import no.nav.syfo.domain.DialogmeldingSvar
 import no.nav.syfo.domain.ForesporselType
 import no.nav.syfo.domain.InnkallingDialogmoteSvar
 import no.nav.syfo.domain.Kodeverk
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.SvarType
 import java.time.LocalDateTime
 
@@ -55,8 +55,8 @@ fun KafkaDialogmeldingDTO.toDialogmeldingSvarAlternativer(): List<DialogmeldingS
         DialogmeldingSvar(
             conversationRef = this.conversationRef,
             parentRef = this.parentRef,
-            arbeidstakerPersonIdent = PersonIdent(this.personIdentPasient),
-            behandlerPersonIdent = PersonIdent(this.personIdentBehandler),
+            arbeidstakerPersonIdent = Personident(this.personIdentPasient),
+            behandlerPersonIdent = Personident(this.personIdentBehandler),
             innkallingDialogmoteSvar = innkallingDialogmoteSvar,
             opprettetTidspunkt = this.dialogmelding.signaturDato,
         )

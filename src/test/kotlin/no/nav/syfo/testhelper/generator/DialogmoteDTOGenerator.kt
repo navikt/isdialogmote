@@ -13,7 +13,7 @@ import no.nav.syfo.api.dto.NewDialogmotedeltakerBehandlerDTO
 import no.nav.syfo.api.dto.NewReferatDTO
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.DocumentComponentType
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_FNR
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_KONTOR
 import no.nav.syfo.testhelper.UserConstants.BEHANDLER_NAVN
@@ -92,9 +92,9 @@ fun generateEndreDialogmoteTidStedDTOWithBehandler() = EndretTidStedDTO(
 )
 
 fun generateMotedeltakerArbeidstakerDTO(
-    personIdent: PersonIdent,
+    personident: Personident,
 ) = NewDialogmotedeltakerArbeidstakerDTO(
-    personIdent = personIdent.value,
+    personIdent = personident.value,
     fritekstInnkalling = "Ipsum lorum arbeidstaker",
     innkalling = generateDocumentComponentList(),
 )
@@ -130,9 +130,9 @@ fun generateDocumentComponentList(): List<DocumentComponentDTO> {
 }
 
 fun generateMotedeltakerArbeidstakerDTOMissingValues(
-    personIdent: PersonIdent,
+    personident: Personident,
 ) = NewDialogmotedeltakerArbeidstakerDTO(
-    personIdent = personIdent.value,
+    personIdent = personident.value,
     fritekstInnkalling = null,
     innkalling = emptyList(),
 )
@@ -161,33 +161,33 @@ fun generateMotedeltakerArbeidsgiverDTOMissingValues() = NewDialogmotedeltakerAr
 )
 
 fun generateNewDialogmoteDTO(
-    personIdent: PersonIdent,
+    personident: Personident,
     sted: String = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
     dato: LocalDateTime = DIALOGMOTE_TIDSPUNKT_FIXTURE,
     virksomhetsnummer: String = VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value,
 ): NewDialogmoteDTO {
     return NewDialogmoteDTO(
-        arbeidstaker = generateMotedeltakerArbeidstakerDTO(personIdent),
+        arbeidstaker = generateMotedeltakerArbeidstakerDTO(personident),
         arbeidsgiver = generateMotedeltakerArbeidsgiverDTO(virksomhetsnummer = virksomhetsnummer),
         tidSted = generateNewDialogmoteTidStedDTO(sted, dato)
     )
 }
 
 fun generateNewDialogmoteDTOWithMissingValues(
-    personIdent: PersonIdent,
+    personident: Personident,
 ): NewDialogmoteDTO {
     return NewDialogmoteDTO(
-        arbeidstaker = generateMotedeltakerArbeidstakerDTOMissingValues(personIdent),
+        arbeidstaker = generateMotedeltakerArbeidstakerDTOMissingValues(personident),
         arbeidsgiver = generateMotedeltakerArbeidsgiverDTOMissingValues(),
         tidSted = generateNewDialogmoteTidStedDTONoVideoLink()
     )
 }
 
 fun generateNewDialogmoteDTOWithBehandler(
-    personIdent: PersonIdent,
+    personident: Personident,
 ): NewDialogmoteDTO {
     return NewDialogmoteDTO(
-        arbeidstaker = generateMotedeltakerArbeidstakerDTO(personIdent),
+        arbeidstaker = generateMotedeltakerArbeidstakerDTO(personident),
         arbeidsgiver = generateMotedeltakerArbeidsgiverDTO(),
         behandler = generateMotedeltakerBehandlerDTO(),
         tidSted = generateNewDialogmoteTidStedDTONoVideoLink(),
