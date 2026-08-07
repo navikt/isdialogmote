@@ -9,12 +9,12 @@ val isyfoBackendCommonVersion = "1.3.1"
 val altinnCorrespondenceAgencyExternalVersion = "1.2021.02.22-10.45-4201aaea72fb"
 val cxfVersion = "3.6.11"
 val confluentVersion = "8.2.0"
-val flywayVersion = "12.10.0"
+val flywayVersion = "13.1.0"
 val hikariVersion = "7.1.0"
 val isdialogmoteSchemaVersion = "1.0.5"
 val jacksonDataTypeVersion = "2.22.1"
 val jacksonDatabindVersion = "3.2.1"
-val jedisVersion = "5.2.0"
+val jedisVersion = "7.5.3"
 val jsonVersion = "20260719"
 val kafkaVersion = "4.3.1"
 val ktorVersion = "3.5.2"
@@ -97,39 +97,7 @@ dependencies {
     }
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", exclusions)
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion", exclusions)
-    constraints {
-        implementation("org.apache.commons:commons-lang3") {
-            because("org.apache.commons:commons-lang3:3.16.0 -> https://www.cve.org/CVERecord?id=CVE-2025-48924")
-            version {
-                require("3.20.0")
-            }
-        }
-        implementation("com.google.guava:guava") {
-            because("com.google.guava:guava:30.1.1-jre -> https://www.cve.org/CVERecord?id=CVE-2020-8908")
-            version {
-                require("33.4.0-jre")
-            }
-        }
-        implementation("org.eclipse.jetty:jetty-server") {
-            version {
-                require("12.0.34")
-            }
-        }
-    }
-    implementation("io.confluent:kafka-schema-registry:$confluentVersion", exclusions)
-    constraints {
-        implementation("io.github.classgraph:classgraph") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
-            version {
-                require("4.8.179")
-            }
-        }
-        implementation("com.nimbusds:nimbus-jose-jwt") {
-            version {
-                require(nimbusjosejwtVersion)
-            }
-        }
-    }
+
     // Nav
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion")
     implementation("no.nav.syfo:isyfo-backend-common:$isyfoBackendCommonVersion")
