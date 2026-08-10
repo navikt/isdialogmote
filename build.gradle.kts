@@ -117,6 +117,14 @@ dependencies {
     implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion", exclusions)
     implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion", exclusions)
     implementation("javax.xml.ws:jaxws-api:$jaxsWsApiVersion")
+    constraints {
+        implementation("commons-collections:commons-collections") {
+            because("org.apache.cxf:cxf-rt-ws-security:$cxfVersion -> commons-collections:commons-collections:3.2.1 -> https://www.cve.org/CVERecord?id=CVE-2015-6420")
+            version {
+                require("3.2.2")
+            }
+        }
+    }
 }
 
 kotlin {
