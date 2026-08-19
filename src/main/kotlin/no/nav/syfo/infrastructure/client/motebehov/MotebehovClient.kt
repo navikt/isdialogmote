@@ -10,6 +10,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
@@ -51,6 +52,13 @@ class MotebehovClient(
             }
             COUNT_CALL_MOTEBEHOV_BEHANDLE_SUCCESS.increment()
         } catch (e: ClientRequestException) {
+            if (e.response.status == HttpStatusCode.Conflict) {
+                log.warn(
+                    "Motebehov already handled while calling syfomotebehov behandle, ignoring {}",
+                    StructuredArguments.keyValue("statusCode", e.response.status.value.toString()),
+                )
+                return
+            }
             handleUnexpectedResponseException(e.response, "behandle")
             throw e
         } catch (e: ServerResponseException) {
