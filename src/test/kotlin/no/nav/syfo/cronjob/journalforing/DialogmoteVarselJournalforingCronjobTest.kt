@@ -53,11 +53,6 @@ class DialogmoteVarselJournalforingCronjobTest {
 
     private val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
 
-    private val behandlerVarselService = BehandlerVarselService(
-        database = database,
-        behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
-    )
-
     private val dialogmotedeltakerVarselJournalpostService = DialogmotedeltakerVarselJournalpostService(
         database = database,
         moteRepository = externalMockEnvironment.moteRepository,
@@ -84,6 +79,12 @@ class DialogmoteVarselJournalforingCronjobTest {
         clientId = externalMockEnvironment.environment.dialogmeldingClientId,
         url = externalMockEnvironment.environment.dialogmeldingUrl,
         client = externalMockEnvironment.mockHttpClient,
+    )
+
+    private val behandlerVarselService = BehandlerVarselService(
+        database = database,
+        dialogmeldingClient = dialogmeldingClient,
+        behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
     )
 
     private val validToken = generateJWTNavIdent(

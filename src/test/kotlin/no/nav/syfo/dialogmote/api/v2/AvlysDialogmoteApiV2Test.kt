@@ -15,6 +15,7 @@ import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
+import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.domain.dialogmote.*
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
@@ -39,8 +40,10 @@ class AvlysDialogmoteApiV2Test {
     private val database = externalMockEnvironment.database
 
     private val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
+    private val dialogmeldingClient = mockk<DialogmeldingClient>(relaxed = true)
     private val behandlerVarselService = BehandlerVarselService(
         database = database,
+        dialogmeldingClient = dialogmeldingClient,
         behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
     )
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)

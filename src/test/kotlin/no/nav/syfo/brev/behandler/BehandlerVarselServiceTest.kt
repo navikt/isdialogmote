@@ -9,6 +9,7 @@ import no.nav.syfo.infrastructure.database.Database
 import no.nav.syfo.infrastructure.database.createMotedeltakerBehandlerVarselSvar
 import no.nav.syfo.infrastructure.database.getMote
 import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid
+import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.generator.generateDialogmoteSvar
@@ -25,8 +26,10 @@ import java.util.*
 class BehandlerVarselServiceTest {
     private val database: Database = mockk()
     private val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
+    private val dialogmeldingClient = mockk<DialogmeldingClient>(relaxed = true)
     private val behandlerVarselService = BehandlerVarselService(
         database = database,
+        dialogmeldingClient = dialogmeldingClient,
         behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
     )
 

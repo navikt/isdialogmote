@@ -14,6 +14,7 @@ import no.nav.syfo.domain.dialogmote.getDialogMeldingKode
 import no.nav.syfo.domain.dialogmote.getDialogMeldingKodeverk
 import no.nav.syfo.domain.dialogmote.getDialogMeldingType
 import no.nav.syfo.domain.dialogmote.serialize
+import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.infrastructure.database.createMotedeltakerBehandlerVarselSvar
 import no.nav.syfo.infrastructure.database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler
 import no.nav.syfo.infrastructure.database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId
@@ -28,9 +29,10 @@ private val log: Logger = LoggerFactory.getLogger(BehandlerVarselService::class.
 
 class BehandlerVarselService(
     private val database: DatabaseInterface,
+    private val dialogmeldingClient: DialogmeldingClient,
     private val behandlerDialogmeldingProducer: BehandlerDialogmeldingProducer,
 ) {
-    fun sendVarsel(
+    suspend fun sendVarsel(
         behandlerRef: String,
         arbeidstakerPersonIdent: Personident,
         document: List<DocumentComponentDTO>,
@@ -39,10 +41,24 @@ class BehandlerVarselService(
         varselUuid: UUID,
         varselParentId: String?,
         varselInnkallingUuid: UUID?,
+        token: String,
+        callId: String,
     ) {
+        val behandlerDTO = dialogmeldingClient.getBehandler(UUID.fromString(behandlerRef))!!
+        val behandlerRefToUse = if (behandlerDTO.invalidated || !behandlerDTO.kontorDialogmeldingmeldingEnabled) {
+            val behandlerDTOList = dialogmeldingClient.getBehandlereForPerson(
+                personident = arbeidstakerPersonIdent,
+                token = token,
+                callId = callId
+            )
+            behandlerDTOList.firstOrNull {
+                it.type == "FASTLEGE" && it.hprId != null && it.hprId == behandlerDTO.hprId && it.kontorDialogmeldingmeldingEnabled
+            }?.behandlerRef
+        } else behandlerRef
+
         behandlerDialogmeldingProducer.sendDialogmelding(
             dialogmelding = KafkaBehandlerDialogmeldingDTO(
-                behandlerRef = behandlerRef,
+                behandlerRef = behandlerRefToUse ?: behandlerRef,
                 personIdent = arbeidstakerPersonIdent.value,
                 dialogmeldingUuid = varselUuid.toString(),
                 dialogmeldingRefParent = varselParentId,

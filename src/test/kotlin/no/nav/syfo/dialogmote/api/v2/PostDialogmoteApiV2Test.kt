@@ -15,6 +15,7 @@ import no.nav.syfo.api.dto.QueryAvventDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiPersonIdentUrlPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
+import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.domain.dialogmote.*
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
@@ -53,8 +54,10 @@ class PostDialogmoteApiV2Test {
 
     private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
+    private val dialogmeldingClient = mockk<DialogmeldingClient>(relaxed = true)
     private val behandlerVarselService = BehandlerVarselService(
         database = database,
+        dialogmeldingClient = dialogmeldingClient,
         behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
     )
 

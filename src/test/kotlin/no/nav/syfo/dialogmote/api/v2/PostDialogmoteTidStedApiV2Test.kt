@@ -15,6 +15,7 @@ import no.nav.syfo.api.dto.EndretTidStedDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
+import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.application.DialogmeldingService
 import no.nav.syfo.domain.ForesporselType
 import no.nav.syfo.domain.SvarType
@@ -48,8 +49,10 @@ class PostDialogmoteTidStedApiV2Test {
 
     private val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
 
+    private val dialogmeldingClient = mockk<DialogmeldingClient>(relaxed = true)
     private val behandlerVarselService = BehandlerVarselService(
         database = database,
+        dialogmeldingClient = dialogmeldingClient,
         behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
     )
     private val dialogmeldingService = DialogmeldingService(

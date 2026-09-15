@@ -129,6 +129,8 @@ class VarselService(
                     varselUuid = behandlerbrevId!!,
                     varselParentId = behandlerbrevParentId,
                     varselInnkallingUuid = behandlerInnkallingUuid,
+                    token = token,
+                    callId = callId,
                 )
             }
         }
