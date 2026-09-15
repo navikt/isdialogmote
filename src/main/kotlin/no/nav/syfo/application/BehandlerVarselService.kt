@@ -44,21 +44,16 @@ class BehandlerVarselService(
         token: String,
         callId: String,
     ) {
-        val behandlerDTO = dialogmeldingClient.getBehandler(UUID.fromString(behandlerRef))!!
-        val behandlerRefToUse = if (behandlerDTO.invalidated || !behandlerDTO.kontorDialogmeldingmeldingEnabled) {
-            val behandlerDTOList = dialogmeldingClient.getBehandlereForPerson(
-                personident = arbeidstakerPersonIdent,
-                token = token,
-                callId = callId
-            )
-            behandlerDTOList.firstOrNull {
-                it.type == "FASTLEGE" && it.hprId != null && it.hprId == behandlerDTO.hprId && it.kontorDialogmeldingmeldingEnabled
-            }?.behandlerRef
-        } else behandlerRef
+        val behandlerRefToUse = finnBehandlerRefTilUtsending(
+            behandlerRef = behandlerRef,
+            arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+            token = token,
+            callId = callId,
+        )
 
         behandlerDialogmeldingProducer.sendDialogmelding(
             dialogmelding = KafkaBehandlerDialogmeldingDTO(
-                behandlerRef = behandlerRefToUse ?: behandlerRef,
+                behandlerRef = behandlerRefToUse,
                 personIdent = arbeidstakerPersonIdent.value,
                 dialogmeldingUuid = varselUuid.toString(),
                 dialogmeldingRefParent = varselParentId,
@@ -71,6 +66,34 @@ class BehandlerVarselService(
                 kilde = "SYFO",
             )
         )
+    }
+
+    private suspend fun finnBehandlerRefTilUtsending(
+        behandlerRef: String,
+        arbeidstakerPersonIdent: Personident,
+        token: String,
+        callId: String,
+    ): String {
+        val behandlerDTO = dialogmeldingClient.getBehandler(UUID.fromString(behandlerRef))
+            ?: throw RuntimeException("Failed to send varsel: Could not find behandler with behandlerRef $behandlerRef")
+
+        val behandlerKanMottaDialogmelding = !behandlerDTO.invalidated && behandlerDTO.kontorDialogmeldingmeldingEnabled
+        return if (behandlerKanMottaDialogmelding) {
+            behandlerRef
+        } else {
+            val behandlerDTOList = dialogmeldingClient.getBehandlereForPerson(
+                personident = arbeidstakerPersonIdent,
+                token = token,
+                callId = callId,
+            )
+            val erstatningsbehandler = behandlerDTOList.firstOrNull {
+                it.type == "FASTLEGE" && it.hprId != null && it.hprId == behandlerDTO.hprId && it.kontorDialogmeldingmeldingEnabled
+            }
+            if (erstatningsbehandler != null) {
+                log.warn("Behandler with behandlerRef $behandlerRef cannot receive dialogmelding. Using erstatningsbehandler ${erstatningsbehandler.behandlerRef} instead")
+            }
+            erstatningsbehandler?.behandlerRef ?: behandlerRef
+        }
     }
 
     fun finnBehandlerVarselOgOpprettSvar(
