@@ -87,7 +87,7 @@ class BehandlerVarselService(
                 callId = callId,
             )
             val erstatningsbehandler = behandlerDTOList.firstOrNull {
-                it.type == "FASTLEGE" && it.hprId != null && it.hprId == behandlerDTO.hprId && it.kontorDialogmeldingmeldingEnabled
+                it.kontorDialogmeldingmeldingEnabled && it.hprId != null && it.hprId == behandlerDTO.hprId
             }
             if (erstatningsbehandler != null) {
                 log.warn("Behandler with behandlerRef $behandlerRef cannot receive dialogmelding. Using erstatningsbehandler ${erstatningsbehandler.behandlerRef} instead")
