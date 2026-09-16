@@ -92,7 +92,7 @@ class BehandlerVarselService(
             if (erstatningsbehandler != null) {
                 log.warn("Behandler with behandlerRef $behandlerRef cannot receive dialogmelding. Using erstatningsbehandler ${erstatningsbehandler.behandlerRef} instead")
             } else {
-                log.warn("Behandler with behandlerRef $behandlerRef cannot receive dialogmelding but found no replacement")
+                log.error("Behandler with behandlerRef $behandlerRef cannot receive dialogmelding but found no replacement")
             }
             erstatningsbehandler?.behandlerRef ?: behandlerRef
         }
