@@ -79,6 +79,7 @@ class BehandlerVarselService(
 
         val behandlerKanMottaDialogmelding = !behandlerDTO.invalidated && behandlerDTO.kontorDialogmeldingmeldingEnabled
         return if (behandlerKanMottaDialogmelding) {
+            log.info("Existing behandler is ok")
             behandlerRef
         } else {
             val behandlerDTOList = dialogmeldingClient.getBehandlereForPerson(
