@@ -12,6 +12,7 @@ import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondence
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.*
 import no.nav.syfo.application.BehandlerVarselService
+import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.domain.dialogmote.*
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.toLatestOppfolgingstilfelle
 import no.nav.syfo.infrastructure.database.repository.MoteRepository
@@ -41,8 +42,10 @@ class FerdigstillDialogmoteApiV2Test {
 
     private val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
 
+    private val dialogmeldingClient = mockk<DialogmeldingClient>(relaxed = true)
     private val behandlerVarselService = BehandlerVarselService(
         database = database,
+        dialogmeldingClient = dialogmeldingClient,
         behandlerDialogmeldingProducer = behandlerDialogmeldingProducer,
     )
     private val pdfRepository = externalMockEnvironment.pdfRepository

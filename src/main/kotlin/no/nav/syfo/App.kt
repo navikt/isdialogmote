@@ -55,6 +55,7 @@ import no.nav.syfo.testdata.reset.TestdataResetService
 import no.nav.syfo.testdata.reset.kafka.TestdataResetConsumer
 import no.nav.syfo.testdata.reset.kafka.kafkaTestdataResetConsumerConfig
 import io.micrometer.core.instrument.Metrics
+import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
@@ -163,6 +164,11 @@ fun main() {
     val eregClient = EregClient(
         baseUrl = environment.eregUrl,
     )
+    val dialogmeldingClient = DialogmeldingClient(
+        azureAdClient = azureAdV2Client,
+        url = environment.dialogmeldingUrl,
+        clientId = environment.dialogmeldingClientId,
+    )
 
     lateinit var behandlerVarselService: BehandlerVarselService
     lateinit var dialogmotestatusService: DialogmotestatusService
@@ -190,6 +196,7 @@ fun main() {
             val moteRepository = MoteRepository(database = applicationDatabase)
             behandlerVarselService = BehandlerVarselService(
                 database = applicationDatabase,
+                dialogmeldingClient = dialogmeldingClient,
                 behandlerDialogmeldingProducer = behandlerDialogmeldingProducer
             )
             val arbeidstakerVarselService = ArbeidstakerVarselService(
@@ -245,6 +252,7 @@ fun main() {
                 moteStatusEndretRepository = moteStatusEndretRepository,
                 pdfRepository = pdfRepository,
                 moteRepository = moteRepository,
+                dialogmeldingClient = dialogmeldingClient,
             )
             monitor.subscribe(ApplicationStarted) {
                 applicationState.ready = true

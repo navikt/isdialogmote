@@ -14,6 +14,7 @@ import no.nav.syfo.domain.dialogmote.getDialogMeldingKode
 import no.nav.syfo.domain.dialogmote.getDialogMeldingKodeverk
 import no.nav.syfo.domain.dialogmote.getDialogMeldingType
 import no.nav.syfo.domain.dialogmote.serialize
+import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.infrastructure.database.createMotedeltakerBehandlerVarselSvar
 import no.nav.syfo.infrastructure.database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler
 import no.nav.syfo.infrastructure.database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId
@@ -28,9 +29,10 @@ private val log: Logger = LoggerFactory.getLogger(BehandlerVarselService::class.
 
 class BehandlerVarselService(
     private val database: DatabaseInterface,
+    private val dialogmeldingClient: DialogmeldingClient,
     private val behandlerDialogmeldingProducer: BehandlerDialogmeldingProducer,
 ) {
-    fun sendVarsel(
+    suspend fun sendVarsel(
         behandlerRef: String,
         arbeidstakerPersonIdent: Personident,
         document: List<DocumentComponentDTO>,
@@ -39,10 +41,19 @@ class BehandlerVarselService(
         varselUuid: UUID,
         varselParentId: String?,
         varselInnkallingUuid: UUID?,
+        token: String,
+        callId: String,
     ) {
+        val behandlerRefToUse = finnBehandlerRefTilUtsending(
+            behandlerRef = behandlerRef,
+            arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+            token = token,
+            callId = callId,
+        )
+
         behandlerDialogmeldingProducer.sendDialogmelding(
             dialogmelding = KafkaBehandlerDialogmeldingDTO(
-                behandlerRef = behandlerRef,
+                behandlerRef = behandlerRefToUse,
                 personIdent = arbeidstakerPersonIdent.value,
                 dialogmeldingUuid = varselUuid.toString(),
                 dialogmeldingRefParent = varselParentId,
@@ -55,6 +66,36 @@ class BehandlerVarselService(
                 kilde = "SYFO",
             )
         )
+    }
+
+    private suspend fun finnBehandlerRefTilUtsending(
+        behandlerRef: String,
+        arbeidstakerPersonIdent: Personident,
+        token: String,
+        callId: String,
+    ): String {
+        val behandlerDTO = dialogmeldingClient.getBehandler(UUID.fromString(behandlerRef))
+            ?: throw RuntimeException("Failed to send varsel: Could not find behandler with behandlerRef $behandlerRef")
+
+        val behandlerKanMottaDialogmelding = !behandlerDTO.invalidated && behandlerDTO.kontorDialogmeldingmeldingEnabled
+        return if (behandlerKanMottaDialogmelding) {
+            behandlerRef
+        } else {
+            val behandlerDTOList = dialogmeldingClient.getBehandlereForPerson(
+                personident = arbeidstakerPersonIdent,
+                token = token,
+                callId = callId,
+            )
+            val erstatningsbehandler = behandlerDTOList.firstOrNull {
+                it.kontorDialogmeldingmeldingEnabled && it.hprId != null && it.hprId == behandlerDTO.hprId
+            }
+            if (erstatningsbehandler != null) {
+                log.warn("Behandler with behandlerRef $behandlerRef cannot receive dialogmelding. Using erstatningsbehandler ${erstatningsbehandler.behandlerRef} instead")
+            } else {
+                log.error("Behandler with behandlerRef $behandlerRef cannot receive dialogmelding but found no replacement")
+            }
+            erstatningsbehandler?.behandlerRef ?: behandlerRef
+        }
     }
 
     fun finnBehandlerVarselOgOpprettSvar(

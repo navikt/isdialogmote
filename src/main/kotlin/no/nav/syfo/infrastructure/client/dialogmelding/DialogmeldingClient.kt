@@ -9,7 +9,10 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.append
+import no.nav.syfo.api.NAV_CALL_ID_HEADER
+import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.api.bearerHeader
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.httpClientDefault
 import org.slf4j.LoggerFactory
@@ -53,7 +56,42 @@ class DialogmeldingClient(
         }
     }
 
+    suspend fun getBehandlereForPerson(
+        personident: Personident,
+        token: String,
+        callId: String,
+    ): List<BehandlerDTO> {
+        val oboToken = azureAdClient.getOnBehalfOfToken(clientId, token)?.accessToken
+            ?: throw RuntimeException("Failed to get behandlere for person: No token was found")
+        val requestUrl = "$url/$GET_BEHANDLER_PERSONIDENT_PATH"
+
+        val response = try {
+            client.get(requestUrl) {
+                headers {
+                    append(HttpHeaders.ContentType, ContentType.Application.Json)
+                    append(HttpHeaders.Authorization, bearerHeader(oboToken))
+                    append(NAV_PERSONIDENT_HEADER, personident.value)
+                    append(NAV_CALL_ID_HEADER, callId)
+                    accept(ContentType.Application.Json)
+                }
+            }
+        } catch (e: Exception) {
+            log.error("Exception while getting behandlere for person", e)
+            throw e
+        }
+
+        return when (response.status) {
+            HttpStatusCode.OK -> {
+                response.body()
+            }
+            else -> {
+                emptyList()
+            }
+        }
+    }
+
     companion object {
         private const val GET_BEHANDLER_PATH = "api/v1/behandler"
+        private const val GET_BEHANDLER_PERSONIDENT_PATH = "$GET_BEHANDLER_PATH/personident"
     }
 }

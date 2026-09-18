@@ -60,7 +60,7 @@ class VarselServiceTest {
 
         justRun { arbeidstakerVarselService.sendVarsel(any(), any(), any(), any(), any()) }
         justRun { narmesteLederVarselService.sendVarsel(any(), any(), any()) }
-        justRun { behandlerVarselService.sendVarsel(any(), any(), any(), any(), any(), any(), any(), any()) }
+        coJustRun { behandlerVarselService.sendVarsel(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
         justRun { altinnClient.sendToVirksomhet(any()) }
         coEvery { eregClient.organisasjonVirksomhetsnavn(any()) } returns null
     }

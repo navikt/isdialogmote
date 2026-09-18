@@ -44,6 +44,7 @@ fun Application.cronjobModule(
     moteStatusEndretRepository: MoteStatusEndretRepository,
     pdfRepository: IPdfRepository,
     moteRepository: IMoteRepository,
+    dialogmeldingClient: DialogmeldingClient,
 ) {
     val azureAdV2Client = AzureAdV2Client(
         aadAppClient = environment.aadAppClient,
@@ -75,11 +76,6 @@ fun Application.cronjobModule(
     )
     val leaderPodClient = LeaderPodClient(
         environment = environment,
-    )
-    val dialogmeldingClient = DialogmeldingClient(
-        azureAdClient = azureAdV2Client,
-        url = environment.dialogmeldingUrl,
-        clientId = environment.dialogmeldingClientId,
     )
     val journalforDialogmoteVarslerCronjob = DialogmoteVarselJournalforingCronjob(
         dialogmotedeltakerVarselJournalpostService = dialogmotedeltakerVarselJournalpostService,
