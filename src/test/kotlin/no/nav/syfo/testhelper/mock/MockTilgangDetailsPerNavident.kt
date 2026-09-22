@@ -23,6 +23,9 @@ val mockTilgangDetailsPerNavident = mapOf(
     Navident(UserConstants.VEILEDER_IDENT) to MockUserTilgangDetails(
         syfoTilgangLevel = MockUserSyfoTilgangLevel.FULL,
         personsUserHasAccessTo = accessiblePersonIdents,
+        personsUserHasKjerneregelAccessTo = accessiblePersonIdents + LibPersonIdent(
+            UserConstants.ARBEIDSTAKER_KJERNEREGEL_ACCESS_ONLY.value
+        ),
     ),
     Navident(UserConstants.VEILEDER_IDENT_2) to MockUserTilgangDetails(
         syfoTilgangLevel = MockUserSyfoTilgangLevel.FULL,

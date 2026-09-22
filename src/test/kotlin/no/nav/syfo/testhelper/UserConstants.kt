@@ -19,6 +19,7 @@ object UserConstants {
     val ARBEIDSTAKER_INACTIVE_OPPFOLGINGSTILFELLE = Personident(ARBEIDSTAKER_FNR.value.replace("2", "9"))
     val ARBEIDSTAKER_NO_BEHANDLENDE_ENHET = Personident(ARBEIDSTAKER_FNR.value.replace("3", "1"))
     val ARBEIDSTAKER_NO_OPPFOLGINGSTILFELLE = Personident(ARBEIDSTAKER_FNR.value.replace("3", "4"))
+    val ARBEIDSTAKER_KJERNEREGEL_ACCESS_ONLY = Personident(ARBEIDSTAKER_FNR.value.replace("2", "6"))
 
     const val VEILEDER_IDENT = "Z999999"
     const val VEILEDER_IDENT_2 = "Z999998"
