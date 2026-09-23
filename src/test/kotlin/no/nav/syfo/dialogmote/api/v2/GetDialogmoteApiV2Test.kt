@@ -18,6 +18,7 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_ANNEN_FNR
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_FNR
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_KJERNEREGEL_ACCESS_ONLY
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT_READONLY
@@ -140,6 +141,42 @@ class GetDialogmoteApiV2Test {
                 val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
                 assertEquals(2, dialogmoteList.size)
+            }
+        }
+
+        @Test
+        fun `should return DialogmoteList based on VeilederIdent for person with only kjerneregel access`() {
+            val newDialogmoteVeilederKjerneregelAccess = generateNewDialogmote(
+                ARBEIDSTAKER_KJERNEREGEL_ACCESS_ONLY
+            ).copy(
+                opprettetAv = VEILEDER_IDENT,
+                tildeltVeilederIdent = VEILEDER_IDENT,
+            )
+
+            database.connection.use { connection ->
+                connection.createNewDialogmoteWithReferences(
+                    newDialogmote = newDialogmoteVeilederKjerneregelAccess
+                )
+            }
+
+            testApplication {
+                val client = setupApiAndClient(
+                    altinnMock = altinnMock,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                val response = client.get(urlMoteVeilederIdent) {
+                    bearerAuth(validToken)
+                }
+
+                assertEquals(HttpStatusCode.OK, response.status)
+
+                val dialogmoteList = response.body<List<DialogmoteDTO>>()
+
+                assertEquals(1, dialogmoteList.size)
+                assertEquals(
+                    ARBEIDSTAKER_KJERNEREGEL_ACCESS_ONLY.value,
+                    dialogmoteList.first().arbeidstaker.personIdent,
+                )
             }
         }
 
