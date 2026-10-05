@@ -7,7 +7,7 @@ version = "1.0.0"
 val isyfoBackendCommonVersion = "1.3.2"
 
 val altinnCorrespondenceAgencyExternalVersion = "1.2021.02.22-10.45-4201aaea72fb"
-val cxfVersion = "3.6.11"
+val cxfVersion = "3.6.12"
 val confluentVersion = "8.2.0"
 val flywayVersion = "13.1.0"
 val hikariVersion = "7.1.0"
