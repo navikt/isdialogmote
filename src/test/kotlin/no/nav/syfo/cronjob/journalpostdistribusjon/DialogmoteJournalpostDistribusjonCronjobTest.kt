@@ -6,9 +6,6 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
@@ -40,8 +37,6 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
     private val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
-    private val altinnResponse = ReceiptExternal()
 
     private val dialogmotedeltakerVarselJournalpostService =
         DialogmotedeltakerVarselJournalpostService(
@@ -67,12 +62,7 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
 
     @BeforeEach
     fun beforeEach() {
-        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-        clearMocks(altinnMock)
-        every {
-            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-        } returns altinnResponse
     }
 
     @AfterEach
@@ -90,7 +80,6 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
         fun `Distribuerer journalført innkalling, endring og referat`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 val createdDialogmoteUUID =
@@ -198,7 +187,6 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
         fun `Distribuerer journalført innkalling med respons 410`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 val dialogmoteDTO =
@@ -231,7 +219,6 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
         fun `Ikke distribuer innkalling og referat som ikke er journalført`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 val createdDialogmoteUUID =
@@ -281,7 +268,6 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
         fun `Ikke distribuer journalført innkalling og referat hvor brev er bestilt`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 val createdDialogmoteUUID =
@@ -345,7 +331,6 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
         fun `Ikke distribuer journalført innkalling, endring og referat`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 val createdDialogmoteUUID = client.postAndGetDialogmote(validToken, newDialogmoteDTO).uuid
@@ -417,7 +402,6 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
         fun `Ikke distribuer innkalling og referat som ikke er journalført`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 val createdDialogmoteUUID = client.postAndGetDialogmote(validToken, newDialogmoteDTO).uuid
@@ -462,7 +446,6 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
         fun `Ikke distribuer journalført innkalling og referat hvor brev er bestilt`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 val createdDialogmoteUUID = client.postAndGetDialogmote(validToken, newDialogmoteDTO).uuid

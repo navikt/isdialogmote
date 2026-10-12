@@ -6,9 +6,6 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.*
 import no.nav.syfo.application.BehandlerVarselService
@@ -50,7 +47,6 @@ class FerdigstillDialogmoteApiV2Test {
     )
     private val pdfRepository = externalMockEnvironment.pdfRepository
 
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
     private val validToken = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
@@ -61,13 +57,7 @@ class FerdigstillDialogmoteApiV2Test {
     @BeforeEach
     fun setup() {
         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-        val altinnResponse = ReceiptExternal()
-        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-        clearMocks(altinnMock)
-        every {
-            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-        } returns altinnResponse
     }
 
     @AfterEach
@@ -89,7 +79,6 @@ class FerdigstillDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                 )
 
                 val createdDialogmote = client.postAndGetDialogmote(
@@ -209,7 +198,6 @@ class FerdigstillDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                 )
 
                 val createdDialogmote = client.postAndGetDialogmote(
@@ -284,7 +272,7 @@ class FerdigstillDialogmoteApiV2Test {
                     }
                     val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
                     assertEquals(
-                        newDialogmoteDTO.behandler!!.behandlerRef,
+                        newDialogmoteDTO.behandler.behandlerRef,
                         kafkaBehandlerDialogmeldingDTO.behandlerRef
                     )
                     assertEquals(referatBehandlerVarselUUID, kafkaBehandlerDialogmeldingDTO.dialogmeldingUuid)
@@ -395,7 +383,6 @@ class FerdigstillDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                 )
                 val createdDialogmote = client.postAndGetDialogmote(
                     validToken,
@@ -444,7 +431,6 @@ class FerdigstillDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                 )
                 val createdDialogmote = client.postAndGetDialogmote(
                     validToken,
@@ -494,7 +480,6 @@ class FerdigstillDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                 )
 
                 val createdDialogmote = client.postAndGetDialogmote(
@@ -576,7 +561,7 @@ class FerdigstillDialogmoteApiV2Test {
                     )
                 }
                 val kafkaBehandlerDialogmeldingDTO = kafkaBehandlerDialogmeldingDTOSlot.captured
-                assertEquals(newDialogmoteDTO.behandler!!.behandlerRef, kafkaBehandlerDialogmeldingDTO.behandlerRef)
+                assertEquals(newDialogmoteDTO.behandler.behandlerRef, kafkaBehandlerDialogmeldingDTO.behandlerRef)
                 assertEquals(referatBehandlerVarselUUID, kafkaBehandlerDialogmeldingDTO.dialogmeldingUuid)
                 assertEquals(newReferatDTO.document.serialize(), kafkaBehandlerDialogmeldingDTO.dialogmeldingTekst)
                 assertEquals(DialogmeldingType.DIALOG_NOTAT.name, kafkaBehandlerDialogmeldingDTO.dialogmeldingType)
@@ -605,7 +590,6 @@ class FerdigstillDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                 )
                 val createdDialogmote = client.postAndGetDialogmote(
                     validToken,
@@ -658,7 +642,6 @@ class FerdigstillDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                 )
 
                 val createdDialogmote = client.postAndGetDialogmote(

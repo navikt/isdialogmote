@@ -6,9 +6,6 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteAvlysPath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
@@ -49,8 +46,6 @@ class AvlysDialogmoteApiV2Test {
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
     private val moteStatusEndretRepository = MoteStatusEndretRepository(database)
 
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
-    private val altinnResponse = ReceiptExternal()
 
     private val validToken = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
@@ -60,14 +55,9 @@ class AvlysDialogmoteApiV2Test {
 
     @BeforeEach
     fun setup() {
-        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
         clearMocks(behandlerDialogmeldingProducer)
         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
         clearMocks(esyfovarselProducerMock)
-        clearMocks(altinnMock)
-        every {
-            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-        } returns altinnResponse
     }
 
     @AfterEach
@@ -85,7 +75,6 @@ class AvlysDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val createdDialogmoteUUID = client.postAndGetDialogmote(validToken, newDialogmoteDTO).uuid
@@ -204,7 +193,6 @@ class AvlysDialogmoteApiV2Test {
                 val createdDialogmoteUUID: String
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)
@@ -285,7 +273,6 @@ class AvlysDialogmoteApiV2Test {
                 val createdDialogmoteUUID: String
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)
@@ -337,7 +324,6 @@ class AvlysDialogmoteApiV2Test {
                 val createdDialogmoteUUID: String
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)

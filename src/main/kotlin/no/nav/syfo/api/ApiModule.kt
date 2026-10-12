@@ -3,7 +3,6 @@ package no.nav.syfo.api
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.routing.*
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.Environment
 import no.nav.syfo.api.authentication.JwtIssuer
@@ -36,7 +35,6 @@ import no.nav.syfo.application.MotebehovService
 import no.nav.syfo.application.NarmesteLederAccessService
 import no.nav.syfo.application.NarmesteLederVarselService
 import no.nav.syfo.application.VarselService
-import no.nav.syfo.infrastructure.client.altinn.AltinnClient
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenClient
 import no.nav.syfo.infrastructure.client.ereg.EregClient
@@ -59,7 +57,6 @@ fun Application.apiModule(
     environment: Environment,
     wellKnownSelvbetjening: WellKnown,
     wellKnownVeilederV2: WellKnown,
-    altinnSoapClient: ICorrespondenceAgencyExternalBasic,
     dialogmotestatusService: DialogmotestatusService,
     dialogmotedeltakerService: DialogmotedeltakerService,
     arbeidstakerVarselService: ArbeidstakerVarselService,
@@ -100,21 +97,12 @@ fun Application.apiModule(
         esyfovarselProducer = esyfovarselProducer,
     )
 
-    val altinnClient = AltinnClient(
-        username = environment.altinnUsername,
-        password = environment.altinnPassword,
-        altinnSoapClient = altinnSoapClient,
-    )
-
     val varselService = VarselService(
         arbeidstakerVarselService = arbeidstakerVarselService,
         narmesteLederVarselService = narmesteLederVarselService,
         behandlerVarselService = behandlerVarselService,
-        altinnClient = altinnClient,
         dokumentportenClient = dokumentportenClient,
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
-        isAltinnSendingEnabled = environment.altinnSendingEnabled,
-        isDokumentportenSendingEnabled = environment.dokumentportenSendingEnabled,
         eregClient = eregClient,
     )
 

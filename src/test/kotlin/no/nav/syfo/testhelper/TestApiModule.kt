@@ -2,7 +2,6 @@ package no.nav.syfo.testhelper
 
 import io.ktor.server.application.*
 import io.mockk.mockk
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.*
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
@@ -20,7 +19,6 @@ import no.nav.syfo.common.util.ClientConfig
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
     behandlerVarselService: BehandlerVarselService = mockk(),
-    altinnMock: ICorrespondenceAgencyExternalBasic = mockk(),
     esyfovarselProducer: EsyfovarselProducer = mockk(relaxed = true),
     eregClient: EregClient = EregClient(
         baseUrl = externalMockEnvironment.environment.eregUrl,
@@ -92,7 +90,6 @@ fun Application.testApiModule(
         environment = externalMockEnvironment.environment,
         wellKnownSelvbetjening = externalMockEnvironment.wellKnownSelvbetjening,
         wellKnownVeilederV2 = externalMockEnvironment.wellKnownVeilederV2,
-        altinnSoapClient = altinnMock,
         dialogmotestatusService = dialogmotestatusService,
         dialogmotedeltakerService = dialogmotedeltakerService,
         arbeidstakerVarselService = arbeidstakerVarselService,

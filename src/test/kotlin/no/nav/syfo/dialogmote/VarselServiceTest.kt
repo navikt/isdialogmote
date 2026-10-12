@@ -6,8 +6,6 @@ import no.nav.syfo.application.ArbeidstakerVarselService
 import no.nav.syfo.application.BehandlerVarselService
 import no.nav.syfo.application.NarmesteLederVarselService
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
-import no.nav.syfo.infrastructure.client.altinn.AltinnClient
-import no.nav.syfo.infrastructure.client.altinn.createAltinnMelding
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.Oppfolgingstilfelle
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.application.VarselService
@@ -29,9 +27,9 @@ class VarselServiceTest {
     private val arbeidstakerVarselService = mockk<ArbeidstakerVarselService>()
     private val narmesteLederVarselService = mockk<NarmesteLederVarselService>()
     private val behandlerVarselService = mockk<BehandlerVarselService>()
-    private val altinnClient = mockk<AltinnClient>()
     private val oppfolgingstilfelleClient = mockk<OppfolgingstilfelleClient>()
     private val eregClient = mockk<EregClient>()
+    private val dokumentportenClient = mockk<DokumentportenClient>(relaxed = true)
     private val anyOppfolgingstilfelle = Oppfolgingstilfelle(
         start = LocalDate.now().minusDays(10),
         end = LocalDate.now().plusDays(10),
@@ -41,11 +39,8 @@ class VarselServiceTest {
         arbeidstakerVarselService = arbeidstakerVarselService,
         narmesteLederVarselService = narmesteLederVarselService,
         behandlerVarselService = behandlerVarselService,
-        altinnClient = altinnClient,
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
-        isAltinnSendingEnabled = false,
-        dokumentportenClient = mockk<DokumentportenClient>(relaxed = true),
-        isDokumentportenSendingEnabled = true,
+        dokumentportenClient = dokumentportenClient,
         eregClient = eregClient,
     )
 
@@ -54,19 +49,18 @@ class VarselServiceTest {
         clearMocks(arbeidstakerVarselService)
         clearMocks(narmesteLederVarselService)
         clearMocks(behandlerVarselService)
-        clearMocks(altinnClient)
         clearMocks(oppfolgingstilfelleClient)
         clearMocks(eregClient)
+        clearMocks(dokumentportenClient)
 
         justRun { arbeidstakerVarselService.sendVarsel(any(), any(), any(), any(), any()) }
         justRun { narmesteLederVarselService.sendVarsel(any(), any(), any()) }
         coJustRun { behandlerVarselService.sendVarsel(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
-        justRun { altinnClient.sendToVirksomhet(any()) }
         coEvery { eregClient.organisasjonVirksomhetsnavn(any()) } returns null
     }
 
     @Test
-    fun `Send varsel to nærmeste leder, but not to Altinn 2`() {
+    fun `Send varsel to nærmeste leder, and send to Dokumentporten`() {
         coEvery {
             oppfolgingstilfelleClient.oppfolgingstilfellePerson(
                 any(),
@@ -76,15 +70,6 @@ class VarselServiceTest {
         } returns anyOppfolgingstilfelle
         val virksomhetsbrevId = UUID.randomUUID()
         val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
-        val altinnMelding = createAltinnMelding(
-            virksomhetsbrevId,
-            VIRKSOMHETSNUMMER_HAS_NARMESTELEDER,
-            virksomhetsPdf,
-            MotedeltakerVarselType.INNKALT,
-            arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
-            arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
-            true
-        )
 
         runBlocking {
             varselService.sendVarsel(
@@ -109,7 +94,7 @@ class VarselServiceTest {
                 callId = "callId",
             )
 
-            verify(exactly = 0) { altinnClient.sendToVirksomhet(altinnMelding) }
+            coVerify(exactly = 1) { dokumentportenClient.sendDocument(any(), any(), any()) }
             verify(exactly = 1) {
                 narmesteLederVarselService.sendVarsel(
                     narmesteLeder,
@@ -131,15 +116,6 @@ class VarselServiceTest {
         } returns anyOppfolgingstilfelle
         val virksomhetsbrevId = UUID.randomUUID()
         val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
-        val altinnMelding = createAltinnMelding(
-            virksomhetsbrevId,
-            VIRKSOMHETSNUMMER_NO_NARMESTELEDER,
-            virksomhetsPdf,
-            MotedeltakerVarselType.INNKALT,
-            arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
-            arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
-            false
-        )
 
         runBlocking {
             varselService.sendVarsel(
@@ -164,11 +140,6 @@ class VarselServiceTest {
                 callId = "callId",
             )
 
-            verify(exactly = 0) {
-                altinnClient.sendToVirksomhet(
-                    altinnMelding
-                )
-            }
             verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), any()) }
         }
     }
@@ -178,15 +149,6 @@ class VarselServiceTest {
         coEvery { oppfolgingstilfelleClient.oppfolgingstilfellePerson(any(), any(), any()) } returns null
         val virksomhetsbrevId = UUID.randomUUID()
         val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
-        val altinnMelding = createAltinnMelding(
-            virksomhetsbrevId,
-            VIRKSOMHETSNUMMER_NO_NARMESTELEDER,
-            virksomhetsPdf,
-            MotedeltakerVarselType.INNKALT,
-            arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_FNR,
-            arbeidstakernavn = UserConstants.ARBEIDSTAKERNAVN,
-            false
-        )
 
         runBlocking {
             varselService.sendVarsel(
@@ -211,11 +173,6 @@ class VarselServiceTest {
                 callId = "callId",
             )
 
-            verify(exactly = 0) {
-                altinnClient.sendToVirksomhet(
-                    altinnMelding
-                )
-            }
             verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), any()) }
         }
     }

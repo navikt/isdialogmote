@@ -30,7 +30,6 @@ import no.nav.syfo.application.IdenthendelseService
 import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumer
 import no.nav.syfo.infrastructure.kafka.identhendelse.kafkaIdenthendelseConsumerConfig
 import no.nav.syfo.application.JanitorService
-import no.nav.syfo.infrastructure.client.altinn.createPort
 import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenClient
 import no.nav.syfo.infrastructure.client.azuread.AzureAdV2Client
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
@@ -96,7 +95,6 @@ fun main() {
         )
     )
 
-    val altinnSoapClient = createPort(environment.altinnWsUrl)
     val azureAdV2Client = AzureAdV2Client(
         aadAppClient = environment.aadAppClient,
         aadAppSecret = environment.aadAppSecret,
@@ -224,7 +222,6 @@ fun main() {
                 environment = environment,
                 wellKnownSelvbetjening = getWellKnown(environment.tokenxWellKnownUrl),
                 wellKnownVeilederV2 = getWellKnown(environment.azureAppWellKnownUrl),
-                altinnSoapClient = altinnSoapClient,
                 dialogmotestatusService = dialogmotestatusService,
                 dialogmotedeltakerService = dialogmotedeltakerService,
                 arbeidstakerVarselService = arbeidstakerVarselService,

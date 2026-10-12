@@ -9,7 +9,6 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.api.authentication.configure
 import no.nav.syfo.api.dto.DialogmoteDTO
@@ -27,7 +26,6 @@ import kotlin.test.assertTrue
 
 fun ApplicationTestBuilder.setupApiAndClient(
     behandlerVarselService: BehandlerVarselService = mockk(),
-    altinnMock: ICorrespondenceAgencyExternalBasic = mockk(),
     esyfovarselProducer: EsyfovarselProducer = mockk(relaxed = true),
     eregClient: EregClient = EregClient(
         baseUrl = ExternalMockEnvironment.getInstance().environment.eregUrl,
@@ -38,7 +36,6 @@ fun ApplicationTestBuilder.setupApiAndClient(
         testApiModule(
             externalMockEnvironment = ExternalMockEnvironment.getInstance(),
             behandlerVarselService = behandlerVarselService,
-            altinnMock = altinnMock,
             esyfovarselProducer = esyfovarselProducer,
             eregClient = eregClient,
         )

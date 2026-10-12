@@ -5,8 +5,6 @@ import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
-import no.nav.syfo.infrastructure.client.altinn.AltinnClient
-import no.nav.syfo.infrastructure.client.altinn.createAltinnMelding
 import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.client.oppfolgingstilfelle.isInactive
@@ -22,11 +20,8 @@ class VarselService(
     private val arbeidstakerVarselService: ArbeidstakerVarselService,
     private val narmesteLederVarselService: NarmesteLederVarselService,
     private val behandlerVarselService: BehandlerVarselService,
-    private val altinnClient: AltinnClient,
     private val dokumentportenClient: DokumentportenClient,
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
-    private val isAltinnSendingEnabled: Boolean,
-    private val isDokumentportenSendingEnabled: Boolean,
     private val eregClient: EregClient,
 ) {
     private val log: Logger = LoggerFactory.getLogger(VarselService::class.java)
@@ -61,44 +56,25 @@ class VarselService(
 
         val hasActiveTilfelle = tilfelle != null && !tilfelle.isInactive()
 
-        if (isAltinnSendingEnabled) {
-            val altinnMelding = createAltinnMelding(
-                virksomhetsbrevId,
-                virksomhetsnummer,
-                virksomhetsPdf,
-                varselType,
-                arbeidstakerPersonIdent,
-                arbeidstakernavn,
-                narmesteLeder != null,
-            )
-            altinnClient.sendToVirksomhet(
-                altinnMelding = altinnMelding,
-            )
-        }
+        log.info("Starter utsending av $varselType til Dokumentporten")
+        val manglerNarmesteLeder = narmesteLeder == null
+        val virksomhetsnavn =
+            if (manglerNarmesteLeder) eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer) else null
 
-        if (isDokumentportenSendingEnabled) {
-            log.info("Dokumentporten utsending er aktiv. Starter utsending av $varselType")
-            val manglerNarmesteLeder = narmesteLeder == null
-            val virksomhetsnavn =
-                if (manglerNarmesteLeder) eregClient.organisasjonVirksomhetsnavn(virksomhetsnummer) else null
-
-            dokumentportenClient.sendDocument(
-                DokumentportenDocumentRequestDTO.create(
-                    reference = virksomhetsbrevId,
-                    virksomhetsnummer = virksomhetsnummer,
-                    virksomhetsnavn = virksomhetsnavn,
-                    file = virksomhetsPdf,
-                    varseltype = varselType,
-                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
-                    arbeidstakernavn = arbeidstakernavn,
-                    manglerNarmesteLeder = manglerNarmesteLeder,
-                ),
-                token = token,
-                callId = callId,
-            )
-        } else {
-            log.info("Dokumentporten utsending er deaktivert. Dropper utsending av $varselType")
-        }
+        dokumentportenClient.sendDocument(
+            DokumentportenDocumentRequestDTO.create(
+                reference = virksomhetsbrevId,
+                virksomhetsnummer = virksomhetsnummer,
+                virksomhetsnavn = virksomhetsnavn,
+                file = virksomhetsPdf,
+                varseltype = varselType,
+                arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                arbeidstakernavn = arbeidstakernavn,
+                manglerNarmesteLeder = manglerNarmesteLeder,
+            ),
+            token = token,
+            callId = callId,
+        )
 
         if (narmesteLeder != null && hasActiveTilfelle) {
             narmesteLederVarselService.sendVarsel(

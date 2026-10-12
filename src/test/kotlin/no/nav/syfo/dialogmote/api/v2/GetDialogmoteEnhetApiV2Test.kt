@@ -4,12 +4,6 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.mockk.clearMocks
-import io.mockk.every
-import io.mockk.mockk
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiEnhetUrlPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
@@ -34,7 +28,6 @@ class GetDialogmoteEnhetApiV2Test {
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
     private val database = externalMockEnvironment.database
 
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
     private val urlEnhetAccess = "$dialogmoteApiV2Basepath$dialogmoteApiEnhetUrlPath/${ENHET_NR.value}"
     private val urlEnhetAccessIncludeHistoriske = "$urlEnhetAccess?inkluderHistoriske=true"
@@ -47,13 +40,7 @@ class GetDialogmoteEnhetApiV2Test {
 
     @BeforeEach
     fun setup() {
-        val altinnResponse = ReceiptExternal()
-        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-        clearMocks(altinnMock)
-        every {
-            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-        } returns altinnResponse
         database.dropData()
     }
 
@@ -66,7 +53,6 @@ class GetDialogmoteEnhetApiV2Test {
         fun `should return DialogmoteList with unfinished dialogmote if request is successful`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                 )
                 client.postMote(validTokenV2, newDialogmoteDTO)
 
@@ -127,7 +113,6 @@ class GetDialogmoteEnhetApiV2Test {
         fun `should return DialogmoteList with all dialogmoter if request with inkluderHistoriske parameter is successful`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                 )
                 client.postMote(validTokenV2, newDialogmoteDTO)
 
@@ -173,7 +158,6 @@ class GetDialogmoteEnhetApiV2Test {
         fun `should return status Unauthorized if no token is supplied`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                 )
                 val response = client.get(urlEnhetAccess)
                 assertEquals(HttpStatusCode.Unauthorized, response.status)

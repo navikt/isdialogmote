@@ -5,9 +5,6 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.AvventDTO
 import no.nav.syfo.api.dto.CreateAvventDTO
 import no.nav.syfo.api.dto.DialogmoteDTO
@@ -52,7 +49,6 @@ class PostDialogmoteApiV2Test {
     private val esyfovarselHendelse = generateInkallingHendelse()
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
 
     private val dialogmeldingClient = mockk<DialogmeldingClient>(relaxed = true)
     private val behandlerVarselService = BehandlerVarselService(
@@ -76,17 +72,11 @@ class PostDialogmoteApiV2Test {
     fun setup() {
         database.dropData()
 
-        val altinnResponse = ReceiptExternal()
-        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
         clearMocks(behandlerDialogmeldingProducer)
         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-        clearMocks(altinnMock)
         clearMocks(esyfovarselProducerMock)
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-        every {
-            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-        } returns altinnResponse
     }
 
     @AfterEach
@@ -108,20 +98,10 @@ class PostDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)
                 verify(exactly = 1) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-                verify(exactly = 0) {
-                    altinnMock.insertCorrespondenceBasicV2(
-                        any(),
-                        any(),
-                        any(),
-                        any(),
-                        any()
-                    )
-                }
 
                 val response = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR)
                 assertEquals(HttpStatusCode.OK, response.status)
@@ -198,7 +178,6 @@ class PostDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)
@@ -245,7 +224,6 @@ class PostDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)
@@ -320,21 +298,11 @@ class PostDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)
                 verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
                 clearMocks(esyfovarselProducerMock)
-                verify(exactly = 0) {
-                    altinnMock.insertCorrespondenceBasicV2(
-                        any(),
-                        any(),
-                        any(),
-                        any(),
-                        any()
-                    )
-                }
             }
         }
 
@@ -352,7 +320,6 @@ class PostDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
 
@@ -387,7 +354,6 @@ class PostDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)
@@ -402,7 +368,6 @@ class PostDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)
@@ -428,7 +393,6 @@ class PostDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val response = client.post(url)
@@ -447,7 +411,6 @@ class PostDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val response = client.post(urlMotePersonIdent) {
@@ -468,7 +431,6 @@ class PostDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
 
@@ -491,7 +453,6 @@ class PostDialogmoteApiV2Test {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val response = client.postMote(validToken, newDialogmoteDTO)
