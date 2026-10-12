@@ -20,7 +20,14 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenClient
+import no.nav.syfo.infrastructure.client.dokumentporten.DokumentportenDocumentRequestDTO
 import no.nav.syfo.infrastructure.client.ereg.EregClient
+import no.nav.syfo.infrastructure.client.ereg.EregVirksomhetsnavn
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import kotlin.test.assertNotNull
 
 class VarselServiceTest {
 
@@ -94,7 +101,15 @@ class VarselServiceTest {
                 callId = "callId",
             )
 
-            coVerify(exactly = 1) { dokumentportenClient.sendDocument(any(), any(), any()) }
+            val documentSlot = slot<DokumentportenDocumentRequestDTO>()
+            coVerify(exactly = 1) { dokumentportenClient.sendDocument(capture(documentSlot), "token", "callId") }
+            val document = documentSlot.captured
+            assertEquals(virksomhetsbrevId, document.documentId)
+            assertEquals(VIRKSOMHETSNUMMER_HAS_NARMESTELEDER.value, document.orgNumber)
+            assertEquals(UserConstants.ARBEIDSTAKER_FNR.value, document.fnr)
+            assertArrayEquals(virksomhetsPdf, document.content)
+            assertNull(document.varselInstruks)
+            coVerify(exactly = 0) { eregClient.organisasjonVirksomhetsnavn(any()) }
             verify(exactly = 1) {
                 narmesteLederVarselService.sendVarsel(
                     narmesteLeder,
@@ -106,7 +121,7 @@ class VarselServiceTest {
     }
 
     @Test
-    fun `don't send varsel when no nærmeste leder`() {
+    fun `send to Dokumentporten with varselInstruks and don't send varsel to nærmeste leder when no nærmeste leder`() {
         coEvery {
             oppfolgingstilfelleClient.oppfolgingstilfellePerson(
                 any(),
@@ -114,6 +129,8 @@ class VarselServiceTest {
                 any()
             )
         } returns anyOppfolgingstilfelle
+        coEvery { eregClient.organisasjonVirksomhetsnavn(VIRKSOMHETSNUMMER_NO_NARMESTELEDER) } returns
+            EregVirksomhetsnavn(virksomhetsnavn = "Virksomhet AS")
         val virksomhetsbrevId = UUID.randomUUID()
         val virksomhetsPdf = byteArrayOf(0x2E, 0x38)
 
@@ -140,6 +157,14 @@ class VarselServiceTest {
                 callId = "callId",
             )
 
+            val documentSlot = slot<DokumentportenDocumentRequestDTO>()
+            coVerify(exactly = 1) { dokumentportenClient.sendDocument(capture(documentSlot), "token", "callId") }
+            val document = documentSlot.captured
+            assertEquals(virksomhetsbrevId, document.documentId)
+            assertEquals(VIRKSOMHETSNUMMER_NO_NARMESTELEDER.value, document.orgNumber)
+            val varselInstruks = assertNotNull(document.varselInstruks)
+            assertTrue(varselInstruks.notifikasjonInnhold.epostTittel.contains("Virksomhet AS"))
+            coVerify(exactly = 1) { eregClient.organisasjonVirksomhetsnavn(VIRKSOMHETSNUMMER_NO_NARMESTELEDER) }
             verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), any()) }
         }
     }
@@ -173,6 +198,7 @@ class VarselServiceTest {
                 callId = "callId",
             )
 
+            coVerify(exactly = 1) { dokumentportenClient.sendDocument(any(), any(), any()) }
             verify(exactly = 0) { narmesteLederVarselService.sendVarsel(any(), any(), any()) }
         }
     }
