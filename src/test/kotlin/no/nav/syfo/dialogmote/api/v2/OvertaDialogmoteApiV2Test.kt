@@ -34,7 +34,6 @@ class OvertaDialogmoteApiV2Test {
     private val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
-
     private val validTokenV2 = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
         externalMockEnvironment.wellKnownVeilederV2.issuer,
@@ -53,7 +52,6 @@ class OvertaDialogmoteApiV2Test {
     @BeforeEach
     fun setup() {
         database.dropData()
-
 
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
     }

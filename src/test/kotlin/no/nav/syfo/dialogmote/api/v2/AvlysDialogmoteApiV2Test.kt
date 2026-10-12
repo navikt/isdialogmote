@@ -46,7 +46,6 @@ class AvlysDialogmoteApiV2Test {
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
     private val moteStatusEndretRepository = MoteStatusEndretRepository(database)
 
-
     private val validToken = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
         externalMockEnvironment.wellKnownVeilederV2.issuer,

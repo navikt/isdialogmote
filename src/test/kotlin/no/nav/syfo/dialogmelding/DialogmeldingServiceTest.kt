@@ -45,7 +45,6 @@ class DialogmeldingServiceTest {
         behandlerVarselService = behandlerVarselService
     )
 
-
     private val validToken = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
         externalMockEnvironment.wellKnownVeilederV2.issuer,

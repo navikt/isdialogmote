@@ -60,8 +60,6 @@ class PublishDialogmoteStatusEndringCronjobTest {
         justRun { behandlerDialogmeldingProducer.sendDialogmelding(dialogmelding = any()) }
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
         justRun { dialogmoteStatusEndringProducer.sendDialogmoteStatusEndring(any()) }
-
-
     }
 
     @AfterEach

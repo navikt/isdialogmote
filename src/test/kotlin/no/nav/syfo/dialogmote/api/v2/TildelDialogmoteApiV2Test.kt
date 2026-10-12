@@ -30,7 +30,6 @@ class TildelDialogmoteApiV2Test {
     private val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
-
     private val veilederCallerIdent = UserConstants.VEILEDER_IDENT
     private val veilederIdentTildelesMoter = UserConstants.VEILEDER_IDENT_2
     private val veilederCallerToken = generateJWTNavIdent(
@@ -46,7 +45,6 @@ class TildelDialogmoteApiV2Test {
 
     @BeforeEach
     fun beforeEach() {
-
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
     }
 

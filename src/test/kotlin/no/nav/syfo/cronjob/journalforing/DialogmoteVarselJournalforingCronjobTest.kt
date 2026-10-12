@@ -94,8 +94,6 @@ class DialogmoteVarselJournalforingCronjobTest {
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
         justRun { behandlerDialogmeldingProducer.sendDialogmelding(dialogmelding = any()) }
 
-
-
         dokarkivClient = DokarkivClient(
             azureAdV2Client = azureAdV2Client,
             dokarkivClientId = externalMockEnvironment.environment.dokarkivClientId,

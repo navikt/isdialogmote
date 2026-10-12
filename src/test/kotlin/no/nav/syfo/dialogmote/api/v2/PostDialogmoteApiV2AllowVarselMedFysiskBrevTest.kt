@@ -52,8 +52,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
         fun setup() {
             database.dropData()
 
-
-
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
         }
 

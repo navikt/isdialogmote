@@ -43,7 +43,6 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
 
     private val pdfRepository = externalMockEnvironment.pdfRepository
 
-
     private val validToken = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
         externalMockEnvironment.wellKnownVeilederV2.issuer,
@@ -53,7 +52,6 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
     @BeforeEach
     fun setup() {
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-
     }
 
     @AfterEach

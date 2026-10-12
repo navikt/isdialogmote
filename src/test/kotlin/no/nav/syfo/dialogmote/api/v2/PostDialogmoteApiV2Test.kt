@@ -49,7 +49,6 @@ class PostDialogmoteApiV2Test {
     private val esyfovarselHendelse = generateInkallingHendelse()
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
-
     private val dialogmeldingClient = mockk<DialogmeldingClient>(relaxed = true)
     private val behandlerVarselService = BehandlerVarselService(
         database = database,
@@ -71,7 +70,6 @@ class PostDialogmoteApiV2Test {
     @BeforeEach
     fun setup() {
         database.dropData()
-
 
         clearMocks(behandlerDialogmeldingProducer)
         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }

@@ -33,7 +33,6 @@ class GetDialogmoteApiV2Test {
     private val esyfovarselHendelse = generateInkallingHendelse()
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
-
     private val urlMote = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
     private val urlMoteVeilederIdent = "$dialogmoteApiV2Basepath$dialogmoteApiVeilederIdentUrlPath"
     private val validToken = generateJWTNavIdent(
@@ -53,8 +52,6 @@ class GetDialogmoteApiV2Test {
         @BeforeEach
         fun setup() {
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-
-
         }
 
         @AfterEach

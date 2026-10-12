@@ -84,10 +84,8 @@ class DialogmoteOutdatedCronjobTest {
 
     @BeforeEach
     fun beforeEach() {
-
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
         justRun { behandlerDialogmeldingProducer.sendDialogmelding(dialogmelding = any()) }
-
     }
 
     @AfterEach

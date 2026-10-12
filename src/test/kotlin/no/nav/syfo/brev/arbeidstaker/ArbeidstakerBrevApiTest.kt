@@ -67,7 +67,6 @@ class ArbeidstakerBrevApiTest {
     private val esyfovarselProducer = mockk<EsyfovarselProducer>(relaxed = true)
     private val esyfovarselHendelse = mockk<ArbeidstakerHendelse>(relaxed = true)
 
-
     private val dialogmotestatusService = DialogmotestatusService(
         oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
         moteStatusEndretRepository = MoteStatusEndretRepository(database),
@@ -106,8 +105,7 @@ class ArbeidstakerBrevApiTest {
         fun `should return OK if request is successful`() {
             testApplication {
                 val createdArbeidstakerBrevUUID: String
-                val client = setupApiAndClient(
-                )
+                val client = setupApiAndClient()
                 client.postMote(validTokenVeileder, newDialogmoteDTO)
                 verify(exactly = 0) { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
                 clearMocks(esyfovarselProducer)
@@ -261,8 +259,7 @@ class ArbeidstakerBrevApiTest {
         fun `should return OK if request is successful`() {
             testApplication {
                 val createdArbeidstakerBrevUUID: String
-                val client = setupApiAndClient(
-                )
+                val client = setupApiAndClient()
                 client.postMote(validTokenVeileder, newDialogmoteDTO)
 
                 client.get(urlArbeidstakerMoterList) {
@@ -395,8 +392,7 @@ class ArbeidstakerBrevApiTest {
             testApplication {
                 var createdDialogmoteUUID = ""
                 var createdDialogmoteDeltakerArbeidstakerUUID = ""
-                val client = setupApiAndClient(
-                )
+                val client = setupApiAndClient()
 
                 for (dialogmoteDTO in dialogmoteDTOList) {
                     client.postMote(validTokenVeileder, dialogmoteDTO)
@@ -603,8 +599,7 @@ class ArbeidstakerBrevApiTest {
         @Test
         fun `should return Forbidden when bearer header contains token for unauthorized person`() {
             testApplication {
-                val client = setupApiAndClient(
-                )
+                val client = setupApiAndClient()
                 val createdDialogmoteUUID = client.postAndGetDialogmote(validTokenVeileder, newDialogmoteInnkalt).uuid
                 val createdArbeidstakerBrevUUID: String
 

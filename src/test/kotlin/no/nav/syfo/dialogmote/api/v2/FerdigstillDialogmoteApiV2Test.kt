@@ -47,7 +47,6 @@ class FerdigstillDialogmoteApiV2Test {
     )
     private val pdfRepository = externalMockEnvironment.pdfRepository
 
-
     private val validToken = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
         externalMockEnvironment.wellKnownVeilederV2.issuer,
@@ -57,7 +56,6 @@ class FerdigstillDialogmoteApiV2Test {
     @BeforeEach
     fun setup() {
         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-
     }
 
     @AfterEach

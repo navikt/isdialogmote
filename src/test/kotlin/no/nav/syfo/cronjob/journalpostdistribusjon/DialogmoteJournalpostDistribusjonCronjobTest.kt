@@ -37,7 +37,6 @@ class DialogmoteJournalpostDistribusjonCronjobTest {
     private val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
-
     private val dialogmotedeltakerVarselJournalpostService =
         DialogmotedeltakerVarselJournalpostService(
             database = database,
