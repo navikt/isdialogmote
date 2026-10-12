@@ -4,13 +4,8 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.mockk.clearMocks
-import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.dto.OvertaDialogmoterDTO
 import no.nav.syfo.api.endpoints.dialogmoteActionsApiOvertaPath
@@ -39,8 +34,6 @@ class OvertaDialogmoteApiV2Test {
     private val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
-
     private val validTokenV2 = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
         externalMockEnvironment.wellKnownVeilederV2.issuer,
@@ -60,14 +53,7 @@ class OvertaDialogmoteApiV2Test {
     fun setup() {
         database.dropData()
 
-        val altinnResponse = ReceiptExternal()
-        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
-
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-        clearMocks(altinnMock)
-        every {
-            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-        } returns altinnResponse
     }
 
     @Nested
@@ -78,7 +64,6 @@ class OvertaDialogmoteApiV2Test {
             testApplication {
                 val createdDialogmoterUuids = mutableListOf<String>()
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 client.postMote(validTokenV2, newDialogmoteDTO)
@@ -123,7 +108,6 @@ class OvertaDialogmoteApiV2Test {
         fun `should return status Unauthorized if no token is supplied`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 val response = client.post(urlOvertaMoter)
@@ -135,7 +119,6 @@ class OvertaDialogmoteApiV2Test {
         fun `should return status Bad Request if no dialogmoteUuids supplied`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 val response = client.post(urlOvertaMoter) {
@@ -163,7 +146,6 @@ class OvertaDialogmoteApiV2Test {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 client.post(urlOvertaMoter) {
@@ -181,7 +163,6 @@ class OvertaDialogmoteApiV2Test {
             testApplication {
                 val createdDialogmoterUuids = mutableListOf<String>()
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 client.postMote(validTokenV2AnnenVeileder, newDialogmoteDTO)

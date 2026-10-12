@@ -85,7 +85,6 @@ spec:
         - host: "ereg-services.prod-fss-pub.nais.io"
         - host: "pdl-api.prod-fss-pub.nais.io"
         - host: "dokarkiv.prod-fss-pub.nais.io"
-        - host: "www.altinn.no"
       rules:
         - application: digdir-krr-proxy
           namespace: team-rocket
@@ -114,7 +113,6 @@ spec:
     enabled: true
   envFrom:
     - secret: isdialogmote-serviceuser
-    - secret: isdialogmote-altinnuser
   kafka:
     pool: nav-prod
   env:
@@ -160,15 +158,9 @@ spec:
       value: "http://syfomotebehov.team-esyfo"
     - name: SYFOMOTEBEHOV_CLIENT_ID
       value: "prod-gcp.team-esyfo.syfomotebehov"
-    - name: ALTINN_WS_URL
-      value: "https://www.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternalBasic.svc"
     - name: OUTDATED_DIALOGMOTE_CUTOFF_MONTHS
       value: "9"
-    - name: ALTINN_SENDING_ENABLED
-      value: "false"
     - name: DOKUMENTPORTEN_URL
       value: http://syfo-dokumentporten.team-esyfo
     - name: DOKUMENTPORTEN_CLIENT_ID
       value: prod-gcp.team-esyfo.syfo-dokumentporten
-    - name: DOKUMENTPORTEN_SENDING_ENABLED
-      value: "true"

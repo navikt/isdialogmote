@@ -5,9 +5,6 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
@@ -46,8 +43,6 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
 
     private val pdfRepository = externalMockEnvironment.pdfRepository
 
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
-
     private val validToken = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
         externalMockEnvironment.wellKnownVeilederV2.issuer,
@@ -57,13 +52,6 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
     @BeforeEach
     fun setup() {
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-        val altinnResponse = ReceiptExternal()
-        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
-
-        clearMocks(altinnMock)
-        every {
-            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-        } returns altinnResponse
     }
 
     @AfterEach
@@ -82,7 +70,6 @@ class FerdigstillDialogmoteApiV2AllowVarselMedFysiskBrevTest {
             testApplication {
                 val createdDialogmoteUUID: String
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)

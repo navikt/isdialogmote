@@ -6,9 +6,6 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.dto.EndreTidStedBegrunnelseDTO
 import no.nav.syfo.api.dto.EndretTidStedDTO
@@ -59,9 +56,6 @@ class PostDialogmoteTidStedApiV2Test {
         behandlerVarselService = behandlerVarselService
     )
 
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
-    private val altinnResponse = ReceiptExternal()
-
     private val validToken = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
         externalMockEnvironment.wellKnownVeilederV2.issuer,
@@ -70,14 +64,9 @@ class PostDialogmoteTidStedApiV2Test {
 
     @BeforeEach
     fun setup() {
-        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(any()) }
 
         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-        clearMocks(altinnMock)
-        every {
-            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-        } returns altinnResponse
     }
 
     @AfterEach
@@ -99,7 +88,6 @@ class PostDialogmoteTidStedApiV2Test {
 
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
 
@@ -192,7 +180,7 @@ class PostDialogmoteTidStedApiV2Test {
                 assertNull(arbeidsgiverVarselDTO?.lestDato)
                 assertEquals("begrunnelse arbeidsgiver", arbeidsgiverVarselDTO?.fritekst)
                 assertFalse(arbeidsgiverVarselDTO?.document?.isEmpty()!!)
-                assertEquals(listOf("dokumenttekst arbeidsgiver"), arbeidsgiverVarselDTO?.document?.first()?.texts)
+                assertEquals(listOf("dokumenttekst arbeidsgiver"), arbeidsgiverVarselDTO.document.first().texts)
 
                 assertEquals(newDialogmoteTidSted.sted, dialogmoteDTO.sted)
                 assertEquals("https://meet.google.com/zyx", dialogmoteDTO.videoLink)
@@ -226,7 +214,6 @@ class PostDialogmoteTidStedApiV2Test {
                 val createdDialogmoteUUID: String
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO).apply {
@@ -348,7 +335,7 @@ class PostDialogmoteTidStedApiV2Test {
                         kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent
                     )
                     assertEquals(
-                        createdDialogmote.behandler!!.varselList[1].uuid,
+                        createdDialogmote.behandler.varselList[1].uuid,
                         kafkaBehandlerDialogmeldingDTO.dialogmeldingRefConversation
                     )
                     assertNotNull(kafkaBehandlerDialogmeldingDTO.dialogmeldingVedlegg)
@@ -357,10 +344,6 @@ class PostDialogmoteTidStedApiV2Test {
                 justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselEndringHendelse) }
 
                 justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
-                clearMocks(altinnMock)
-                every {
-                    altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-                } returns altinnResponse
 
                 // Ny endring, etter svar fra behandler
                 val innkallingMoterespons = generateInnkallingMoterespons(
@@ -375,7 +358,7 @@ class PostDialogmoteTidStedApiV2Test {
                     personIdentPasient = ARBEIDSTAKER_FNR,
                     personIdentBehandler = BEHANDLER_FNR,
                     conversationRef = createdDialogmote.behandler!!.varselList[1].uuid,
-                    parentRef = createdDialogmote.behandler!!.varselList[0].uuid,
+                    parentRef = createdDialogmote.behandler.varselList[0].uuid,
                     innkallingMoterespons = innkallingMoterespons,
                 )
                 dialogmeldingService.handleDialogmelding(dialogmeldingDTO)
@@ -446,7 +429,6 @@ class PostDialogmoteTidStedApiV2Test {
                 val createdDialogmoteUUID: String
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO).apply {

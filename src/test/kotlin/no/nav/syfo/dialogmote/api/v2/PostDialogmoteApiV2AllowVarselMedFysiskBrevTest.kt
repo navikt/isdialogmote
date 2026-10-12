@@ -4,9 +4,6 @@ import io.ktor.client.call.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.domain.dialogmote.DocumentComponentType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
@@ -38,7 +35,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
     private val database = externalMockEnvironment.database
     private val moteStatusEndretRepository = MoteStatusEndretRepository(database)
 
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
     private val esyfovarselHendelse = generateInkallingHendelse()
 
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
@@ -56,14 +52,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
         fun setup() {
             database.dropData()
 
-            val altinnResponse = ReceiptExternal()
-            altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
-
-            clearMocks(altinnMock)
-            every {
-                altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-            } returns altinnResponse
-
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
         }
 
@@ -77,7 +65,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 client.postMote(validToken, newDialogmoteDTO)
@@ -173,7 +160,6 @@ class PostDialogmoteApiV2AllowVarselMedFysiskBrevTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock
                 )
                 val dialogmoteDTO =

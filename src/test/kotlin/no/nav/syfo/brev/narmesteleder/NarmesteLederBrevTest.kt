@@ -8,9 +8,6 @@ import io.ktor.server.testing.*
 import io.ktor.utils.io.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.*
@@ -51,7 +48,6 @@ class NarmesteLederBrevTest {
     private val esyfovarselProducer = mockk<EsyfovarselProducer>()
     private val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
     private val arbeidstakerVarselService = ArbeidstakerVarselService(
         esyfovarselProducer = esyfovarselProducer,
     )
@@ -68,15 +64,9 @@ class NarmesteLederBrevTest {
     @BeforeEach
     fun beforeEach() {
         database.dropData()
-        val altinnResponse = ReceiptExternal()
-        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
 
-        clearMocks(altinnMock)
-        every {
-            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-        } returns altinnResponse
         // Add dummy deltakere so that id for deltaker and mote does not match by accident
         database.addDummyDeltakere()
     }
@@ -112,7 +102,6 @@ class NarmesteLederBrevTest {
                 var createdDialogmoteUUID: String
                 var createdDialogmoteDeltakerArbeidsgiverUUID: String
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validTokenVeileder, newDialogmoteDTO)
@@ -373,7 +362,6 @@ class NarmesteLederBrevTest {
         fun `Same narmesteleder and arbeidstaker, different virksomhet`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validTokenVeileder, newDialogmoteDTO)
@@ -413,7 +401,6 @@ class NarmesteLederBrevTest {
         fun `Return OK and empty brevlist when no brev exists`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val response = client.get(narmesteLederBrevApiBasePath) {
@@ -433,7 +420,6 @@ class NarmesteLederBrevTest {
         fun `Return OK and empty brevlist when only brev from lukket mote exists`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val createdDialogmoteUUID: String =
@@ -480,7 +466,6 @@ class NarmesteLederBrevTest {
             )
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
 

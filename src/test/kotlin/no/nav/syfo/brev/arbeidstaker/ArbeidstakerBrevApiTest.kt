@@ -7,14 +7,10 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.ktor.utils.io.*
 import io.mockk.clearMocks
-import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.arbeidstakerBrevApiLesPath
 import no.nav.syfo.api.endpoints.arbeidstakerBrevApiPath
@@ -71,8 +67,6 @@ class ArbeidstakerBrevApiTest {
     private val esyfovarselProducer = mockk<EsyfovarselProducer>(relaxed = true)
     private val esyfovarselHendelse = mockk<ArbeidstakerHendelse>(relaxed = true)
 
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>(relaxed = true)
-
     private val dialogmotestatusService = DialogmotestatusService(
         oppfolgingstilfelleClient = externalMockEnvironment.oppfolgingstilfelleClient,
         moteStatusEndretRepository = MoteStatusEndretRepository(database),
@@ -92,13 +86,8 @@ class ArbeidstakerBrevApiTest {
     @BeforeEach
     fun setup() {
         database.dropData()
-        val altinnResponse = ReceiptExternal()
-        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
 
-        clearMocks(altinnMock, esyfovarselProducer, esyfovarselHendelse)
-        every {
-            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-        } returns altinnResponse
+        clearMocks(esyfovarselProducer, esyfovarselHendelse)
 
         justRun { esyfovarselProducer.sendVarselToEsyfovarsel(any()) }
         justRun { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
@@ -116,9 +105,7 @@ class ArbeidstakerBrevApiTest {
         fun `should return OK if request is successful`() {
             testApplication {
                 val createdArbeidstakerBrevUUID: String
-                val client = setupApiAndClient(
-                    altinnMock = altinnMock,
-                )
+                val client = setupApiAndClient()
                 client.postMote(validTokenVeileder, newDialogmoteDTO)
                 verify(exactly = 0) { esyfovarselProducer.sendVarselToEsyfovarsel(esyfovarselHendelse) }
                 clearMocks(esyfovarselProducer)
@@ -272,9 +259,7 @@ class ArbeidstakerBrevApiTest {
         fun `should return OK if request is successful`() {
             testApplication {
                 val createdArbeidstakerBrevUUID: String
-                val client = setupApiAndClient(
-                    altinnMock = altinnMock,
-                )
+                val client = setupApiAndClient()
                 client.postMote(validTokenVeileder, newDialogmoteDTO)
 
                 client.get(urlArbeidstakerMoterList) {
@@ -407,9 +392,7 @@ class ArbeidstakerBrevApiTest {
             testApplication {
                 var createdDialogmoteUUID = ""
                 var createdDialogmoteDeltakerArbeidstakerUUID = ""
-                val client = setupApiAndClient(
-                    altinnMock = altinnMock,
-                )
+                val client = setupApiAndClient()
 
                 for (dialogmoteDTO in dialogmoteDTOList) {
                     client.postMote(validTokenVeileder, dialogmoteDTO)
@@ -616,9 +599,7 @@ class ArbeidstakerBrevApiTest {
         @Test
         fun `should return Forbidden when bearer header contains token for unauthorized person`() {
             testApplication {
-                val client = setupApiAndClient(
-                    altinnMock = altinnMock,
-                )
+                val client = setupApiAndClient()
                 val createdDialogmoteUUID = client.postAndGetDialogmote(validTokenVeileder, newDialogmoteInnkalt).uuid
                 val createdArbeidstakerBrevUUID: String
 

@@ -5,9 +5,6 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiPersonIdentUrlPath
@@ -36,8 +33,6 @@ class GetDialogmoteApiV2Test {
     private val esyfovarselHendelse = generateInkallingHendelse()
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
-
     private val urlMote = "$dialogmoteApiV2Basepath$dialogmoteApiPersonIdentUrlPath"
     private val urlMoteVeilederIdent = "$dialogmoteApiV2Basepath$dialogmoteApiVeilederIdentUrlPath"
     private val validToken = generateJWTNavIdent(
@@ -57,14 +52,6 @@ class GetDialogmoteApiV2Test {
         @BeforeEach
         fun setup() {
             justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-
-            val altinnResponse = ReceiptExternal()
-            altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
-
-            clearMocks(altinnMock)
-            every {
-                altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-            } returns altinnResponse
         }
 
         @AfterEach
@@ -78,7 +65,6 @@ class GetDialogmoteApiV2Test {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)
@@ -113,7 +99,6 @@ class GetDialogmoteApiV2Test {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)
@@ -123,7 +108,6 @@ class GetDialogmoteApiV2Test {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, generateNewDialogmoteDTO(ARBEIDSTAKER_ANNEN_FNR))
@@ -161,7 +145,6 @@ class GetDialogmoteApiV2Test {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val response = client.get(urlMoteVeilederIdent) {
@@ -186,7 +169,6 @@ class GetDialogmoteApiV2Test {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)
@@ -219,7 +201,6 @@ class GetDialogmoteApiV2Test {
         fun `veileder med lesetilgang kan hente dialogmoter`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val response = client.get(urlMote) {
@@ -243,7 +224,6 @@ class GetDialogmoteApiV2Test {
         fun `should return status Unauthorized if no token is supplied`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val response = client.get(urlMote)
@@ -257,7 +237,6 @@ class GetDialogmoteApiV2Test {
         fun `veilederident should return status Unauthorized if no token is supplied`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val response = client.get(urlMoteVeilederIdent)
@@ -282,7 +261,6 @@ class GetDialogmoteApiV2Test {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val response = client.get(urlMoteVeilederIdent) {
@@ -301,7 +279,6 @@ class GetDialogmoteApiV2Test {
         fun `should return status BadRequest if no NAV_PERSONIDENT_HEADER is supplied`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val response = client.get(urlMote) {
@@ -317,7 +294,6 @@ class GetDialogmoteApiV2Test {
         fun `should return status BadRequest if NAV_PERSONIDENT_HEADER with invalid Personident is supplied`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val response = client.get(urlMote) {
@@ -334,7 +310,6 @@ class GetDialogmoteApiV2Test {
         fun `should return status Forbidden if denied access to person`() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 val response = client.get(urlMote) {

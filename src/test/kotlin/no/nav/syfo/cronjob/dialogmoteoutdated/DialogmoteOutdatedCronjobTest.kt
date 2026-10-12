@@ -4,14 +4,9 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.mockk.clearMocks
-import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteAvlysPath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
@@ -52,7 +47,6 @@ class DialogmoteOutdatedCronjobTest {
 
     private val externalMockEnvironment = ExternalMockEnvironment.getInstance()
     private val database = externalMockEnvironment.database
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
     private val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
     private val behandlerDialogmeldingProducer = mockk<BehandlerDialogmeldingProducer>()
@@ -90,16 +84,8 @@ class DialogmoteOutdatedCronjobTest {
 
     @BeforeEach
     fun beforeEach() {
-        val altinnResponse = ReceiptExternal()
-        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
-
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
         justRun { behandlerDialogmeldingProducer.sendDialogmelding(dialogmelding = any()) }
-
-        clearMocks(altinnMock)
-        every {
-            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-        } returns altinnResponse
     }
 
     @AfterEach
@@ -116,7 +102,6 @@ class DialogmoteOutdatedCronjobTest {
         testApplication {
             val client = setupApiAndClient(
                 behandlerVarselService = behandlerVarselService,
-                altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock
             )
             client.postMote(validToken, newDialogmoteDTO)
@@ -150,7 +135,6 @@ class DialogmoteOutdatedCronjobTest {
         testApplication {
             val client = setupApiAndClient(
                 behandlerVarselService = behandlerVarselService,
-                altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock
             )
             val createdDialogmoteUUID = client.postAndGetDialogmote(validToken, newDialogmoteDTO).uuid
@@ -197,7 +181,6 @@ class DialogmoteOutdatedCronjobTest {
         testApplication {
             val client = setupApiAndClient(
                 behandlerVarselService = behandlerVarselService,
-                altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock
             )
             client.postMote(validToken, newDialogmoteDTO)
@@ -230,7 +213,6 @@ class DialogmoteOutdatedCronjobTest {
         testApplication {
             val client = setupApiAndClient(
                 behandlerVarselService = behandlerVarselService,
-                altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock
             )
 
@@ -274,7 +256,6 @@ class DialogmoteOutdatedCronjobTest {
         testApplication {
             val client = setupApiAndClient(
                 behandlerVarselService = behandlerVarselService,
-                altinnMock = altinnMock,
                 esyfovarselProducer = esyfovarselProducerMock
             )
             val createdDialogmoteUUID = client.postAndGetDialogmote(validToken, newDialogmoteDTO).uuid

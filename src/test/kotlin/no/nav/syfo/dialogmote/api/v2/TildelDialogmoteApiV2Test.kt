@@ -4,13 +4,8 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.mockk.clearMocks
-import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.dto.TildelDialogmoterDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiEnhetUrlPath
@@ -35,8 +30,6 @@ class TildelDialogmoteApiV2Test {
     private val esyfovarselHendelse = mockk<NarmesteLederHendelse>(relaxed = true)
     private val esyfovarselProducerMock = mockk<EsyfovarselProducer>(relaxed = true)
 
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
-
     private val veilederCallerIdent = UserConstants.VEILEDER_IDENT
     private val veilederIdentTildelesMoter = UserConstants.VEILEDER_IDENT_2
     private val veilederCallerToken = generateJWTNavIdent(
@@ -52,14 +45,7 @@ class TildelDialogmoteApiV2Test {
 
     @BeforeEach
     fun beforeEach() {
-        val altinnResponse = ReceiptExternal()
-        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
-
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-        clearMocks(altinnMock)
-        every {
-            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-        } returns altinnResponse
     }
 
     @AfterEach
@@ -79,7 +65,6 @@ class TildelDialogmoteApiV2Test {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
 

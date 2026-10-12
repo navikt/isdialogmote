@@ -1,13 +1,10 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
-import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
 
 group = "no.nav.syfo"
 version = "1.0.0"
 
 val isyfoBackendCommonVersion = "1.3.2"
 
-val altinnCorrespondenceAgencyExternalVersion = "1.2021.02.22-10.45-4201aaea72fb"
-val cxfVersion = "3.6.12"
 val confluentVersion = "8.2.0"
 val flywayVersion = "13.8.0"
 val hikariVersion = "7.1.0"
@@ -20,7 +17,6 @@ val kafkaVersion = "4.3.1"
 val ktorVersion = "3.6.0"
 val jaxbApiVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.3.6"
-val jaxsWsApiVersion = "2.3.1"
 val logbackVersion = "1.6.4"
 val logstashEncoderVersion = "9.0"
 val micrometerRegistryVersion = "1.17.1"
@@ -109,22 +105,6 @@ dependencies {
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation(kotlin("test"))
-
-    // Soap
-    implementation("no.nav.tjenestespesifikasjoner:altinn-correspondence-agency-external-basic:$altinnCorrespondenceAgencyExternalVersion")
-    implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion", exclusions)
-    implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion", exclusions)
-    implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion", exclusions)
-    implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion", exclusions)
-    implementation("javax.xml.ws:jaxws-api:$jaxsWsApiVersion")
-    constraints {
-        implementation("commons-collections:commons-collections") {
-            because("org.apache.cxf:cxf-rt-ws-security:$cxfVersion -> commons-collections:commons-collections:3.2.1 -> https://www.cve.org/CVERecord?id=CVE-2015-6420")
-            version {
-                require("3.2.2")
-            }
-        }
-    }
 }
 
 kotlin {
@@ -142,10 +122,6 @@ tasks {
         archiveBaseName.set("app")
         archiveClassifier.set("")
         archiveVersion.set("")
-        transform(ServiceFileTransformer::class.java) {
-            setPath("META-INF/cxf")
-            include("bus-extensions.txt")
-        }
     }
 
     test {

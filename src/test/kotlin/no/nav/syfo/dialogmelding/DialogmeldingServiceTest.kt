@@ -4,13 +4,8 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.mockk.clearMocks
-import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptExternal
-import no.altinn.schemas.services.intermediary.receipt._2009._10.ReceiptStatusEnum
-import no.altinn.services.serviceengine.correspondence._2009._10.ICorrespondenceAgencyExternalBasic
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteAvlysPath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
@@ -50,9 +45,6 @@ class DialogmeldingServiceTest {
         behandlerVarselService = behandlerVarselService
     )
 
-    private val altinnMock = mockk<ICorrespondenceAgencyExternalBasic>()
-    private val altinnResponse = ReceiptExternal()
-
     private val validToken = generateJWTNavIdent(
         externalMockEnvironment.environment.aadAppClient,
         externalMockEnvironment.wellKnownVeilederV2.issuer,
@@ -61,14 +53,9 @@ class DialogmeldingServiceTest {
 
     @BeforeEach
     fun setup() {
-        altinnResponse.receiptStatusCode = ReceiptStatusEnum.OK
         database.dropData()
         justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(esyfovarselHendelse) }
-        clearMocks(altinnMock)
-        every {
-            altinnMock.insertCorrespondenceBasicV2(any(), any(), any(), any(), any())
-        } returns altinnResponse
     }
 
     @AfterEach
@@ -87,7 +74,6 @@ class DialogmeldingServiceTest {
         fun setupDialogmote() {
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -126,7 +112,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -166,7 +151,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -206,7 +190,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -246,7 +229,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -286,7 +268,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -320,7 +301,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -354,7 +334,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -375,7 +354,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -429,7 +407,6 @@ class DialogmeldingServiceTest {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)
@@ -484,7 +461,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -525,7 +501,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -565,7 +540,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -605,7 +579,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -645,7 +618,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -685,7 +657,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -719,7 +690,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -753,7 +723,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -778,7 +747,6 @@ class DialogmeldingServiceTest {
             testApplication {
                 val client = setupApiAndClient(
                     behandlerVarselService = behandlerVarselService,
-                    altinnMock = altinnMock,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
                 client.postMote(validToken, newDialogmoteDTO)
@@ -799,7 +767,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
@@ -832,7 +799,6 @@ class DialogmeldingServiceTest {
 
             testApplication {
                 val client = setupApiAndClient(
-                    altinnMock = altinnMock,
                     behandlerVarselService = behandlerVarselService,
                     esyfovarselProducer = esyfovarselProducerMock,
                 )
