@@ -5,6 +5,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.api.dto.AvlysningTilMottakereDTO
+import no.nav.syfo.api.dto.EndreDialogmoteDTO
 import no.nav.syfo.api.dto.EndretTidStedDTO
 import no.nav.syfo.api.dto.NewReferatDTO
 import no.nav.syfo.api.dto.OvertaDialogmoterDTO
@@ -29,6 +30,7 @@ const val dialogmoteApiMoteMellomlagrePath = "/mellomlagre"
 const val dialogmoteApiMoteFerdigstillPath = "/ferdigstill"
 const val dialogmoteApiMoteEndreFerdigstiltPath = "/endreferdigstilt"
 const val dialogmoteApiMoteTidStedPath = "/tidsted"
+const val dialogmoteApiMoteEndrePath = "/endre"
 const val dialogmoteActionsApiOvertaPath = "/overta"
 const val dialogmoteTildelPath = "/tildel"
 
@@ -142,6 +144,28 @@ fun Route.registerDialogmoteActionsApiV2(
                     callId = callId,
                     dialogmote = dialogmote,
                     endretTidSted = endreDialogmoteTidSted,
+                    token = authorizedUser.token,
+                )
+                call.respond(HttpStatusCode.OK)
+            }
+        }
+
+        post("/{$dialogmoteApiMoteParam}$dialogmoteApiMoteEndrePath") {
+            val moteUUID = UUID.fromString(call.parameters[dialogmoteApiMoteParam])
+            val endreDialogmote = call.receive<EndreDialogmoteDTO>()
+
+            val dialogmote = dialogmoteService.getDialogmote(moteUUID)
+
+            checkPersonAndSyfoTilgang(
+                action = "Endre Dialogmote for moteUUID",
+                personident = Personident(dialogmote.arbeidstaker.personident.value),
+                tilgangskontrollClient = tilgangskontrollClient,
+                requiresWriteAccess = true,
+            ) { authorizedUser, _, callId ->
+                dialogmoteService.endreMote(
+                    callId = callId,
+                    dialogmote = dialogmote,
+                    endreDialogmote = endreDialogmote,
                     token = authorizedUser.token,
                 )
                 call.respond(HttpStatusCode.OK)

@@ -164,5 +164,6 @@ class DialogmotedeltakerVarselJournalpostService(
         MotedeltakerVarselType.AVLYST,
         MotedeltakerVarselType.INNKALT,
         MotedeltakerVarselType.NYTT_TID_STED,
+        MotedeltakerVarselType.ENDRET,
     )
 }

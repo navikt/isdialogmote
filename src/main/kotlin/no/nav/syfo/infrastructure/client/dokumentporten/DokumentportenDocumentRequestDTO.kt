@@ -104,6 +104,7 @@ data class DokumentportenDocumentRequestDTO(
             return when (this) {
                 MotedeltakerVarselType.INNKALT -> "innkalling til dialogmøte"
                 MotedeltakerVarselType.NYTT_TID_STED -> "endring av dialogmøte"
+                MotedeltakerVarselType.ENDRET -> "endring av dialogmøte"
                 MotedeltakerVarselType.AVLYST -> "avlysning av dialogmøte"
                 MotedeltakerVarselType.REFERAT -> "referat fra dialogmøte"
             }

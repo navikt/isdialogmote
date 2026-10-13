@@ -159,7 +159,7 @@ class BehandlerVarselService(
                 behandlerPersonIdent = behandlerPersonIdent,
                 conversationRef = conversationRef,
             )
-            MotedeltakerVarselType.NYTT_TID_STED -> getBehandlerVarselNyttTidSted(
+            MotedeltakerVarselType.NYTT_TID_STED, MotedeltakerVarselType.ENDRET -> getBehandlerVarselNyttTidSted(
                 arbeidstakerPersonIdent = arbeidstakerPersonIdent,
                 behandlerPersonIdent = behandlerPersonIdent,
                 conversationRef = conversationRef,
@@ -199,11 +199,13 @@ class BehandlerVarselService(
     ): PMotedeltakerBehandlerVarsel? {
         val varselNyttTidStedForParentRef =
             parentRef?.let {
-                database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
-                    varselType = MotedeltakerVarselType.NYTT_TID_STED,
-                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
-                    uuid = it
-                )
+                tidStedVarselTypes.firstNotNullOfOrNull { type ->
+                    database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid(
+                        varselType = type,
+                        arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                        uuid = it
+                    )
+                }
             }
 
         if (varselNyttTidStedForParentRef != null) {
@@ -215,11 +217,13 @@ class BehandlerVarselService(
             conversationRef = conversationRef
         )
         return varselNyttTidStedForConversationRef
-            ?: database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler(
-                varselType = MotedeltakerVarselType.NYTT_TID_STED,
-                arbeidstakerPersonIdent = arbeidstakerPersonIdent,
-                behandlerPersonIdent = behandlerPersonIdent,
-            )
+            ?: tidStedVarselTypes.firstNotNullOfOrNull { type ->
+                database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler(
+                    varselType = type,
+                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                    behandlerPersonIdent = behandlerPersonIdent,
+                )
+            }
     }
 
     private fun getBehandlerVarselNyttTidStedFromConversationRef(
@@ -235,14 +239,19 @@ class BehandlerVarselService(
                 )
             }
 
-        return varselInnkallingForConversationRef?.first?.let {
-            database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId(
-                varselType = MotedeltakerVarselType.NYTT_TID_STED,
-                arbeidstakerPersonIdent = arbeidstakerPersonIdent,
-                moteId = it
-            )
+        return varselInnkallingForConversationRef?.first?.let { moteId ->
+            tidStedVarselTypes.firstNotNullOfOrNull { type ->
+                database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId(
+                    varselType = type,
+                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                    moteId = moteId
+                )
+            }
         }
     }
+
+    // ENDRET is newer than NYTT_TID_STED, so it is tried first to find the latest varsel
+    private val tidStedVarselTypes = listOf(MotedeltakerVarselType.ENDRET, MotedeltakerVarselType.NYTT_TID_STED)
 
     private fun getConversationUuid(varselUuid: UUID, varselInnkallingUuid: UUID?): UUID {
         return varselInnkallingUuid ?: varselUuid

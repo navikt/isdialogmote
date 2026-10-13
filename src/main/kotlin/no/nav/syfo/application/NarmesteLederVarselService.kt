@@ -61,6 +61,7 @@ class NarmesteLederVarselService(
             MotedeltakerVarselType.INNKALT -> HendelseType.NL_DIALOGMOTE_INNKALT
             MotedeltakerVarselType.AVLYST -> HendelseType.NL_DIALOGMOTE_AVLYST
             MotedeltakerVarselType.NYTT_TID_STED -> HendelseType.NL_DIALOGMOTE_NYTT_TID_STED
+            MotedeltakerVarselType.ENDRET -> HendelseType.NL_DIALOGMOTE_ENDRET
             MotedeltakerVarselType.REFERAT -> HendelseType.NL_DIALOGMOTE_REFERAT
         }
     }

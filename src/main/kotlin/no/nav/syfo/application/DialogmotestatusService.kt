@@ -21,6 +21,7 @@ class DialogmotestatusService(
         opprettetAv: String,
         callId: String? = null,
         token: String? = null,
+        isBehandlerMotedeltaker: Boolean = dialogmote.behandler != null,
     ) {
         connection.updateMoteStatus(
             commit = false,
@@ -30,7 +31,9 @@ class DialogmotestatusService(
         createMoteStatusEndring(
             callId = callId,
             connection = connection,
-            dialogmote = dialogmote,
+            dialogmoteId = dialogmote.id,
+            arbeidstakerPersonIdent = dialogmote.arbeidstaker.personident,
+            isBehandlerMotedeltaker = isBehandlerMotedeltaker,
             dialogmoteStatus = newDialogmoteStatus,
             opprettetAv = opprettetAv,
             token = token,

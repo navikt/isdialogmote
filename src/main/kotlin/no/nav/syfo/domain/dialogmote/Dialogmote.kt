@@ -27,7 +27,10 @@ data class Dialogmote(
         INNKALT,
         AVLYST,
         FERDIGSTILT,
+
+        @Deprecated("Use ENDRET")
         NYTT_TID_STED,
+        ENDRET,
         LUKKET,
     }
 
@@ -70,6 +73,19 @@ data class Dialogmote(
         )
     }
 
+    fun endre(): Dialogmote {
+        if (this.status == Status.FERDIGSTILT) {
+            throw ConflictException("Failed to change dialogmote, already Ferdigstilt")
+        }
+        if (this.status == Status.AVLYST) {
+            throw ConflictException("Failed to change dialogmote, already Avlyst")
+        }
+        return this.copy(
+            status = Status.ENDRET,
+            updatedAt = LocalDateTime.now(),
+        )
+    }
+
     fun ferdigstill(): Dialogmote {
         if (this.status == Status.FERDIGSTILT) {
             throw ConflictException("Failed to Ferdigstille Dialogmote, already Ferdigstilt")
@@ -84,7 +100,7 @@ data class Dialogmote(
     }
 
     fun isActive(): Boolean =
-        this.status == Status.INNKALT || this.status == Status.NYTT_TID_STED
+        this.status == Status.INNKALT || this.status == Status.NYTT_TID_STED || this.status == Status.ENDRET
 }
 
 fun List<Dialogmote>.toArbeidstakerBrevDTOList(): List<ArbeidstakerBrevDTO> {
