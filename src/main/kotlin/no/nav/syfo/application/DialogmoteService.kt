@@ -18,7 +18,6 @@ import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.domain.dialogmote.NarmesteLederBrev
-import no.nav.syfo.domain.dialogmote.NewDialogmotedeltakerBehandler
 import no.nav.syfo.domain.dialogmote.Referat
 import no.nav.syfo.domain.dialogmote.anyActive
 import no.nav.syfo.domain.dialogmote.findInnkallingVarselUuid
@@ -496,12 +495,8 @@ class DialogmoteService(
                     behandlerId = connection.createMotedeltakerBehandler(
                         commit = false,
                         moteId = endretDialogmote.id,
-                        newDialogmotedeltakerBehandler = NewDialogmotedeltakerBehandler(
-                            personident = nyBehandler.personIdent?.let { Personident(it) },
-                            behandlerRef = nyBehandler.behandlerRef,
-                            behandlerNavn = nyBehandler.behandlerNavn,
-                            behandlerKontor = nyBehandler.behandlerKontor,
-                            fritekstInnkalling = behandlerDTO.begrunnelse,
+                        newDialogmotedeltakerBehandler = nyBehandler.toNewDialogmotedeltakerBehandler(
+                            fritekst = behandlerDTO.begrunnelse,
                         ),
                     ).first
                     behandlerRef = nyBehandler.behandlerRef

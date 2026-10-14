@@ -11,8 +11,8 @@ import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.dto.EndreDialogmoteDTO
 import no.nav.syfo.api.dto.EndreMoteBegrunnelseBehandlerDTO
 import no.nav.syfo.api.dto.EndreMoteBegrunnelseDTO
+import no.nav.syfo.api.dto.EndreMoteNyBehandlerDTO
 import no.nav.syfo.api.dto.NewDialogmoteDTO
-import no.nav.syfo.api.dto.NewDialogmotedeltakerBehandlerDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteEndrePath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
@@ -88,13 +88,11 @@ class PostDialogmoteEndreApiV2Test {
     private fun leggTilBehandler() = EndreMoteBegrunnelseBehandlerDTO(
         begrunnelse = "innkalling behandler",
         dokument = document("innkalling behandler"),
-        deltaker = NewDialogmotedeltakerBehandlerDTO(
+        deltaker = EndreMoteNyBehandlerDTO(
             personIdent = null,
             behandlerRef = nyBehandlerRef,
             behandlerNavn = "Ny Lege",
             behandlerKontor = "Nytt Kontor",
-            fritekstInnkalling = null,
-            innkalling = emptyList(),
         ),
     )
 
