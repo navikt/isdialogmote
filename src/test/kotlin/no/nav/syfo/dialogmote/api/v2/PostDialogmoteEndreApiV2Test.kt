@@ -1,14 +1,18 @@
 package no.nav.syfo.dialogmote.api.v2
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.api.dto.DialogmoteDTO
-import no.nav.syfo.api.dto.EndreDialogmoteBehandlerDTO
 import no.nav.syfo.api.dto.EndreDialogmoteDTO
-import no.nav.syfo.api.dto.EndreTidStedBegrunnelseDTO
+import no.nav.syfo.api.dto.EndreMoteBegrunnelseBehandlerDTO
+import no.nav.syfo.api.dto.EndreMoteBegrunnelseDTO
+import no.nav.syfo.api.dto.NewDialogmoteDTO
+import no.nav.syfo.api.dto.NewDialogmotedeltakerBehandlerDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteEndrePath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
@@ -47,31 +51,33 @@ class PostDialogmoteEndreApiV2Test {
     )
 
     private val nyBehandlerRef = UUID.randomUUID().toString()
+    private val sentDialogmeldinger = mutableListOf<KafkaBehandlerDialogmeldingDTO>()
 
     @BeforeEach
     fun setup() {
         justRun { esyfovarselProducerMock.sendVarselToEsyfovarsel(any()) }
-        justRun { behandlerDialogmeldingProducer.sendDialogmelding(any()) }
+        every { behandlerDialogmeldingProducer.sendDialogmelding(capture(sentDialogmeldinger)) } just Runs
     }
 
     @AfterEach
     fun teardown() {
         database.dropData()
         clearAllMocks()
+        sentDialogmeldinger.clear()
     }
 
     private fun document(text: String) = listOf(
         DocumentComponentDTO(type = DocumentComponentType.PARAGRAPH, title = null, texts = listOf(text))
     )
 
-    private fun begrunnelse(text: String) = EndreTidStedBegrunnelseDTO(text, document(text))
+    private fun begrunnelse(text: String) = EndreMoteBegrunnelseDTO(text, document(text))
 
     private fun endreDTO(
-        newDialogmoteDTO: no.nav.syfo.api.dto.NewDialogmoteDTO,
-        behandler: EndreDialogmoteBehandlerDTO?,
-        sameTidSted: Boolean = true,
+        newDialogmoteDTO: NewDialogmoteDTO,
+        behandler: EndreMoteBegrunnelseBehandlerDTO?,
+        tidStedChanged: Boolean,
     ) = EndreDialogmoteDTO(
-        sted = if (sameTidSted) newDialogmoteDTO.tidSted.sted else "Et annet sted",
+        sted = if (tidStedChanged) "Et annet sted" else newDialogmoteDTO.tidSted.sted,
         tid = newDialogmoteDTO.tidSted.tid,
         videoLink = newDialogmoteDTO.tidSted.videoLink,
         arbeidstaker = begrunnelse("arbeidstaker"),
@@ -79,121 +85,168 @@ class PostDialogmoteEndreApiV2Test {
         behandler = behandler,
     )
 
-    private fun newBehandler(avlysning: Boolean) = EndreDialogmoteBehandlerDTO(
+    private fun leggTilBehandler() = EndreMoteBegrunnelseBehandlerDTO(
         begrunnelse = "innkalling behandler",
-        endringsdokument = document("innkalling behandler"),
-        behandlerRef = nyBehandlerRef,
-        behandlerNavn = "Ny Lege",
-        behandlerKontor = "Nytt Kontor",
-        personIdent = null,
-        avlysning = if (avlysning) document("avlysning behandler") else null,
+        dokument = document("innkalling behandler"),
+        deltaker = NewDialogmotedeltakerBehandlerDTO(
+            personIdent = null,
+            behandlerRef = nyBehandlerRef,
+            behandlerNavn = "Ny Lege",
+            behandlerKontor = "Nytt Kontor",
+            fritekstInnkalling = null,
+            innkalling = emptyList(),
+        ),
+    )
+
+    private fun endringBehandler() = EndreMoteBegrunnelseBehandlerDTO(
+        begrunnelse = "endring behandler",
+        dokument = document("endring behandler"),
+        deltaker = null,
+    )
+
+    private suspend fun HttpClient.createMote(newDialogmoteDTO: NewDialogmoteDTO): String {
+        postMote(validToken, newDialogmoteDTO)
+        sentDialogmeldinger.clear()
+        clearMocks(esyfovarselProducerMock, answers = false)
+        return getMote().uuid
+    }
+
+    private suspend fun HttpClient.getMote(): DialogmoteDTO =
+        getDialogmoter(validToken, ARBEIDSTAKER_FNR).body<List<DialogmoteDTO>>().first()
+
+    private suspend fun HttpClient.endre(moteUuid: String, dto: EndreDialogmoteDTO): HttpResponse =
+        post("$dialogmoteApiV2Basepath/$moteUuid$dialogmoteApiMoteEndrePath") {
+            bearerAuth(validToken)
+            contentType(ContentType.Application.Json)
+            setBody(dto)
+        }
+
+    private fun ApplicationTestBuilder.client() = setupApiAndClient(
+        behandlerVarselService = behandlerVarselService,
+        esyfovarselProducer = esyfovarselProducerMock,
     )
 
     @Test
-    fun `adds behandler to mote without behandler`() {
-        testApplication {
-            val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
-            val client = setupApiAndClient(
-                behandlerVarselService = behandlerVarselService,
-                esyfovarselProducer = esyfovarselProducerMock,
-            )
-            client.postMote(validToken, newDialogmoteDTO)
-            val moteUuid = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).body<List<DialogmoteDTO>>().first().uuid
+    fun `adds behandler to mote without behandler`() = testApplication {
+        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+        val client = client()
+        val moteUuid = client.createMote(newDialogmoteDTO)
 
-            val sent = mutableListOf<KafkaBehandlerDialogmeldingDTO>()
-            every { behandlerDialogmeldingProducer.sendDialogmelding(capture(sent)) } just Runs
+        val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, leggTilBehandler(), tidStedChanged = false))
+        assertEquals(HttpStatusCode.OK, response.status)
 
-            client.post("$dialogmoteApiV2Basepath/$moteUuid$dialogmoteApiMoteEndrePath") {
-                bearerAuth(validToken)
-                contentType(ContentType.Application.Json)
-                setBody(endreDTO(newDialogmoteDTO, newBehandler(avlysning = false)))
-            }.apply {
-                assertEquals(HttpStatusCode.OK, status)
-            }
+        val mote = client.getMote()
+        assertEquals(Dialogmote.Status.ENDRET.name, mote.status)
+        assertEquals(nyBehandlerRef, mote.behandler?.behandlerRef)
+        assertEquals(listOf(MotedeltakerVarselType.INNKALT.name), mote.behandler?.varselList?.map { it.varselType })
+        assertEquals(listOf("innkalling behandler"), mote.behandler?.varselList?.first()?.document?.first()?.texts)
+        assertTrue(mote.arbeidstaker.varselList.any { it.varselType == MotedeltakerVarselType.ENDRET.name })
+        assertTrue(mote.arbeidsgiver.varselList.any { it.varselType == MotedeltakerVarselType.ENDRET.name })
 
-            val mote = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).body<List<DialogmoteDTO>>().first()
-            assertEquals(Dialogmote.Status.ENDRET.name, mote.status)
-            assertEquals(nyBehandlerRef, mote.behandler?.behandlerRef)
-            assertEquals(
-                listOf(MotedeltakerVarselType.INNKALT.name),
-                mote.behandler?.varselList?.map { it.varselType }
-            )
-            assertTrue(mote.arbeidstaker.varselList.any { it.varselType == MotedeltakerVarselType.ENDRET.name })
-            assertTrue(mote.arbeidsgiver.varselList.any { it.varselType == MotedeltakerVarselType.ENDRET.name })
-            assertEquals(1, sent.size)
-            assertEquals(nyBehandlerRef, sent.first().behandlerRef)
-            assertEquals(DialogmeldingKode.INNKALLING.value, sent.first().dialogmeldingKode)
-        }
+        assertEquals(1, sentDialogmeldinger.size)
+        val dialogmelding = sentDialogmeldinger.first()
+        assertEquals(nyBehandlerRef, dialogmelding.behandlerRef)
+        assertEquals(DialogmeldingKode.INNKALLING.value, dialogmelding.dialogmeldingKode)
+        assertNull(dialogmelding.dialogmeldingRefParent)
+        assertEquals(dialogmelding.dialogmeldingUuid, dialogmelding.dialogmeldingRefConversation)
     }
 
     @Test
-    fun `replaces behandler on mote with behandler`() {
-        testApplication {
-            val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
-            val client = setupApiAndClient(
-                behandlerVarselService = behandlerVarselService,
-                esyfovarselProducer = esyfovarselProducerMock,
-            )
-            client.postMote(validToken, newDialogmoteDTO)
-            val moteUuid = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).body<List<DialogmoteDTO>>().first().uuid
+    fun `adds behandler and changes tid sted`() = testApplication {
+        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+        val client = client()
+        val moteUuid = client.createMote(newDialogmoteDTO)
 
-            val sent = mutableListOf<KafkaBehandlerDialogmeldingDTO>()
-            every { behandlerDialogmeldingProducer.sendDialogmelding(capture(sent)) } just Runs
+        val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, leggTilBehandler(), tidStedChanged = true))
+        assertEquals(HttpStatusCode.OK, response.status)
 
-            client.post("$dialogmoteApiV2Basepath/$moteUuid$dialogmoteApiMoteEndrePath") {
-                bearerAuth(validToken)
-                contentType(ContentType.Application.Json)
-                setBody(endreDTO(newDialogmoteDTO, newBehandler(avlysning = true), sameTidSted = false))
-            }.apply {
-                assertEquals(HttpStatusCode.OK, status)
-            }
-
-            val mote = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).body<List<DialogmoteDTO>>().first()
-            assertEquals(nyBehandlerRef, mote.behandler?.behandlerRef)
-            assertEquals(2, sent.size)
-            val avlysning = sent.first { it.behandlerRef == newDialogmoteDTO.behandler!!.behandlerRef }
-            assertEquals(DialogmeldingKode.AVLYST.value, avlysning.dialogmeldingKode)
-            val innkalling = sent.first { it.behandlerRef == nyBehandlerRef }
-            assertEquals(DialogmeldingKode.INNKALLING.value, innkalling.dialogmeldingKode)
-        }
+        val mote = client.getMote()
+        assertEquals("Et annet sted", mote.sted)
+        assertEquals(nyBehandlerRef, mote.behandler?.behandlerRef)
+        assertEquals(1, sentDialogmeldinger.size)
+        assertEquals(DialogmeldingKode.INNKALLING.value, sentDialogmeldinger.first().dialogmeldingKode)
     }
 
     @Test
-    fun `unchanged behandler gets ENDRET only when tid or sted changed`() {
-        testApplication {
-            val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
-            val client = setupApiAndClient(
-                behandlerVarselService = behandlerVarselService,
-                esyfovarselProducer = esyfovarselProducerMock,
-            )
-            client.postMote(validToken, newDialogmoteDTO)
-            val moteUuid = client.getDialogmoter(validToken, ARBEIDSTAKER_FNR).body<List<DialogmoteDTO>>().first().uuid
-            val sameBehandler = EndreDialogmoteBehandlerDTO(
-                begrunnelse = "endring",
-                endringsdokument = document("endring"),
-            )
+    fun `existing behandler gets ENDRET when tid sted changed`() = testApplication {
+        val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+        val client = client()
+        val moteUuid = client.createMote(newDialogmoteDTO)
 
-            client.post("$dialogmoteApiV2Basepath/$moteUuid$dialogmoteApiMoteEndrePath") {
-                bearerAuth(validToken)
-                contentType(ContentType.Application.Json)
-                setBody(endreDTO(newDialogmoteDTO, sameBehandler))
-            }.apply {
-                assertEquals(HttpStatusCode.BadRequest, status)
-            }
+        val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, endringBehandler(), tidStedChanged = true))
+        assertEquals(HttpStatusCode.OK, response.status)
 
-            clearMocks(behandlerDialogmeldingProducer)
-            val sent = mutableListOf<KafkaBehandlerDialogmeldingDTO>()
-            every { behandlerDialogmeldingProducer.sendDialogmelding(capture(sent)) } just Runs
+        val mote = client.getMote()
+        assertEquals(Dialogmote.Status.ENDRET.name, mote.status)
+        assertEquals(newDialogmoteDTO.behandler!!.behandlerRef, mote.behandler?.behandlerRef)
+        assertEquals(
+            listOf(MotedeltakerVarselType.ENDRET.name, MotedeltakerVarselType.INNKALT.name),
+            mote.behandler?.varselList?.map { it.varselType },
+        )
 
-            client.post("$dialogmoteApiV2Basepath/$moteUuid$dialogmoteApiMoteEndrePath") {
-                bearerAuth(validToken)
-                contentType(ContentType.Application.Json)
-                setBody(endreDTO(newDialogmoteDTO, sameBehandler, sameTidSted = false))
-            }.apply {
-                assertEquals(HttpStatusCode.OK, status)
-            }
-            assertEquals(1, sent.size)
-            assertEquals(DialogmeldingKode.TIDSTED.value, sent.first().dialogmeldingKode)
-        }
+        assertEquals(1, sentDialogmeldinger.size)
+        val dialogmelding = sentDialogmeldinger.first()
+        assertEquals(DialogmeldingKode.TIDSTED.value, dialogmelding.dialogmeldingKode)
+        val innkallingUuid = mote.behandler!!.varselList.last().uuid
+        assertEquals(innkallingUuid, dialogmelding.dialogmeldingRefConversation)
+        assertEquals(innkallingUuid, dialogmelding.dialogmeldingRefParent)
+    }
+
+    @Test
+    fun `returns BadRequest when trying to change existing behandler`() = testApplication {
+        val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+        val client = client()
+        val moteUuid = client.createMote(newDialogmoteDTO)
+
+        val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, leggTilBehandler(), tidStedChanged = true))
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+
+        assertNoChanges(client, newDialogmoteDTO.behandler!!.behandlerRef)
+    }
+
+    @Test
+    fun `returns BadRequest when nothing changed`() = testApplication {
+        val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+        val client = client()
+        val moteUuid = client.createMote(newDialogmoteDTO)
+
+        val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, endringBehandler(), tidStedChanged = false))
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+
+        assertNoChanges(client, newDialogmoteDTO.behandler!!.behandlerRef)
+    }
+
+    @Test
+    fun `returns BadRequest when mote has behandler and behandler is missing`() = testApplication {
+        val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+        val client = client()
+        val moteUuid = client.createMote(newDialogmoteDTO)
+
+        val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, null, tidStedChanged = true))
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+
+        assertNoChanges(client, newDialogmoteDTO.behandler!!.behandlerRef)
+    }
+
+    @Test
+    fun `returns BadRequest when adding behandler without deltaker`() = testApplication {
+        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+        val client = client()
+        val moteUuid = client.createMote(newDialogmoteDTO)
+
+        val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, endringBehandler(), tidStedChanged = true))
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+
+        assertNoChanges(client, expectedBehandlerRef = null)
+    }
+
+    private suspend fun assertNoChanges(client: HttpClient, expectedBehandlerRef: String?) {
+        val mote = client.getMote()
+        assertEquals(Dialogmote.Status.INNKALT.name, mote.status)
+        assertEquals(expectedBehandlerRef, mote.behandler?.behandlerRef)
+        assertTrue(mote.arbeidstaker.varselList.none { it.varselType == MotedeltakerVarselType.ENDRET.name })
+        assertTrue(mote.arbeidsgiver.varselList.none { it.varselType == MotedeltakerVarselType.ENDRET.name })
+        assertTrue(sentDialogmeldinger.isEmpty())
+        verify(exactly = 0) { esyfovarselProducerMock.sendVarselToEsyfovarsel(any()) }
     }
 }

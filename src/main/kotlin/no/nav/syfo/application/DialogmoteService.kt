@@ -376,23 +376,17 @@ class DialogmoteService(
         val endretDialogmote = dialogmote.endre()
         val currentBehandler = dialogmote.behandler
         val behandlerDTO = endreDialogmote.behandler
-        if (currentBehandler != null && behandlerDTO == null) {
-            throw IllegalArgumentException("Failed to change dialogmote: missing behandler")
-        }
-        val newBehandlerRef = behandlerDTO?.behandlerRef
-        val behandlerAdded = currentBehandler == null && behandlerDTO != null && newBehandlerRef != null
-        val behandlerReplaced =
-            currentBehandler != null && newBehandlerRef != null && newBehandlerRef != currentBehandler.behandlerRef
-        if (currentBehandler == null && behandlerDTO != null && newBehandlerRef == null) {
-            throw IllegalArgumentException("Failed to add behandler: missing behandlerRef")
-        }
-        if ((behandlerAdded || behandlerReplaced) &&
-            (behandlerDTO.behandlerNavn.isNullOrBlank() || behandlerDTO.behandlerKontor.isNullOrBlank())
-        ) {
-            throw IllegalArgumentException("Failed to change behandler: missing behandlerNavn or behandlerKontor")
-        }
-        if (behandlerReplaced && behandlerDTO.avlysning == null) {
-            throw IllegalArgumentException("Failed to replace behandler: missing avlysning")
+        val nyBehandler = behandlerDTO?.deltaker
+
+        if (currentBehandler != null) {
+            if (behandlerDTO == null) {
+                throw IllegalArgumentException("Failed to change dialogmote: missing behandler")
+            }
+            if (nyBehandler != null) {
+                throw IllegalArgumentException("Failed to change dialogmote: cannot change existing behandler")
+            }
+        } else if (behandlerDTO != null && nyBehandler == null) {
+            throw IllegalArgumentException("Failed to add behandler: missing deltaker")
         }
 
         val latestTidSted = dialogmote.tidStedList.latest()
@@ -400,8 +394,8 @@ class DialogmoteService(
             latestTidSted.sted != endreDialogmote.sted ||
             latestTidSted.tid != endreDialogmote.tid ||
             latestTidSted.videoLink.orEmpty() != endreDialogmote.videoLink.orEmpty()
-        val behandlerChanged = behandlerAdded || behandlerReplaced
-        if (!tidStedChanged && !behandlerChanged) {
+        val behandlerAdded = nyBehandler != null
+        if (!tidStedChanged && !behandlerAdded) {
             throw IllegalArgumentException("Failed to change dialogmote: nothing changed")
         }
 
@@ -427,32 +421,18 @@ class DialogmoteService(
             pdfContent = endreDialogmote.arbeidsgiver.endringsdokument,
         ) ?: throw RuntimeException("Failed to request PDF - Endring Arbeidsgiver")
 
-        val pdfAvlysningGammelBehandler = if (behandlerReplaced) {
-            pdfGenClient.pdfAvlysning(
+        val pdfBehandler = when {
+            behandlerDTO == null -> null
+            nyBehandler != null -> pdfGenClient.pdfInnkalling(
                 callId = callId,
-                mottakerNavn = currentBehandler.behandlerNavn,
-                pdfContent = behandlerDTO.avlysning.orEmpty(),
-            ) ?: throw RuntimeException("Failed to request PDF - Avlysning gammel behandler")
-        } else {
-            null
-        }
-        val pdfInnkallingNyBehandler = if (behandlerChanged) {
-            pdfGenClient.pdfInnkalling(
-                callId = callId,
-                mottakerNavn = behandlerDTO.behandlerNavn,
-                pdfContent = behandlerDTO.endringsdokument.orEmpty(),
-            ) ?: throw RuntimeException("Failed to request PDF - Innkalling ny behandler")
-        } else {
-            null
-        }
-        val pdfEndringBehandler = if (!behandlerChanged && behandlerDTO != null && tidStedChanged) {
-            pdfGenClient.pdfEndringTidSted(
+                mottakerNavn = nyBehandler.behandlerNavn,
+                pdfContent = behandlerDTO.dokument,
+            ) ?: throw RuntimeException("Failed to request PDF - Innkalling Behandler")
+            else -> pdfGenClient.pdfEndringTidSted(
                 callId = callId,
                 mottakerNavn = currentBehandler?.behandlerNavn,
-                pdfContent = behandlerDTO.endringsdokument,
+                pdfContent = behandlerDTO.dokument,
             ) ?: throw RuntimeException("Failed to request PDF - Endring Behandler")
-        } else {
-            null
         }
 
         val digitalVarsling = isDigitalVarselEnabled(
@@ -477,7 +457,7 @@ class DialogmoteService(
                 newDialogmoteStatus = Dialogmote.Status.ENDRET,
                 opprettetAv = getNAVIdentFromToken(token),
                 token = token,
-                isBehandlerMotedeltaker = endretDialogmote.behandler != null || behandlerDTO != null,
+                isBehandlerMotedeltaker = currentBehandler != null || behandlerAdded,
             )
             dialogmotedeltakerService.slettBrukeroppgaverPaMote(
                 dialogmote = endretDialogmote
@@ -508,107 +488,54 @@ class DialogmoteService(
                 callId = callId,
             )
 
-            val skalSendeBehandlerVarsel = !endreDialogmote.tid.isBefore(LocalDateTime.now())
-            val arbeidstakerPersonident = endretDialogmote.arbeidstaker.personident
-
-            if (behandlerReplaced && currentBehandler != null && pdfAvlysningGammelBehandler != null) {
-                val (pdfId, _) = pdfRepository.createPdf(
-                    connection = connection,
-                    commit = false,
-                    pdf = pdfAvlysningGammelBehandler,
-                )
-                val (_, avlysningUuid) = connection.createMotedeltakerVarselBehandler(
-                    commit = false,
-                    motedeltakerBehandlerId = currentBehandler.id,
-                    status = "OK",
-                    varselType = MotedeltakerVarselType.AVLYST,
-                    pdfId = pdfId,
-                    fritekst = "",
-                    document = behandlerDTO.avlysning.orEmpty(),
-                )
-                if (skalSendeBehandlerVarsel) {
-                    varselService.sendBehandlerVarsel(
-                        behandlerRef = currentBehandler.behandlerRef,
-                        arbeidstakerPersonIdent = arbeidstakerPersonident,
-                        document = behandlerDTO.avlysning.orEmpty(),
-                        pdf = pdfAvlysningGammelBehandler,
-                        varselType = MotedeltakerVarselType.AVLYST,
-                        varselUuid = avlysningUuid,
-                        varselParentId = currentBehandler.findParentVarselId(),
-                        varselInnkallingUuid = currentBehandler.findInnkallingVarselUuid(),
-                        token = token,
-                        callId = callId,
-                    )
+            if (behandlerDTO != null && pdfBehandler != null) {
+                val behandlerId: Int
+                val behandlerRef: String
+                val varselType: MotedeltakerVarselType
+                if (nyBehandler != null) {
+                    behandlerId = connection.createMotedeltakerBehandler(
+                        commit = false,
+                        moteId = endretDialogmote.id,
+                        newDialogmotedeltakerBehandler = NewDialogmotedeltakerBehandler(
+                            personident = nyBehandler.personIdent?.let { Personident(it) },
+                            behandlerRef = nyBehandler.behandlerRef,
+                            behandlerNavn = nyBehandler.behandlerNavn,
+                            behandlerKontor = nyBehandler.behandlerKontor,
+                            fritekstInnkalling = behandlerDTO.begrunnelse,
+                        ),
+                    ).first
+                    behandlerRef = nyBehandler.behandlerRef
+                    varselType = MotedeltakerVarselType.INNKALT
+                } else {
+                    behandlerId = currentBehandler!!.id
+                    behandlerRef = currentBehandler.behandlerRef
+                    varselType = MotedeltakerVarselType.ENDRET
                 }
-            }
 
-            if (behandlerChanged && behandlerDTO != null && pdfInnkallingNyBehandler != null) {
-                val (nyBehandlerId, _) = connection.createMotedeltakerBehandler(
-                    commit = false,
-                    moteId = endretDialogmote.id,
-                    newDialogmotedeltakerBehandler = NewDialogmotedeltakerBehandler(
-                        personident = behandlerDTO.personIdent?.let { Personident(it) },
-                        behandlerRef = behandlerDTO.behandlerRef,
-                        behandlerNavn = behandlerDTO.behandlerNavn!!,
-                        behandlerKontor = behandlerDTO.behandlerKontor!!,
-                        fritekstInnkalling = behandlerDTO.begrunnelse,
-                    ),
-                )
                 val (pdfId, _) = pdfRepository.createPdf(
                     connection = connection,
                     commit = false,
-                    pdf = pdfInnkallingNyBehandler,
+                    pdf = pdfBehandler,
                 )
-                val (_, innkallingUuid) = connection.createMotedeltakerVarselBehandler(
+                val (_, varselUuid) = connection.createMotedeltakerVarselBehandler(
                     commit = false,
-                    motedeltakerBehandlerId = nyBehandlerId,
+                    motedeltakerBehandlerId = behandlerId,
                     status = "OK",
-                    varselType = MotedeltakerVarselType.INNKALT,
+                    varselType = varselType,
                     pdfId = pdfId,
                     fritekst = behandlerDTO.begrunnelse,
-                    document = behandlerDTO.endringsdokument,
+                    document = behandlerDTO.dokument,
                 )
-                if (skalSendeBehandlerVarsel) {
+                if (!endreDialogmote.tid.isBefore(LocalDateTime.now())) {
                     varselService.sendBehandlerVarsel(
-                        behandlerRef = behandlerDTO.behandlerRef,
-                        arbeidstakerPersonIdent = arbeidstakerPersonident,
-                        document = behandlerDTO.endringsdokument,
-                        pdf = pdfInnkallingNyBehandler,
-                        varselType = MotedeltakerVarselType.INNKALT,
-                        varselUuid = innkallingUuid,
-                        varselParentId = null,
-                        varselInnkallingUuid = null,
-                        token = token,
-                        callId = callId,
-                    )
-                }
-            }
-
-            if (currentBehandler != null && !behandlerChanged && behandlerDTO != null && pdfEndringBehandler != null) {
-                val (pdfId, _) = pdfRepository.createPdf(
-                    connection = connection,
-                    commit = false,
-                    pdf = pdfEndringBehandler,
-                )
-                val (_, endringUuid) = connection.createMotedeltakerVarselBehandler(
-                    commit = false,
-                    motedeltakerBehandlerId = currentBehandler.id,
-                    status = "OK",
-                    varselType = MotedeltakerVarselType.ENDRET,
-                    pdfId = pdfId,
-                    fritekst = behandlerDTO.begrunnelse,
-                    document = behandlerDTO.endringsdokument,
-                )
-                if (skalSendeBehandlerVarsel) {
-                    varselService.sendBehandlerVarsel(
-                        behandlerRef = currentBehandler.behandlerRef,
-                        arbeidstakerPersonIdent = arbeidstakerPersonident,
-                        document = behandlerDTO.endringsdokument,
-                        pdf = pdfEndringBehandler,
-                        varselType = MotedeltakerVarselType.ENDRET,
-                        varselUuid = endringUuid,
-                        varselParentId = currentBehandler.findParentVarselId(),
-                        varselInnkallingUuid = currentBehandler.findInnkallingVarselUuid(),
+                        behandlerRef = behandlerRef,
+                        arbeidstakerPersonIdent = endretDialogmote.arbeidstaker.personident,
+                        document = behandlerDTO.dokument,
+                        pdf = pdfBehandler,
+                        varselType = varselType,
+                        varselUuid = varselUuid,
+                        varselParentId = if (nyBehandler == null) currentBehandler?.findParentVarselId() else null,
+                        varselInnkallingUuid = if (nyBehandler == null) currentBehandler?.findInnkallingVarselUuid() else null,
                         token = token,
                         callId = callId,
                     )
