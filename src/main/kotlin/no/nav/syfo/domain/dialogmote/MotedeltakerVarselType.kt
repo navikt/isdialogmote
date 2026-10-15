@@ -102,8 +102,8 @@ fun MotedeltakerVarselType.getDialogMeldingKodeverk(): DialogmeldingKodeverk {
 fun MotedeltakerVarselType.getDialogMeldingKode(): DialogmeldingKode {
     return when (this) {
         MotedeltakerVarselType.INNKALT -> DialogmeldingKode.INNKALLING
-        MotedeltakerVarselType.NYTT_TID_STED -> DialogmeldingKode.TIDSTED
-        MotedeltakerVarselType.ENDRET -> DialogmeldingKode.TIDSTED
+        MotedeltakerVarselType.NYTT_TID_STED -> DialogmeldingKode.ENDRING
+        MotedeltakerVarselType.ENDRET -> DialogmeldingKode.ENDRING
         MotedeltakerVarselType.AVLYST -> DialogmeldingKode.AVLYST
         MotedeltakerVarselType.REFERAT -> DialogmeldingKode.REFERAT
     }
@@ -128,7 +128,7 @@ enum class DialogmeldingKode(
     val value: Int,
 ) {
     INNKALLING(1),
-    TIDSTED(2),
+    ENDRING(2),
     AVLYST(4),
     REFERAT(9),
 }

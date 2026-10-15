@@ -184,7 +184,7 @@ class PostDialogmoteEndreApiV2Test {
 
         assertEquals(1, sentDialogmeldinger.size)
         val dialogmelding = sentDialogmeldinger.first()
-        assertEquals(DialogmeldingKode.TIDSTED.value, dialogmelding.dialogmeldingKode)
+        assertEquals(DialogmeldingKode.ENDRING.value, dialogmelding.dialogmeldingKode)
         val innkallingUuid = mote.behandler!!.varselList.last().uuid
         assertEquals(innkallingUuid, dialogmelding.dialogmeldingRefConversation)
         assertEquals(innkallingUuid, dialogmelding.dialogmeldingRefParent)

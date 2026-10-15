@@ -329,7 +329,7 @@ class PostDialogmoteTidStedApiV2Test {
                         DialogmeldingKodeverk.DIALOGMOTE.name,
                         kafkaBehandlerDialogmeldingDTO.dialogmeldingKodeverk
                     )
-                    assertEquals(DialogmeldingKode.TIDSTED.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
+                    assertEquals(DialogmeldingKode.ENDRING.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
                     assertEquals(
                         createdDialogmote.behandler!!.varselList[1].uuid,
                         kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent
@@ -411,7 +411,7 @@ class PostDialogmoteTidStedApiV2Test {
                         DialogmeldingType.DIALOG_FORESPORSEL.name,
                         kafkaBehandlerDialogmeldingDTO.dialogmeldingType
                     )
-                    assertEquals(DialogmeldingKode.TIDSTED.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
+                    assertEquals(DialogmeldingKode.ENDRING.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
                     assertEquals(dialogmeldingDTO.msgId, kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent)
                     assertEquals(
                         dialogmeldingDTO.conversationRef,
