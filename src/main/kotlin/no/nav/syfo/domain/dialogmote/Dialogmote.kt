@@ -27,9 +27,7 @@ data class Dialogmote(
         INNKALT,
         AVLYST,
         FERDIGSTILT,
-
-        @Deprecated("Use ENDRET")
-        NYTT_TID_STED,
+        NYTT_TID_STED, // Denne er erstattet med ENDRET, men beholdes for å kunne mappe mot eksisterende data i databasen
         ENDRET,
         LUKKET,
     }
