@@ -496,7 +496,7 @@ class DialogmoteService(
                         commit = false,
                         moteId = endretDialogmote.id,
                         newDialogmotedeltakerBehandler = nyBehandler.toNewDialogmotedeltakerBehandler(
-                            fritekst = behandlerDTO.begrunnelse,
+                            fritekst = behandlerDTO.fritekst,
                         ),
                     ).first
                     behandlerRef = nyBehandler.behandlerRef
@@ -518,7 +518,7 @@ class DialogmoteService(
                     status = "OK",
                     varselType = varselType,
                     pdfId = pdfId,
-                    fritekst = behandlerDTO.begrunnelse,
+                    fritekst = behandlerDTO.fritekst,
                     document = behandlerDTO.dokument,
                 )
                 if (!endreDialogmote.tid.isBefore(LocalDateTime.now())) {

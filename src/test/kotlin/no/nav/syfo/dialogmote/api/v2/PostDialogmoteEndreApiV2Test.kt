@@ -86,7 +86,7 @@ class PostDialogmoteEndreApiV2Test {
     )
 
     private fun leggTilBehandler() = EndreMoteBegrunnelseBehandlerDTO(
-        begrunnelse = "innkalling behandler",
+        fritekst = "innkalling behandler",
         dokument = document("innkalling behandler"),
         deltaker = EndreMoteNyBehandlerDTO(
             personIdent = null,
@@ -97,7 +97,7 @@ class PostDialogmoteEndreApiV2Test {
     )
 
     private fun endringBehandler() = EndreMoteBegrunnelseBehandlerDTO(
-        begrunnelse = "endring behandler",
+        fritekst = "endring behandler",
         dokument = document("endring behandler"),
         deltaker = null,
     )
