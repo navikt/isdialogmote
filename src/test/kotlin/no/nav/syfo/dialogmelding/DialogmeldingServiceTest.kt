@@ -7,7 +7,11 @@ import io.ktor.server.testing.*
 import io.mockk.justRun
 import io.mockk.mockk
 import no.nav.syfo.api.dto.DialogmoteDTO
+import no.nav.syfo.api.dto.EndreDialogmoteDTO
+import no.nav.syfo.api.dto.EndreMoteBegrunnelseBehandlerDTO
+import no.nav.syfo.api.dto.EndreMoteBegrunnelseDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteAvlysPath
+import no.nav.syfo.api.endpoints.dialogmoteApiMoteEndrePath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
@@ -25,6 +29,8 @@ import no.nav.syfo.testhelper.generator.*
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import java.sql.Timestamp
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.assertNotNull
 
@@ -734,6 +740,182 @@ class DialogmeldingServiceTest {
                 val svarList = dialogmoteList.first().behandler!!.varselList.first().svar
                 assertFalse(svarList.any { svar -> svar.tekst == svarTekst })
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("Velger nyeste endring-varsel blant ENDRET og NYTT_TID_STED")
+    inner class VelgerNyesteEndringVarsel {
+        private val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(UserConstants.ARBEIDSTAKER_FNR)
+        private lateinit var innkallingUuid: String
+        private lateinit var nyttTidStedUuid: String
+        private lateinit var endretUuid: String
+
+        private val begrunnelse = EndreMoteBegrunnelseDTO("begrunnelse", emptyList())
+
+        @BeforeEach
+        fun setupMoteWithBothEndringTypes() {
+            testApplication {
+                val client = setupApiAndClient(
+                    behandlerVarselService = behandlerVarselService,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                client.postMote(validToken, newDialogmoteDTO)
+                val moteUuid = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
+                    .body<List<DialogmoteDTO>>().first().uuid
+
+                client.post("$dialogmoteApiV2Basepath/$moteUuid$dialogmoteApiMoteTidStedPath") {
+                    bearerAuth(validToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(generateEndreDialogmoteTidStedDTOWithBehandler())
+                }.apply { assertEquals(HttpStatusCode.OK, status) }
+
+                client.post("$dialogmoteApiV2Basepath/$moteUuid$dialogmoteApiMoteEndrePath") {
+                    bearerAuth(validToken)
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        EndreDialogmoteDTO(
+                            sted = "Et helt annet sted",
+                            tid = newDialogmoteDTO.tidSted.tid,
+                            videoLink = null,
+                            arbeidstaker = begrunnelse,
+                            arbeidsgiver = begrunnelse,
+                            behandler = EndreMoteBegrunnelseBehandlerDTO(
+                                fritekst = "endring behandler",
+                                dokument = emptyList(),
+                                deltaker = null,
+                            ),
+                        )
+                    )
+                }.apply { assertEquals(HttpStatusCode.OK, status) }
+
+                val varselList = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
+                    .body<List<DialogmoteDTO>>().first().behandler!!.varselList
+                innkallingUuid = varselList.first { it.varselType == MotedeltakerVarselType.INNKALT.name }.uuid
+                nyttTidStedUuid = varselList.first { it.varselType == MotedeltakerVarselType.NYTT_TID_STED.name }.uuid
+                endretUuid = varselList.first { it.varselType == MotedeltakerVarselType.ENDRET.name }.uuid
+            }
+        }
+
+        private fun setCreatedAt(varselUuid: String, createdAt: LocalDateTime) {
+            database.connection.use { connection ->
+                connection.prepareStatement("UPDATE MOTEDELTAKER_BEHANDLER_VARSEL SET created_at = ? WHERE uuid = ?")
+                    .use {
+                        it.setTimestamp(1, Timestamp.valueOf(createdAt))
+                        it.setString(2, varselUuid)
+                        it.executeUpdate()
+                    }
+                connection.commit()
+            }
+        }
+
+        private fun reply(conversationRef: String?, parentRef: String?) {
+            dialogmeldingService.handleDialogmelding(
+                generateKafkaDialogmeldingDTO(
+                    msgType = "DIALOG_SVAR",
+                    personIdentPasient = UserConstants.ARBEIDSTAKER_FNR,
+                    personIdentBehandler = UserConstants.BEHANDLER_FNR,
+                    conversationRef = conversationRef,
+                    parentRef = parentRef,
+                    innkallingMoterespons = generateInnkallingMoterespons(
+                        foresporselType = ForesporselType.ENDRING,
+                        svarType = SvarType.KOMMER,
+                        svarTekst = "svar",
+                    ),
+                )
+            )
+        }
+
+        private fun svarCountByVarselUuid(): Map<String, Int> {
+            var result = emptyMap<String, Int>()
+            testApplication {
+                val client = setupApiAndClient(
+                    behandlerVarselService = behandlerVarselService,
+                    esyfovarselProducer = esyfovarselProducerMock,
+                )
+                result = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
+                    .body<List<DialogmoteDTO>>().first().behandler!!.varselList
+                    .associate { it.uuid to it.svar.size }
+            }
+            return result
+        }
+
+        private fun assertSvarOnlyOn(expectedUuid: String) {
+            val counts = svarCountByVarselUuid()
+            assertEquals(1, counts[expectedUuid])
+            assertEquals(1, counts.values.sum())
+        }
+
+        private val now: LocalDateTime = LocalDateTime.now()
+
+        @Test
+        fun `conversationRef-fallback velger nyere NYTT_TID_STED foran eldre ENDRET`() {
+            setCreatedAt(endretUuid, now.minusHours(2))
+            setCreatedAt(nyttTidStedUuid, now.minusHours(1))
+
+            reply(conversationRef = innkallingUuid, parentRef = UUID.randomUUID().toString())
+
+            assertSvarOnlyOn(nyttTidStedUuid)
+        }
+
+        @Test
+        fun `conversationRef-fallback velger nyere ENDRET foran eldre NYTT_TID_STED`() {
+            setCreatedAt(nyttTidStedUuid, now.minusHours(2))
+            setCreatedAt(endretUuid, now.minusHours(1))
+
+            reply(conversationRef = innkallingUuid, parentRef = null)
+
+            assertSvarOnlyOn(endretUuid)
+        }
+
+        @Test
+        fun `behandler-fallback velger nyere NYTT_TID_STED foran eldre ENDRET`() {
+            setCreatedAt(endretUuid, now.minusHours(2))
+            setCreatedAt(nyttTidStedUuid, now.minusHours(1))
+
+            reply(conversationRef = null, parentRef = null)
+
+            assertSvarOnlyOn(nyttTidStedUuid)
+        }
+
+        @Test
+        fun `behandler-fallback velger nyere ENDRET foran eldre NYTT_TID_STED`() {
+            setCreatedAt(nyttTidStedUuid, now.minusHours(2))
+            setCreatedAt(endretUuid, now.minusHours(1))
+
+            reply(conversationRef = UUID.randomUUID().toString(), parentRef = UUID.randomUUID().toString())
+
+            assertSvarOnlyOn(endretUuid)
+        }
+
+        @Test
+        fun `like tidspunkt gir høyeste id, som er ENDRET fordi den ble opprettet sist`() {
+            setCreatedAt(nyttTidStedUuid, now.minusHours(1))
+            setCreatedAt(endretUuid, now.minusHours(1))
+
+            reply(conversationRef = innkallingUuid, parentRef = null)
+
+            assertSvarOnlyOn(endretUuid)
+        }
+
+        @Test
+        fun `eksplisitt parentRef til eldre endring-varsel har forrang`() {
+            setCreatedAt(nyttTidStedUuid, now.minusHours(2))
+            setCreatedAt(endretUuid, now.minusHours(1))
+
+            reply(conversationRef = innkallingUuid, parentRef = nyttTidStedUuid)
+
+            assertSvarOnlyOn(nyttTidStedUuid)
+        }
+
+        @Test
+        fun `eksplisitt parentRef til eldre ENDRET har forrang`() {
+            setCreatedAt(endretUuid, now.minusHours(2))
+            setCreatedAt(nyttTidStedUuid, now.minusHours(1))
+
+            reply(conversationRef = innkallingUuid, parentRef = endretUuid)
+
+            assertSvarOnlyOn(endretUuid)
         }
     }
 

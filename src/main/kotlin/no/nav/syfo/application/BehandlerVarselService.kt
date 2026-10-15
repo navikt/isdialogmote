@@ -16,8 +16,8 @@ import no.nav.syfo.domain.dialogmote.getDialogMeldingType
 import no.nav.syfo.domain.dialogmote.serialize
 import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
 import no.nav.syfo.infrastructure.database.createMotedeltakerBehandlerVarselSvar
-import no.nav.syfo.infrastructure.database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler
-import no.nav.syfo.infrastructure.database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId
+import no.nav.syfo.infrastructure.database.getLatestMotedeltakerBehandlerVarselOfTypesForArbeidstakerAndBehandler
+import no.nav.syfo.infrastructure.database.getLatestMotedeltakerBehandlerVarselOfTypesForArbeidstakerAndMoteId
 import no.nav.syfo.infrastructure.database.getMote
 import no.nav.syfo.infrastructure.database.getMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndUuid
 import org.slf4j.Logger
@@ -184,8 +184,8 @@ class BehandlerVarselService(
             }
 
         return varselInnkallingForConversationRef?.second
-            ?: database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler(
-                varselType = MotedeltakerVarselType.INNKALT,
+            ?: database.getLatestMotedeltakerBehandlerVarselOfTypesForArbeidstakerAndBehandler(
+                varselTypes = listOf(MotedeltakerVarselType.INNKALT),
                 arbeidstakerPersonIdent = arbeidstakerPersonIdent,
                 behandlerPersonIdent = behandlerPersonIdent,
             )
@@ -217,13 +217,11 @@ class BehandlerVarselService(
             conversationRef = conversationRef
         )
         return varselNyttTidStedForConversationRef
-            ?: tidStedVarselTypes.firstNotNullOfOrNull { type ->
-                database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndBehandler(
-                    varselType = type,
-                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
-                    behandlerPersonIdent = behandlerPersonIdent,
-                )
-            }
+            ?: database.getLatestMotedeltakerBehandlerVarselOfTypesForArbeidstakerAndBehandler(
+                varselTypes = tidStedVarselTypes,
+                arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                behandlerPersonIdent = behandlerPersonIdent,
+            )
     }
 
     private fun getBehandlerVarselNyttTidStedFromConversationRef(
@@ -240,17 +238,14 @@ class BehandlerVarselService(
             }
 
         return varselInnkallingForConversationRef?.first?.let { moteId ->
-            tidStedVarselTypes.firstNotNullOfOrNull { type ->
-                database.getLatestMotedeltakerBehandlerVarselOfTypeForArbeidstakerAndMoteId(
-                    varselType = type,
-                    arbeidstakerPersonIdent = arbeidstakerPersonIdent,
-                    moteId = moteId
-                )
-            }
+            database.getLatestMotedeltakerBehandlerVarselOfTypesForArbeidstakerAndMoteId(
+                varselTypes = tidStedVarselTypes,
+                arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                moteId = moteId
+            )
         }
     }
 
-    // ENDRET is newer than NYTT_TID_STED, so it is tried first to find the latest varsel
     private val tidStedVarselTypes = listOf(MotedeltakerVarselType.ENDRET, MotedeltakerVarselType.NYTT_TID_STED)
 
     private fun getConversationUuid(varselUuid: UUID, varselInnkallingUuid: UUID?): UUID {
