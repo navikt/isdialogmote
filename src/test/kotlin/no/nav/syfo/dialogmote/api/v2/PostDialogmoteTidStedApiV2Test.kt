@@ -7,7 +7,7 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.api.dto.DialogmoteDTO
-import no.nav.syfo.api.dto.EndreTidStedBegrunnelseDTO
+import no.nav.syfo.api.dto.EndreMoteBegrunnelseDTO
 import no.nav.syfo.api.dto.EndretTidStedDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
@@ -116,7 +116,7 @@ class PostDialogmoteTidStedApiV2Test {
                     sted = "Et annet sted",
                     tid = newDialogmoteDTO.tidSted.tid.plusDays(1),
                     videoLink = "https://meet.google.com/zyx",
-                    arbeidstaker = EndreTidStedBegrunnelseDTO(
+                    arbeidstaker = EndreMoteBegrunnelseDTO(
                         begrunnelse = "begrunnelse arbeidstaker",
                         endringsdokument = listOf(
                             DocumentComponentDTO(
@@ -126,7 +126,7 @@ class PostDialogmoteTidStedApiV2Test {
                             )
                         )
                     ),
-                    arbeidsgiver = EndreTidStedBegrunnelseDTO(
+                    arbeidsgiver = EndreMoteBegrunnelseDTO(
                         begrunnelse = "begrunnelse arbeidsgiver",
                         endringsdokument = listOf(
                             DocumentComponentDTO(
@@ -249,7 +249,7 @@ class PostDialogmoteTidStedApiV2Test {
                     sted = "Et annet sted",
                     tid = newDialogmoteTid,
                     videoLink = "https://meet.google.com/zyx",
-                    arbeidstaker = EndreTidStedBegrunnelseDTO(
+                    arbeidstaker = EndreMoteBegrunnelseDTO(
                         begrunnelse = "begrunnelse arbeidstaker",
                         endringsdokument = listOf(
                             DocumentComponentDTO(
@@ -259,7 +259,7 @@ class PostDialogmoteTidStedApiV2Test {
                             )
                         )
                     ),
-                    arbeidsgiver = EndreTidStedBegrunnelseDTO(
+                    arbeidsgiver = EndreMoteBegrunnelseDTO(
                         begrunnelse = "begrunnelse arbeidsgiver",
                         endringsdokument = listOf(
                             DocumentComponentDTO(
@@ -269,7 +269,7 @@ class PostDialogmoteTidStedApiV2Test {
                             )
                         )
                     ),
-                    behandler = EndreTidStedBegrunnelseDTO(
+                    behandler = EndreMoteBegrunnelseDTO(
                         begrunnelse = "begrunnelse behandler",
                         endringsdokument = listOf(
                             DocumentComponentDTO(
@@ -329,7 +329,7 @@ class PostDialogmoteTidStedApiV2Test {
                         DialogmeldingKodeverk.DIALOGMOTE.name,
                         kafkaBehandlerDialogmeldingDTO.dialogmeldingKodeverk
                     )
-                    assertEquals(DialogmeldingKode.TIDSTED.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
+                    assertEquals(DialogmeldingKode.ENDRING.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
                     assertEquals(
                         createdDialogmote.behandler!!.varselList[1].uuid,
                         kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent
@@ -411,7 +411,7 @@ class PostDialogmoteTidStedApiV2Test {
                         DialogmeldingType.DIALOG_FORESPORSEL.name,
                         kafkaBehandlerDialogmeldingDTO.dialogmeldingType
                     )
-                    assertEquals(DialogmeldingKode.TIDSTED.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
+                    assertEquals(DialogmeldingKode.ENDRING.value, kafkaBehandlerDialogmeldingDTO.dialogmeldingKode)
                     assertEquals(dialogmeldingDTO.msgId, kafkaBehandlerDialogmeldingDTO.dialogmeldingRefParent)
                     assertEquals(
                         dialogmeldingDTO.conversationRef,
@@ -459,7 +459,7 @@ class PostDialogmoteTidStedApiV2Test {
                     sted = "Et annet sted",
                     tid = newDialogmoteDTO.tidSted.tid.plusDays(1),
                     videoLink = "https://meet.google.com/zyx",
-                    arbeidstaker = EndreTidStedBegrunnelseDTO(
+                    arbeidstaker = EndreMoteBegrunnelseDTO(
                         begrunnelse = "begrunnelse arbeidstaker",
                         endringsdokument = listOf(
                             DocumentComponentDTO(
@@ -469,7 +469,7 @@ class PostDialogmoteTidStedApiV2Test {
                             )
                         )
                     ),
-                    arbeidsgiver = EndreTidStedBegrunnelseDTO(
+                    arbeidsgiver = EndreMoteBegrunnelseDTO(
                         begrunnelse = "begrunnelse arbeidsgiver",
                         endringsdokument = listOf(
                             DocumentComponentDTO(

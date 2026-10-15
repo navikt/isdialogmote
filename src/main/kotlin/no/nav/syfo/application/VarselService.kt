@@ -112,6 +112,30 @@ class VarselService(
         }
     }
 
+    suspend fun sendBehandlerVarsel(
+        behandlerRef: String,
+        arbeidstakerPersonIdent: Personident,
+        document: List<DocumentComponentDTO>,
+        pdf: ByteArray,
+        varselType: MotedeltakerVarselType,
+        varselUuid: UUID,
+        varselParentId: String?,
+        varselInnkallingUuid: UUID?,
+        token: String,
+        callId: String,
+    ) = behandlerVarselService.sendVarsel(
+        behandlerRef = behandlerRef,
+        arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+        document = document,
+        pdf = pdf,
+        varseltype = varselType,
+        varselUuid = varselUuid,
+        varselParentId = varselParentId,
+        varselInnkallingUuid = varselInnkallingUuid,
+        token = token,
+        callId = callId,
+    )
+
     fun sendNarmesteLederSvarVarselHendelse(
         narmesteLederSvar: DialogmoteSvarType,
         narmesteLederPersonIdent: Personident,
