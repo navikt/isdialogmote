@@ -16,12 +16,14 @@ import no.nav.syfo.domain.dialogmote.ArbeidstakerBrev
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteSvarType
 import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
+import no.nav.syfo.domain.dialogmote.MoteEndringType
 import no.nav.syfo.domain.dialogmote.MotedeltakerVarselType
 import no.nav.syfo.domain.dialogmote.NarmesteLederBrev
 import no.nav.syfo.domain.dialogmote.Referat
 import no.nav.syfo.domain.dialogmote.anyActive
 import no.nav.syfo.domain.dialogmote.findInnkallingVarselUuid
 import no.nav.syfo.domain.dialogmote.findParentVarselId
+import no.nav.syfo.domain.dialogmote.finnEndringer
 import no.nav.syfo.domain.dialogmote.latest
 import no.nav.syfo.infrastructure.client.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.client.behandlendeenhet.getEnhetId
@@ -30,6 +32,7 @@ import no.nav.syfo.infrastructure.client.narmesteleder.NarmesteLederRelasjonDTO
 import no.nav.syfo.infrastructure.client.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.client.person.kontaktinfo.KontaktinformasjonClient
+import no.nav.syfo.infrastructure.database.createMoteEndringer
 import no.nav.syfo.infrastructure.database.createMotedeltakerBehandler
 import no.nav.syfo.infrastructure.database.createMotedeltakerVarselArbeidsgiver
 import no.nav.syfo.infrastructure.database.createMotedeltakerVarselArbeidstaker
@@ -388,13 +391,8 @@ class DialogmoteService(
             throw IllegalArgumentException("Failed to add behandler: missing deltaker")
         }
 
-        val latestTidSted = dialogmote.tidStedList.latest()
-        val tidStedChanged = latestTidSted == null ||
-            latestTidSted.sted != endreDialogmote.sted ||
-            latestTidSted.tid != endreDialogmote.tid ||
-            latestTidSted.videoLink.orEmpty() != endreDialogmote.videoLink.orEmpty()
-        val behandlerAdded = nyBehandler != null
-        if (!tidStedChanged && !behandlerAdded) {
+        val endringer = dialogmote.finnEndringer(endreDialogmote)
+        if (endringer.isEmpty()) {
             throw IllegalArgumentException("Failed to change dialogmote: nothing changed")
         }
 
@@ -442,21 +440,27 @@ class DialogmoteService(
 
         transactionManager.run { transaction ->
             val connection = transaction.connection
-            if (tidStedChanged) {
+            if (MoteEndringType.TID_STED in endringer) {
                 connection.updateMoteTidSted(
                     commit = false,
                     moteId = endretDialogmote.id,
                     newDialogmoteTidSted = endreDialogmote,
                 )
             }
-            dialogmotestatusService.updateMoteStatus(
+
+            val isBehandlerAdded = MoteEndringType.BEHANDLER_LAGT_TIL in endringer
+            val moteStatusEndretId = dialogmotestatusService.updateMoteStatus(
                 callId = callId,
                 connection = connection,
                 dialogmote = endretDialogmote,
                 newDialogmoteStatus = Dialogmote.Status.ENDRET,
                 opprettetAv = getNAVIdentFromToken(token),
                 token = token,
-                isBehandlerMotedeltaker = currentBehandler != null || behandlerAdded,
+                isBehandlerMotedeltaker = currentBehandler != null || isBehandlerAdded,
+            )
+            connection.createMoteEndringer(
+                moteStatusEndretId = moteStatusEndretId,
+                types = endringer,
             )
             dialogmotedeltakerService.slettBrukeroppgaverPaMote(
                 dialogmote = endretDialogmote

@@ -18,6 +18,7 @@ import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
 import no.nav.syfo.application.BehandlerVarselService
 import no.nav.syfo.domain.dialogmote.*
 import no.nav.syfo.infrastructure.client.dialogmelding.DialogmeldingClient
+import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.infrastructure.kafka.behandler.BehandlerDialogmeldingProducer
 import no.nav.syfo.infrastructure.kafka.behandler.KafkaBehandlerDialogmeldingDTO
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.EsyfovarselProducer
@@ -132,6 +133,7 @@ class PostDialogmoteEndreApiV2Test {
 
         val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, leggTilBehandler(), tidStedChanged = false))
         assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(listOf(MoteEndringType.BEHANDLER_LAGT_TIL), endringer(moteUuid))
 
         val mote = client.getMote()
         assertEquals(Dialogmote.Status.ENDRET.name, mote.status)
@@ -157,8 +159,13 @@ class PostDialogmoteEndreApiV2Test {
 
         val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, leggTilBehandler(), tidStedChanged = true))
         assertEquals(HttpStatusCode.OK, response.status)
-
+        assertEquals(
+            listOf(MoteEndringType.TID_STED, MoteEndringType.BEHANDLER_LAGT_TIL),
+            endringer(moteUuid),
+        )
         val mote = client.getMote()
+        assertEquals(1, mote.arbeidstaker.varselList.count { it.varselType == MotedeltakerVarselType.ENDRET.name })
+        assertEquals(1, mote.arbeidsgiver.varselList.count { it.varselType == MotedeltakerVarselType.ENDRET.name })
         assertEquals("Et annet sted", mote.sted)
         assertEquals(nyBehandlerRef, mote.behandler?.behandlerRef)
         assertEquals(1, sentDialogmeldinger.size)
@@ -173,6 +180,7 @@ class PostDialogmoteEndreApiV2Test {
 
         val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, endringBehandler(), tidStedChanged = true))
         assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(listOf(MoteEndringType.TID_STED), endringer(moteUuid))
 
         val mote = client.getMote()
         assertEquals(Dialogmote.Status.ENDRET.name, mote.status)
@@ -238,7 +246,30 @@ class PostDialogmoteEndreApiV2Test {
         assertNoChanges(client, expectedBehandlerRef = null)
     }
 
+    private fun endringer(moteUuid: String): List<MoteEndringType> =
+        database.connection.use { connection ->
+            connection.prepareStatement(
+                """
+                SELECT e.type FROM MOTE_ENDRING e
+                INNER JOIN MOTE_STATUS_ENDRET s ON s.id = e.mote_status_endret_id
+                INNER JOIN MOTE m ON m.id = s.mote_id
+                WHERE m.uuid = ? ORDER BY e.id
+                """,
+            ).use { ps ->
+                ps.setString(1, moteUuid)
+                ps.executeQuery().toList { MoteEndringType.valueOf(getString("type")) }
+            }
+        }
+
+    private fun antallEndringer(): Int =
+        database.connection.use { connection ->
+            connection.prepareStatement("SELECT count(*) FROM MOTE_ENDRING").use { ps ->
+                ps.executeQuery().toList { getInt(1) }.first()
+            }
+        }
+
     private suspend fun assertNoChanges(client: HttpClient, expectedBehandlerRef: String?) {
+        assertEquals(0, antallEndringer())
         val mote = client.getMote()
         assertEquals(Dialogmote.Status.INNKALT.name, mote.status)
         assertEquals(expectedBehandlerRef, mote.behandler?.behandlerRef)
