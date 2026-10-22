@@ -133,7 +133,7 @@ class PostDialogmoteEndreApiV2Test {
 
         val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, leggTilBehandler(), tidStedChanged = false))
         assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(listOf(MoteEndringType.BEHANDLER_LAGT_TIL), endringer(moteUuid))
+        assertEquals(listOf(MoteendringType.BEHANDLER_LAGT_TIL), endringer(moteUuid))
 
         val mote = client.getMote()
         assertEquals(Dialogmote.Status.ENDRET.name, mote.status)
@@ -160,7 +160,7 @@ class PostDialogmoteEndreApiV2Test {
         val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, leggTilBehandler(), tidStedChanged = true))
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
-            listOf(MoteEndringType.TID_STED, MoteEndringType.BEHANDLER_LAGT_TIL),
+            listOf(MoteendringType.TID_STED, MoteendringType.BEHANDLER_LAGT_TIL),
             endringer(moteUuid),
         )
         val mote = client.getMote()
@@ -180,7 +180,7 @@ class PostDialogmoteEndreApiV2Test {
 
         val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, endringBehandler(), tidStedChanged = true))
         assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(listOf(MoteEndringType.TID_STED), endringer(moteUuid))
+        assertEquals(listOf(MoteendringType.TID_STED), endringer(moteUuid))
 
         val mote = client.getMote()
         assertEquals(Dialogmote.Status.ENDRET.name, mote.status)
@@ -246,24 +246,24 @@ class PostDialogmoteEndreApiV2Test {
         assertNoChanges(client, expectedBehandlerRef = null)
     }
 
-    private fun endringer(moteUuid: String): List<MoteEndringType> =
+    private fun endringer(moteUuid: String): List<MoteendringType> =
         database.connection.use { connection ->
             connection.prepareStatement(
                 """
-                SELECT e.type FROM MOTE_ENDRING e
+                SELECT e.type FROM MOTEENDRING e
                 INNER JOIN MOTE_STATUS_ENDRET s ON s.id = e.mote_status_endret_id
                 INNER JOIN MOTE m ON m.id = s.mote_id
                 WHERE m.uuid = ? ORDER BY e.id
                 """,
             ).use { ps ->
                 ps.setString(1, moteUuid)
-                ps.executeQuery().toList { MoteEndringType.valueOf(getString("type")) }
+                ps.executeQuery().toList { MoteendringType.valueOf(getString("type")) }
             }
         }
 
     private fun antallEndringer(): Int =
         database.connection.use { connection ->
-            connection.prepareStatement("SELECT count(*) FROM MOTE_ENDRING").use { ps ->
+            connection.prepareStatement("SELECT count(*) FROM MOTEENDRING").use { ps ->
                 ps.executeQuery().toList { getInt(1) }.first()
             }
         }

@@ -8,11 +8,11 @@ import no.nav.syfo.infrastructure.database.model.toDialogmoteStatusEndret
 import no.nav.syfo.infrastructure.database.getDialogmote
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidstaker
-import no.nav.syfo.infrastructure.database.getMoteEndringTyper
+import no.nav.syfo.infrastructure.database.getMoteendringTyper
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
 import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteStatusEndret
-import no.nav.syfo.domain.dialogmote.MoteEndringType
+import no.nav.syfo.domain.dialogmote.MoteendringType
 import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
 import no.nav.syfo.domain.dialogmote.latest
 import no.nav.syfo.domain.Personident
@@ -45,7 +45,7 @@ class PublishDialogmoteStatusEndringService(
             personident = database.getMoteDeltakerArbeidstaker(moteId).personident,
             virksomhetsnummer = database.getMoteDeltakerArbeidsgiver(moteId).virksomhetsnummer,
             endringer = if (dialogmoteStatusEndret.status == Dialogmote.Status.ENDRET) {
-                database.getMoteEndringTyper(dialogmoteStatusEndret.id)
+                database.getMoteendringTyper(dialogmoteStatusEndret.id)
             } else {
                 null
             },
@@ -64,7 +64,7 @@ fun createKDialogmoteStatusEndring(
     pDialogmote: PDialogmote,
     personident: Personident,
     virksomhetsnummer: Virksomhetsnummer,
-    endringer: List<MoteEndringType>? = null,
+    endringer: List<MoteendringType>? = null,
 ): KDialogmoteStatusEndring {
     val kDialogmoteStatusEndring = KDialogmoteStatusEndring()
     kDialogmoteStatusEndring.setDialogmoteUuid(pDialogmote.uuid.toString())

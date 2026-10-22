@@ -1,27 +1,27 @@
 package no.nav.syfo.infrastructure.database
 
-import no.nav.syfo.domain.dialogmote.MoteEndringType
+import no.nav.syfo.domain.dialogmote.MoteendringType
 import java.sql.Connection
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.UUID
 
-const val queryCreateMoteEndring =
+const val queryCreateMoteendring =
     """
-    INSERT INTO MOTE_ENDRING (
+    INSERT INTO MOTEENDRING (
         uuid,
         created_at,
         mote_status_endret_id,
         type) VALUES (?, ?, ?, ?)
     """
 
-fun Connection.createMoteEndringer(
+fun Connection.createMoteendringer(
     moteStatusEndretId: Int,
-    types: Set<MoteEndringType>,
+    types: Set<MoteendringType>,
 ) {
     if (types.isEmpty()) return
     val now = Timestamp.from(Instant.now())
-    prepareStatement(queryCreateMoteEndring).use { ps ->
+    prepareStatement(queryCreateMoteendring).use { ps ->
         types.forEach { type ->
             ps.setString(1, UUID.randomUUID().toString())
             ps.setTimestamp(2, now)
@@ -33,18 +33,18 @@ fun Connection.createMoteEndringer(
     }
 }
 
-const val queryGetMoteEndringTyper =
+const val queryGetMoteendringTyper =
     """
     SELECT type
-    FROM MOTE_ENDRING
+    FROM MOTEENDRING
     WHERE mote_status_endret_id = ?
     ORDER BY id
     """
 
-fun DatabaseInterface.getMoteEndringTyper(moteStatusEndretId: Int): List<MoteEndringType> =
+fun DatabaseInterface.getMoteendringTyper(moteStatusEndretId: Int): List<MoteendringType> =
     connection.use { connection ->
-        connection.prepareStatement(queryGetMoteEndringTyper).use { ps ->
+        connection.prepareStatement(queryGetMoteendringTyper).use { ps ->
             ps.setInt(1, moteStatusEndretId)
-            ps.executeQuery().toList { MoteEndringType.valueOf(getString("type")) }
+            ps.executeQuery().toList { MoteendringType.valueOf(getString("type")) }
         }
     }
