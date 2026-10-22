@@ -32,3 +32,19 @@ fun Connection.createMoteEndringer(
         ps.executeBatch()
     }
 }
+
+const val queryGetMoteEndringTyper =
+    """
+    SELECT type
+    FROM MOTE_ENDRING
+    WHERE mote_status_endret_id = ?
+    ORDER BY id
+    """
+
+fun DatabaseInterface.getMoteEndringTyper(moteStatusEndretId: Int): List<MoteEndringType> =
+    connection.use { connection ->
+        connection.prepareStatement(queryGetMoteEndringTyper).use { ps ->
+            ps.setInt(1, moteStatusEndretId)
+            ps.executeQuery().toList { MoteEndringType.valueOf(getString("type")) }
+        }
+    }

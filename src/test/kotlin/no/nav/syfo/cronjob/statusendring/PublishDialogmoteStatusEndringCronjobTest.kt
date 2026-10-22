@@ -3,10 +3,23 @@ package no.nav.syfo.cronjob.statusendring
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
 import io.mockk.justRun
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.api.dto.EndreDialogmoteDTO
+import no.nav.syfo.api.dto.EndreMoteBegrunnelseBehandlerDTO
+import no.nav.syfo.api.dto.EndreMoteBegrunnelseDTO
+import no.nav.syfo.api.dto.EndreMoteNyBehandlerDTO
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteAvlysPath
+import no.nav.syfo.api.endpoints.dialogmoteApiMoteEndrePath
+import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
+import no.nav.syfo.domain.dialogmote.Dialogmote
+import no.nav.syfo.domain.dialogmote.DocumentComponentDTO
+import no.nav.syfo.domain.dialogmote.DocumentComponentType
+import java.util.UUID
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteFerdigstillPath
 import no.nav.syfo.api.endpoints.dialogmoteApiMoteTidStedPath
 import no.nav.syfo.api.endpoints.dialogmoteApiV2Basepath
@@ -109,6 +122,60 @@ class PublishDialogmoteStatusEndringCronjobTest {
             assertEquals(0, result.failed)
             assertEquals(3, result.updated)
         }
+    }
+
+    @Test
+    fun `publishes endringer for ENDRET and null for other statuses`() {
+        val newDialogmoteDTO = generateNewDialogmoteDTO(UserConstants.ARBEIDSTAKER_FNR)
+        val document = listOf(
+            DocumentComponentDTO(type = DocumentComponentType.PARAGRAPH, title = null, texts = listOf("tekst")),
+        )
+
+        testApplication {
+            val client = setupApiAndClient(
+                behandlerVarselService = behandlerVarselService,
+                esyfovarselProducer = esyfovarselProducerMock,
+            )
+            val moteUuid = client.postAndGetDialogmote(validToken, newDialogmoteDTO).uuid
+
+            client.post("$dialogmoteApiV2Basepath/$moteUuid$dialogmoteApiMoteEndrePath") {
+                bearerAuth(validToken)
+                contentType(ContentType.Application.Json)
+                setBody(
+                    EndreDialogmoteDTO(
+                        sted = "Et annet sted",
+                        tid = newDialogmoteDTO.tidSted.tid,
+                        videoLink = newDialogmoteDTO.tidSted.videoLink,
+                        arbeidstaker = EndreMoteBegrunnelseDTO("at", document),
+                        arbeidsgiver = EndreMoteBegrunnelseDTO("ag", document),
+                        behandler = EndreMoteBegrunnelseBehandlerDTO(
+                            fritekst = "innkalling",
+                            dokument = document,
+                            deltaker = EndreMoteNyBehandlerDTO(
+                                personIdent = null,
+                                behandlerRef = UUID.randomUUID().toString(),
+                                behandlerNavn = "Ny Lege",
+                                behandlerKontor = "Nytt Kontor",
+                            ),
+                        ),
+                    ),
+                )
+            }.apply {
+                assertEquals(HttpStatusCode.OK, status)
+            }
+        }
+
+        val published = mutableListOf<KDialogmoteStatusEndring>()
+        every { dialogmoteStatusEndringProducer.sendDialogmoteStatusEndring(capture(published)) } just Runs
+        runBlocking { publishDialogmoteStatusEndringCronjob.dialogmoteStatusEndringPublishJob() }
+
+        assertEquals(
+            mapOf(
+                Dialogmote.Status.INNKALT.name to null,
+                Dialogmote.Status.ENDRET.name to listOf("TID_STED", "BEHANDLER_LAGT_TIL"),
+            ),
+            published.associate { it.statusEndringType to it.dialogmoteEndringer?.map { type -> type.toString() } },
+        )
     }
 
     @Test
