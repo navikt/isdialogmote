@@ -17,7 +17,7 @@ data class EndreDialogmoteDTO(
 
 data class EndreMoteBegrunnelseBehandlerDTO(
     val fritekst: String,
-    val dokument: List<DocumentComponentDTO>,
+    val moteDokument: List<DocumentComponentDTO>,
     val deltaker: EndreMoteNyBehandlerDTO?,
 )
 

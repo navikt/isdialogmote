@@ -782,7 +782,7 @@ class DialogmeldingServiceTest {
                             arbeidsgiver = begrunnelse,
                             behandler = EndreMoteBegrunnelseBehandlerDTO(
                                 fritekst = "endring behandler",
-                                dokument = emptyList(),
+                                moteDokument = emptyList(),
                                 deltaker = null,
                             ),
                         )

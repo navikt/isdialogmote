@@ -150,7 +150,7 @@ class PublishDialogmoteStatusEndringCronjobTest {
                         arbeidsgiver = EndreMoteBegrunnelseDTO("ag", document),
                         behandler = EndreMoteBegrunnelseBehandlerDTO(
                             fritekst = "innkalling",
-                            dokument = document,
+                            moteDokument = document,
                             deltaker = EndreMoteNyBehandlerDTO(
                                 personIdent = null,
                                 behandlerRef = UUID.randomUUID().toString(),

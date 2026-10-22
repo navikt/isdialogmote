@@ -497,12 +497,12 @@ class DialogmoteService(
         is BehandlerEndring.NyBehandler -> pdfGenClient.pdfInnkalling(
             callId = callId,
             mottakerNavn = behandlerEndring.deltaker.behandlerNavn,
-            pdfContent = behandlerEndring.dto.dokument,
+            pdfContent = behandlerEndring.dto.moteDokument,
         ) ?: throw RuntimeException("Failed to request PDF - Innkalling Behandler")
         is BehandlerEndring.EksisterendeBehandler -> pdfGenClient.pdfEndringTidSted(
             callId = callId,
             mottakerNavn = behandlerEndring.behandler.behandlerNavn,
-            pdfContent = behandlerEndring.dto.dokument,
+            pdfContent = behandlerEndring.dto.moteDokument,
         ) ?: throw RuntimeException("Failed to request PDF - Endring Behandler")
     }
 
@@ -558,13 +558,13 @@ class DialogmoteService(
             varselType = varselType,
             pdfId = pdfId,
             fritekst = dto.fritekst,
-            document = dto.dokument,
+            document = dto.moteDokument,
         )
         if (!motetidspunkt.isBefore(LocalDateTime.now())) {
             varselService.sendBehandlerVarsel(
                 behandlerRef = behandlerRef,
                 arbeidstakerPersonIdent = dialogmote.arbeidstaker.personident,
-                document = dto.dokument,
+                document = dto.moteDokument,
                 pdf = pdf,
                 varselType = varselType,
                 varselUuid = varselUuid,
