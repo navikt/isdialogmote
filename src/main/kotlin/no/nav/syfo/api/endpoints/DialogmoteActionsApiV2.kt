@@ -164,8 +164,8 @@ fun Route.registerDialogmoteActionsApiV2(
             ) { authorizedUser, _, callId ->
                 dialogmoteService.endreMote(
                     callId = callId,
-                    dialogmote = dialogmote,
-                    endreDialogmote = endreDialogmote,
+                    existingDialogmote = dialogmote,
+                    endreDialogmoteDTO = endreDialogmote,
                     token = authorizedUser.token,
                 )
                 call.respond(HttpStatusCode.OK)

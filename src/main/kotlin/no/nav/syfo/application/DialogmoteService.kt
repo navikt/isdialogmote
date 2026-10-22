@@ -374,18 +374,18 @@ class DialogmoteService(
 
     suspend fun endreMote(
         callId: String,
-        dialogmote: Dialogmote,
-        endreDialogmote: EndreDialogmoteDTO,
+        existingDialogmote: Dialogmote,
+        endreDialogmoteDTO: EndreDialogmoteDTO,
         token: String,
     ) {
-        val endretDialogmote = dialogmote.endre()
+        val endretDialogmote = existingDialogmote.endre()
         val behandlerEndring = BehandlerEndring.from(
-            currentBehandler = dialogmote.behandler,
-            behandlerDTO = endreDialogmote.behandler,
+            currentBehandler = existingDialogmote.behandler,
+            behandlerDTO = endreDialogmoteDTO.behandler,
         )
 
-        val endringer = dialogmote.finnEndringer(endreDialogmote)
-        if (endringer.isEmpty()) {
+        val moteendringTypes = existingDialogmote.finnEndringer(endreDialogmoteDTO)
+        if (moteendringTypes.isEmpty()) {
             throw IllegalArgumentException("Failed to change dialogmote: nothing changed")
         }
 
@@ -402,13 +402,13 @@ class DialogmoteService(
             callId = callId,
             mottakerNavn = arbeidstakernavn,
             mottakerFodselsnummer = endretDialogmote.arbeidstaker.personident.value,
-            pdfContent = endreDialogmote.arbeidstaker.endringsdokument,
+            pdfContent = endreDialogmoteDTO.arbeidstaker.endringsdokument,
         ) ?: throw RuntimeException("Failed to request PDF - Endring Arbeidstaker")
 
         val pdfEndringArbeidsgiver = pdfGenClient.pdfEndringTidSted(
             callId = callId,
             mottakerNavn = narmesteLeder?.narmesteLederNavn ?: narmesteLeder?.virksomhetsnavn,
-            pdfContent = endreDialogmote.arbeidsgiver.endringsdokument,
+            pdfContent = endreDialogmoteDTO.arbeidsgiver.endringsdokument,
         ) ?: throw RuntimeException("Failed to request PDF - Endring Arbeidsgiver")
 
         val behandlerVarsel = when (behandlerEndring) {
@@ -427,11 +427,11 @@ class DialogmoteService(
 
         transactionManager.run { transaction ->
             val connection = transaction.connection
-            if (MoteendringType.TID_STED in endringer) {
+            if (MoteendringType.TID_STED in moteendringTypes) {
                 connection.updateMoteTidSted(
                     commit = false,
                     moteId = endretDialogmote.id,
-                    newDialogmoteTidSted = endreDialogmote,
+                    newDialogmoteTidSted = endreDialogmoteDTO,
                 )
             }
 
@@ -446,7 +446,7 @@ class DialogmoteService(
             )
             connection.createMoteendringer(
                 moteStatusEndretId = moteStatusEndretId,
-                types = endringer,
+                types = moteendringTypes,
             )
             dialogmotedeltakerService.slettBrukeroppgaverPaMote(
                 dialogmote = endretDialogmote
@@ -466,11 +466,11 @@ class DialogmoteService(
                 pdfBehandler = null,
                 narmesteLeder = narmesteLeder,
                 varselType = MotedeltakerVarselType.ENDRET,
-                fritekstArbeidstaker = endreDialogmote.arbeidstaker.begrunnelse,
-                fritekstArbeidsgiver = endreDialogmote.arbeidsgiver.begrunnelse,
-                documentArbeidstaker = endreDialogmote.arbeidstaker.endringsdokument,
-                documentArbeidsgiver = endreDialogmote.arbeidsgiver.endringsdokument,
-                motetidspunkt = endreDialogmote.tid,
+                fritekstArbeidstaker = endreDialogmoteDTO.arbeidstaker.begrunnelse,
+                fritekstArbeidsgiver = endreDialogmoteDTO.arbeidsgiver.begrunnelse,
+                documentArbeidstaker = endreDialogmoteDTO.arbeidstaker.endringsdokument,
+                documentArbeidsgiver = endreDialogmoteDTO.arbeidsgiver.endringsdokument,
+                motetidspunkt = endreDialogmoteDTO.tid,
                 digitalArbeidstakerVarsling = digitalVarsling,
                 virksomhetsnummer = virksomhetsnummer,
                 token = token,
@@ -482,7 +482,7 @@ class DialogmoteService(
                     connection = connection,
                     dialogmote = endretDialogmote,
                     behandlerVarsel = behandlerVarsel,
-                    motetidspunkt = endreDialogmote.tid,
+                    motetidspunkt = endreDialogmoteDTO.tid,
                     token = token,
                     callId = callId,
                 )
