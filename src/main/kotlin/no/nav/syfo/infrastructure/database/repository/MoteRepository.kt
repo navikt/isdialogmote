@@ -391,7 +391,7 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             """
                 SELECT *
                 FROM MOTE
-                WHERE tildelt_enhet = ? AND status IN ('INNKALT', 'NYTT_TID_STED')
+                WHERE tildelt_enhet = ? AND status IN ('INNKALT', 'NYTT_TID_STED', 'ENDRET')
                 ORDER BY MOTE.created_at DESC
             """
 
@@ -399,7 +399,7 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
             """
                 SELECT *
                 FROM MOTE
-                WHERE tildelt_veileder_ident = ? AND status IN ('INNKALT', 'NYTT_TID_STED')
+                WHERE tildelt_veileder_ident = ? AND status IN ('INNKALT', 'NYTT_TID_STED', 'ENDRET')
                 ORDER BY MOTE.created_at DESC
             """
 
@@ -433,11 +433,14 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                 ORDER BY created_at DESC
             """
 
+        // Latest row is the active behandler; replaced behandlere are kept for history
         private const val GET_MOTEDELTAKER_BEHANDLER =
             """
                 SELECT *
                 FROM MOTEDELTAKER_BEHANDLER
                 WHERE mote_id = ?
+                ORDER BY created_at DESC, id DESC
+                LIMIT 1
             """
 
         private const val GET_VARSLER_MOTEDELTAKER_BEHANDLER =
@@ -520,7 +523,7 @@ class MoteRepository(private val database: DatabaseInterface) : IMoteRepository 
                     INNER JOIN TID_STED t1 ON (m.id = t1.mote_id)
                 WHERE s1.created_at = (SELECT max(s2.created_at) FROM MOTE_STATUS_ENDRET s2 WHERE s2.mote_id = m.id)
                     AND t1.created_at = (SELECT max(t2.created_at) FROM TID_STED t2 WHERE t2.mote_id = m.id)
-                    AND s1.status in ('INNKALT','NYTT_TID_STED')
+                    AND s1.status in ('INNKALT','NYTT_TID_STED','ENDRET')
                     AND t1.tid < ?
                 LIMIT 200
             """

@@ -2,7 +2,7 @@ package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.api.dto.AvlysningTilMottakereDTO
 import no.nav.syfo.api.dto.AvlysningDTO
-import no.nav.syfo.api.dto.EndreTidStedBegrunnelseDTO
+import no.nav.syfo.api.dto.EndreMoteBegrunnelseDTO
 import no.nav.syfo.api.dto.EndretTidStedDTO
 import no.nav.syfo.api.dto.NewDialogmoteDTO
 import no.nav.syfo.api.dto.NewDialogmoteTidStedDTO
@@ -62,11 +62,11 @@ fun generateEndreDialogmoteTidStedDTO(
     sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
     tid = tid,
     videoLink = "https://meet.google.com/xyz",
-    arbeidstaker = EndreTidStedBegrunnelseDTO(
+    arbeidstaker = EndreMoteBegrunnelseDTO(
         begrunnelse = "",
         endringsdokument = emptyList(),
     ),
-    arbeidsgiver = EndreTidStedBegrunnelseDTO(
+    arbeidsgiver = EndreMoteBegrunnelseDTO(
         begrunnelse = "",
         endringsdokument = emptyList(),
     ),
@@ -77,15 +77,15 @@ fun generateEndreDialogmoteTidStedDTOWithBehandler() = EndretTidStedDTO(
     sted = "This is a very lang text that has a lot of characters and describes where the meeting will take place.",
     tid = DIALOGMOTE_TIDSPUNKT_FIXTURE,
     videoLink = "https://meet.google.com/xyz",
-    arbeidstaker = EndreTidStedBegrunnelseDTO(
+    arbeidstaker = EndreMoteBegrunnelseDTO(
         begrunnelse = "",
         endringsdokument = emptyList(),
     ),
-    arbeidsgiver = EndreTidStedBegrunnelseDTO(
+    arbeidsgiver = EndreMoteBegrunnelseDTO(
         begrunnelse = "",
         endringsdokument = emptyList(),
     ),
-    behandler = EndreTidStedBegrunnelseDTO(
+    behandler = EndreMoteBegrunnelseDTO(
         begrunnelse = "",
         endringsdokument = emptyList(),
     ),

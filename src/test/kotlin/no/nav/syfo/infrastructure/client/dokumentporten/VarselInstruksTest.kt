@@ -129,6 +129,13 @@ class VarselInstruksTest {
             smsTekstTemplate = SMS_BODY_NYTT_TID_STED,
         ),
         VarselInstruksForventning(
+            varselType = MotedeltakerVarselType.ENDRET,
+            epostTittelTemplate = EMAIL_TITTEL_ENDRET,
+            varselTekst = VARSEL_TEKST_ENDRET,
+            epostBodyTemplate = EMAIL_BODY_ENDRET,
+            smsTekstTemplate = SMS_BODY_ENDRET,
+        ),
+        VarselInstruksForventning(
             varselType = MotedeltakerVarselType.AVLYST,
             epostTittelTemplate = EMAIL_TITTEL_AVLYST,
             varselTekst = VARSEL_TEKST_AVLYST,

@@ -7,7 +7,8 @@ import no.nav.syfo.infrastructure.client.dokarkiv.domain.DialogmoteDeltakerType
 enum class MotedeltakerVarselType {
     AVLYST,
     INNKALT,
-    NYTT_TID_STED,
+    NYTT_TID_STED, // Denne er erstattet med ENDRET, men beholdes for å kunne mappe mot eksisterende data i databasen
+    ENDRET,
     REFERAT,
 }
 
@@ -21,6 +22,9 @@ fun MotedeltakerVarselType.toJournalpostTittel(): String {
         }
         MotedeltakerVarselType.NYTT_TID_STED -> {
             "Endring av tid og sted for innkalt dialogmøte"
+        }
+        MotedeltakerVarselType.ENDRET -> {
+            "Endring av innkalt dialogmøte"
         }
         MotedeltakerVarselType.REFERAT -> {
             "Referat fra dialogmøte"
@@ -50,6 +54,12 @@ fun MotedeltakerVarselType.toBrevkodeType(
                 DialogmoteDeltakerType.ARBEIDSGIVER -> BrevkodeType.DIALOGMOTE_ENDRING_TID_STED_AG
                 DialogmoteDeltakerType.BEHANDLER -> BrevkodeType.DIALOGMOTE_ENDRING_TID_STED_BEH
             }
+        MotedeltakerVarselType.ENDRET ->
+            when (dialogmoteDeltakerType) {
+                DialogmoteDeltakerType.ARBEIDSTAKER -> BrevkodeType.DIALOGMOTE_ENDRING_AT
+                DialogmoteDeltakerType.ARBEIDSGIVER -> BrevkodeType.DIALOGMOTE_ENDRING_AG
+                DialogmoteDeltakerType.BEHANDLER -> BrevkodeType.DIALOGMOTE_ENDRING_BEH
+            }
         MotedeltakerVarselType.REFERAT ->
             when (dialogmoteDeltakerType) {
                 DialogmoteDeltakerType.ARBEIDSTAKER -> BrevkodeType.DIALOGMOTE_REFERAT_AT
@@ -63,6 +73,7 @@ fun MotedeltakerVarselType.toBrevType(): BrevType {
     return when (this) {
         MotedeltakerVarselType.INNKALT -> BrevType.INNKALT
         MotedeltakerVarselType.NYTT_TID_STED -> BrevType.NYTT_TID_STED
+        MotedeltakerVarselType.ENDRET -> BrevType.ENDRET
         MotedeltakerVarselType.AVLYST -> BrevType.AVLYST
         MotedeltakerVarselType.REFERAT -> BrevType.REFERAT
     }
@@ -72,6 +83,7 @@ fun MotedeltakerVarselType.getDialogMeldingType(): DialogmeldingType {
     return when (this) {
         MotedeltakerVarselType.INNKALT -> DialogmeldingType.DIALOG_FORESPORSEL
         MotedeltakerVarselType.NYTT_TID_STED -> DialogmeldingType.DIALOG_FORESPORSEL
+        MotedeltakerVarselType.ENDRET -> DialogmeldingType.DIALOG_FORESPORSEL
         MotedeltakerVarselType.AVLYST -> DialogmeldingType.DIALOG_NOTAT
         MotedeltakerVarselType.REFERAT -> DialogmeldingType.DIALOG_NOTAT
     }
@@ -81,6 +93,7 @@ fun MotedeltakerVarselType.getDialogMeldingKodeverk(): DialogmeldingKodeverk {
     return when (this) {
         MotedeltakerVarselType.INNKALT -> DialogmeldingKodeverk.DIALOGMOTE
         MotedeltakerVarselType.NYTT_TID_STED -> DialogmeldingKodeverk.DIALOGMOTE
+        MotedeltakerVarselType.ENDRET -> DialogmeldingKodeverk.DIALOGMOTE
         MotedeltakerVarselType.AVLYST -> DialogmeldingKodeverk.HENVENDELSE
         MotedeltakerVarselType.REFERAT -> DialogmeldingKodeverk.HENVENDELSE
     }
@@ -89,7 +102,8 @@ fun MotedeltakerVarselType.getDialogMeldingKodeverk(): DialogmeldingKodeverk {
 fun MotedeltakerVarselType.getDialogMeldingKode(): DialogmeldingKode {
     return when (this) {
         MotedeltakerVarselType.INNKALT -> DialogmeldingKode.INNKALLING
-        MotedeltakerVarselType.NYTT_TID_STED -> DialogmeldingKode.TIDSTED
+        MotedeltakerVarselType.NYTT_TID_STED -> DialogmeldingKode.ENDRING
+        MotedeltakerVarselType.ENDRET -> DialogmeldingKode.ENDRING
         MotedeltakerVarselType.AVLYST -> DialogmeldingKode.AVLYST
         MotedeltakerVarselType.REFERAT -> DialogmeldingKode.REFERAT
     }
@@ -98,7 +112,8 @@ fun MotedeltakerVarselType.getDialogMeldingKode(): DialogmeldingKode {
 fun MotedeltakerVarselType.erBrukeroppgaveVarsel(): Boolean {
     return when (this) {
         MotedeltakerVarselType.INNKALT,
-        MotedeltakerVarselType.NYTT_TID_STED -> true
+        MotedeltakerVarselType.NYTT_TID_STED,
+        MotedeltakerVarselType.ENDRET -> true
         else -> false
     }
 }
@@ -113,7 +128,7 @@ enum class DialogmeldingKode(
     val value: Int,
 ) {
     INNKALLING(1),
-    TIDSTED(2),
+    ENDRING(2),
     AVLYST(4),
     REFERAT(9),
 }

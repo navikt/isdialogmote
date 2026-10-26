@@ -74,7 +74,7 @@ class DialogmoteOutdatedCronjob(
 
     /**
      * Henter moter som skal lukkes adhoc fra listen [uuids]
-     * Lukker bare de som har status INNKALT eller NYTT_TID_STED, for å unngå å lukke moter som allerede er lukket eller avlyst
+     * Lukker bare de som har status INNKALT, NYTT_TID_STED eller ENDRET, for å unngå å lukke moter som allerede er lukket eller avlyst
      *
      * @return List<Dialogmote> med moter som skal lukkes
      */
@@ -82,7 +82,7 @@ class DialogmoteOutdatedCronjob(
         uuids.mapNotNull {
             try {
                 val mote = moteRepository.getMote(UUID.fromString(it))
-                if (mote.status == Dialogmote.Status.INNKALT || mote.status == Dialogmote.Status.NYTT_TID_STED) {
+                if (mote.isActive()) {
                     mote
                 } else {
                     log.error("Mote with uuid $it has wrong status, skipping close")

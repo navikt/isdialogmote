@@ -21,16 +21,19 @@ class DialogmotestatusService(
         opprettetAv: String,
         callId: String? = null,
         token: String? = null,
-    ) {
+        isBehandlerMotedeltaker: Boolean = dialogmote.behandler != null,
+    ): Int {
         connection.updateMoteStatus(
             commit = false,
             moteId = dialogmote.id,
             moteStatus = newDialogmoteStatus,
         )
-        createMoteStatusEndring(
+        return createMoteStatusEndring(
             callId = callId,
             connection = connection,
-            dialogmote = dialogmote,
+            dialogmoteId = dialogmote.id,
+            arbeidstakerPersonIdent = dialogmote.arbeidstaker.personident,
+            isBehandlerMotedeltaker = isBehandlerMotedeltaker,
             dialogmoteStatus = newDialogmoteStatus,
             opprettetAv = opprettetAv,
             token = token,
@@ -86,7 +89,7 @@ class DialogmotestatusService(
         opprettetAv: String,
         callId: String? = null,
         token: String? = null,
-    ) {
+    ): Int {
         val tilfelle = if (token != null) {
             oppfolgingstilfelleClient.oppfolgingstilfellePerson(
                 personident = arbeidstakerPersonIdent,
@@ -99,7 +102,7 @@ class DialogmotestatusService(
             )
         }
 
-        moteStatusEndretRepository.createMoteStatusEndring(
+        return moteStatusEndretRepository.createMoteStatusEndring(
             connection = connection,
             commit = false,
             moteId = dialogmoteId,
@@ -107,6 +110,6 @@ class DialogmotestatusService(
             isBehandlerMotedeltaker = isBehandlerMotedeltaker,
             status = dialogmoteStatus,
             tilfelleStart = tilfelle?.start,
-        )
+        ).first
     }
 }

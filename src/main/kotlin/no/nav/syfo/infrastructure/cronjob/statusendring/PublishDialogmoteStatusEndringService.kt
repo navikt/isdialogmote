@@ -8,8 +8,11 @@ import no.nav.syfo.infrastructure.database.model.toDialogmoteStatusEndret
 import no.nav.syfo.infrastructure.database.getDialogmote
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidsgiver
 import no.nav.syfo.infrastructure.database.getMoteDeltakerArbeidstaker
+import no.nav.syfo.infrastructure.database.getMoteendringTyper
 import no.nav.syfo.infrastructure.database.repository.MoteStatusEndretRepository
+import no.nav.syfo.domain.dialogmote.Dialogmote
 import no.nav.syfo.domain.dialogmote.DialogmoteStatusEndret
+import no.nav.syfo.domain.dialogmote.MoteendringType
 import no.nav.syfo.domain.dialogmote.DialogmoteTidSted
 import no.nav.syfo.domain.dialogmote.latest
 import no.nav.syfo.domain.Personident
@@ -41,6 +44,11 @@ class PublishDialogmoteStatusEndringService(
             pDialogmote = database.getDialogmote(id = moteId).first(),
             personident = database.getMoteDeltakerArbeidstaker(moteId).personident,
             virksomhetsnummer = database.getMoteDeltakerArbeidsgiver(moteId).virksomhetsnummer,
+            endringer = if (dialogmoteStatusEndret.status == Dialogmote.Status.ENDRET) {
+                database.getMoteendringTyper(dialogmoteStatusEndret.id)
+            } else {
+                null
+            },
         )
         dialogmoteStatusEndringProducer.sendDialogmoteStatusEndring(kDialogmoteStatusEndring)
 
@@ -56,6 +64,7 @@ fun createKDialogmoteStatusEndring(
     pDialogmote: PDialogmote,
     personident: Personident,
     virksomhetsnummer: Virksomhetsnummer,
+    endringer: List<MoteendringType>? = null,
 ): KDialogmoteStatusEndring {
     val kDialogmoteStatusEndring = KDialogmoteStatusEndring()
     kDialogmoteStatusEndring.setDialogmoteUuid(pDialogmote.uuid.toString())
@@ -70,6 +79,7 @@ fun createKDialogmoteStatusEndring(
     kDialogmoteStatusEndring.setArbeidstaker(true)
     kDialogmoteStatusEndring.setArbeidsgiver(true)
     kDialogmoteStatusEndring.setSykmelder(dialogmoteStatusEndret.motedeltakerBehandler)
+    kDialogmoteStatusEndring.setDialogmoteEndringer(endringer?.map { it.name })
     return kDialogmoteStatusEndring
 }
 

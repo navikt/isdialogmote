@@ -46,7 +46,7 @@ class ArbeidstakerVarselService(
             type = HendelseType.SM_DIALOGMOTE_LEST,
             arbeidstakerFnr = personident.value,
             data = VarselData(
-                journalpost = VarselDataJournalpost(varselUuid.toString(), null)
+                journalpost = VarselDataJournalpost(varselUuid.toString(), null),
             ),
             orgnummer = null,
         )
@@ -60,6 +60,7 @@ fun getArbeidstakerHendelseType(motedeltakerVarselType: MotedeltakerVarselType):
         MotedeltakerVarselType.INNKALT -> HendelseType.SM_DIALOGMOTE_INNKALT
         MotedeltakerVarselType.AVLYST -> HendelseType.SM_DIALOGMOTE_AVLYST
         MotedeltakerVarselType.NYTT_TID_STED -> HendelseType.SM_DIALOGMOTE_NYTT_TID_STED
+        MotedeltakerVarselType.ENDRET -> HendelseType.SM_DIALOGMOTE_ENDRET
         MotedeltakerVarselType.REFERAT -> HendelseType.SM_DIALOGMOTE_REFERAT
     }
 }
