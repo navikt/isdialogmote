@@ -27,7 +27,7 @@ data class DialogmoteDTO(
                 uuid = dialogmote.uuid.toString(),
                 createdAt = dialogmote.createdAt,
                 updatedAt = dialogmote.updatedAt,
-                status = dialogmote.status.name,
+                status = dialogmote.status.toApiStatus().name,
                 opprettetAv = dialogmote.opprettetAv,
                 tildeltVeilederIdent = dialogmote.tildeltVeilederIdent,
                 tildeltEnhet = dialogmote.tildeltEnhet,

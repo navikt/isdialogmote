@@ -20,7 +20,7 @@ data class DialogmotedeltakerArbeidstakerVarselDTO(
             return DialogmotedeltakerArbeidstakerVarselDTO(
                 uuid = varsel.uuid.toString(),
                 createdAt = varsel.createdAt,
-                varselType = varsel.varselType.name,
+                varselType = varsel.varselType.toApiVarselType().name,
                 digitalt = varsel.digitalt,
                 lestDato = varsel.lestDatoArbeidstaker,
                 document = varsel.document,

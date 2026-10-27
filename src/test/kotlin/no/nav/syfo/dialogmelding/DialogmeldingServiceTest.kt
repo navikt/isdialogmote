@@ -477,7 +477,7 @@ class DialogmeldingServiceTest {
                 val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
                 val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                assertEquals(MotedeltakerVarselType.NYTT_TID_STED.name, endringVarsel.varselType)
+                assertEquals(MotedeltakerVarselType.ENDRET.name, endringVarsel.varselType)
                 val varselSvarDTO = endringVarsel.svar.first()
                 assertNotNull(varselSvarDTO.uuid)
                 assertNotNull(varselSvarDTO.createdAt)
@@ -517,7 +517,7 @@ class DialogmeldingServiceTest {
                 val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
                 val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                assertEquals(MotedeltakerVarselType.NYTT_TID_STED.name, endringVarsel.varselType)
+                assertEquals(MotedeltakerVarselType.ENDRET.name, endringVarsel.varselType)
                 val varselSvarDTO = endringVarsel.svar.first()
                 assertNotNull(varselSvarDTO.uuid)
                 assertNotNull(varselSvarDTO.createdAt)
@@ -556,7 +556,7 @@ class DialogmeldingServiceTest {
                 val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
                 val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                assertEquals(MotedeltakerVarselType.NYTT_TID_STED.name, endringVarsel.varselType)
+                assertEquals(MotedeltakerVarselType.ENDRET.name, endringVarsel.varselType)
                 val varselSvarDTO = endringVarsel.svar.first()
                 assertNotNull(varselSvarDTO.uuid)
                 assertNotNull(varselSvarDTO.createdAt)
@@ -595,7 +595,7 @@ class DialogmeldingServiceTest {
                 val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
                 val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                assertEquals(MotedeltakerVarselType.NYTT_TID_STED.name, endringVarsel.varselType)
+                assertEquals(MotedeltakerVarselType.ENDRET.name, endringVarsel.varselType)
                 val varselSvarDTO = endringVarsel.svar.first()
                 assertNotNull(varselSvarDTO.uuid)
                 assertNotNull(varselSvarDTO.createdAt)
@@ -634,7 +634,7 @@ class DialogmeldingServiceTest {
                 val dialogmoteList = response.body<List<DialogmoteDTO>>()
 
                 val endringVarsel = dialogmoteList.first().behandler!!.varselList.first()
-                assertEquals(MotedeltakerVarselType.NYTT_TID_STED.name, endringVarsel.varselType)
+                assertEquals(MotedeltakerVarselType.ENDRET.name, endringVarsel.varselType)
                 val varselSvarDTO = endringVarsel.svar.first()
                 assertNotNull(varselSvarDTO.uuid)
                 assertNotNull(varselSvarDTO.createdAt)
@@ -792,10 +792,23 @@ class DialogmeldingServiceTest {
                 val varselList = client.getDialogmoter(validToken, UserConstants.ARBEIDSTAKER_FNR)
                     .body<List<DialogmoteDTO>>().first().behandler!!.varselList
                 innkallingUuid = varselList.first { it.varselType == MotedeltakerVarselType.INNKALT.name }.uuid
-                nyttTidStedUuid = varselList.first { it.varselType == MotedeltakerVarselType.NYTT_TID_STED.name }.uuid
-                endretUuid = varselList.first { it.varselType == MotedeltakerVarselType.ENDRET.name }.uuid
+                // API-et returnerer ENDRET for begge, så uuid hentes fra databasen
+                nyttTidStedUuid = getBehandlerVarselUuid(MotedeltakerVarselType.NYTT_TID_STED)
+                endretUuid = getBehandlerVarselUuid(MotedeltakerVarselType.ENDRET)
             }
         }
+
+        private fun getBehandlerVarselUuid(varselType: MotedeltakerVarselType): String =
+            database.connection.use { connection ->
+                connection.prepareStatement("SELECT uuid FROM MOTEDELTAKER_BEHANDLER_VARSEL WHERE varseltype = ?")
+                    .use {
+                        it.setString(1, varselType.name)
+                        it.executeQuery().use { rs ->
+                            rs.next()
+                            rs.getString("uuid")
+                        }
+                    }
+            }
 
         private fun setCreatedAt(varselUuid: String, createdAt: LocalDateTime) {
             database.connection.use { connection ->

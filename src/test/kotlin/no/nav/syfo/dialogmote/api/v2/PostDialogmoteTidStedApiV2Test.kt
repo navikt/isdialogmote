@@ -156,11 +156,11 @@ class PostDialogmoteTidStedApiV2Test {
                 assertEquals(1, dialogmoteList.size)
 
                 val dialogmoteDTO = dialogmoteList.first()
-                assertEquals(Dialogmote.Status.NYTT_TID_STED.name, dialogmoteDTO.status)
+                assertEquals(Dialogmote.Status.ENDRET.name, dialogmoteDTO.status)
 
                 assertEquals(newDialogmoteDTO.arbeidstaker.personIdent, dialogmoteDTO.arbeidstaker.personIdent)
                 val arbeidstakerVarselDTO = dialogmoteDTO.arbeidstaker.varselList.find {
-                    it.varselType == MotedeltakerVarselType.NYTT_TID_STED.name
+                    it.varselType == MotedeltakerVarselType.ENDRET.name
                 }
                 assertNotNull(arbeidstakerVarselDTO)
                 assertTrue(arbeidstakerVarselDTO?.digitalt!!)
@@ -174,7 +174,7 @@ class PostDialogmoteTidStedApiV2Test {
                     dialogmoteDTO.arbeidsgiver.virksomhetsnummer
                 )
                 val arbeidsgiverVarselDTO = dialogmoteDTO.arbeidsgiver.varselList.find {
-                    it.varselType == MotedeltakerVarselType.NYTT_TID_STED.name
+                    it.varselType == MotedeltakerVarselType.ENDRET.name
                 }
                 assertNotNull(arbeidsgiverVarselDTO)
                 assertNull(arbeidsgiverVarselDTO?.lestDato)
@@ -302,7 +302,7 @@ class PostDialogmoteTidStedApiV2Test {
                     assertEquals(1, dialogmoteList.size)
 
                     createdDialogmote = dialogmoteList.first()
-                    assertEquals(Dialogmote.Status.NYTT_TID_STED.name, createdDialogmote.status)
+                    assertEquals(Dialogmote.Status.ENDRET.name, createdDialogmote.status)
 
                     val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
                     verify(exactly = 1) {
@@ -388,7 +388,7 @@ class PostDialogmoteTidStedApiV2Test {
                     assertEquals(1, dialogmoteList.size)
 
                     val dialogmoteDTO = dialogmoteList.first()
-                    assertEquals(Dialogmote.Status.NYTT_TID_STED.name, dialogmoteDTO.status)
+                    assertEquals(Dialogmote.Status.ENDRET.name, dialogmoteDTO.status)
 
                     val kafkaBehandlerDialogmeldingDTOSlot = slot<KafkaBehandlerDialogmeldingDTO>()
                     verify(exactly = 1) {

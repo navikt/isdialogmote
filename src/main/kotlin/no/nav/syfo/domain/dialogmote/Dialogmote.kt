@@ -29,7 +29,10 @@ data class Dialogmote(
         FERDIGSTILT,
         NYTT_TID_STED, // Denne er erstattet med ENDRET, men beholdes for å kunne mappe mot eksisterende data i databasen
         ENDRET,
-        LUKKET,
+        LUKKET;
+
+        // Konsumenter av API-et skal kun forholde seg til ENDRET
+        fun toApiStatus(): Status = if (this == NYTT_TID_STED) ENDRET else this
     }
 
     fun sistMoteTidSted(): DialogmoteTidSted? {

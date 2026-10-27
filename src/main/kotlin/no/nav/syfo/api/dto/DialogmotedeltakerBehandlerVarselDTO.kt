@@ -17,7 +17,7 @@ data class DialogmotedeltakerBehandlerVarselDTO(
             return DialogmotedeltakerBehandlerVarselDTO(
                 uuid = varsel.uuid.toString(),
                 createdAt = varsel.createdAt,
-                varselType = varsel.varselType.name,
+                varselType = varsel.varselType.toApiVarselType().name,
                 document = varsel.document,
                 fritekst = varsel.fritekst,
                 svar = varsel.svar.map { svar ->

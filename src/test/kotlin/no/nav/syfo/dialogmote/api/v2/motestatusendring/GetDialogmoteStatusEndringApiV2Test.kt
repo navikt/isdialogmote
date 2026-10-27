@@ -164,7 +164,7 @@ class GetDialogmoteStatusEndringApiV2Test {
             assertEquals(2, statusendringer.size)
 
             assertEquals(VEILEDER_IDENT_2, statusendringer[0].statusEndringOpprettetAv)
-            assertEquals(Dialogmote.Status.NYTT_TID_STED, statusendringer[0].status)
+            assertEquals(Dialogmote.Status.ENDRET, statusendringer[0].status)
             assertEquals(VEILEDER_IDENT, statusendringer[0].dialogmoteOpprettetAv)
 
             assertEquals(VEILEDER_IDENT, statusendringer[1].statusEndringOpprettetAv)

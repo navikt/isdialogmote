@@ -9,7 +9,10 @@ enum class MotedeltakerVarselType {
     INNKALT,
     NYTT_TID_STED, // Denne er erstattet med ENDRET, men beholdes for å kunne mappe mot eksisterende data i databasen
     ENDRET,
-    REFERAT,
+    REFERAT;
+
+    // Konsumenter av API-et skal kun forholde seg til ENDRET
+    fun toApiVarselType(): MotedeltakerVarselType = if (this == NYTT_TID_STED) ENDRET else this
 }
 
 fun MotedeltakerVarselType.toJournalpostTittel(): String {

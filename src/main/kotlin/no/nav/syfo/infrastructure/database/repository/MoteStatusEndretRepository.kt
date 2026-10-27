@@ -28,7 +28,7 @@ class MoteStatusEndretRepository(private val database: DatabaseInterface) {
                             createdAt = pDialogmoteStatusEndret.createdAt,
                             dialogmoteId = pDialogmoteStatusEndret.moteId,
                             dialogmoteOpprettetAv = getString("mote_opprettet_av"),
-                            status = pDialogmoteStatusEndret.status,
+                            status = pDialogmoteStatusEndret.status.toApiStatus(),
                             statusEndringOpprettetAv = pDialogmoteStatusEndret.opprettetAv,
                         )
                     }
