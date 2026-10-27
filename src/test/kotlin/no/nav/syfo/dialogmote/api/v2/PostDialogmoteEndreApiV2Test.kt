@@ -235,6 +235,54 @@ class PostDialogmoteEndreApiV2Test {
     }
 
     @Test
+    fun `adds behandler without fritekst`() = testApplication {
+        val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
+        val client = client()
+        val moteUuid = client.createMote(newDialogmoteDTO)
+
+        val response = client.endre(
+            moteUuid,
+            endreDTO(newDialogmoteDTO, leggTilBehandler().copy(fritekst = null), tidStedChanged = false),
+        )
+        assertEquals(HttpStatusCode.OK, response.status)
+
+        val mote = client.getMote()
+        assertEquals(nyBehandlerRef, mote.behandler?.behandlerRef)
+        assertEquals("", mote.behandler?.varselList?.single()?.fritekst)
+        assertEquals(1, sentDialogmeldinger.size)
+    }
+
+    @Test
+    fun `returns BadRequest when mote has existing behandler and fritekst is missing`() = testApplication {
+        val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+        val client = client()
+        val moteUuid = client.createMote(newDialogmoteDTO)
+
+        val response = client.endre(
+            moteUuid,
+            endreDTO(newDialogmoteDTO, endringBehandler().copy(fritekst = null), tidStedChanged = true),
+        )
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+
+        assertNoChanges(client, newDialogmoteDTO.behandler!!.behandlerRef)
+    }
+
+    @Test
+    fun `returns BadRequest when mote has existing behandler and fritekst is blank`() = testApplication {
+        val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+        val client = client()
+        val moteUuid = client.createMote(newDialogmoteDTO)
+
+        val response = client.endre(
+            moteUuid,
+            endreDTO(newDialogmoteDTO, endringBehandler().copy(fritekst = " "), tidStedChanged = true),
+        )
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+
+        assertNoChanges(client, newDialogmoteDTO.behandler!!.behandlerRef)
+    }
+
+    @Test
     fun `returns BadRequest when adding behandler without deltaker`() = testApplication {
         val newDialogmoteDTO = generateNewDialogmoteDTO(ARBEIDSTAKER_FNR)
         val client = client()
