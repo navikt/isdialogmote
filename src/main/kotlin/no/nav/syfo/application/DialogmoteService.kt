@@ -528,7 +528,7 @@ class DialogmoteService(
                     commit = false,
                     moteId = dialogmote.id,
                     newDialogmotedeltakerBehandler = behandlerEndring.deltaker.toNewDialogmotedeltakerBehandler(
-                        fritekst = dto.fritekst,
+                        fritekst = behandlerEndring.fritekst,
                     ),
                 ).first
                 behandlerRef = behandlerEndring.deltaker.behandlerRef
@@ -557,7 +557,7 @@ class DialogmoteService(
             status = "OK",
             varselType = varselType,
             pdfId = pdfId,
-            fritekst = dto.fritekst,
+            fritekst = behandlerEndring.fritekst,
             document = dto.moteDokument,
         )
         if (!motetidspunkt.isBefore(LocalDateTime.now())) {
@@ -1029,17 +1029,21 @@ class DialogmoteService(
 
         sealed interface MedBehandler : BehandlerEndring {
             val dto: EndreMoteBegrunnelseBehandlerDTO
+            val fritekst: String
         }
 
         data class EksisterendeBehandler(
             val behandler: DialogmotedeltakerBehandler,
             override val dto: EndreMoteBegrunnelseBehandlerDTO,
+            override val fritekst: String,
         ) : MedBehandler
 
         data class NyBehandler(
             val deltaker: EndreMoteNyBehandlerDTO,
             override val dto: EndreMoteBegrunnelseBehandlerDTO,
-        ) : MedBehandler
+        ) : MedBehandler {
+            override val fritekst: String = dto.fritekst.orEmpty()
+        }
 
         companion object {
             fun from(
@@ -1049,7 +1053,9 @@ class DialogmoteService(
                 if (currentBehandler != null) {
                     requireNotNull(behandlerDTO) { "Failed to change dialogmote: missing behandler" }
                     require(behandlerDTO.deltaker == null) { "Failed to change dialogmote: cannot change existing behandler" }
-                    return EksisterendeBehandler(behandler = currentBehandler, dto = behandlerDTO)
+                    val fritekst = behandlerDTO.fritekst
+                    require(!fritekst.isNullOrBlank()) { "Failed to change dialogmote: missing fritekst for behandler" }
+                    return EksisterendeBehandler(behandler = currentBehandler, dto = behandlerDTO, fritekst = fritekst)
                 }
                 if (behandlerDTO == null) {
                     return IngenBehandler
