@@ -121,7 +121,7 @@ spec:
     - name: JOURNALFORING_RETRY_ENABLED
       value: "false"
     - name: DOKARKIV_CLIENT_ID
-      value: "dev-fss.teamdokumenthandtering.dokarkiv-q2"
+      value: "dev-fss.teamdokumenthandtering.dokarkiv"
     - name: DOKARKIV_URL
       value: "https://dokarkiv-q2.dev-fss-pub.nais.io"
     - name: ISOPPFOLGINGSTILFELLE_CLIENT_ID
