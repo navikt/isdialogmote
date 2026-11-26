@@ -12,9 +12,9 @@ val isdialogmoteSchemaVersion = "1.0.6"
 val jacksonDataTypeVersion = "2.22.4"
 val jacksonDatabindVersion = "3.2.4"
 val jedisVersion = "8.0.2"
-val jsonVersion = "20260719"
+val jsonVersion = "20260814"
 val kafkaVersion = "4.4.0"
-val ktorVersion = "3.6.1"
+val ktorVersion = "3.6.2"
 val jaxbApiVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.3.6"
 val logbackVersion = "1.6.7"
@@ -92,7 +92,22 @@ dependencies {
         exclude(group = "commons-lang")
     }
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", exclusions)
+    constraints {
+        implementation("at.yawk.lz4:lz4-java") {
+            version {
+                require("1.11.4")
+            }
+        }
+    }
+
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion", exclusions)
+    constraints {
+        implementation("com.google.guava:guava") {
+            version {
+                require("33.8.0-jre")
+            }
+        }
+    }
 
     // Nav
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion")
