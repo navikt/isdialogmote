@@ -7,6 +7,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
+import no.nav.syfo.api.dto.AvlysningDTO
 import no.nav.syfo.api.dto.DialogmoteDTO
 import no.nav.syfo.api.dto.EndreDialogmoteDTO
 import no.nav.syfo.api.dto.EndreMoteBegrunnelseBehandlerDTO
@@ -77,6 +78,7 @@ class PostDialogmoteEndreApiV2Test {
         newDialogmoteDTO: NewDialogmoteDTO,
         behandler: EndreMoteBegrunnelseBehandlerDTO?,
         tidStedChanged: Boolean,
+        avlysningTilGammelBehandler: AvlysningDTO? = null,
     ) = EndreDialogmoteDTO(
         sted = if (tidStedChanged) "Et annet sted" else newDialogmoteDTO.tidSted.sted,
         tid = newDialogmoteDTO.tidSted.tid,
@@ -84,6 +86,12 @@ class PostDialogmoteEndreApiV2Test {
         arbeidstaker = begrunnelse("arbeidstaker"),
         arbeidsgiver = begrunnelse("arbeidsgiver"),
         behandler = behandler,
+        avlysningTilGammelBehandler = avlysningTilGammelBehandler,
+    )
+
+    private fun avlysningGammelBehandler() = AvlysningDTO(
+        begrunnelse = "Behandler er endret",
+        avlysning = document("avlysning gammel behandler"),
     )
 
     private fun leggTilBehandler() = EndreMoteBegrunnelseBehandlerDTO(
@@ -199,12 +207,62 @@ class PostDialogmoteEndreApiV2Test {
     }
 
     @Test
-    fun `returns BadRequest when trying to change existing behandler`() = testApplication {
+    fun `replaces existing behandler and cancels old invitation`() = testApplication {
+        val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
+        val client = client()
+        val moteUuid = client.createMote(newDialogmoteDTO)
+        val gammelInnkallingUuid = client.getMote().behandler!!.varselList.single().uuid
+
+        val response = client.endre(
+            moteUuid,
+            endreDTO(
+                newDialogmoteDTO,
+                leggTilBehandler(),
+                tidStedChanged = false,
+                avlysningTilGammelBehandler = avlysningGammelBehandler(),
+            ),
+        )
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(listOf(MoteendringType.BEHANDLER_ENDRET), endringer(moteUuid))
+
+        val mote = client.getMote()
+        assertEquals(Dialogmote.Status.ENDRET.name, mote.status)
+        assertEquals(nyBehandlerRef, mote.behandler?.behandlerRef)
+        assertEquals(listOf(MotedeltakerVarselType.INNKALT.name), mote.behandler?.varselList?.map { it.varselType })
+
+        assertEquals(
+            listOf(
+                newDialogmoteDTO.behandler!!.behandlerRef to MotedeltakerVarselType.INNKALT.name,
+                newDialogmoteDTO.behandler.behandlerRef to MotedeltakerVarselType.AVLYST.name,
+                nyBehandlerRef to MotedeltakerVarselType.INNKALT.name,
+            ),
+            behandlerVarsler(moteUuid),
+        )
+
+        assertEquals(2, sentDialogmeldinger.size)
+        val avlysning = sentDialogmeldinger.first()
+        assertEquals(newDialogmoteDTO.behandler.behandlerRef, avlysning.behandlerRef)
+        assertEquals(DialogmeldingKode.AVLYST.value, avlysning.dialogmeldingKode)
+        assertEquals(gammelInnkallingUuid, avlysning.dialogmeldingRefConversation)
+        assertEquals(gammelInnkallingUuid, avlysning.dialogmeldingRefParent)
+
+        val innkalling = sentDialogmeldinger.last()
+        assertEquals(nyBehandlerRef, innkalling.behandlerRef)
+        assertEquals(DialogmeldingKode.INNKALLING.value, innkalling.dialogmeldingKode)
+        assertEquals(innkalling.dialogmeldingUuid, innkalling.dialogmeldingRefConversation)
+        assertNull(innkalling.dialogmeldingRefParent)
+    }
+
+    @Test
+    fun `returns BadRequest when replacing behandler without avlysning`() = testApplication {
         val newDialogmoteDTO = generateNewDialogmoteDTOWithBehandler(ARBEIDSTAKER_FNR)
         val client = client()
         val moteUuid = client.createMote(newDialogmoteDTO)
 
-        val response = client.endre(moteUuid, endreDTO(newDialogmoteDTO, leggTilBehandler(), tidStedChanged = true))
+        val response = client.endre(
+            moteUuid,
+            endreDTO(newDialogmoteDTO, leggTilBehandler(), tidStedChanged = false),
+        )
         assertEquals(HttpStatusCode.BadRequest, response.status)
 
         assertNoChanges(client, newDialogmoteDTO.behandler!!.behandlerRef)
@@ -306,6 +364,23 @@ class PostDialogmoteEndreApiV2Test {
             ).use { ps ->
                 ps.setString(1, moteUuid)
                 ps.executeQuery().toList { MoteendringType.valueOf(getString("type")) }
+            }
+        }
+
+    private fun behandlerVarsler(moteUuid: String): List<Pair<String, String>> =
+        database.connection.use { connection ->
+            connection.prepareStatement(
+                """
+                SELECT mb.behandler_ref, mbv.varseltype
+                FROM MOTEDELTAKER_BEHANDLER mb
+                INNER JOIN MOTEDELTAKER_BEHANDLER_VARSEL mbv ON mbv.motedeltaker_behandler_id = mb.id
+                INNER JOIN MOTE m ON m.id = mb.mote_id
+                WHERE m.uuid = ?
+                ORDER BY mb.id, mbv.created_at, mbv.id
+                """,
+            ).use { ps ->
+                ps.setString(1, moteUuid)
+                ps.executeQuery().toList { getString("behandler_ref") to getString("varseltype") }
             }
         }
 

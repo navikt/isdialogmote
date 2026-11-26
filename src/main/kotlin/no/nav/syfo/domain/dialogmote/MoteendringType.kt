@@ -5,6 +5,7 @@ import no.nav.syfo.api.dto.EndreDialogmoteDTO
 enum class MoteendringType {
     TID_STED,
     BEHANDLER_LAGT_TIL,
+    BEHANDLER_ENDRET,
 }
 
 fun Dialogmote.finnEndringer(endreDialogmote: EndreDialogmoteDTO): Set<MoteendringType> {
@@ -13,10 +14,15 @@ fun Dialogmote.finnEndringer(endreDialogmote: EndreDialogmoteDTO): Set<Moteendri
         latestTidSted.sted != endreDialogmote.sted ||
         latestTidSted.tid != endreDialogmote.tid ||
         latestTidSted.videoLink.orEmpty() != endreDialogmote.videoLink.orEmpty()
-    val behandlerAdded = endreDialogmote.behandler?.deltaker != null
+    val nyBehandler = endreDialogmote.behandler?.deltaker
+    val behandlerAdded = behandler == null && nyBehandler != null
+    val behandlerChanged = behandler != null &&
+        nyBehandler != null &&
+        behandler.behandlerRef != nyBehandler.behandlerRef
 
     return buildSet {
         if (tidStedChanged) add(MoteendringType.TID_STED)
         if (behandlerAdded) add(MoteendringType.BEHANDLER_LAGT_TIL)
+        if (behandlerChanged) add(MoteendringType.BEHANDLER_ENDRET)
     }
 }
