@@ -9,16 +9,16 @@ enum class MoteendringType {
 }
 
 fun Dialogmote.finnEndringer(endreDialogmote: EndreDialogmoteDTO): Set<MoteendringType> {
-    val latestTidSted = tidStedList.latest()
+    val latestTidSted = this.tidStedList.latest()
     val tidStedChanged = latestTidSted == null ||
         latestTidSted.sted != endreDialogmote.sted ||
         latestTidSted.tid != endreDialogmote.tid ||
         latestTidSted.videoLink.orEmpty() != endreDialogmote.videoLink.orEmpty()
     val nyBehandler = endreDialogmote.behandler?.deltaker
-    val behandlerAdded = behandler == null && nyBehandler != null
-    val behandlerChanged = behandler != null &&
+    val behandlerAdded = this.behandler == null && nyBehandler != null
+    val behandlerChanged = this.behandler != null &&
         nyBehandler != null &&
-        behandler.behandlerRef != nyBehandler.behandlerRef
+        this.behandler.behandlerRef != nyBehandler.behandlerRef
 
     return buildSet {
         if (tidStedChanged) add(MoteendringType.TID_STED)
