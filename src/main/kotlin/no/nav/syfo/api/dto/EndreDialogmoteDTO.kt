@@ -13,6 +13,7 @@ data class EndreDialogmoteDTO(
     val arbeidstaker: EndreMoteBegrunnelseDTO,
     val arbeidsgiver: EndreMoteBegrunnelseDTO,
     val behandler: EndreMoteBegrunnelseBehandlerDTO?,
+    val avlysningTilGammelBehandler: AvlysningDTO? = null,
 ) : TidStedDTO()
 
 data class EndreMoteBegrunnelseBehandlerDTO(

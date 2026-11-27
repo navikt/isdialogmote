@@ -1,6 +1,7 @@
 package no.nav.syfo.application
 
 import no.nav.syfo.api.authentication.getNAVIdentFromToken
+import no.nav.syfo.api.dto.AvlysningDTO
 import no.nav.syfo.api.dto.AvlysningTilMottakereDTO
 import no.nav.syfo.api.dto.EndreDialogmoteDTO
 import no.nav.syfo.api.dto.EndreMoteBegrunnelseBehandlerDTO
@@ -382,6 +383,7 @@ class DialogmoteService(
         val behandlerEndring = BehandlerEndring.from(
             currentBehandler = existingDialogmote.behandler,
             behandlerDTO = endreDialogmoteDTO.behandler,
+            avlysningTilGammelBehandler = endreDialogmoteDTO.avlysningTilGammelBehandler,
         )
 
         val moteendringTypes = existingDialogmote.finnEndringer(endreDialogmoteDTO)
@@ -416,6 +418,14 @@ class DialogmoteService(
             is BehandlerEndring.MedBehandler -> BehandlerVarsel(
                 endring = behandlerEndring,
                 pdf = createBehandlerPdf(behandlerEndring = behandlerEndring, callId = callId),
+                avlysningsPdf = when (behandlerEndring) {
+                    is BehandlerEndring.ErstattetBehandler -> pdfGenClient.pdfAvlysning(
+                        callId = callId,
+                        mottakerNavn = behandlerEndring.gammelBehandler.behandlerNavn,
+                        pdfContent = behandlerEndring.avlysning.avlysning,
+                    ) ?: throw RuntimeException("Failed to request PDF - Avlysning Gammel Behandler")
+                    else -> null
+                },
             )
         }
 
@@ -499,6 +509,11 @@ class DialogmoteService(
             mottakerNavn = behandlerEndring.deltaker.behandlerNavn,
             pdfContent = behandlerEndring.dto.moteDokument,
         ) ?: throw RuntimeException("Failed to request PDF - Innkalling Behandler")
+        is BehandlerEndring.ErstattetBehandler -> pdfGenClient.pdfInnkalling(
+            callId = callId,
+            mottakerNavn = behandlerEndring.deltaker.behandlerNavn,
+            pdfContent = behandlerEndring.dto.moteDokument,
+        ) ?: throw RuntimeException("Failed to request PDF - Innkalling Behandler")
         is BehandlerEndring.EksisterendeBehandler -> pdfGenClient.pdfEndringTidSted(
             callId = callId,
             mottakerNavn = behandlerEndring.behandler.behandlerNavn,
@@ -544,6 +559,28 @@ class DialogmoteService(
                 varselParentId = behandler.findParentVarselId()
                 varselInnkallingUuid = behandler.findInnkallingVarselUuid()
             }
+            is BehandlerEndring.ErstattetBehandler -> {
+                lagreOgSendGammelBehandlerAvlysning(
+                    connection = connection,
+                    arbeidstakerPersonIdent = dialogmote.arbeidstaker.personident,
+                    behandlerEndring = behandlerEndring,
+                    pdf = requireNotNull(behandlerVarsel.avlysningsPdf),
+                    motetidspunkt = motetidspunkt,
+                    token = token,
+                    callId = callId,
+                )
+                behandlerId = connection.createMotedeltakerBehandler(
+                    commit = false,
+                    moteId = dialogmote.id,
+                    newDialogmotedeltakerBehandler = behandlerEndring.deltaker.toNewDialogmotedeltakerBehandler(
+                        fritekst = behandlerEndring.fritekst,
+                    ),
+                ).first
+                behandlerRef = behandlerEndring.deltaker.behandlerRef
+                varselType = MotedeltakerVarselType.INNKALT
+                varselParentId = null
+                varselInnkallingUuid = null
+            }
         }
 
         val (pdfId, _) = pdfRepository.createPdf(
@@ -570,6 +607,46 @@ class DialogmoteService(
                 varselUuid = varselUuid,
                 varselParentId = varselParentId,
                 varselInnkallingUuid = varselInnkallingUuid,
+                token = token,
+                callId = callId,
+            )
+        }
+    }
+
+    private suspend fun lagreOgSendGammelBehandlerAvlysning(
+        connection: Connection,
+        arbeidstakerPersonIdent: Personident,
+        behandlerEndring: BehandlerEndring.ErstattetBehandler,
+        pdf: ByteArray,
+        motetidspunkt: LocalDateTime,
+        token: String,
+        callId: String,
+    ) {
+        val gammelBehandler = behandlerEndring.gammelBehandler
+        val (pdfId, _) = pdfRepository.createPdf(
+            connection = connection,
+            commit = false,
+            pdf = pdf,
+        )
+        val (_, varselUuid) = connection.createMotedeltakerVarselBehandler(
+            commit = false,
+            motedeltakerBehandlerId = gammelBehandler.id,
+            status = "OK",
+            varselType = MotedeltakerVarselType.AVLYST,
+            pdfId = pdfId,
+            fritekst = behandlerEndring.avlysning.begrunnelse,
+            document = behandlerEndring.avlysning.avlysning,
+        )
+        if (!motetidspunkt.isBefore(LocalDateTime.now())) {
+            varselService.sendBehandlerVarsel(
+                behandlerRef = gammelBehandler.behandlerRef,
+                arbeidstakerPersonIdent = arbeidstakerPersonIdent,
+                document = behandlerEndring.avlysning.avlysning,
+                pdf = pdf,
+                varselType = MotedeltakerVarselType.AVLYST,
+                varselUuid = varselUuid,
+                varselParentId = gammelBehandler.findParentVarselId(),
+                varselInnkallingUuid = gammelBehandler.findInnkallingVarselUuid(),
                 token = token,
                 callId = callId,
             )
@@ -1045,14 +1122,34 @@ class DialogmoteService(
             override val fritekst: String = dto.fritekst.orEmpty()
         }
 
+        data class ErstattetBehandler(
+            val gammelBehandler: DialogmotedeltakerBehandler,
+            val deltaker: EndreMoteNyBehandlerDTO,
+            val avlysning: AvlysningDTO,
+            override val dto: EndreMoteBegrunnelseBehandlerDTO,
+        ) : MedBehandler {
+            override val fritekst: String = dto.fritekst.orEmpty()
+        }
+
         companion object {
             fun from(
                 currentBehandler: DialogmotedeltakerBehandler?,
                 behandlerDTO: EndreMoteBegrunnelseBehandlerDTO?,
+                avlysningTilGammelBehandler: AvlysningDTO?,
             ): BehandlerEndring {
                 if (currentBehandler != null) {
                     requireNotNull(behandlerDTO) { "Failed to change dialogmote: missing behandler" }
-                    require(behandlerDTO.deltaker == null) { "Failed to change dialogmote: cannot change existing behandler" }
+                    val nyBehandler = behandlerDTO.deltaker
+                    if (nyBehandler != null && nyBehandler.behandlerRef != currentBehandler.behandlerRef) {
+                        return ErstattetBehandler(
+                            gammelBehandler = currentBehandler,
+                            deltaker = nyBehandler,
+                            avlysning = requireNotNull(avlysningTilGammelBehandler) {
+                                "Failed to change dialogmote: missing avlysning for existing behandler"
+                            },
+                            dto = behandlerDTO,
+                        )
+                    }
                     val fritekst = behandlerDTO.fritekst
                     require(!fritekst.isNullOrBlank()) { "Failed to change dialogmote: missing fritekst for behandler" }
                     return EksisterendeBehandler(behandler = currentBehandler, dto = behandlerDTO, fritekst = fritekst)
@@ -1069,5 +1166,6 @@ class DialogmoteService(
     private class BehandlerVarsel(
         val endring: BehandlerEndring.MedBehandler,
         val pdf: ByteArray,
+        val avlysningsPdf: ByteArray?,
     )
 }
