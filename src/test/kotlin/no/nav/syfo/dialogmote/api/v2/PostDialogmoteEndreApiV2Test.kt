@@ -232,9 +232,9 @@ class PostDialogmoteEndreApiV2Test {
 
         assertEquals(
             listOf(
-                newDialogmoteDTO.behandler!!.behandlerRef to MotedeltakerVarselType.INNKALT.name,
-                newDialogmoteDTO.behandler.behandlerRef to MotedeltakerVarselType.AVLYST.name,
                 nyBehandlerRef to MotedeltakerVarselType.INNKALT.name,
+                newDialogmoteDTO.behandler!!.behandlerRef to MotedeltakerVarselType.AVLYST.name,
+                newDialogmoteDTO.behandler.behandlerRef to MotedeltakerVarselType.INNKALT.name,
             ),
             behandlerVarsler(moteUuid),
         )
@@ -376,7 +376,7 @@ class PostDialogmoteEndreApiV2Test {
                 INNER JOIN MOTEDELTAKER_BEHANDLER_VARSEL mbv ON mbv.motedeltaker_behandler_id = mb.id
                 INNER JOIN MOTE m ON m.id = mb.mote_id
                 WHERE m.uuid = ?
-                ORDER BY mb.id, mbv.created_at, mbv.id
+                ORDER BY mb.id desc, mbv.created_at desc, mbv.id desc
                 """,
             ).use { ps ->
                 ps.setString(1, moteUuid)
